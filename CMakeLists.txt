@@ -1,7 +1,16 @@
+####### added the eingenmf
+set(EIGENMF_DIR ../eigenmf)
+
+include_directories(
+	"${EIGENMF_DIR}"
+        "${EIGENMF_DIR}/Eigen"
+        "${EIGENMF_DIR}/HISSTools_FFT"
+)
+
+####### original SC Cmake file starts here
 set(FILENAME "fdNMF.cpp") #specify the .cpp file here
 cmake_minimum_required (VERSION 2.8)
 get_filename_component(PROJECT ${FILENAME} NAME_WE) #automatically sets project name from the filename
-# set(PROJECT "my_name") #alternatively set project name manually
 message(STATUS "Project name is ${PROJECT}")
 project (${PROJECT})
 
@@ -81,9 +90,21 @@ if(MINGW)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mstackrealign")
 endif()
 
-add_library(${PROJECT} MODULE ${FILENAME})
+####### added the eingenmf
+add_library(
+${PROJECT}
+MODULE
+${FILENAME}
+"${EIGENMF_DIR}/nmf.cc"
+"${EIGENMF_DIR}/nmf.h"
+"${EIGENMF_DIR}/stft.cc"
+"${EIGENMF_DIR}/stft.h"
+      "${EIGENMF_DIR}/HISSTools_FFT/HISSTools_FFT.cpp"
+)
 if(SUPERNOVA)
     add_library(${PROJECT}_supernova MODULE ${FILENAME})
     set_property(TARGET ${PROJECT}_supernova
                  PROPERTY COMPILE_DEFINITIONS SUPERNOVA)
 endif()
+
+target_link_libraries (${PROJECT} "-framework Accelerate")

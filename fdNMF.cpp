@@ -3,7 +3,7 @@
 
 #include "SC_PlugIn.h"
 #include <vector>
-// #include "stft.h"
+#include "stft.h"
 
 static InterfaceTable *ft;
 
