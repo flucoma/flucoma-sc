@@ -2,87 +2,64 @@
 // A tool from the FluCoMa project, funded by the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899)
 
 #include "SC_PlugIn.h"
+#include <vector>
 
 static InterfaceTable *ft;
 
-void BufNMF(World *world, struct SndBuf *buf, struct sc_msg_iter *msg)
+void BufNMF(World *world, struct SndBuf *dstBuf, struct sc_msg_iter *msg)
 {
-	int frames1 = buf->frames;
-	int channels1 = buf->channels;
+	int dstFrameCount = dstBuf->frames;
+	int dstChanCount = dstBuf->channels;
 
-	uint32 bufnum2 = msg->geti();
+	uint32 srcBufNum = msg->geti();
 	int repetitions = msg->geti();
+	uint32 rank = 5;
 
-	if (bufnum2 >= world->mNumSndBufs){
-		Print("waveSetCopyTo is not happy because the source buffer does not exist.\n");
+	if (srcBufNum >= world->mNumSndBufs){
+		Print("fdNMF is not happy because the source buffer does not exist.\n");
 		return;
 	}
 
-	SndBuf* buf2 = world->mSndBufs + bufnum2;
+	SndBuf* srcBuf = world->mSndBufs + srcBufNum;
 
-	if (buf2->data == buf->data){
-		Print("waveSetCopyTo is not happy because the source buffer is the same as the destination buffer.\n");
+	if (srcBuf->data == dstBuf->data){
+		Print("fdNMF is not happy because the source buffer is the same as the destination buffer.\n");
 		return;
 	}
 
-	int frames2 = buf2->frames;
-	int channels2 = buf2->channels;
+	int srcFrameCount = srcBuf->frames;
+	int srcChanCount = srcBuf->channels;
 
-	if (channels1 != channels2) {
-		Print("waveSetCopyTo is not happy because the source buffer has a different channel count than the destination buffer.\n");
+	Print("dstChanCount = %d\n",dstChanCount);
+
+	if (dstChanCount < rank) {
+		Print("fdNMF is not happy because the destination buffer has a lower channel count than the number of ranks.\n");
 		return;
 	}
 
-	// checks if default value (0) or error in quantity and sets to a filling behaviour or at least one
-	if (repetitions < 1){
-		repetitions = int(frames1 / frames2);
-		if (repetitions < 1)
-		repetitions = 1;
-	}
+	// make a vector of doubles for the samples
+	std::vector<double> tmp_vec(srcFrameCount);
 
 	//for each channels
-	for (int j=0;j<channels2;j++){
-		long lastXadd = -1; //set start frame as invalid address flag
-		short prevpol = (buf2->data[j] > 0); //set the previous sample polarity as the first sample
-		long writeindex = 0; // set the writing index at the start of the buffer
-		long wavesetlenght;
+	for (int j=0;j<srcChanCount;j++){
+		//copies and casts to double the source samples
+		for (int i=0;i<srcFrameCount;i++){
+				tmp_vec[i] = srcBuf->data[(i*srcChanCount)+j];
+		}
 
-		//interates through the source samples
-		for (int i=0;i<frames2;i++){
-			//if previously positive...
-			if (prevpol){
-				// Print("in1\n");
-				//... and currently negative ...
-				if (buf2->data[(i*channels2)+j] < 0.0) {
-					// Print("in1-1\n");
-					// ... flag as being now in negativeland and exit.
-					prevpol = 0;
-				}
-			} else {
-				// if previously in negativeland...
-				// Print("in2\n");
-				if (buf2->data[(i*channels2)+j] >= 0.0) {
-					// ...and now being zero or up, so we write
-					// Print("in2-2\n");
-					// check it is not the first zero crossing
-					if (lastXadd >=0) {
-						// check if the lenght will be too long for all repetitions
-						wavesetlenght = i - lastXadd;
-						if (((wavesetlenght*repetitions)+ writeindex) > frames1) break;
+		// //dumb vector process with c++ syntax
+		// for(double value : tmp_vec){
+		// 	value *= -1;
+		// }
 
-						// write if enough place
-						for (int k = 0; k < repetitions; k++){
-							for (int l = 0; l < wavesetlenght; l++) {
-								buf->data[(writeindex*channels2)+j] = buf2->data[((lastXadd+l)*channels2)+j];
-								writeindex++;
-							}
-						}
-					}
-					// setting the flag and the new past
-					prevpol = 1;
-					lastXadd = i;
-				}
-			}
+		//dumb vector process with c++ syntax
+		for(int i=0;i<tmp_vec.size();i++){
+			tmp_vec[i] *= -1;
+		}
+
+		//writes the output
+		for (int i=0;i<srcFrameCount;i++){
+				dstBuf->data[(i*srcChanCount)+j] = (float)tmp_vec[i];
 		}
 	}
 }

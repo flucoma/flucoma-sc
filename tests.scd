@@ -1,16 +1,17 @@
-s.quit;
+s.quit
+s.boot
+// allocates a 16-sample buffer and fills it with ascending values
+b = Buffer.alloc(s,16);
+c = Buffer.alloc(s,16,5);
+b.setn(0, Array.series(16,-8,1));
 
-s.boot;
+// read to check
+b.getn(0,16, {|msg| msg.postln});
+c.getn(0,16, {|msg| msg.postln});
 
-// create a one-and-a-bit-cycle buffer and an empty one
-b = Buffer.alloc(s,256);
-c = Buffer.alloc(s,1000);
+// run the code
+b.fdNMF(c);
 
-///resynthesis the source buffer with a slightly shorter wavelenght
-b.sine2([256/250],[1],true,false);
-b.fdNMF(c,4)
-c.plot
-//Voilà!
-
-// clean up
-b.free; c.free
+// read to check
+b.getn(0,16, {|msg| msg.postln});
+c.getn(0,16, {|msg| msg.postln});
