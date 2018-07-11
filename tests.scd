@@ -1,17 +1,13 @@
 s.quit
 s.boot
 // allocates a 16-sample buffer and fills it with ascending values
-b = Buffer.alloc(s,16);
-c = Buffer.alloc(s,16,5);
-b.setn(0, Array.series(16,-8,1));
-
-// read to check
-b.getn(0,16, {|msg| msg.postln});
-c.getn(0,16, {|msg| msg.postln});
+b = Buffer.alloc(s,50000);
+b.sine1([0,0,0,0,0,0,0,0,0,1],true,false);
+b.plot;
+c = Buffer.alloc(s,50000);
 
 // run the code
 b.fdNMF(c);
 
 // read to check
-b.getn(0,16, {|msg| msg.postln});
-c.getn(0,16, {|msg| msg.postln});
+c.plot

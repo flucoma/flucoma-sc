@@ -33,13 +33,17 @@ void BufNMF(World *world, struct SndBuf *dstBuf, struct sc_msg_iter *msg)
 
 	Print("dstChanCount = %d\n",dstChanCount);
 
-	if (dstChanCount < rank) {
-		Print("fdNMF is not happy because the destination buffer has a lower channel count than the number of ranks.\n");
-		return;
-	}
+	// if (dstChanCount < rank) {
+	// 	Print("fdNMF is not happy because the destination buffer has a lower channel count than the number of ranks.\n");
+	// 	return;
+	// }
 
 	// make a vector of doubles for the samples
 	std::vector<double> tmp_vec(srcFrameCount);
+
+	//construct STFT processors
+	stft::STFT stft(1024, 2048, 256);
+	stft::ISTFT istft(1024, 2048, 256);
 
 	//for each channels
 	for (int j=0;j<srcChanCount;j++){
@@ -48,23 +52,13 @@ void BufNMF(World *world, struct SndBuf *dstBuf, struct sc_msg_iter *msg)
 				tmp_vec[i] = srcBuf->data[(i*srcChanCount)+j];
 		}
 
-		//dumb vector process with c++ syntax
-		for(double& value : tmp_vec){
-			value *= -1;
-		}
-
-		// //dumb vector process with c syntax
-		// for(int i=0;i<tmp_vec.size();i++){
-		// 	tmp_vec[i] *= -1;
-		// }
-
 		// fft and ifft for fun
-		// Spectrogram spec = stft.process(tmp_vec);
-		// std::vector<double>  out_vec = istft.process(spec);
+		stft::Spectrogram spec = stft.process(tmp_vec);
+		std::vector<double>  out_vec = istft.process(spec);
 
 		//writes the output
 		for (int i=0;i<srcFrameCount;i++){
-				dstBuf->data[(i*srcChanCount)+j] = (float)tmp_vec[i];
+				dstBuf->data[(i*srcChanCount)+j] = (float)out_vec[i];
 		}
 	}
 }
