@@ -3,6 +3,7 @@
 
 #include "SC_PlugIn.h"
 #include <vector>
+// #include "stft.h"
 
 static InterfaceTable *ft;
 
@@ -47,15 +48,19 @@ void BufNMF(World *world, struct SndBuf *dstBuf, struct sc_msg_iter *msg)
 				tmp_vec[i] = srcBuf->data[(i*srcChanCount)+j];
 		}
 
-		// //dumb vector process with c++ syntax
-		// for(double value : tmp_vec){
-		// 	value *= -1;
+		//dumb vector process with c++ syntax
+		for(double& value : tmp_vec){
+			value *= -1;
+		}
+
+		// //dumb vector process with c syntax
+		// for(int i=0;i<tmp_vec.size();i++){
+		// 	tmp_vec[i] *= -1;
 		// }
 
-		//dumb vector process with c++ syntax
-		for(int i=0;i<tmp_vec.size();i++){
-			tmp_vec[i] *= -1;
-		}
+		// fft and ifft for fun
+		// Spectrogram spec = stft.process(tmp_vec);
+		// std::vector<double>  out_vec = istft.process(spec);
 
 		//writes the output
 		for (int i=0;i<srcFrameCount;i++){
