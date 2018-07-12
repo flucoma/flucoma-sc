@@ -13,8 +13,10 @@ void BufNMF(World *world, struct SndBuf *dstBuf, struct sc_msg_iter *msg)
 	int dstChanCount = dstBuf->channels;
 
 	uint32 srcBufNum = msg->geti();
-	int repetitions = msg->geti();
-	uint32 rank = 5;
+	uint32 rank = msg->geti();
+	uint32 fftSize = msg->geti();
+	uint32 windowSize = msg->geti();
+	uint32 hopSize = msg->geti();
 
 	if (srcBufNum >= world->mNumSndBufs){
 		Print("fdNMF is not happy because the source buffer does not exist.\n");
@@ -31,8 +33,6 @@ void BufNMF(World *world, struct SndBuf *dstBuf, struct sc_msg_iter *msg)
 	int srcFrameCount = srcBuf->frames;
 	int srcChanCount = srcBuf->channels;
 
-	Print("dstChanCount = %d\n",dstChanCount);
-
 	// if (dstChanCount < rank) {
 	// 	Print("fdNMF is not happy because the destination buffer has a lower channel count than the number of ranks.\n");
 	// 	return;
@@ -42,8 +42,8 @@ void BufNMF(World *world, struct SndBuf *dstBuf, struct sc_msg_iter *msg)
 	std::vector<double> tmp_vec(srcFrameCount);
 
 	//construct STFT processors
-	stft::STFT stft(1024, 2048, 256);
-	stft::ISTFT istft(1024, 2048, 256);
+	stft::STFT stft(windowSize, fftSize, hopSize);
+	stft::ISTFT istft(windowSize, fftSize, hopSize);
 
 	//for each channels
 	for (int j=0;j<srcChanCount;j++){

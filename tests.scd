@@ -7,7 +7,7 @@ b.plot;
 c = Buffer.alloc(s,50000);
 
 // run the code
-b.fdNMF(c);
+b.fdNMF(c, 5, 2048, 1024, 256);
 
 // read to check
 c.plot
