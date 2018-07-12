@@ -3,9 +3,31 @@
 
 #include "SC_PlugIn.h"
 #include <vector>
+#include <algorithm>
 #include "stft.h"
+#include "nmf.h"
+#include <Eigen/Dense>
+
+
+//Using statements for eigenmf. These will change
+using stft::STFT;
+using stft::ISTFT;
+using stft::Spectrogram;
+using stft:: audio_buffer_t;
+using stft:: magnitude_t;
+using nmf::NMF;
+using nmf::NMFModel;
+using Eigen::MatrixXcd;
+using Eigen::MatrixXd;
+using std::complex;
+using util::stlVecVec2Eigen;
+using util::Eigen2StlVecVec;
+using std::numeric_limits;
 
 static InterfaceTable *ft;
+
+//namespace to gaffatape
+namespace gaffatape {
 
 void BufNMF(World *world, struct SndBuf *dstBuf, struct sc_msg_iter *msg)
 {
@@ -13,10 +35,11 @@ void BufNMF(World *world, struct SndBuf *dstBuf, struct sc_msg_iter *msg)
 	int dstChanCount = dstBuf->channels;
 
 	uint32 srcBufNum = msg->geti();
-	uint32 rank = msg->geti();
-	uint32 fftSize = msg->geti();
-	uint32 windowSize = msg->geti();
-	uint32 hopSize = msg->geti();
+	long rank = msg->geti();
+	long iterations = msg->geti();
+	long fftSize = msg->geti();
+	long windowSize = msg->geti();
+	long hopSize = msg->geti();
 
 	if (srcBufNum >= world->mNumSndBufs){
 		Print("fdNMF is not happy because the source buffer does not exist.\n");
@@ -33,32 +56,56 @@ void BufNMF(World *world, struct SndBuf *dstBuf, struct sc_msg_iter *msg)
 	int srcFrameCount = srcBuf->frames;
 	int srcChanCount = srcBuf->channels;
 
-	// if (dstChanCount < rank) {
-	// 	Print("fdNMF is not happy because the destination buffer has a lower channel count than the number of ranks.\n");
-	// 	return;
-	// }
+	if (dstChanCount < rank) {
+		Print("fdNMF is not happy because the destination buffer has a lower channel count than the number of ranks.\n");
+		return;
+	}
+
+	// check size of dstBuff
+	if (dstFrameCount < srcFrameCount) {
+		Print("fdNMF is not happy because the destination buffer shorter than the source buffer.\n");
+		return;
+	}
 
 	// make a vector of doubles for the samples
-	std::vector<double> tmp_vec(srcFrameCount);
+	std::vector<double> audio_in(srcFrameCount);
 
-	//construct STFT processors
-	stft::STFT stft(windowSize, fftSize, hopSize);
-	stft::ISTFT istft(windowSize, fftSize, hopSize);
+	//copied as is from max source (setting up the different variables and processes)
+	STFT stft(windowSize, fftSize, hopSize);
+	NMF nmfProcessor(rank, iterations);
+	ISTFT istft(windowSize, fftSize, hopSize);
 
 	//for each channels
-	for (int j=0;j<srcChanCount;j++){
+	// for (int j=0;j<srcChanCount;j++){
+	// just processing the first input channel instead of iterating through each channel, yet keeping the mechanism in there.
+	for (int j=0;j<1;j++){
 		//copies and casts to double the source samples
 		for (int i=0;i<srcFrameCount;i++){
-				tmp_vec[i] = srcBuf->data[(i*srcChanCount)+j];
+				audio_in[i] = srcBuf->data[(i*srcChanCount)+j];
 		}
 
-		// fft and ifft for fun
-		stft::Spectrogram spec = stft.process(tmp_vec);
-		std::vector<double>  out_vec = istft.process(spec);
+		Spectrogram spec = stft.process(audio_in);
+		magnitude_t mag = spec.magnitude();
+		NMFModel decomposition = nmfProcessor.process(mag);
+		MatrixXd W = stlVecVec2Eigen<double>(decomposition.W);
+		MatrixXd H = stlVecVec2Eigen<double>(decomposition.H);
 
-		//writes the output
-		for (int i=0;i<srcFrameCount;i++){
-				dstBuf->data[(i*srcChanCount)+j] = (float)out_vec[i];
+		MatrixXd V = W * H;
+
+		for (int i = 0; i < rank; i++)
+		{
+				MatrixXd source = W.col(i) * H.row(i);
+				MatrixXd filter = source.cwiseQuotient(V);
+				MatrixXcd specMatrix = stlVecVec2Eigen(spec.mData);
+				specMatrix = specMatrix.cwiseProduct(filter);
+				Spectrogram resultS(Eigen2StlVecVec<complex<double>>(specMatrix));
+
+				audio_buffer_t result = istft.process(resultS);
+
+				//writes the output
+				for (int k=0;k<srcFrameCount;k++){
+						dstBuf->data[(k*rank)+i] = (float)result[k];
+				}
 		}
 	}
 }
@@ -66,4 +113,5 @@ void BufNMF(World *world, struct SndBuf *dstBuf, struct sc_msg_iter *msg)
 PluginLoad(OfflineFluidDecompositionUGens) {
 	ft = inTable;
 	DefineBufGen("BufNMF", BufNMF);
+}
 }
