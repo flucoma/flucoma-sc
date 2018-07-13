@@ -5,6 +5,7 @@ b = Buffer.read(s,"/Applications/Max.app/Contents/Resources/C74/media/msp/jongly
 b.play;
 b.plot;
 c = Buffer.alloc(s,b.numFrames,2);
+e = Buffer.alloc(s,b.numFrames,5);
 
 // run the code
 b.fdNMF(c,2)
@@ -13,13 +14,8 @@ b.fdNMF(c,2)
 c.plot;
 {PlayBuf.ar(2,c.bufnum,doneAction:2)}.play
 
-
-// play a sinewave in the background to see if the server freaks out
-d = {SinOsc.ar(100,0,0.1)}.play
-e = Buffer.alloc(s,b.numFrames,5);
-
 // run the code
-b.fdNMF(e,5, 150, 2048,1024,256)
+b.fdNMF(e,5, 150, 2048,1024,256,{|x| "itworks".postln; x.postln;})
 
 // read to check
 e.plot;
