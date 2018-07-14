@@ -68,7 +68,9 @@ void BufNMF(World *world, struct SndBuf *dstBuf, struct sc_msg_iter *msg)
 	}
 
 	// make a vector of doubles for the samples
-	std::vector<double> audio_in(srcFrameCount);
+	// padding by half a fft frame each sides
+	std::vector<double> audio_in(srcFrameCount+fftSize);
+	long halfFftSize = fftSize / 2;
 
 	//copied as is from max source (setting up the different variables and processes)
 	STFT stft(windowSize, fftSize, hopSize);
@@ -81,7 +83,7 @@ void BufNMF(World *world, struct SndBuf *dstBuf, struct sc_msg_iter *msg)
 	for (int j=0;j<1;j++){
 		//copies and casts to double the source samples
 		for (int i=0;i<srcFrameCount;i++){
-				audio_in[i] = srcBuf->data[(i*srcChanCount)+j];
+				audio_in[i+halfFftSize] = srcBuf->data[(i*srcChanCount)+j];
 		}
 
 		Spectrogram spec = stft.process(audio_in);
@@ -104,7 +106,7 @@ void BufNMF(World *world, struct SndBuf *dstBuf, struct sc_msg_iter *msg)
 
 				//writes the output
 				for (int k=0;k<srcFrameCount;k++){
-						dstBuf->data[(k*rank)+i] = (float)result[k];
+						dstBuf->data[(k*rank)+i] = (float)result[k+halfFftSize];
 				}
 		}
 	}

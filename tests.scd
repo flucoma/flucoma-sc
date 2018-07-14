@@ -20,3 +20,7 @@ b.fdNMF(e,5, 150, 2048,1024,256,{|x| "itworks".postln; x.postln;})
 // read to check
 e.plot;
 {Splay.ar(PlayBuf.ar(5,e.bufnum,doneAction:2))}.play
+
+// nulltest
+
+{(PlayBuf.ar(5,e.bufnum,doneAction:2).sum)+(-1*PlayBuf.ar(1,b.bufnum,doneAction:2))}.play
