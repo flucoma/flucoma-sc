@@ -2,27 +2,16 @@
 // A tool from the FluCoMa project, funded by the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899)
 
 #include "SC_PlugIn.h"
-#include <vector>
-#include <algorithm>
-#include "stft.h"
-#include "nmf.h"
-#include <Eigen/Dense>
+#include "STFT.hpp"
+#include "FluidTensor.hpp"
+#include "fluid_client_nmf.h"
+#include "fluid_nmf_tilde_util.h"
 
-
-//Using statements for eigenmf. These will change
-using stft::STFT;
-using stft::ISTFT;
-using stft::Spectrogram;
-using stft:: audio_buffer_t;
-using stft:: magnitude_t;
-using nmf::NMF;
-using nmf::NMFModel;
-using Eigen::MatrixXcd;
-using Eigen::MatrixXd;
-using std::complex;
-using util::stlVecVec2Eigen;
-using util::Eigen2StlVecVec;
-using std::numeric_limits;
+//Using statements for fluidtensor
+using fluid::FluidTensor;
+using fluid::FluidTensorView;
+using fluid::nmf::error_strings;
+using fluid::nmf::NMFClient;
 
 static InterfaceTable *ft;
 
@@ -31,8 +20,8 @@ namespace gaffatape {
 
 void BufNMF(World *world, struct SndBuf *dstBuf, struct sc_msg_iter *msg)
 {
-	int dstFrameCount = dstBuf->frames;
-	int dstChanCount = dstBuf->channels;
+	size_t dstFrameCount = dstBuf->frames;
+	size_t dstChanCount = dstBuf->channels;
 
 	uint32 srcBufNum = msg->geti();
 	long rank = msg->geti();
@@ -53,8 +42,8 @@ void BufNMF(World *world, struct SndBuf *dstBuf, struct sc_msg_iter *msg)
 		return;
 	}
 
-	int srcFrameCount = srcBuf->frames;
-	int srcChanCount = srcBuf->channels;
+	size_t srcFrameCount = srcBuf->frames;
+	size_t srcChanCount = srcBuf->channels;
 
 	if (dstChanCount < rank) {
 		Print("fdNMF is not happy because the destination buffer has a lower channel count than the number of ranks.\n");
@@ -67,47 +56,25 @@ void BufNMF(World *world, struct SndBuf *dstBuf, struct sc_msg_iter *msg)
 		return;
 	}
 
-	// make a vector of doubles for the samples
-	// padding by half a fft frame each sides
-	std::vector<double> audio_in(srcFrameCount+fftSize);
-	long halfFftSize = fftSize / 2;
+	// make fuildtensorviewers of my SC interleaved buffers
+	FluidTensorView<float,2> in_view ({0,{srcFrameCount, srcChanCount}},srcBuf->data);
+	FluidTensorView<float,2> out_view ({0,{dstFrameCount, dstChanCount}},dstBuf->data);
 
-	//copied as is from max source (setting up the different variables and processes)
-	STFT stft(windowSize, fftSize, hopSize);
-	NMF nmfProcessor(rank, iterations);
-	ISTFT istft(windowSize, fftSize, hopSize);
+	//setup the nmf
+	NMFClient nmf(rank ,iterations, fftSize, windowSize, hopSize);
 
 	//for each channels
 	// for (int j=0;j<srcChanCount;j++){
 	// just processing the first input channel instead of iterating through each channel, yet keeping the mechanism in there.
 	for (int j=0;j<1;j++){
 		//copies and casts to double the source samples
-		for (int i=0;i<srcFrameCount;i++){
-				audio_in[i+halfFftSize] = srcBuf->data[(i*srcChanCount)+j];
-		}
-
-		Spectrogram spec = stft.process(audio_in);
-		magnitude_t mag = spec.magnitude();
-		NMFModel decomposition = nmfProcessor.process(mag);
-		MatrixXd W = stlVecVec2Eigen<double>(decomposition.W);
-		MatrixXd H = stlVecVec2Eigen<double>(decomposition.H);
-
-		MatrixXd V = W * H;
-
-		for (int i = 0; i < rank; i++)
+		FluidTensor<double,1> audio_in(in_view.col(j));
+		//Process, with resynthesis
+		nmf.process(audio_in,true);
+		//Copy output
+		for (int i = 0; i < rank; ++i)
 		{
-				MatrixXd source = W.col(i) * H.row(i);
-				MatrixXd filter = source.cwiseQuotient(V);
-				MatrixXcd specMatrix = stlVecVec2Eigen(spec.mData);
-				specMatrix = specMatrix.cwiseProduct(filter);
-				Spectrogram resultS(Eigen2StlVecVec<complex<double>>(specMatrix));
-
-				audio_buffer_t result = istft.process(resultS);
-
-				//writes the output
-				for (int k=0;k<srcFrameCount;k++){
-						dstBuf->data[(k*rank)+i] = (float)result[k+halfFftSize];
-				}
+			out_view.col(i) = nmf.source(i);
 		}
 	}
 }

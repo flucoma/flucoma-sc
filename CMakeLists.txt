@@ -1,10 +1,10 @@
 ####### added the eingenmf
-set(EIGENMF_DIR ../eigenmf)
+set(FLUID_DECOMP_DIR ../fluid_decomposition)
 
 include_directories(
-	"${EIGENMF_DIR}"
-        "${EIGENMF_DIR}/Eigen"
-        "${EIGENMF_DIR}/HISSTools_FFT"
+	"${FLUID_DECOMP_DIR}"
+	"${FLUID_DECOMP_DIR}/include"
+  "${FLUID_DECOMP_DIR}/3rdparty"
 )
 
 ####### original SC Cmake file starts here
@@ -90,16 +90,14 @@ if(MINGW)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mstackrealign")
 endif()
 
-####### added the eingenmf
+####### added the fluid_decomposition
 add_library(
 ${PROJECT}
 MODULE
 ${FILENAME}
-"${EIGENMF_DIR}/nmf.cc"
-"${EIGENMF_DIR}/nmf.h"
-"${EIGENMF_DIR}/stft.cc"
-"${EIGENMF_DIR}/stft.h"
-      "${EIGENMF_DIR}/HISSTools_FFT/HISSTools_FFT.cpp"
+"${FLUID_DECOMP_DIR}/3rdparty/HISSTools_FFT/HISSTools_FFT.cpp"
+"fluid_client_nmf.cc"
+"fluid_client_nmf.h"
 )
 if(SUPERNOVA)
     add_library(${PROJECT}_supernova MODULE ${FILENAME})

@@ -15,7 +15,7 @@ c.plot;
 {PlayBuf.ar(2,c.bufnum,doneAction:2)}.play
 
 // run the code
-b.fdNMF(e,5, 150, 2048,1024,256,{|x| "itworks".postln; x.postln;})
+b.fdNMF(e,5, 100, 1024,1024,256,{|x| "itworks".postln; x.postln;})
 
 // read to check
 e.plot;
