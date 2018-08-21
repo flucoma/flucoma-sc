@@ -4,37 +4,55 @@ s.reboot
 
 b = Buffer.read(s,"/Users/pa/Documents/documents@hudd/research/projects/fluid corpus navigation/research/denoise_stn/sources/01-mix.wav");
 b.play;
+
+(
 c = Buffer.alloc(s,b.numFrames,5);
-x = Buffer.alloc(s,b.numFrames,5);
-y = Buffer.alloc(s,b.numFrames,5);
+x = Buffer.alloc(s,(1024 / 2 +1),5);
+y = Buffer.alloc(s,(b.numFrames / 256 + 1) ,5);
+)
 
+d = Main.elapsedTime; b.fdNMF(c, x, y, 5, 100, 1024,1024,256,{e = Main.elapsedTime; (e-d).postln})
 
-d = Main.elapsedTime; b.fdNMF(c, x, nil, 5, 100, 1024,1024,256,{e = Main.elapsedTime; (e-d).postln})
+//look at the dictionaries and activations
+x.plot; y.plot;
 
+//null test of the sum of sources
 {(PlayBuf.ar(5,c.bufnum,doneAction:2).sum)+(-1*PlayBuf.ar(1,b.bufnum,doneAction:2))}.play
+
+// play around
 {Splay.ar(PlayBuf.ar(5,c.bufnum,doneAction:2))}.play
 
+//play a single source
 {PlayBuf.ar(5,c.bufnum,doneAction:2)[0].dup}.play
 
+//play noise through a filter
+(
+{
+	var chain;
+	chain = FFT(LocalBuf(1024), WhiteNoise.ar());
+
+	chain = chain.pvcollect(1024, {|mag, phase, index|
+		[mag * BufRd.kr(5,x.bufnum,DC.kr(index),0,1)[0]];
+	});
+
+	IFFT(chain);
+}.play
+)
+
+//play noise through an activation
+{WhiteNoise.ar(BufRd.kr(5,y.bufnum,Phasor.ar(1,1/256,0,(b.numFrames / 256 + 1)),0,1)[0])}.play
 
 
+//play noise through both activation and filter
+(
+{
+	var chain;
+	chain = FFT(LocalBuf(1024), WhiteNoise.ar(BufRd.kr(5,y.bufnum,Phasor.ar(1,1/256,0,(b.numFrames / 256 + 1)),0,1)[0]),0.25);
 
-////////////////////////////
-// test for osc clutter
+	chain = chain.pvcollect(1024, {|mag, phase, index|
+		[mag * BufRd.kr(5,x.bufnum,DC.kr(index),0,1)[0]];
+	});
 
-SynthDef(\testcontrol, { arg fader = 0.5;
-	Out.ar(0, Pulse.ar(MouseX.kr(-1).exprange(100,400), fader,0.1));
-}).send(s);
-
-x = Synth(\testcontrol);
-
-y = {GrainBuf.ar(2,Impulse.ar(MouseX.kr(2,20)),MouseX.kr(1,0.1),b.bufnum,1,MouseY.kr(),2,LFNoise0.kr(20),-1,512,0.5)}.play;
-
-z = {[0,BufRd.ar(1, b.bufnum, Phasor.ar(0, 2 , 0, BufFrames.kr(b.bufnum)),0)]}.play;
-
-x.set(\fader, 0.05)
-x.set(\fader, 0.5)
-
-x.free; y.free; z.free;
-
-// starting the buffer reading synths before is no issue, but cannot start accessing/playing them during the computing (lock?)
+	IFFT(chain);
+}.play
+)
