@@ -27,37 +27,45 @@ void BufNMF(World *world, struct SndBuf *srcBuf, struct sc_msg_iter *msg)
 	size_t windowSize = msg->geti();
 	size_t hopSize = msg->geti();
 
-	Print("%i %i %i\n", dstBufNum, dictBufNum, actBufNum);
-	
-	if (dstBufNum >= world->mNumSndBufs){
-		Print("fdNMF is not happy because the destination buffer does not exist.\n");
+	SndBuf* dstBuf;
+	size_t dstFrameCount;
+	size_t dstChanCount;
+
+	if (dstBufNum == -1 && dictBufNum == -1 && actBufNum == -1) {
+		Print("fdNMF is not happy because there are no output buffer specified.\n");
 		return;
 	}
 
-	SndBuf* dstBuf = world->mSndBufs + dstBufNum;
+	// check sanity of audio destination buffer
+	if (dstBufNum != -1){
+		if (dstBufNum >= world->mNumSndBufs){
+			Print("fdNMF is not happy because the destination buffer does not exist.\n");
+			return;
+		}
 
-	if (srcBuf->data == dstBuf->data){
-		Print("fdNMF is not happy because the destination buffer is the same as the source buffer.\n");
-		return;
+		dstBuf = world->mSndBufs + dstBufNum;
+
+		if (srcBuf->data == dstBuf->data){
+			Print("fdNMF is not happy because the destination buffer is the same as the source buffer.\n");
+			return;
+		}
+
+		dstFrameCount = dstBuf->frames;
+		dstChanCount = dstBuf->channels;
+
+		if (dstChanCount < rank) {
+			Print("fdNMF is not happy because the destination buffer has a lower channel count than the number of ranks.\n");
+			return;
+		}
+
+		if (dstFrameCount < srcFrameCount) {
+			Print("fdNMF is not happy because the destination buffer shorter than the source buffer.\n");
+			return;
+		}
 	}
 
-	size_t dstFrameCount = dstBuf->frames;
-	size_t dstChanCount = dstBuf->channels;
-
-	if (dstChanCount < rank) {
-		Print("fdNMF is not happy because the destination buffer has a lower channel count than the number of ranks.\n");
-		return;
-	}
-
-	// check size of dstBuff
-	if (dstFrameCount < srcFrameCount) {
-		Print("fdNMF is not happy because the destination buffer shorter than the source buffer.\n");
-		return;
-	}
-
-	// make fuildtensorviewers of my SC interleaved buffers
+	// make fuildtensorviewers of the SC interleaved input buffer
 	FluidTensorView<float,2> in_view ({0,{srcFrameCount, srcChanCount}},srcBuf->data);
-	FluidTensorView<float,2> out_view ({0,{dstFrameCount, dstChanCount}},dstBuf->data);
 
 	//setup the nmf
 	NMFClient nmf(rank ,iterations, fftSize, windowSize, hopSize);
@@ -71,9 +79,13 @@ void BufNMF(World *world, struct SndBuf *srcBuf, struct sc_msg_iter *msg)
 		//Process, with resynthesis
 		nmf.process(audio_in,true);
 		//Copy output
-		for (int i = 0; i < rank; ++i)
-		{
-			out_view.col(i) = nmf.source(i);
+		if (dstBufNum != -1){
+			FluidTensorView<float,2> out_view ({0,{dstFrameCount, dstChanCount}},dstBuf->data);
+
+			for (int i = 0; i < rank; ++i)
+			{
+				out_view.col(i) = nmf.source(i);
+			}
 		}
 	}
 }
