@@ -96,8 +96,6 @@ ${PROJECT}
 MODULE
 ${FILENAME}
 "${FLUID_DECOMP_DIR}/3rdparty/HISSTools_FFT/HISSTools_FFT.cpp"
-"fluid_client_nmf.cc"
-"fluid_client_nmf.h"
 )
 if(SUPERNOVA)
     add_library(${PROJECT}_supernova MODULE ${FILENAME})

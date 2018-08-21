@@ -2,21 +2,16 @@
 // A tool from the FluCoMa project, funded by the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899)
 
 #include "SC_PlugIn.h"
-#include "STFT.hpp"
-#include "FluidTensor.hpp"
-#include "fluid_client_nmf.h"
-#include "fluid_nmf_tilde_util.h"
+#include "algorithms/STFT.hpp"
+#include "data/FluidTensor.hpp"
+#include "clients/nrt/NMFClient.hpp"
 
 //Using statements for fluidtensor
 using fluid::FluidTensor;
 using fluid::FluidTensorView;
-using fluid::nmf::error_strings;
 using fluid::nmf::NMFClient;
 
 static InterfaceTable *ft;
-
-//namespace to gaffatape
-namespace gaffatape {
 
 void BufNMF(World *world, struct SndBuf *dstBuf, struct sc_msg_iter *msg)
 {
@@ -82,5 +77,4 @@ void BufNMF(World *world, struct SndBuf *dstBuf, struct sc_msg_iter *msg)
 PluginLoad(OfflineFluidDecompositionUGens) {
 	ft = inTable;
 	DefineBufGen("BufNMF", BufNMF);
-}
 }
