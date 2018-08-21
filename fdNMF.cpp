@@ -18,13 +18,17 @@ void BufNMF(World *world, struct SndBuf *srcBuf, struct sc_msg_iter *msg)
 	size_t srcFrameCount = srcBuf->frames;
 	size_t srcChanCount = srcBuf->channels;
 
-	size_t dstBufNum = msg->geti();
+	long dstBufNum = msg->geti();
+	long dictBufNum = msg->geti();
+	long actBufNum = msg->geti();
 	size_t rank = msg->geti();
 	size_t iterations = msg->geti();
 	size_t fftSize = msg->geti();
 	size_t windowSize = msg->geti();
 	size_t hopSize = msg->geti();
 
+	Print("%i %i %i\n", dstBufNum, dictBufNum, actBufNum);
+	
 	if (dstBufNum >= world->mNumSndBufs){
 		Print("fdNMF is not happy because the destination buffer does not exist.\n");
 		return;

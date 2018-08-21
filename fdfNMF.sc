@@ -1,6 +1,6 @@
 // adds an instance method to the Buffer class
 + Buffer {
-	fdNMF { arg dstBuf, rank = 1, iterations = 100, fftSize = 2048, windowSize = 2048, hopSize = 512, action;
+	fdNMF { arg dstBuf, dictBuf, actBuf, rank = 1, iterations = 100, fftSize = 2048, windowSize = 2048, hopSize = 512, action;
 		var resp;
 
 		if(bufnum.isNil) { Error("Cannot call % on a % that has been freed".format(thisMethod.name, this.class.name)).throw };
@@ -13,6 +13,6 @@
 			});
 		}, '/done', server.addr);
 
-		server.listSendMsg([\b_gen, bufnum, "BufNMF", dstBuf.bufnum, rank, iterations, fftSize, windowSize, hopSize])
+		server.listSendMsg([\b_gen, bufnum, "BufNMF", if(dstBuf.isNil, -1, {dstBuf.bufnum}), if(dictBuf.isNil, -1, {dictBuf.bufnum}), if(actBuf.isNil, -1, {actBuf.bufnum}), rank, iterations, fftSize, windowSize, hopSize])
 	}
 }
