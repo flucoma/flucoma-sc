@@ -1,5 +1,4 @@
-s.quit
-s.boot
+s.reboot
 ////////////////////////////
 // test for efficiency
 
@@ -12,7 +11,7 @@ d = Main.elapsedTime; b.fdNMF(c,5, 100, 1024,1024,256,{e = Main.elapsedTime; (e-
 {(PlayBuf.ar(5,c.bufnum,doneAction:2).sum)+(-1*PlayBuf.ar(1,b.bufnum,doneAction:2))}.play
 {Splay.ar(PlayBuf.ar(5,c.bufnum,doneAction:2))}.play
 
-{PlayBuf.ar(5,c.bufnum,doneAction:2)[2].dup}.play
+{PlayBuf.ar(5,c.bufnum,doneAction:2)[0].dup}.play
 
 
 ////////////////////////////

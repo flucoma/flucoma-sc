@@ -13,32 +13,32 @@ using fluid::nmf::NMFClient;
 
 static InterfaceTable *ft;
 
-void BufNMF(World *world, struct SndBuf *dstBuf, struct sc_msg_iter *msg)
+void BufNMF(World *world, struct SndBuf *srcBuf, struct sc_msg_iter *msg)
 {
-	size_t dstFrameCount = dstBuf->frames;
-	size_t dstChanCount = dstBuf->channels;
-
-	uint32 srcBufNum = msg->geti();
-	long rank = msg->geti();
-	long iterations = msg->geti();
-	long fftSize = msg->geti();
-	long windowSize = msg->geti();
-	long hopSize = msg->geti();
-
-	if (srcBufNum >= world->mNumSndBufs){
-		Print("fdNMF is not happy because the source buffer does not exist.\n");
-		return;
-	}
-
-	SndBuf* srcBuf = world->mSndBufs + srcBufNum;
-
-	if (srcBuf->data == dstBuf->data){
-		Print("fdNMF is not happy because the source buffer is the same as the destination buffer.\n");
-		return;
-	}
-
 	size_t srcFrameCount = srcBuf->frames;
 	size_t srcChanCount = srcBuf->channels;
+
+	size_t dstBufNum = msg->geti();
+	size_t rank = msg->geti();
+	size_t iterations = msg->geti();
+	size_t fftSize = msg->geti();
+	size_t windowSize = msg->geti();
+	size_t hopSize = msg->geti();
+
+	if (dstBufNum >= world->mNumSndBufs){
+		Print("fdNMF is not happy because the destination buffer does not exist.\n");
+		return;
+	}
+
+	SndBuf* dstBuf = world->mSndBufs + dstBufNum;
+
+	if (srcBuf->data == dstBuf->data){
+		Print("fdNMF is not happy because the destination buffer is the same as the source buffer.\n");
+		return;
+	}
+
+	size_t dstFrameCount = dstBuf->frames;
+	size_t dstChanCount = dstBuf->channels;
 
 	if (dstChanCount < rank) {
 		Print("fdNMF is not happy because the destination buffer has a lower channel count than the number of ranks.\n");

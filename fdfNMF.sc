@@ -7,13 +7,12 @@
 
 		// responder idea stolen from getToFloatArray
 		resp = OSCFunc({ arg msg;
-			if(msg[1]== '/b_gen' && msg[2]== dstBuf.bufnum, {
-				// ("received" + msg).postln;
+			if(msg[1]== '/b_gen' && msg[2]== bufnum, {
 				resp.clear;
-				action.value(dstBuf.bufnum);
+				action.value(bufnum);
 			});
 		}, '/done', server.addr);
 
-		server.listSendMsg([\b_gen, dstBuf.bufnum, "BufNMF", bufnum, rank, iterations, fftSize, windowSize, hopSize])
+		server.listSendMsg([\b_gen, bufnum, "BufNMF", dstBuf.bufnum, rank, iterations, fftSize, windowSize, hopSize])
 	}
 }
