@@ -132,8 +132,13 @@ void BufNMF(World *world, struct SndBuf *srcBuf, struct sc_msg_iter *msg)
 	for (int j=0;j<1;j++){
 		//copies and casts to double the source samples
 		FluidTensor<double,1> audio_in(in_view.col(j));
-		//Process, with resynthesis
-		nmf.process(audio_in,true);
+
+		//Process, with resynthesis if needs be
+		if (dstBufNum != -1){
+			nmf.process(audio_in,true);
+		} else {
+			nmf.process(audio_in,false);
+		}
 
 		//Copy audio outputs if they are requested
 		if (dstBufNum != -1){
