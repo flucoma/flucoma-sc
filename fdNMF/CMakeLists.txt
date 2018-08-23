@@ -1,5 +1,5 @@
 ####### added the eingenmf
-set(FLUID_DECOMP_DIR ../fluid_decomposition)
+set(FLUID_DECOMP_DIR ../../fluid_decomposition)
 
 include_directories(
 	"${FLUID_DECOMP_DIR}"
@@ -102,5 +102,12 @@ if(SUPERNOVA)
     set_property(TARGET ${PROJECT}_supernova
                  PROPERTY COMPILE_DEFINITIONS SUPERNOVA)
 endif()
+
+add_custom_command(
+  TARGET
+	${PROJECT}
+	POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PROJECT}> "../../release-packaging/${PROJECT}/plugins"
+)
 
 target_link_libraries (${PROJECT} "-framework Accelerate")
