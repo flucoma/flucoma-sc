@@ -65,3 +65,26 @@ x.plot; y.plot;
 	[0,IFFT(chain)];
 }.play
 )
+
+
+// test with stereo input
+Buffer.freeAll(s)
+
+(
+b = Buffer.read(s,"/Users/pa/Desktop/verystereo.wav");
+~fft_size = 1024;
+~frame_size = 512;
+~hop_size = 256;
+)
+
+(
+c = Buffer.alloc(s,b.numFrames,10);
+x = Buffer.alloc(s,(~fft_size / 2 +1),10);
+y = Buffer.alloc(s,(b.numFrames / ~hop_size + 1) ,10);
+)
+
+d = Main.elapsedTime; b.fdNMF(c, x, y, 5, 100, ~fft_size,~frame_size,~hop_size,{e = Main.elapsedTime; (e-d).postln})
+
+{PlayBuf.ar(10,c.bufnum,doneAction:2)[5].dup}.play
+
+c.getn(0, 10, {|x|x.postln})

@@ -53,7 +53,7 @@ void BufNMF(World *world, struct SndBuf *srcBuf, struct sc_msg_iter *msg)
 		dstFrameCount = dstBuf->frames;
 		dstChanCount = dstBuf->channels;
 
-		if (dstChanCount < rank) {
+		if (dstChanCount < (rank * srcChanCount)) {
 			Print("fdNMF is not happy because the destination buffer has a lower channel count than the number of ranks.\n");
 			return;
 		}
@@ -81,7 +81,7 @@ void BufNMF(World *world, struct SndBuf *srcBuf, struct sc_msg_iter *msg)
 		dictFrameCount = dictBuf->frames;
 		dictChanCount = dictBuf->channels;
 
-		if (dictChanCount < rank) {
+		if (dictChanCount < (rank * srcChanCount)) {
 			Print("fdNMF is not happy because the destination buffer has a lower channel count than the number of ranks.\n");
 			return;
 		}
@@ -109,7 +109,7 @@ void BufNMF(World *world, struct SndBuf *srcBuf, struct sc_msg_iter *msg)
 		actFrameCount = actBuf->frames;
 		actChanCount = actBuf->channels;
 
-		if (actChanCount < rank) {
+		if (actChanCount < (rank * srcChanCount)) {
 			Print("fdNMF is not happy because the destination buffer has a lower channel count than the number of ranks.\n");
 			return;
 		}
@@ -127,9 +127,7 @@ void BufNMF(World *world, struct SndBuf *srcBuf, struct sc_msg_iter *msg)
 	NMFClient nmf(rank ,iterations, fftSize, windowSize, hopSize);
 
 	//for each channels
-	// for (int j=0;j<srcChanCount;j++){
-	// just processing the first input channel instead of iterating through each channel, yet keeping the mechanism in there.
-	for (int j=0;j<1;j++){
+	for (int j=0;j<srcChanCount;j++){
 		//copies and casts to double the source samples
 		FluidTensor<double,1> audio_in(in_view.col(j));
 
@@ -146,7 +144,7 @@ void BufNMF(World *world, struct SndBuf *srcBuf, struct sc_msg_iter *msg)
 
 			for (int i = 0; i < rank; ++i)
 			{
-				out_view.col(i) = nmf.source(i);
+				out_view.col(i + (j*rank)) = nmf.source(i);
 			}
 		}
 		//Copy dictionaries if they are requested
@@ -155,7 +153,7 @@ void BufNMF(World *world, struct SndBuf *srcBuf, struct sc_msg_iter *msg)
 
 			for (int i = 0; i < rank; ++i)
 			{
-				out_view.col(i) = nmf.dictionary(i);
+				out_view.col(i + (j*rank)) = nmf.dictionary(i);
 			}
 		}
 		//Copy activations if they are requested
@@ -164,7 +162,7 @@ void BufNMF(World *world, struct SndBuf *srcBuf, struct sc_msg_iter *msg)
 
 			for (int i = 0; i < rank; ++i)
 			{
-				out_view.col(i) = nmf.activation(i);
+				out_view.col(i + (j*rank)) = nmf.activation(i);
 			}
 		}
 	}
