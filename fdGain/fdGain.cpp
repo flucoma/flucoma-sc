@@ -71,6 +71,7 @@ private:
     
     void next(int numsamples)
     {
+        //TODO: Remove const_cast code smell by making input_signal type for const 
         input_signals[0]->set(const_cast<float*>(in(0)), in0(0));
         input_signals[1]->set(const_cast<float*>(in(2)), in0(2));
         output_signals[0]->set(out(0), out0(0));
