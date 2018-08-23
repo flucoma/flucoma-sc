@@ -1,0 +1,4 @@
+//Ar modulator
+{FDGain.ar(WhiteNoise.ar,64,SinOsc.ar(2))}.play
+//Kr modulator
+{FDGain.ar(WhiteNoise.ar,64,SinOsc.kr(2))}.play
