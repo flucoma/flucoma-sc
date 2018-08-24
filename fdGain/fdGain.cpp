@@ -30,9 +30,9 @@ public:
         
         //Oh NO! Heap allocation! Make client object
         if(chunk_size)
-            m_client = new client_type(chunk_size);
+            m_client = new client_type(chunk_size,chunk_size);
         else
-            m_client = new client_type(1024);
+            m_client = new client_type(1024,1024);
         
         m_client->set_host_buffer_size(bufferSize());
         m_client->reset();

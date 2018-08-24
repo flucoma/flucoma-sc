@@ -22,7 +22,8 @@ add_custom_command(
   TARGET
 	${PROJECT}
 	POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PROJECT}> "../../release-packaging/${PROJECT}/plugins"	
+	COMMAND ${CMAKE_COMMAND} -E make_directory "../../release-packaging/${PROJECT}/plugins"
+	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PROJECT}> "../../release-packaging/${PROJECT}/plugins"
 )
 
 include_directories(
