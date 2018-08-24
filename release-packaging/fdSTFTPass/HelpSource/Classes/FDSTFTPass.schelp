@@ -1,0 +1,2 @@
+//Ar modulator
+{FDSTFTPass.ar(SinOsc.ar(440),1024,256,2048)}.play
