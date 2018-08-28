@@ -89,64 +89,28 @@ namespace sc{
                                           mCompletionMsgSize,mCompletionMsgData);
         }
         
-
-        
-        void cm()
-        {
-            cmd<NRTCommandBase,&NRTCommandBase::do_processing,&NRTCommandBase::post_processing,&NRTCommandBase::dummy_stage,&NRTCommandBase::dummy_cleanup>("Bob");
-        }
-        
-        
-        
     public:
         NRTCommandBase() = delete;
         NRTCommandBase(NRTCommandBase&) = delete;
         NRTCommandBase& operator=(NRTCommandBase&) = delete;
-  
+          
+        NRTCommandBase(World *inWorld, void* inUserData, struct sc_msg_iter *args, void *replyAddr):
+        mWorld(inWorld),mReplyAddr(replyAddr){}
         
-        NRTCommandBase(size_t buffers_in, size_t buffers_out, World *inWorld, void* inUserData, struct sc_msg_iter *args, void *replyAddr):
-        input_buffers(buffers_in,-1), output_buffers(buffers_out,-1),
-        mWorld(inWorld),mReplyAddr(replyAddr)
-        {
-            for(auto&& i: input_buffers)
-                i = args->geti();
-            
-            for(auto&& o: output_buffers)
-                o = args->geti();
-            
-            mCompletionMsgSize = args->getbsize();
-            mCompletionMsgData = 0;
-            if(mCompletionMsgSize)
-            {
-                //allocate string
-                mCompletionMsgData = (char*)RTAlloc(mWorld,mCompletionMsgSize);
-                args->getb(mCompletionMsgData,mCompletionMsgSize);
-            }
-            
-        }
-        
-        virtual void process()
-        {
-            
-        }
-        
-    private:
-        
-        bool do_processing()
-        {
-            
-            return true;
-        }
-        bool post_processing()
-        {
-            return true;
-        }
-        bool dummy_stage() { return true; }
-        void dummy_cleanup() {}
-        
-        std::vector<long> input_buffers;
-        std::vector<long> output_buffers;
+        virtual ~NRTCommandBase() = default;
 
+        /**Override these**/
+        virtual bool process()          { return true; } //NRT
+        virtual bool post_processing()  { return true; } //RT
+        virtual bool post_complete()    { return true; } //NRT
+        void cleanup() {}
+
+        /**Probably not this though**/
+        void runCommand(std::string name)
+        {
+            cmd<NRTCommandBase, &NRTCommandBase::process, &NRTCommandBase::post_processing, &NRTCommandBase::post_complete, &NRTCommandBase::cleanup> (name);
+        }
+    private:
     protected:
         World * mWorld;
         void* mReplyAddr;
@@ -155,6 +119,17 @@ namespace sc{
         size_t mCompletionMsgSize;
         char* mCompletionMsgData;
         
+        void handleCompletionMessage(struct sc_msg_iter *args)
+        {
+            mCompletionMsgSize = args->getbsize();
+            mCompletionMsgData = 0;
+            if(mCompletionMsgSize)
+            {
+                //allocate string
+                mCompletionMsgData = (char*)RTAlloc(mWorld,mCompletionMsgSize);
+                args->getb(mCompletionMsgData,mCompletionMsgSize);
+            }
+        }
     };
 } //namespace supercollider
 }//namespace fluid
@@ -164,20 +139,15 @@ template<typename NRT_Plug>
 void command(World *inWorld, void* inUserData, struct sc_msg_iter *args, void *replyAddr)
 {
     NRT_Plug cmd(inWorld, inUserData, args, replyAddr);
-    
-    
-    
+    cmd.runCommand("AysncCommand");
 }
 
 
 template <typename NRT_Plug>
 void registerCommand(InterfaceTable* ft, const char* name)
 {
-    //typedef void (*PlugInCmdFunc)(World *inWorld, void* inUserData, struct sc_msg_iter *args, void *replyAddr);
+    //(World *inWorld, void* inUserData, struct sc_msg_iter *args, void *replyAddr);
     PlugInCmdFunc cmd =  command<NRT_Plug>;
-    
-    
-    
     (*ft->fDefinePlugInCmd)(name,cmd,nullptr);
 }
 
