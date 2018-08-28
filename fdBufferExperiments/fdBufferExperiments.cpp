@@ -78,7 +78,7 @@ bool ASyncBufferFun_RTStage(World* world, void* inUserData)
     //Assign value to our NRT buffer pointer's value
     *dstBuf = *data->newdst;
     //Ping the server
-    world->mSndBufUpdates[data->dstbuf].writes ++ ;
+    world->mSndBufUpdates[data->dstbuf].writes++;
     return true;
 }
 
@@ -100,10 +100,6 @@ void ASyncBufferFun_CleanUp(World* world, void* inUserData)
 void ASyncBufferFun_Main(World *inWorld, void* inUserData, struct sc_msg_iter *msg, void *replyAddr)
 {
     BufferFunTimeCmdData* data = (BufferFunTimeCmdData*)RTAlloc(inWorld, sizeof(BufferFunTimeCmdData));
-    
-    
-//    size_t srcFrameCount = srcBuf->frames;
-//    size_t srcChanCount = srcBuf->channels;
     
     data->srcbuf =  msg->geti();
     data->dstbuf = msg->geti();
@@ -129,8 +125,7 @@ void ASyncBufferFun_Main(World *inWorld, void* inUserData, struct sc_msg_iter *m
         return;
     }
     
-    
-    
+
 //    how to pass a string argument: [WILL BE USEFUL FOR WINDOW FUNCTIONS?]
 //    const char *name = msg->gets(); // get the string argument
 //    if (name) {
@@ -144,7 +139,7 @@ void ASyncBufferFun_Main(World *inWorld, void* inUserData, struct sc_msg_iter *m
     if(completionMsgSize)
     {
        //allocate string
-        completionMsgString = (char*)RTAlloc(inWorld,sizeof(completionMsgSize));
+        completionMsgString = (char*)RTAlloc(inWorld,completionMsgSize);
         msg->getb(completionMsgString,completionMsgSize);
     }
     
