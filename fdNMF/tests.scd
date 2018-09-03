@@ -1,30 +1,61 @@
+
 s.reboot
 ////////////////////////////
 // test for efficiency
 
 (
-b = Buffer.read(s,"/Users/pa/Documents/documents@hudd/research/projects/fluid corpus navigation/research/denoise_stn/sources/01-mix.wav");
+b = Buffer.read(s,"/Users/owen/Desktop/denoise_stn/sources/01-mix.wav", numFrames:88200);
+// s.sync;
 ~fft_size = 2048;
 ~frame_size = 1024;
 ~hop_size = 256;
 ~which_rank = 0;
 )
 
+// (
+// c = Buffer.alloc(s,b.numFrames,5);
+// x = Buffer.alloc(s,(~fft_size / 2 +1),5);
+// y = Buffer.alloc(s,(b.numFrames / ~hop_size + 1) ,5);
+// )
+
 (
-c = Buffer.alloc(s,b.numFrames,5);
-x = Buffer.alloc(s,(~fft_size / 2 +1),5);
-y = Buffer.alloc(s,(b.numFrames / ~hop_size + 1) ,5);
+c = Buffer.new(s, numFrames:0, numChannels:1);
+x = Buffer.new(s,numFrames:0,numChannels:1);
+y = Buffer.new(s,numFrames:0,numChannels:1);
 )
 
+
+(
 // without sources
-d = Main.elapsedTime; b.fdNMF(nil, x, y, 5, 100, ~fft_size,~frame_size,~hop_size,{e = Main.elapsedTime; (e-d).postln})
+r = Routine{
+	t = Main.elapsedTime;
+	FDNMF.nmf(s,b,0,-1,0,-1,c,x,0,y,0,5,100,~frame_size,~hop_size,~fft_size);
+	s.sync;
+	u = Main.elapsedTime;
+	(u-t).postln;
+}.play
+);
+
+
+c.query
+x.query
 
 // with sources
-d = Main.elapsedTime; b.fdNMF(c, x, y, 5, 100, ~fft_size,~frame_size,~hop_size,{e = Main.elapsedTime; (e-d).postln})
+(
+r = Routine{
+	t = Main.elapsedTime;
+	FDNMF.nmf(s,b, 0,-1,0,-1,c,x,0,y,0,5,100,~frame_size,~hop_size,~fft_size);
+	s.sync;
+	u = Main.elapsedTime;
+	(u-t).postln;
+}.play
+)
+
 
 //look at the dictionaries and activations
 x.plot; y.plot;
-
+d.plot;
+c.plot;
 //null test of the sum of sources
 {(PlayBuf.ar(5,c.bufnum,doneAction:2).sum)+(-1*PlayBuf.ar(1,b.bufnum,doneAction:2))}.play
 
@@ -56,10 +87,10 @@ x.plot; y.plot;
 (
 {
 	var chain;
-	chain = FFT(LocalBuf(~fft_size), WhiteNoise.ar(BufRd.kr(5,y.bufnum,Phasor.ar(1,1/~hop_size,0,(b.numFrames / ~hop_size + 1)),0,1)[~which_rank]*0.15),0.25,1);
+	chain = FFT(LocalBuf(~fft_size), WhiteNoise.ar(BufRd.kr(5,d.bufnum,Phasor.ar(1,1/~hop_size,0,(b.numFrames / ~hop_size + 1)),0,1)[~which_rank]*0.15),0.25,1);
 
 	chain = chain.pvcollect(~fft_size, {|mag, phase, index|
-		[mag * BufRd.kr(5,x.bufnum,DC.kr(index),0,1)[~which_rank]];
+		[mag * BufRd.kr(5,c.bufnum,DC.kr(index),0,1)[~which_rank]];
 	});
 
 	[0,IFFT(chain)];
