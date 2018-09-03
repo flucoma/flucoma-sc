@@ -5,6 +5,7 @@ include_directories(
 	"${FLUID_DECOMP_DIR}"
 	"${FLUID_DECOMP_DIR}/include"
   "${FLUID_DECOMP_DIR}/3rdparty"
+	"${CMAKE_CURRENT_SOURCE_DIR}/../include"
 )
 
 ####### original SC Cmake file starts here
@@ -17,6 +18,9 @@ project (${PROJECT})
 include_directories(${SC_PATH}/include/plugin_interface)
 include_directories(${SC_PATH}/include/common)
 include_directories(${SC_PATH}/common)
+include_directories(${SC_PATH}/common)
+include_directories(${SC_PATH}/external_libraries/boost)
+
 
 set(CMAKE_SHARED_MODULE_PREFIX "")
 if(APPLE OR WIN32)
