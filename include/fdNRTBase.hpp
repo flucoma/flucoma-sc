@@ -53,7 +53,7 @@ namespace sc{
     
     SCBufferView(long bufnum,World* world):
       NRTBuf(world,bufnum),
-      BufferAdaptor({0,{static_cast<size_t>(frames),static_cast<size_t>(channels)}},NRTBuf::data),
+//      BufferAdaptor({0,{static_cast<size_t>(frames),static_cast<size_t>(channels)}},NRTBuf::data),
       mBufnum(bufnum), mWorld(world)
     {}
     
@@ -74,6 +74,37 @@ namespace sc{
       return (mBufnum >=0  && mBufnum < mWorld->mNumSndBufs);
     }
     
+    FluidTensorView<float,1> samps(size_t channel, size_t rankIdx = 1) override
+    {
+      FluidTensorView<float,2>  v{this->data,0, static_cast<size_t>(this->frames), static_cast<size_t>(this->channels)};
+      
+      return v.col(rankIdx + channel * (this->channels - 1));
+    }
+    //Return a view of all the data
+    FluidTensorView<float,2> samps() override
+    {
+      return {this->data,0, static_cast<size_t>(this->frames), static_cast<size_t>(this->channels)};
+    }
+    
+    size_t numSamps() const override
+    {
+      if(valid())
+      {
+        return this->frames;
+      }
+      return 0;
+    }
+  
+    size_t numChans() const override
+    {
+      if(valid())
+      {
+        return this->channels;
+      }
+      return 0;
+    }
+    
+    
     void resize(size_t frames, size_t channels, size_t rank) override {
       
       SndBuf* thisThing = static_cast<SndBuf*>(this);
@@ -82,9 +113,9 @@ namespace sc{
       
       mWorld->ft->fBufAlloc(this, channels * rank, frames, this->samplerate);
       
-      FluidTensorView<float,2> v=  FluidTensorView<float,2>(NRTBuf::data,0,static_cast<size_t>(frames),static_cast<size_t>(channels * rank));
-      
-      static_cast<FluidTensorView<float,2>&>(*this) = std::move(v);
+//      FluidTensorView<float,2> v=  FluidTensorView<float,2>(NRTBuf::data,0,static_cast<size_t>(frames),static_cast<size_t>(channels * rank));
+//
+//      static_cast<FluidTensorView<float,2>&>(*this) = std::move(v);
       
       if(oldData)
         boost::alignment::aligned_free(oldData);
