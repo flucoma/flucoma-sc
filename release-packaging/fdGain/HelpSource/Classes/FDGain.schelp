@@ -1,4 +1,46 @@
-//Ar modulator
-{FDGain.ar(WhiteNoise.ar,64,SinOsc.ar(2))}.play
-//Kr modulator
-{FDGain.ar(WhiteNoise.ar,64,SinOsc.kr(2))}.play
+class:: FDGain
+summary:: Real-Time Gain Changer
+categories:: UGens>Algebraic
+related::Classes/UnaryOpFunction
+
+DESCRIPTION::
+A sanity test for the FluCoMa Real-Time Client Wrapper footnote::This  was made possible thanks to the FluCoMa project (http://www.flucoma.org/) funded by the European Research Council (https://erc.europa.eu/) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+
+CLASSMETHODS::
+
+METHOD:: ar
+	The audio rate version of the object.
+
+ARGUMENT:: in
+	The input to be processed
+
+ARGUMENT:: frameSize
+	The size of the real-time i/o buffer. It will add that much latency to the signal.
+
+ARGUMENT:: gain
+	Audio or control rate change of the gain.
+
+returns:: nothing
+
+INSTANCEMETHODS::
+
+METHOD:: checkInputs
+	This makes sure the value and phase inputs are both at audio rate.
+
+returns::
+	A slap on the wrist, should it not be the case.
+
+
+EXAMPLES::
+	Summing with the inverse (gain of -1) with a delay of the latency gives us CPU-expensive silence.
+	code::
+	{ var source = PinkNoise.ar(0.1); DelayN.ar(source,delaytime:1000/s.sampleRate) + FDGain.ar(source,1000,-1); }.play
+	::
+	Varying the gain at audio rate.
+	code::
+	{ FDGain.ar(PinkNoise.ar(0.1), gain:LFSaw.ar(1)) }.play
+	::
+	Varying the gain at comtrol rate.
+	code::
+	{ FDGain.ar(PinkNoise.ar(0.1), gain:LFSaw.kr(0.5)) }.play
+	::
