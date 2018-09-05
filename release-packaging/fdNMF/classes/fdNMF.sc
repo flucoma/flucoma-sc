@@ -1,5 +1,5 @@
 FDNMF {
-	*nmf { arg server,  srcBuf, startAt = 0, nFrames = -1,startChan = 0,nChans = -1, dstBuf, dictBuf, dictFlag = 0, actBuf, actFlag = 0, rank = 1, iterations = 100, sortFlag = 0, windowSize = 2048, hopSize = 512, fftSize = -1, windowType = 0, randomSeed = -1;
+	*nmf { arg server,  srcBuf, startAt = 0, nFrames = -1,startChan = 0,nChans = -1, dstBuf, dictBuf, dictFlag = 0, actBuf, actFlag = 0, rank = 1, iterations = 100, sortFlag = 0, windowSize = 1024, hopSize = 256, fftSize = -1, windowType = 0, randomSeed = -1;
 
 		server = server ? Server.default;
 

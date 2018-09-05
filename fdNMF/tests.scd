@@ -78,7 +78,6 @@ c.plot;x.plot; y.plot;
 
 // test with stereo input
 Buffer.freeAll(s)
-b.play
 
 (
 b = Buffer.read(s,"/Users/pa/Desktop/verystereo.wav");
@@ -102,3 +101,30 @@ r = Routine{
 {PlayBuf.ar(10,c.bufnum,doneAction:2)[9].dup}.play
 
 c.getn(0, 10, {|x|x.postln})
+
+//test process on a segment
+Buffer.freeAll(s)
+
+(
+b = Buffer.read(s,"/Users/pa/Desktop/verystereo.wav");
+c = Buffer.new(s);
+d = Buffer.new(s);
+)
+
+b.play
+
+(
+r = Routine{
+	t = Main.elapsedTime;
+	FDNMF.nmf(s,b,44100,44100,0,1,c,rank:2);
+	s.sync;
+	(Main.elapsedTime - t).postln;
+	t = Main.elapsedTime;
+	FDNMF.nmf(s,b,88200,44100,1,1,d,rank:2);
+	s.sync;
+	(Main.elapsedTime - t).postln;
+}.play
+)
+
+c.query
+d.query
