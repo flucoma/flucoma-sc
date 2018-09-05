@@ -17,7 +17,7 @@ y = Buffer.new(s);
 // without sources
 r = Routine{
 	t = Main.elapsedTime;
-	FDNMF.nmf(s,b,0,-1,0,-1,nil,x,0,y,0,5,100,~frame_size,~hop_size,~fft_size);
+	FDNMF.nmf(s,b,0,-1,0,-1,nil,x,0,y,0,5,100,0,~frame_size,~hop_size,~fft_size);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play
@@ -27,7 +27,7 @@ r = Routine{
 (
 r = Routine{
 	t = Main.elapsedTime;
-	FDNMF.nmf(s,b, 0,-1,0,-1,c,nil,0,nil,0,5,100,~frame_size,~hop_size,~fft_size);
+	FDNMF.nmf(s,b, 0,-1,0,-1,c,nil,0,nil,0,5,100,0,~frame_size,~hop_size,~fft_size);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play
@@ -78,6 +78,7 @@ c.plot;x.plot; y.plot;
 
 // test with stereo input
 Buffer.freeAll(s)
+b.play
 
 (
 b = Buffer.read(s,"/Users/pa/Desktop/verystereo.wav");
@@ -92,12 +93,12 @@ y = Buffer.new(s);
 (
 r = Routine{
 	t = Main.elapsedTime;
-	FDNMF.nmf(s,b,0,-1,0,-1,c,x,0,y,0,5,100,~frame_size,~hop_size,~fft_size);
+	FDNMF.nmf(s,b,0,-1,0,-1,c,x,0,y,0,5,100,0,~frame_size,~hop_size,~fft_size);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play
 )
 
-{PlayBuf.ar(10,c.bufnum,doneAction:2)[2].dup}.play
+{PlayBuf.ar(10,c.bufnum,doneAction:2)[9].dup}.play
 
 c.getn(0, 10, {|x|x.postln})

@@ -79,7 +79,6 @@ INSTANCEMETHODS::
 EXAMPLES::
 
 code::
-	b = Buffer.read(s,"../../AudioFiles/01-mix.wav".resolveRelative);
-thisProcess.nowExecutingPath
+	b = Buffer.read(s,"../../../AudioFiles/01-mix.wav".resolveRelative);
 	b.play
 ::

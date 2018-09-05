@@ -6,8 +6,6 @@ FDNMF {
 
 		if(srcBuf.bufnum.isNil) { Error("Invalid buffer").format(thisMethod.name, this.class.name).throw};
 
-		dstBuf.bufnum.postln;
-
 		server.sendMsg(\cmd, \BufNMF,
 			srcBuf.bufnum, startAt, nFrames, startChan, nChans,
 			if(dstBuf.isNil, -1, {dstBuf.bufnum}),

@@ -1,5 +1,5 @@
 class:: FDGain
-summary:: Real-Time Gain Changer
+summary:: Real-Time Buffered Gain Changer
 categories:: UGens>Algebraic
 related::Classes/UnaryOpFunction
 
@@ -15,21 +15,13 @@ ARGUMENT:: in
 	The input to be processed
 
 ARGUMENT:: frameSize
-	The size of the real-time i/o buffer. It will add that much latency to the signal.
+	The size of the real-time i/o buffer, in samples. It will add that much latency to the signal. This is not modulatable.
 
 ARGUMENT:: gain
 	Audio or control rate change of the gain.
 
-returns:: nothing
-
-INSTANCEMETHODS::
-
-METHOD:: checkInputs
-	This makes sure the value and phase inputs are both at audio rate.
-
 returns::
-	A slap on the wrist, should it not be the case.
-
+	Same as input, delayed by the windowSize, multiplied by the gain factor.
 
 EXAMPLES::
 	Summing with the inverse (gain of -1) with a delay of the latency gives us CPU-expensive silence.
@@ -38,9 +30,9 @@ EXAMPLES::
 	::
 	Varying the gain at audio rate.
 	code::
-	{ FDGain.ar(PinkNoise.ar(0.1), gain:LFSaw.ar(1)) }.play
+	{ FDGain.ar(PinkNoise.ar(0.1), gain:LFTri.ar(1)) }.play
 	::
-	Varying the gain at comtrol rate.
+	Varying the gain at comtrol rate, in beautiful stereo.
 	code::
-	{ FDGain.ar(PinkNoise.ar(0.1), gain:LFSaw.kr(0.5)) }.play
+	{ FDGain.ar(SinOsc.ar([222,333],mul:0.1), gain:LFTri.kr([0.5,0.7])) }.play
 	::
