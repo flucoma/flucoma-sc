@@ -17,7 +17,7 @@ y = Buffer.new(s);
 // without sources
 r = Routine{
 	t = Main.elapsedTime;
-	FDNMF.nmf(s,b,0,-1,0,-1,nil,x,0,y,0,5,100,0,~frame_size,~hop_size,~fft_size);
+	FDNMF.process(s,b,0,-1,0,-1,nil,x,0,y,0,5,100,0,~frame_size,~hop_size,~fft_size);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play
@@ -27,7 +27,7 @@ r = Routine{
 (
 r = Routine{
 	t = Main.elapsedTime;
-	FDNMF.nmf(s,b, 0,-1,0,-1,c,nil,0,nil,0,5,100,0,~frame_size,~hop_size,~fft_size);
+	FDNMF.process(s,b, 0,-1,0,-1,c,nil,0,nil,0,5,100,0,~frame_size,~hop_size,~fft_size);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play
@@ -89,10 +89,12 @@ y = Buffer.new(s);
 ~hop_size = 256;
 )
 
+b.play
+
 (
 r = Routine{
 	t = Main.elapsedTime;
-	FDNMF.nmf(s,b,0,-1,0,-1,c,x,0,y,0,5,100,0,~frame_size,~hop_size,~fft_size);
+	FDNMF.process(s,b,0,-1,0,-1,c,x,0,y,0,5,100,0,~frame_size,~hop_size,~fft_size);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play
@@ -116,11 +118,11 @@ b.play
 (
 r = Routine{
 	t = Main.elapsedTime;
-	FDNMF.nmf(s,b,44100,44100,0,1,c,rank:2);
+	FDNMF.process(s,b,44100,44100,0,1,c,rank:2);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 	t = Main.elapsedTime;
-	FDNMF.nmf(s,b,88200,44100,1,1,d,rank:2);
+	FDNMF.process(s,b,88200,44100,1,1,d,rank:2);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play

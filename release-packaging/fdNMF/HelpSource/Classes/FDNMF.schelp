@@ -16,7 +16,7 @@ This  was made possible thanks to the FluCoMa project (http://www.flucoma.org/) 
 
 CLASSMETHODS::
 
-METHOD:: nmf
+METHOD:: process
 This is the method that calls for the factorisation to be calculated on a given source buffer.
 
 ARGUMENT:: server
