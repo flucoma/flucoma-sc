@@ -17,64 +17,77 @@ This  was made possible thanks to the FluCoMa project (http://www.flucoma.org/) 
 CLASSMETHODS::
 
 METHOD:: nmf
-(describe method here)
+This is the method that calls for the factorisation to be calculated on a given source buffer.
 
 ARGUMENT:: server
-(describe argument here)
+	The server on which the buffers to be processed are allocated.
 
 ARGUMENT:: srcBuf
-(describe argument here)
+	The source material to be decomposed through the NMF process. The different channels of multichannel buffers will be processing sequentially.
 
 ARGUMENT:: startAt
-(describe argument here)
+	Where in the srcBuf should the NMF process start, in sample.
 
 ARGUMENT:: nFrames
-(describe argument here)
+	How many frames should be processed.
 
 ARGUMENT:: startChan
-(describe argument here)
+	For multichannel srcBuf, which channel should be processed first.
 
 ARGUMENT:: nChans
-(describe argument here)
+	For multichannel srcBuf, how many channel should be processed.
 
 ARGUMENT:: dstBuf
-(describe argument here)
+	The buffer where the different reconstructed ranks will be reconstructed. The buffer will be resized to STRONG::rank * numChannelsProcessed:: channels and STRONG::sourceDuration:: lenght. If STRONG::nil:: is provided, the reconstruction will not happen.
 
 ARGUMENT:: dictBuf
-(describe argument here)
+	The buffer where the different dictionaries will be written to and/or read from: the behaviour is set in the following argument. If STRONG::nil:: is provided, no dictionary will be provided.
 
 ARGUMENT:: dictFlag
-(describe argument here)
+	This flag decides of how the dictionnary buffer passed as the previous argument is treated.
+	table::
+	## 0 || The dictionaries are seeded randomly, and the resulting ones will be written after the process in the passed buffer. The buffer is resized to STRONG::rank * numChannelsProcessed:: channels and STRONG::(fftSize / 2 + 1):: lenght.
+	## 1 || The passed buffer is considered as seed for the dictionaries. Its dimensions should match the values above. The resulting dictionaries will replace the seed ones.
+	## 2 || The passed buffer is considered as a template for the dictionaries, and will therefore not change. Its dictionaries should match the values above.
+	::
 
 ARGUMENT:: actBuf
-(describe argument here)
+	The buffer where the different activations will be written to and/or read from: the behaviour is set in the following argument. If STRONG::nil:: is provided, no activation will be provided.
 
 ARGUMENT:: actFlag
-(describe argument here)
+	This flag decides of how the activation buffer passed as the previous argument is treated.
+	table::
+	## 0 || The activations are seeded randomly, and the resulting ones will be written after the process in the passed buffer. The buffer is resized to STRONG::rank * numChannelsProcessed:: channels and STRONG::(sourceDuration / hopsize + 1):: lenght.
+	## 1 || The passed buffer is considered as seed for the activations. Its dimensions should match the values above. The resulting activations will replace the seed ones.
+	## 2 || The passed buffer is considered as a template for the activations, and will therefore not change. Its dimensions should match the values above.
+	::
 
 ARGUMENT:: rank
-(describe argument here)
+	The number of elements the NMF algorythim will try to divide the spectrogram of the source in.
 
 ARGUMENT:: iterations
-(describe argument here)
+	The NMF process is iterative, trying to converge to the smallest error in its factorisation. The number of iterations will decide how many times it tries to adjust its guestimates. Higher numbers here will be more CPU expensive, lower numbers will be more unpredictable in quality.
 
 ARGUMENT:: sortFlag
-(describe argument here)
+	This allows to choose between the different methods of sorting the ranks in order to get similar sonic qualities on a given rank (not implemented yet)
 
 ARGUMENT:: windowSize
-(describe argument here)
+	The window size. As NMF relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
 ARGUMENT:: hopSize
-(describe argument here)
+	The window hope size. As NMF relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts.
 
 ARGUMENT:: fftSize
-(describe argument here)
+	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision.
 
-returns:: (describe returnvalue here)
+ARGUMENT:: windowType
+	The inner FFT/IFFT windowing type (not implemented yet)
 
+ARGUMENT:: randomSeed
+	The NMF process needs to seed its starting point. If specified, the same values will be used. The default of -1 will randomly assign them. (not implemented yet)
 
-INSTANCEMETHODS::
-
+returns::
+	Nothing, as the various destination buffers are declared in the function call.
 
 EXAMPLES::
 
