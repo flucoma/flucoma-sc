@@ -24,8 +24,8 @@ namespace sc{
     NRTBuf(World* world,long bufnum):
     NRTBuf(*World_GetNRTBuf(world,bufnum))
     {
-      
-      this->samplerate = world->mFullRate.mSampleRate;
+      if(!this->samplerate)
+        this->samplerate = world->mFullRate.mSampleRate;
       
     }
   };
@@ -55,7 +55,11 @@ namespace sc{
       NRTBuf(world,bufnum),
 //      BufferAdaptor({0,{static_cast<size_t>(frames),static_cast<size_t>(channels)}},NRTBuf::data),
       mBufnum(bufnum), mWorld(world)
-    {}
+    {
+      mChans = this->channels;
+      mFrames = this->frames;
+      
+    }
     
     ~SCBufferView() = default;
     
@@ -74,17 +78,28 @@ namespace sc{
       return (mBufnum >=0  && mBufnum < mWorld->mNumSndBufs);
     }
     
-    FluidTensorView<float,1> samps(size_t channel, size_t rankIdx = 1) override
+    FluidTensorView<float,1> samps(size_t channel, size_t rankIdx = 0) override
     {
-      FluidTensorView<float,2>  v{this->data,0, static_cast<size_t>(this->frames), static_cast<size_t>(this->channels)};
+      FluidTensorView<float,2>  v{this->data,0, static_cast<size_t>(mFrames),static_cast<size_t>(mChans * mRank)};
       
-      return v.col(rankIdx + channel * (this->channels - 1));
+      return v.col(rankIdx + channel * mRank );
     }
     //Return a view of all the data
     FluidTensorView<float,2> samps() override
     {
-      return {this->data,0, static_cast<size_t>(this->frames), static_cast<size_t>(this->channels)};
+      return {this->data,0, static_cast<size_t>(mFrames), static_cast<size_t>(mChans * mRank)};
     }
+    
+    //Return a 2D chunk
+    FluidTensorView<float,2> samps(size_t offset, size_t nframes, size_t chanoffset, size_t chans) override
+    {
+      FluidTensorView<float,2>  v{this->data,0, static_cast<size_t>(mFrames), static_cast<size_t>(mChans * mRank)};
+      
+      return v(fluid::slice(offset,nframes), fluid::slice(chanoffset,chans));
+      
+      
+    }
+    
     
     size_t numSamps() const override
     {
@@ -110,8 +125,11 @@ namespace sc{
       SndBuf* thisThing = static_cast<SndBuf*>(this);
       
       float* oldData = thisThing->data;
-      
+      mRank = rank;
       mWorld->ft->fBufAlloc(this, channels * rank, frames, this->samplerate);
+      
+      mFrames = this->frames;
+      mChans = this->channels / mRank;
       
 //      FluidTensorView<float,2> v=  FluidTensorView<float,2>(NRTBuf::data,0,static_cast<size_t>(frames),static_cast<size_t>(channels * rank));
 //
@@ -145,10 +163,9 @@ namespace sc{
     NRTCommandBase(NRTCommandBase&) = delete;
     NRTCommandBase& operator=(NRTCommandBase&) = delete;
     
-    NRTCommandBase(std::vector<param_type> params,
-                   void* inUserData):
+    NRTCommandBase(void* inUserData)
 //    mWorld(inWorld),mReplyAddr(replyAddr), mCompletionMsgData(completionMsgData), mCompletionMsgSize(completionMsgSize),
-    mParams(params)
+    
     {}
     
     ~NRTCommandBase() = default;
@@ -179,16 +196,19 @@ namespace sc{
     void *cmdData;
     char* mCompletionMsgData;
     size_t mCompletionMsgSize;
-    std::vector<param_type> mParams;
+//    std::vector<param_type> mParams;
   };
   
   //This wraps a class instance in a function call to pass to SC
   template<typename NRT_Plug>
   void command(World *inWorld, void* inUserData, struct sc_msg_iter *args, void *replyAddr)
   {
+    
+    NRT_Plug* cmd = new NRT_Plug(inUserData);
+    
     //Iterate over parameter descriptions associated with this client object, fill with data from language side
-    std::vector<parameter::Instance> params = NRT_Plug::client_type::newParameterSet();
-    for (auto&& p: params)
+//    std::vector<parameter::Instance> params = NRT_Plug::client_type::newParameterSet();
+    for (auto&& p: cmd->parameters())
     {
       switch(p.getDescriptor().getType())
       {
@@ -228,7 +248,7 @@ namespace sc{
       args->getb(completionMsgData,completionMsgSize);
     }
     //Make a new pointer for our plugin, and set it going
-    NRT_Plug* cmd = new NRT_Plug(params, inUserData);
+    
     cmd->runCommand(inWorld, replyAddr, completionMsgData, completionMsgSize);
   }
 } //namespace sc

@@ -70,21 +70,21 @@ namespace fluid {
         bool parametersOk;
         NMFClient::ProcessModel processModel;
         std::string whatHappened;//this will give us a message to pass back if param check fails
-        std::tie(parametersOk,whatHappened,processModel) = NMFClient::sanityCheck(mParams);
+        std::tie(parametersOk,whatHappened,processModel) = nmf.sanityCheck();
         if(!parametersOk)
         {
           Print("fdNMF: %s \n", whatHappened.c_str());
           return false;
         }
         //Now, we can proceed
-        NMFClient nmf(processModel);
-        nmf.process();
+        
+        nmf.process(processModel);
         mModel = processModel;
 
-        src     = static_cast<SCBufferView*>(parameter::lookupParam("Source Buffer",      mParams).getBuffer());
-        resynth = static_cast<SCBufferView*>(parameter::lookupParam("Resynthesis Buffer", mParams).getBuffer());
-        dict    = static_cast<SCBufferView*>(parameter::lookupParam("Dictionary Buffer",  mParams).getBuffer());
-        act     = static_cast<SCBufferView*>(parameter::lookupParam("Activation Buffer",  mParams).getBuffer());
+        src     = static_cast<SCBufferView*>(parameter::lookupParam("src",      nmf.getParams()).getBuffer());
+        resynth = static_cast<SCBufferView*>(parameter::lookupParam("resynthbuf", nmf.getParams()).getBuffer());
+        dict    = static_cast<SCBufferView*>(parameter::lookupParam("filterbuf",  nmf.getParams()).getBuffer());
+        act     = static_cast<SCBufferView*>(parameter::lookupParam("envbuf",  nmf.getParams()).getBuffer());
 
         return true;
       }
@@ -104,9 +104,12 @@ namespace fluid {
       }
       
       bool postComplete(World* w) { return true; }
-      
+      std::vector<parameter::Instance>& parameters()
+      {
+        return nmf.getParams(); 
+      }
     private:
-    
+      NMFClient nmf;
       NMFClient::ProcessModel mModel;
       SCBufferView* src;
       SCBufferView* resynth;
