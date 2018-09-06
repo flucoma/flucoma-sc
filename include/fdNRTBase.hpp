@@ -56,9 +56,6 @@ namespace sc{
 //      BufferAdaptor({0,{static_cast<size_t>(frames),static_cast<size_t>(channels)}},NRTBuf::data),
       mBufnum(bufnum), mWorld(world)
     {
-      mChans = this->channels;
-      mFrames = this->frames;
-      
     }
     
     ~SCBufferView() = default;
@@ -80,20 +77,20 @@ namespace sc{
     
     FluidTensorView<float,1> samps(size_t channel, size_t rankIdx = 0) override
     {
-      FluidTensorView<float,2>  v{this->data,0, static_cast<size_t>(mFrames),static_cast<size_t>(mChans * mRank)};
+      FluidTensorView<float,2>  v{this->data,0, static_cast<size_t>(frames),static_cast<size_t>(channels)};
       
       return v.col(rankIdx + channel * mRank );
     }
     //Return a view of all the data
     FluidTensorView<float,2> samps() override
     {
-      return {this->data,0, static_cast<size_t>(mFrames), static_cast<size_t>(mChans * mRank)};
+      return {this->data,0, static_cast<size_t>(frames), static_cast<size_t>(channels)};
     }
     
     //Return a 2D chunk
     FluidTensorView<float,2> samps(size_t offset, size_t nframes, size_t chanoffset, size_t chans) override
     {
-      FluidTensorView<float,2>  v{this->data,0, static_cast<size_t>(mFrames), static_cast<size_t>(mChans * mRank)};
+      FluidTensorView<float,2>  v{this->data,0, static_cast<size_t>(frames), static_cast<size_t>(channels)};
       
       return v(fluid::slice(offset,nframes), fluid::slice(chanoffset,chans));
       
@@ -101,22 +98,19 @@ namespace sc{
     }
     
     
-    size_t numSamps() const override
+    size_t numFrames() const override
     {
-      if(valid())
-      {
-        return this->frames;
-      }
-      return 0;
+        return valid() ?  this->frames : 0 ;
     }
   
     size_t numChans() const override
     {
-      if(valid())
-      {
-        return this->channels;
-      }
-      return 0;
+        return valid() ?  this->channels / mRank : 0;
+    }
+    
+    size_t rank() const override
+    {
+        return valid() ? mRank :0;
     }
     
     
@@ -128,8 +122,7 @@ namespace sc{
       mRank = rank;
       mWorld->ft->fBufAlloc(this, channels * rank, frames, this->samplerate);
       
-      mFrames = this->frames;
-      mChans = this->channels / mRank;
+     
       
 //      FluidTensorView<float,2> v=  FluidTensorView<float,2>(NRTBuf::data,0,static_cast<size_t>(frames),static_cast<size_t>(channels * rank));
 //
@@ -153,6 +146,7 @@ namespace sc{
     
     long mBufnum;
     World* mWorld;
+    size_t mRank = 1;
   };
   
   
