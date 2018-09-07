@@ -1,7 +1,7 @@
   // FD_BufNMF, an NRT buffer NMF Processor
 // A tool from the FluCoMa project, funded by the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899)
 
-#include "clients/nrt/TransientNRTClient.hpp"
+#include "clients/nrt/BufferComposeNRT.hpp"
 #include "fdNRTBase.hpp"
 #include "data/FluidTensor.hpp"
 #include "clients/common/FluidParams.hpp"
@@ -17,14 +17,14 @@ namespace fluid {
     class BufTransients: public NRTCommandBase
     {
     public:
-      using client_type = str::TransientNRTClient;
+      using client_type =  buf::BufferComposeClient;
       using NRTCommandBase::NRTCommandBase;
       
       ~BufTransients() {}
       
       void runCommand(World* world, void* replyAddr, char* completionMsgData, size_t completionMsgSize)
       {
-        cmd<BufTransients, &BufTransients::process, &BufTransients::postProcess, &BufTransients::postComplete>(world, "AsyncTransients", replyAddr,  completionMsgData, completionMsgSize);
+        cmd<BufTransients, &BufTransients::process, &BufTransients::postProcess, &BufTransients::postComplete>(world, "AsyncBufferCompose", replyAddr,  completionMsgData, completionMsgSize);
       }
       
       bool process(World* world)
@@ -33,33 +33,30 @@ namespace fluid {
         bool parametersOk;
         client_type::ProcessModel processModel;
         std::string whatHappened;//this will give us a message to pass back if param check fails
-        std::tie(parametersOk,whatHappened,processModel) = trans.sanityCheck();
+        std::tie(parametersOk,whatHappened,processModel) = bufferCompose.sanityCheck();
         if(!parametersOk)
         {
-          Print("fdTransients: %s \n", whatHappened.c_str());
+          Print("fdCompose: %s \n", whatHappened.c_str());
           return false;
         }
-        trans.process(processModel);
+        bufferCompose.process(processModel);
         mModel = processModel;
         return true;
       }
 
       bool postProcess(World* world)
       {
-        if(mModel.returnTransients)
-          static_cast<SCBufferView*>(mModel.trans)->assignToRT(world);
-        if(mModel.returnResidual)
-          static_cast<SCBufferView*>(mModel.res)->assignToRT(world);
+        static_cast<SCBufferView*>(mModel.dst)->assignToRT(world);
         return true;
       }
       
       bool postComplete(World* w) { return true; }
       std::vector<parameter::Instance>& parameters()
       {
-        return trans.getParams(); 
+        return bufferCompose.getParams(); 
       }
     private:
-      client_type trans;
+      client_type bufferCompose;
       client_type::ProcessModel mModel;
     };//class
   } //namespace sc
@@ -68,6 +65,6 @@ namespace fluid {
 
 PluginLoad(OfflineFluidDecompositionUGens) {
   ft = inTable;
-  registerCommand<fluid::sc::BufTransients,fluid::str::TransientNRTClient>(ft, "BufTransients");
-  fluid::sc::printCmd<fluid::str::TransientNRTClient>(ft,"BufTransients","FDTransients");
+  registerCommand<fluid::sc::BufTransients,fluid:: buf::BufferComposeClient>(ft, "BufCompose");
+  fluid::sc::printCmd<fluid::buf::BufferComposeClient>(ft,"BufCompose","FDCompose"); 
 }

@@ -7,6 +7,11 @@
 #include "SC_PlugIn.h"
 
 #include <boost/align/aligned_alloc.hpp>
+#include <cctype>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
 #include <vector>
 
 
@@ -193,6 +198,71 @@ namespace sc{
 //    std::vector<param_type> mParams;
   };
   
+  template<typename Client>
+  static void printCmd(InterfaceTable* ft, const char* name, const char* classname)
+  {
+    
+    
+    
+//    std::string filepath(__FILE__);
+//    size_t path_sep = filepath.rfind('/');
+//    size_t extdot = filepath.rfind('.');
+//    filepath.erase(filepath.begin() + extdot,filepath.end());
+//    filepath.erase(filepath.begin(),filepath.begin() + path_sep + 1);
+//    std::for_each(filepath.begin(), filepath.begin() + 2, [](char& c){
+//      c = std::toupper(c);
+//    });
+    
+    std::string filepath("/tmp/");
+    filepath.append(classname);
+    filepath.append(".sc");
+    
+    std::ofstream ss(filepath);
+    ss << classname << "{'\n";
+    
+    ss << "\t\t*process { arg server";
+    
+    std::ostringstream cmd;
+    cmd << "\t\t\tserver.sendMsg(\\cmd, \\" << name;
+    
+    size_t count = 0;
+    for(auto&& d: Client::getParamDescriptors())
+    {
+      ss << ", " << d.getName();
+      if(d.hasDefault())
+      {
+        ss << " = " << d.getDefault();
+      }
+      
+      cmd << ", ";
+      if(d.getType() == parameter::Type::Buffer)
+      {
+        if (count == 0)
+          cmd <<  d.getName() << ".buNum";
+        else
+          cmd << "\nif( " << d.getName() << ".isNil, -1, {" << d.getName() << ".bufNum})";
+      }
+      else
+        cmd << d.getName();
+      count++;
+    }
+    
+    cmd << ");\n\n";
+    
+    ss << ";'\n\n\t\tserver = server ? Server.default\n;" ;
+    
+    if(Client::getParamDescriptors()[0].getType() == parameter::Type::Buffer)
+    {
+      ss << "if("<<Client::getParamDescriptors()[0].getName()
+      << ".bufNum.isNil) {Error(\"Invalid Buffer\").format(thisMethod.name, this.class.name).throw};\n\n";
+    }
+    
+    ss << cmd.str() << "\n\n}\n}";
+    
+//    Print(ss.str().c_str());
+  }
+  
+  
   //This wraps a class instance in a function call to pass to SC
   template<typename NRT_Plug>
   void command(World *inWorld, void* inUserData, struct sc_msg_iter *args, void *replyAddr)
@@ -254,5 +324,6 @@ void registerCommand(InterfaceTable* ft, const char* name)
 {
   PlugInCmdFunc cmd =  fluid::sc::command<NRT_Plug>;
   (*ft->fDefinePlugInCmd)(name,cmd,nullptr);
+
 }
 

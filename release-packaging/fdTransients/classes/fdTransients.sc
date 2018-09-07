@@ -4,7 +4,7 @@ FDTransients {
 
 		if(srcBuf.bufnum.isNil) { Error("Invalid buffer").format(thisMethod.name, this.class.name).throw};
 
-		server.sendMsg(\cmd, \BufNMF,
+		server.sendMsg(\cmd, \BufTransient,
 			srcBuf.bufnum, offsetframes, numframes, offsetchans, numchans,
 			if(transbuf.isNil, -1, {transbuf.bufnum}),
 			if(resbuf.isNil, -1, {resbuf.bufnum}),
