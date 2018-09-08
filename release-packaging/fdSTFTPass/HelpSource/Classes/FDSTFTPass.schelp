@@ -30,7 +30,6 @@ returns::
 
 EXAMPLES::
 
-code::
 	Summing with the inverse (gain of -1) with a delay of the latency gives us CPU-expensive silence.
 	code::
 	{ var source = PinkNoise.ar(0.1); DelayN.ar(source, delaytime:1024/s.sampleRate, mul: -1) + FDSTFTPass.ar(source, 1024, 256, 1024); }.play
@@ -41,7 +40,7 @@ code::
 	::
 	Stereo Input Tests.
 	code::
-	{ FDSTFTPass.ar([SinOsc.ar(222,mul: 0.1), PinkNoise.ar(Decay.ar(Impulse.ar(0.666,mul: 0.1), 0.5))], fftSize:1024)}.play
+	{ FDSTFTPass.ar([SinOsc.ar(222,mul: 0.1), PinkNoise.ar(Decay.ar(Impulse.ar(0.666,mul: 0.2), 0.5))], fftSize:1024)}.play
 	::
 	Stereo Parameter Tests.
 	code::

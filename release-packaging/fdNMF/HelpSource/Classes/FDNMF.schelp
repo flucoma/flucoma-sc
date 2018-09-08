@@ -22,8 +22,8 @@ This is the method that calls for the factorisation to be calculated on a given 
 ARGUMENT:: server
 	The server on which the buffers to be processed are allocated.
 
-ARGUMENT:: srcBuf
-	The source material to be decomposed through the NMF process. The different channels of multichannel buffers will be processing sequentially.
+ARGUMENT:: srcBufNum
+	The index of the buffer to use as the source material to be decomposed through the NMF process. The different channels of multichannel buffers will be processing sequentially.
 
 ARGUMENT:: startAt
 	Where in the srcBuf should the NMF process start, in sample.
@@ -37,11 +37,11 @@ ARGUMENT:: startChan
 ARGUMENT:: nChans
 	For multichannel srcBuf, how many channel should be processed.
 
-ARGUMENT:: dstBuf
-	The buffer where the different reconstructed ranks will be reconstructed. The buffer will be resized to STRONG::rank * numChannelsProcessed:: channels and STRONG::sourceDuration:: lenght. If STRONG::nil:: is provided, the reconstruction will not happen.
+ARGUMENT:: dstBufNum
+	The index of the buffer where the different reconstructed ranks will be reconstructed. The buffer will be resized to STRONG::rank * numChannelsProcessed:: channels and STRONG::sourceDuration:: lenght. If STRONG::nil:: is provided, the reconstruction will not happen.
 
-ARGUMENT:: dictBuf
-	The buffer where the different dictionaries will be written to and/or read from: the behaviour is set in the following argument. If STRONG::nil:: is provided, no dictionary will be provided.
+ARGUMENT:: dictBufNum
+	The index of the buffer where the different dictionaries will be written to and/or read from: the behaviour is set in the following argument. If STRONG::nil:: is provided, no dictionary will be provided.
 
 ARGUMENT:: dictFlag
 	This flag decides of how the dictionnary buffer passed as the previous argument is treated.
@@ -51,8 +51,8 @@ ARGUMENT:: dictFlag
 	## 2 || The passed buffer is considered as a template for the dictionaries, and will therefore not change. Its dictionaries should match the values above.
 	::
 
-ARGUMENT:: actBuf
-	The buffer where the different activations will be written to and/or read from: the behaviour is set in the following argument. If STRONG::nil:: is provided, no activation will be provided.
+ARGUMENT:: actBufNum
+	The index of the buffer where the different activations will be written to and/or read from: the behaviour is set in the following argument. If STRONG::nil:: is provided, no activation will be provided.
 
 ARGUMENT:: actFlag
 	This flag decides of how the activation buffer passed as the previous argument is treated.
