@@ -1,6 +1,8 @@
   // FD_BufNMF, an NRT buffer NMF Processor
 // A tool from the FluCoMa project, funded by the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899)
 
+#define EIGEN_USE_BLAS
+
 #include "clients/nrt/TransientNRTClient.hpp"
 #include "fdNRTBase.hpp"
 #include "data/FluidTensor.hpp"
