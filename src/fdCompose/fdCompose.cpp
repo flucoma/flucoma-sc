@@ -14,17 +14,17 @@ static InterfaceTable *ft;
 namespace fluid {
   namespace sc{
     
-    class BufTransients: public NRTCommandBase
+    class BufCompose: public NRTCommandBase
     {
     public:
       using client_type =  buf::BufferComposeClient;
       using NRTCommandBase::NRTCommandBase;
       
-      ~BufTransients() {}
+      ~BufCompose() {}
       
       void runCommand(World* world, void* replyAddr, char* completionMsgData, size_t completionMsgSize)
       {
-        cmd<BufTransients, &BufTransients::process, &BufTransients::postProcess, &BufTransients::postComplete>(world, "AsyncBufferCompose", replyAddr,  completionMsgData, completionMsgSize);
+        cmd<BufCompose, &BufCompose::process, &BufCompose::postProcess, &BufCompose::postComplete>(world, "AsyncBufferCompose", replyAddr,  completionMsgData, completionMsgSize);
       }
       
       bool process(World* world)
@@ -65,6 +65,6 @@ namespace fluid {
 
 PluginLoad(OfflineFluidDecompositionUGens) {
   ft = inTable;
-  registerCommand<fluid::sc::BufTransients,fluid:: buf::BufferComposeClient>(ft, "BufCompose");
+  registerCommand<fluid::sc::BufCompose,fluid:: buf::BufferComposeClient>(ft, "BufCompose");
   fluid::sc::printCmd<fluid::buf::BufferComposeClient>(ft,"BufCompose","FDCompose"); 
 }
