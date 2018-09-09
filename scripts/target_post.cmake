@@ -4,6 +4,7 @@ target_include_directories(
   ${SC_PATH}/include/plugin_interface
   ${SC_PATH}/include/common
   ${SC_PATH}/common
+  ${SC_PATH}/external_libraries/boost #we need boost::align for deallocating buffer memory :-(
 )
 
 if (SUPERNOVA)
@@ -11,7 +12,7 @@ if (SUPERNOVA)
       ${PLUGIN}
       PRIVATE
       ${SC_PATH}/external_libraries/nova-tt
-      ${SC_PATH}/external_libraries/boost
+
       ${SC_PATH}/external_libraries/boost_lockfree
       ${SC_PATH}/external_libraries/boost-lockfree
     )

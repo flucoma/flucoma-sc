@@ -7,7 +7,10 @@ add_library(
   ${PLUGIN}
   MODULE
   ${FILENAME}
-# "${FLUID_DECOMP_DIR}/3rdparty/HISSTools_FFT/HISSTools_FFT.cpp"
+)
+
+target_include_directories(
+  ${PLUGIN} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../../include
 )
 
 target_link_libraries(
@@ -15,17 +18,3 @@ target_link_libraries(
 )
 
 include(${CMAKE_CURRENT_LIST_DIR}/../../scripts/target_post.cmake)
-
-# add_custom_command(
-#   TARGET
-# 	${PROJECT}
-# 	POST_BUILD
-# 	COMMAND ${CMAKE_COMMAND} -E make_directory "../../release-packaging/${PROJECT}/plugins"
-# 	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PROJECT}> "../../release-packaging/${PROJECT}/plugins"
-# )
-#
-# target_include_directories(
-# 	"${FLUID_DECOMP_DIR}"
-# 	"${FLUID_DECOMP_DIR}/include"
-#   "${FLUID_DECOMP_DIR}/3rdparty"
-# )
