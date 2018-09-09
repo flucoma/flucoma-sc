@@ -1,4 +1,4 @@
-class:: FDGain
+TITLE:: FDGain
 summary:: Real-Time Buffered Gain Changer
 categories:: UGens>Algebraic
 related::Classes/UnaryOpFunction
