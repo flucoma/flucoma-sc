@@ -76,7 +76,7 @@ private:
         input_signals[1]->set(const_cast<float*>(in(2)), in0(2));
         output_signals[0]->set(out(0), out0(0));
         
-        m_client->do_process(input_signals,output_signals,numsamples,2,1);
+      m_client->do_process(std::begin(input_signals),std::end(input_signals),std::begin(output_signals),std::end(output_signals),numsamples,2,1);
     }
     
     client_type* m_client;
