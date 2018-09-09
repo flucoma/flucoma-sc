@@ -1,4 +1,3 @@
-// adds an instance method to the Buffer class
 FDBufferExperiments {
 
 	*allocMatch{|server, srcbuf, rank=1|
