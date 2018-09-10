@@ -1,0 +1,3 @@
+s.reboot
+b = Buffer.cueSoundFile(s,"/Users/owen/Desktop/denoise_stn/sources/01-mix.wav",0,1)
+x = {FDRTHPSS.ar(DiskIn.ar(1,b.bufnum,loop:1))}.play
