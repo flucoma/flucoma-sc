@@ -1,0 +1,15 @@
+s = Server.default;
+s.reboot
+
+(
+	b = Buffer.read(s,"/Users/owen/Desktop/denoise_stn/sources/01-mix.wav");
+	h = Buffer.new(s,0,1);
+	n = Buffer.new(s,0,1);
+)
+
+Buffer.new(s)
+
+FDSines.process(s,b,0,1-1,0,-1,h,n,15,0.2)
+
+n.play;
+h.play;
