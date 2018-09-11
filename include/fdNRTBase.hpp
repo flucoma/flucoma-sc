@@ -218,7 +218,7 @@ namespace sc{
     filepath.append(".sc");
     
     std::ofstream ss(filepath);
-    ss << classname << "{'\n";
+    ss << classname << "{\n";
     
     ss << "\t\t*process { arg server";
     
@@ -240,7 +240,7 @@ namespace sc{
         if (count == 0)
           cmd <<  d.getName() << ".buNum";
         else
-          cmd << "\nif( " << d.getName() << ".isNil, -1, {" << d.getName() << ".bufNum})";
+          cmd << "\nif( " << d.getName() << ".isNil, -1, {" << d.getName() << ".bufnum})";
       }
       else
         cmd << d.getName();
@@ -249,12 +249,12 @@ namespace sc{
     
     cmd << ");\n\n";
     
-    ss << ";'\n\n\t\tserver = server ? Server.default\n;" ;
+    ss << ";\n\n\t\tserver = server ? Server.default\n;" ;
     
     if(Client::getParamDescriptors()[0].getType() == parameter::Type::Buffer)
     {
       ss << "if("<<Client::getParamDescriptors()[0].getName()
-      << ".bufNum.isNil) {Error(\"Invalid Buffer\").format(thisMethod.name, this.class.name).throw};\n\n";
+      << ".bufnum.isNil) {Error(\"Invalid Buffer\").format(thisMethod.name, this.class.name).throw};\n\n";
     }
     
     ss << cmd.str() << "\n\n}\n}";
@@ -278,9 +278,9 @@ namespace sc{
       {
         case parameter::Type::Buffer:
         {
-          long bufNum = static_cast<long>(args->geti());
-          if(bufNum >= 0){
-            SCBufferView* buf = new SCBufferView(bufNum,inWorld);
+          long bufnum = static_cast<long>(args->geti());
+          if(bufnum >= 0){
+            SCBufferView* buf = new SCBufferView(bufnum,inWorld);
             p.setBuffer(buf);
           }
           break;
