@@ -4,6 +4,8 @@
 #include "SC_PlugIn.hpp"
 #include "data/FluidTensor.hpp"
 #include "clients/rt/GainClient.hpp"
+#include "clients/common/FluidParams.hpp"
+
 
 //Using statements for fluidtensor
 using fluid::FluidTensor;
@@ -29,11 +31,15 @@ public:
         const float chunk_size = in0(1);
         
         //Oh NO! Heap allocation! Make client object
-        if(chunk_size)
-            m_client = new client_type(chunk_size,chunk_size);
-        else
-            m_client = new client_type(1024,1024);
-        
+//        if(chunk_size)
+            m_client = new client_type(65536);
+//        else
+//            m_client = new client_type(1024,1024);
+      
+      fluid::parameter::lookupParam("winsize", m_client->getParams()).setLong(1024);
+      fluid::parameter::lookupParam("hopsize", m_client->getParams()).setLong(1024);
+      fluid::parameter::lookupParam("gain", m_client->getParams()).setFloat(1);
+      
         m_client->set_host_buffer_size(bufferSize());
         m_client->reset();
                 

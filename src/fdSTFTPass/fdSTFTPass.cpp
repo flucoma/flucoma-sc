@@ -26,9 +26,25 @@ public:
         const float window_size = in0(1);
         const float hop_size = in0(2);
         const float fft_size = in0(3);
-        
+    
+    
         //Oh NO! Heap allocation! Make client object
-        m_client =  new audio::BaseSTFTClient<double,float>(window_size,hop_size,fft_size);
+        m_client =  new audio::BaseSTFTClient<double,float>(65536);
+        m_client->getParams()[0].setLong(window_size);
+        m_client->getParams()[1].setLong(hop_size);
+        m_client->getParams()[2].setLong(fft_size);
+    
+        bool isOK;
+        std::string feedback;
+    
+        std::tie(isOK, feedback) = m_client->sanityCheck();
+        if(!isOK)
+        {
+          Print("fdSTFTPass Error: %s",feedback.c_str());
+          return;
+        }
+    
+    
         m_client->set_host_buffer_size(bufferSize());
         m_client->reset();
                 
