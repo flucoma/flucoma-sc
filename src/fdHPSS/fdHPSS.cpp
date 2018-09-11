@@ -53,7 +53,7 @@ namespace fluid {
         std::tie(parametersOk,whatHappened,processModel) = processor.sanityCheck();
         if(!parametersOk)
         {
-          Print("fdNMF: %s \n", whatHappened.c_str());
+          Print("fdHPSS: %s \n", whatHappened.c_str());
           return false;
         }
         //Now, we can proceed
