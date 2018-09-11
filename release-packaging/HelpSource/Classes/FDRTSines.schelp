@@ -1,0 +1,4 @@
+s.reboot;
+b = Buffer.cueSoundFile(s,"/Users/owen/Box Sync/FluCoMa/Test files/SMS test files/Test Files/PAs 24 bit files/maxou-FR-a-k.wav.wav",0,1);
+b.query
+x = {FDRTSines.ar(DiskIn.ar(1,b.bufnum))}.play;
