@@ -86,6 +86,6 @@ namespace fluid {
 
 PluginLoad(OfflineFluidDecompositionUGens) {
   ft = inTable;
-  registerCommand<fluid::sc::BufHPSS,fluid::hpss::HPSS>(ft, "BufHPSS");
+  registerCommand<fluid::sc::BufHPSS,fluid::hpss::HPSSClient>(ft, "BufHPSS");
   fluid::sc::printCmd<fluid::hpss::HPSSClient>(ft,"BufHPSS","FDHPSS");
 }
