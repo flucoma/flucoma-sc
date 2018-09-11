@@ -1,0 +1,14 @@
+s.reboot
+
+(
+	b = Buffer.read(s,"/Users/owen/Desktop/denoise_stn/sources/01-mix.wav");
+	h = Buffer.new(s);
+	p = Buffer.new(s);
+)
+
+
+
+FDHPSS.process(s,b,0,1-1,0,-1,h,p,31,17)
+
+p.play;
+h.play;
