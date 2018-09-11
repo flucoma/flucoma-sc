@@ -18,24 +18,20 @@ namespace hpss{
     FDRTHPSS()
     {
       //Order of args
-      //Window size, Hop size, FFT Size
+      //psize hszie pthresh hthresh   Window size, Hop size, FFT Size
       
       //Get the window size
-      const float hfilter_size = in0(1);
-      const float pfilter_size = in0(2);
-      const float window_size = in0(3);
-      const float hop_size = in0(4);
-      const float fft_size = in0(5);
+//      const float hfilter_size = in0(1);
+//      const float pfilter_size = in0(2);
+//      const float window_size = in0(3);
+//      const float hop_size = in0(4);
+//      const float fft_size = in0(5);
       
       
       //Oh NO! Heap allocation! Make client object
       m_client =  new hpss::HPSSClient<double,float>(65536);
       
-      m_client->getParams()[0].setLong(pfilter_size);
-      m_client->getParams()[1].setLong(hfilter_size);
-      m_client->getParams()[2].setLong(window_size);
-      m_client->getParams()[3].setLong(hop_size);
-      m_client->getParams()[4].setLong(fft_size);
+      setParams(true);
       
       bool isOK;
       std::string feedback;
@@ -72,8 +68,37 @@ namespace hpss{
     }
     
   private:
+    
+    void setParams(bool instantiation)
+    {
+      assert(m_client);
+      for(size_t i = 0; i < m_client->getParams().size(); ++i)
+      {
+        parameter::Instance& p = m_client->getParams()[i];
+        if(!instantiation && p.getDescriptor().instatiation())
+          continue;
+        switch(p.getDescriptor().getType())
+        {
+          case parameter::Type::Long:
+            p.setLong(in0(i+1));
+            p.checkRange();
+            break;
+          case parameter::Type::Float:
+            p.setFloat(in0(i+1));
+            p.checkRange();
+            break;
+          case parameter::Type::Buffer:
+            //            p.setBuffer( in0(i+1));
+            break;
+          default:
+            break;
+        }
+      }
+    }
+    
     void next(int numsamples)
     {
+      setParams(false);
       const float* input = in(0);
       const float inscalar = in0(0);
       input_signals[0]->set(const_cast<float*>(input), inscalar);

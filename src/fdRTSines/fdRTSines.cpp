@@ -32,7 +32,7 @@ namespace stn{
       
       //Oh NO! Heap allocation! Make client object
       m_client =  new stn::SinesClient<double,float>(65536);
-      setParams();
+      setParams(true);
       
 //      m_client->getParams()[0].setLong(pfilter_size);
 //      m_client->getParams()[1].setLong(hfilter_size);
@@ -76,19 +76,25 @@ namespace stn{
     
   private:
     
-    void setParams()
+    void setParams(bool instantiation)
     {
       assert(m_client);
       for(size_t i = 0; i < m_client->getParams().size(); ++i)
       {
         parameter::Instance& p = m_client->getParams()[i];
+        
+        if(!instantiation && p.getDescriptor().instatiation())
+          continue;
+        
         switch(p.getDescriptor().getType())
         {
           case parameter::Type::Long:
             p.setLong(in0(i+1));
+            p.checkRange();
             break;
           case parameter::Type::Float:
             p.setFloat(in0(i+1));
+            p.checkRange();
             break;
           case parameter::Type::Buffer:
 //            p.setBuffer( in0(i+1));
@@ -102,7 +108,7 @@ namespace stn{
     
     void next(int numsamples)
     {
-      setParams();
+      setParams(false);
       const float* input = in(0);
       const float inscalar = in0(0);
       input_signals[0]->set(const_cast<float*>(input), inscalar);
