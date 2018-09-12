@@ -126,9 +126,6 @@ namespace stn{
 
 PluginLoad(FluidSTFTUGen) {
   ft = inTable;
-  registerUnit<fluid::stn::FDRTSines>(ft, "FDRTSines");
+  registerUnit<fluid::stn::FDRTSines>(ft, "FluidSines");
 }
-
-
-
 

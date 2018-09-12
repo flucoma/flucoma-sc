@@ -92,7 +92,7 @@ private:
 
 PluginLoad(BoringMixer2UGens) {
     ft = inTable;
-    registerUnit<FDGain>(ft, "FDGain");
+    registerUnit<FDGain>(ft, "FluidGain");
 }
 
 

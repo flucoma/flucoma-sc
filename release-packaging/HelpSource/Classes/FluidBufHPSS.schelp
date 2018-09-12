@@ -8,7 +8,7 @@ s.reboot
 
 
 
-FDHPSS.process(s,b,0,1-1,0,-1,h,p,31,17)
+FluidBufHPSS.process(s,b,0,1-1,0,-1,h,p,31,17)
 
 p.play;
 h.play;

@@ -116,7 +116,7 @@ namespace hpss{
 
 PluginLoad(FluidSTFTUGen) {
   ft = inTable;
-  registerUnit<fluid::hpss::FDRTHPSS>(ft, "FDRTHPSS");
+  registerUnit<fluid::hpss::FDRTHPSS>(ft, "FluidHPSS");
 }
 
 

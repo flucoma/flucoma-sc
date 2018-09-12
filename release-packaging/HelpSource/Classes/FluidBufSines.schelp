@@ -9,7 +9,7 @@ s.reboot
 
 Buffer.new(s)
 
-FDSines.process(s,b,0,1-1,0,-1,h,n,15,0.2)
+FluidBufSines.process(s,b,0,1-1,0,-1,h,n,15,0.2)
 
 n.play;
 h.play;

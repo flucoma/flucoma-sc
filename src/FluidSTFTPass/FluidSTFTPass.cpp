@@ -85,7 +85,7 @@ private:
 
 PluginLoad(FluidSTFTUGen) {
     ft = inTable;
-  registerUnit<fluid::stft::FDSTFTPass>(ft, "FDSTFTPass");
+  registerUnit<fluid::stft::FDSTFTPass>(ft, "FluidSTFTPass");
 }
 
 

@@ -1,4 +1,4 @@
-FDHPSS{
+FluidBufHPSS{
 		*process { arg server, src, offsetframes = 0, numframes = -1, offsetchans = 0, numchans = -1, harmbuf, percbuf, psize = 31, hsize = 17, winsize = 4096, hopsize = 1024, fftsize = -1;
 
 		server = server ? Server.default;

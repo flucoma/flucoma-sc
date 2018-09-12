@@ -1,4 +1,4 @@
-TITLE:: FDGain
+TITLE:: FluidGain
 summary:: Real-Time Buffered Gain Changer
 categories:: UGens>Algebraic
 related::Classes/UnaryOpFunction
@@ -26,13 +26,13 @@ returns::
 EXAMPLES::
 	Summing with the inverse (gain of -1) with a delay of the latency gives us CPU-expensive silence.
 	code::
-	{ var source = PinkNoise.ar(0.1); DelayN.ar(source,delaytime:1000/s.sampleRate) + FDGain.ar(source,1000,-1); }.play
+	{ var source = PinkNoise.ar(0.1); DelayN.ar(source,delaytime:1000/s.sampleRate) + FluidGain.ar(source,1000,-1); }.play
 	::
 	Varying the gain at audio rate.
 	code::
-	{ FDGain.ar(PinkNoise.ar(0.1), gain:LFTri.ar(1)) }.play
+	{ FluidGain.ar(PinkNoise.ar(0.1), gain:LFTri.ar(1)) }.play
 	::
 	Varying the gain at comtrol rate, in beautiful stereo.
 	code::
-	{ FDGain.ar(SinOsc.ar([222,333],mul:0.1), gain:LFTri.kr([0.5,0.7])) }.play
+	{ FluidGain.ar(SinOsc.ar([222,333],mul:0.1), gain:LFTri.kr([0.5,0.7])) }.play
 	::

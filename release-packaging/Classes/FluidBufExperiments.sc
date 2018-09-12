@@ -1,4 +1,4 @@
-FDBufferExperiments {
+FluidBufExperiments {
 
 	*allocMatch{|server, srcbuf, rank=1|
 		var dstbuf,srcbufnum;
