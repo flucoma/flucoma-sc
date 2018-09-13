@@ -36,28 +36,28 @@ ARGUMENT:: resBufNum
 (describe argument here)
 
 ARGUMENT:: order
-(describe argument here)
+	order of the IR filter used to model the signal in samples (how many samples previously are used to predict the next one as reference for the model) - higer = more accurate spectral def - like fft - low end res improv as well but not conencted to temporal res
 
 ARGUMENT:: blockSize
-(describe argument here)
+	size of frame on which it is operating - hi is hi cpu but determines max trans size (not more than half)
 
 ARGUMENT:: padding
-(describe argument here)
+	handles on each sides of the block just for analyse - just for model param, not processed
 
 ARGUMENT:: skew
-(describe argument here)
+	-10 to 10 -> chapt 5 or 7 of the digital (kind of hysteresis on bespoke detection function)
 
 ARGUMENT:: threshFwd
-(describe argument here)
+	threshold of the onset of error
 
 ARGUMENT:: threshBack
-(describe argument here)
+	threshold of the offset of the error
 
 ARGUMENT:: windowSize
-(describe argument here)
+	averaging window of the error detection function (because it is jittery)
 
 ARGUMENT:: debounce
-(describe argument here)
+	clumps transients within that window size
 
 returns:: (describe returnvalue here)
 

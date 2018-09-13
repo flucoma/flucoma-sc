@@ -1,7 +1,7 @@
 TITLE:: FluidBufNMF
 summary:: Non-Negative Matrix Factorisation on Spectral Frames
 categories:: Libraries>FluidDecomposition
-related:: Overviews/FluCoMa
+related:: Guides/FluCoMa, Guides/FluidDecomposition
 
 DESCRIPTION::
 This Class performs Non-Negative Matrix Factorisation (NMF for short) on buffers on the non-real-time thread. It is a good way to get different components out of a buffered signal. It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
@@ -12,7 +12,7 @@ This  was made possible thanks to the FluCoMa project (http://www.flucoma.org/) 
 	## an amplitude envoloppe of each rank in the form of gains for each consecutive frames of the unterlying FFT (called an activation in NMF lingo)
 	## a reconstruction of each rank in audio domain. ::
 
-	The whole process can be related to a vocoder, where each filter is instead a spectrograme of magnitudes (no phase information). More information for musicianly uses of NMF are availabe on this website, and in the LINK::Overviews/FluCoMa:: overview file.
+	The whole process can be related to a vocoder, where each filter is instead a spectrograme of magnitudes (no phase information). More information for musicianly uses of NMF are availabe on this website, and in LINK::Guides/FluCoMa:: overview file.
 
 CLASSMETHODS::
 

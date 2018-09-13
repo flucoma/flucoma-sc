@@ -1,0 +1,79 @@
+TITLE:: FluidBufCompose
+summary:: NRT Buffer Compositing Utility
+categories:: Libraries>FluidDecomposition, Libraries/Buffers
+related:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/Buffer
+
+DESCRIPTION::
+This Class performs basic compositing on buffers on the non-real-time thread. It avoids having to come back to the language side. It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
+This  was made possible thanks to the FluCoMa project (http://www.flucoma.org/) funded by the European Research Council (https://erc.europa.eu/) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+
+	The algorythm will take two buffer in, and will put the composited information at the provided dstBuf.
+
+
+CLASSMETHODS::
+
+METHOD:: process
+	This method triggers the compositing.
+
+ARGUMENT:: server
+	The server on which the buffers to be processed are allocated.
+
+ARGUMENT:: srcBufNumA
+	The bufNum of the first source buffer.
+
+ARGUMENT:: startAtA
+	The starting point (in samples) from which to copy in the first source buffer.
+
+ARGUMENT:: nFramesA
+	The duration (in samples) to copy from the first source buffer.
+
+ARGUMENT:: startChanA
+	The first channel from which to copy in the first source buffer.
+
+ARGUMENT:: nChansA
+	The number of channels from which to copy in the first source buffer. This parameter will wrap around the number of channels in the source buffer.
+
+ARGUMENT:: srcGainA
+	The gain applied to the samples to be copied from the first source buffer.
+
+ARGUMENT:: dstStartAtA
+	The time offset (in samples) in the destination buffer to start writing the first source at. The destination buffer will be resized if the portion to copy is overflowing.
+
+ARGUMENT:: dstStartChanA
+	The channel offest in the destination buffer to start writing the first source at. The destination buffer will be resized if the number of channels to copy is overflowing.
+
+ARGUMENT:: srcBufNumB
+	The bufNum of the second source buffer.
+
+ARGUMENT:: startAtB
+	The starting point (in samples) from which to copy in the second source buffer.
+
+ARGUMENT:: nFramesB
+	The duration (in samples) to copy from the second source buffer.
+
+ARGUMENT:: startChanB
+	The first channel from which to copy in the second source buffer.
+
+ARGUMENT:: nChansB
+	The number of channels from which to copy in the second source buffer. This parameter will wrap around the number of channels in the source buffer.
+
+ARGUMENT:: srcGainB
+	The gain applied to the samples to be copied from the second source buffer.
+
+ARGUMENT:: dstStartAtB
+	The time offset (in samples) in the destination buffer to start writing the second source at. The destination buffer will be resized if the portion to copy is overflowing.
+
+ARGUMENT:: dstStartChanB
+	The channel offest in the destination buffer to start writing the second source at. The destination buffer will be resized if the number of channels to copy is overflowing.
+
+ARGUMENT:: dstBufNum
+	The bufNum of the destination buffer.
+
+returns::
+	Nothing, as the various destination buffers are declared in the function call.
+
+EXAMPLES::
+
+code::
+(some example code)
+::

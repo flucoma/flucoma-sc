@@ -1,4 +1,4 @@
-TITLE:: FluidBufSTFTPass
+TITLE:: FluidSTFTPass
 summary:: Real-Time FFT/IFFT return trip.
 categories:: UGens>Algebraic
 related:: Classes/UnaryOpFunction
@@ -32,17 +32,17 @@ EXAMPLES::
 
 	Summing with the inverse (gain of -1) with a delay of the latency gives us CPU-expensive silence.
 	code::
-	{ var source = PinkNoise.ar(0.1); DelayN.ar(source, delaytime:1024/s.sampleRate, mul: -1) + FluidBufSTFTPass.ar(source, 1024, 256, 1024); }.play
+	{ var source = PinkNoise.ar(0.1); DelayN.ar(source, delaytime:1024/s.sampleRate, mul: -1) + FluidSTFTPass.ar(source, 1024, 256, 1024); }.play
 	::
 	Larger, oversampled, FFT
 	code::
-	{ FluidBufSTFTPass.ar(PinkNoise.ar(0.1), 2048, 128, 8192) }.play
+	{ FluidSTFTPass.ar(PinkNoise.ar(0.1), 2048, 128, 8192) }.play
 	::
 	Stereo Input Tests.
 	code::
-	{ FluidBufSTFTPass.ar([SinOsc.ar(222,mul: 0.1), PinkNoise.ar(Decay.ar(Impulse.ar(0.666,mul: 0.2), 0.5))], fftSize:1024)}.play
+	{ FluidSTFTPass.ar([SinOsc.ar(222,mul: 0.1), PinkNoise.ar(Decay.ar(Impulse.ar(0.666,mul: 0.2), 0.5))], fftSize:1024)}.play
 	::
 	Stereo Parameter Tests.
 	code::
-	{ FluidBufSTFTPass.ar(SinOsc.ar(222,mul: 0.1), [1024,8192],256,8192)}.play
+	{ FluidSTFTPass.ar(SinOsc.ar(222,mul: 0.1), [1024,8192],256,8192)}.play
 	::
