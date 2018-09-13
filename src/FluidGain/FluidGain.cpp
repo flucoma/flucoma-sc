@@ -36,8 +36,8 @@ public:
 //        else
 //            m_client = new client_type(1024,1024);
       
-      fluid::parameter::lookupParam("winsize", m_client->getParams()).setLong(1024);
-      fluid::parameter::lookupParam("hopsize", m_client->getParams()).setLong(1024);
+      fluid::parameter::lookupParam("winsize", m_client->getParams()).setLong(in0(1));
+      fluid::parameter::lookupParam("hopsize", m_client->getParams()).setLong(in0(1));
       fluid::parameter::lookupParam("gain", m_client->getParams()).setFloat(1);
       
         m_client->set_host_buffer_size(bufferSize());
@@ -74,9 +74,13 @@ public:
     }
     
 private:
-    
+  
+
+  
+  
     void next(int numsamples)
     {
+
         //TODO: Remove const_cast code smell by making input_signal type for const 
         input_signals[0]->set(const_cast<float*>(in(0)), in0(0));
         input_signals[1]->set(const_cast<float*>(in(2)), in0(2));
