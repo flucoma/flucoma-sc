@@ -83,7 +83,7 @@ namespace stn{
       {
         parameter::Instance& p = m_client->getParams()[i];
         
-        if(!instantiation && p.getDescriptor().instatiation())
+        if(!instantiation && p.getDescriptor().instantiation())
           continue;
         
         switch(p.getDescriptor().getType())

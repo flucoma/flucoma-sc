@@ -75,7 +75,7 @@ namespace hpss{
       for(size_t i = 0; i < m_client->getParams().size(); ++i)
       {
         parameter::Instance& p = m_client->getParams()[i];
-        if(!instantiation && p.getDescriptor().instatiation())
+        if(!instantiation && p.getDescriptor().instantiation())
           continue;
         switch(p.getDescriptor().getType())
         {
