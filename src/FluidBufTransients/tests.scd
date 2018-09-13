@@ -3,7 +3,7 @@ s.reboot
 // test for efficiency
 
 (
-b = Buffer.read(s,"/Users/pa/Documents/documents@hudd/research/projects/fluid corpus navigation/research/archives-2017-18/denoise_stn/sources/01-mix.wav");
+b = Buffer.read(s,"/Users/pa/Documents/documents@hudd/research/projects/fluid corpus navigation/research/fluid_decomposition/AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
 c = Buffer.new(s);
 d = Buffer.new(s);
 )
@@ -12,7 +12,7 @@ d = Buffer.new(s);
 // without basic params
 Routine{
 	t = Main.elapsedTime;
-	FDTransients.process(s,b.bufnum, transBufNum:c.bufnum, resBufNum:d.bufnum);
+	FluidBufTransients.process(s,b.bufnum, transBufNum:c.bufnum, resBufNum:d.bufnum);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play
@@ -31,7 +31,7 @@ d.play;
 (
 Routine{
 	t = Main.elapsedTime;
-	FDTransients.process(s,b.bufnum, 44100, 44100, 0, 0, c.bufnum, d.bufnum, 100, 512,256,1,2,1,12,20);
+	FluidBufTransients.process(s,b.bufnum, 44100, 44100, 0, 0, c.bufnum, d.bufnum, 100, 512,256,1,2,1,12,20);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play

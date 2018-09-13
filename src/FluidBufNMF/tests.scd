@@ -17,7 +17,7 @@ y = Buffer.new(s);
 // without sources
 Routine{
 	t = Main.elapsedTime;
-	FDNMF.process(s,b.bufnum,0,-1,0,-1,nil,x.bufnum,0,y.bufnum,0,5,100,0,~frame_size,~hop_size,~fft_size);
+	FluidBufNMF.process(s,b.bufnum,0,-1,0,-1,nil,x.bufnum,0,y.bufnum,0,5,100,0,~frame_size,~hop_size,~fft_size);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play
@@ -27,7 +27,7 @@ Routine{
 (
 Routine{
 	t = Main.elapsedTime;
-	FDNMF.process(s,b.bufnum, 0,-1,0,-1,c.bufnum,nil,0,nil,0,5,100,0,~frame_size,~hop_size,~fft_size);
+	FluidBufNMF.process(s,b.bufnum, 0,-1,0,-1,c.bufnum,nil,0,nil,0,5,100,0,~frame_size,~hop_size,~fft_size);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play
@@ -37,7 +37,7 @@ Routine{
 (
 Routine{
 	t = Main.elapsedTime;
-	FDNMF.process(s,b.bufnum, 0,-1,0,-1,c.bufnum,x.bufnum,0,y.bufnum,0,5,100,0,~frame_size,~hop_size,~fft_size);
+	FluidBufNMF.process(s,b.bufnum, 0,-1,0,-1,c.bufnum,x.bufnum,0,y.bufnum,0,5,100,0,~frame_size,~hop_size,~fft_size);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play
@@ -104,7 +104,7 @@ b.play
 (
 Routine{
 	t = Main.elapsedTime;
-	FDNMF.process(s,b.bufnum,0,-1,0,-1,c.bufnum,x.bufnum,0,y.bufnum,0,5,100,0,~frame_size,~hop_size,~fft_size);
+	FluidBufNMF.process(s,b.bufnum,0,-1,0,-1,c.bufnum,x.bufnum,0,y.bufnum,0,5,100,0,~frame_size,~hop_size,~fft_size);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play
@@ -130,11 +130,11 @@ b.play
 (
 Routine{
 	t = Main.elapsedTime;
-	FDNMF.process(s,b.bufnum,44100,44100,0,1,c.bufnum,rank:2);
+	FluidBufNMF.process(s,b.bufnum,44100,44100,0,1,c.bufnum,rank:2);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 	t = Main.elapsedTime;
-	FDNMF.process(s,b.bufnum,8810,44100,1,1,d.bufnum,rank:2);
+	FluidBufNMF.process(s,b.bufnum,8810,44100,1,1,d.bufnum,rank:2);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play
