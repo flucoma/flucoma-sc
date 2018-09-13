@@ -24,7 +24,7 @@ namespace fluid {
       
       void runCommand(World* world, void* replyAddr, char* completionMsgData, size_t completionMsgSize)
       {
-        cmd<BufCompose, &BufCompose::process, &BufCompose::postProcess, &BufCompose::postComplete>(world, "AsyncBufferCompose", replyAddr,  completionMsgData, completionMsgSize);
+        cmd<BufCompose, &BufCompose::process, &BufCompose::postProcess, &BufCompose::postComplete>(world, "/BufCompose", replyAddr,  completionMsgData, completionMsgSize);
       }
       
       bool process(World* world)

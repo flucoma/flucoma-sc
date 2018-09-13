@@ -41,7 +41,7 @@ namespace fluid {
       
       void runCommand(World* world, void* replyAddr, char* completionMsgData, size_t completionMsgSize)
       {
-        cmd<BufHPSS, &BufHPSS::process, &BufHPSS::postProcess, &BufHPSS::postComplete>(world, "AsyncNMF", replyAddr,  completionMsgData, completionMsgSize);
+        cmd<BufHPSS, &BufHPSS::process, &BufHPSS::postProcess, &BufHPSS::postComplete>(world, "/BufHPSS", replyAddr,  completionMsgData, completionMsgSize);
       }
       
       bool process(World* world)
