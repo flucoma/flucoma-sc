@@ -23,16 +23,17 @@ namespace sc{
    A descendent of SndBuf that will populate itself
    from the NRT mirror buffers given a world and a bufnum
    **/
-  struct NRTBuf: public SndBuf
+  struct NRTBuf//: public SndBuf
   {
-    NRTBuf(SndBuf& b):SndBuf(b){}
+    NRTBuf(SndBuf* b):mBuffer(b){}
     NRTBuf(World* world,long bufnum):
-    NRTBuf(*World_GetNRTBuf(world,bufnum))
+    NRTBuf(World_GetNRTBuf(world,bufnum))
     {
-      if(!this->samplerate)
-        this->samplerate = world->mFullRate.mSampleRate;
-      
+      if(mBuffer && !mBuffer->samplerate)
+        mBuffer->samplerate = world->mFullRate.mSampleRate;
     }
+  protected:    
+    SndBuf* mBuffer;
   };
   
   /**
@@ -61,6 +62,9 @@ namespace sc{
 //      BufferAdaptor({0,{static_cast<size_t>(frames),static_cast<size_t>(channels)}},NRTBuf::data),
       mBufnum(bufnum), mWorld(world)
     {
+      
+      
+      
     }
     
     ~SCBufferView() = default;
@@ -68,7 +72,7 @@ namespace sc{
     void assignToRT(World* rtWorld)
     {
       SndBuf* rtBuf = World_GetBuf(rtWorld,mBufnum);
-      *rtBuf = static_cast<SndBuf>(*this);
+      *rtBuf = *mBuffer;
       rtWorld->mSndBufUpdates[mBufnum].writes++;
     }
     //No locks in (vanilla) SC, so no-ops for these
@@ -77,40 +81,37 @@ namespace sc{
     
     //Validity is based on whether this buffer is within the range the server knows about
     bool valid() const override {
-      return (mBufnum >=0  && mBufnum < mWorld->mNumSndBufs);
+      return (mBuffer && mBufnum >=0  && mBufnum < mWorld->mNumSndBufs);
     }
     
     FluidTensorView<float,1> samps(size_t channel, size_t rankIdx = 0) override
     {
-      FluidTensorView<float,2>  v{this->data,0, static_cast<size_t>(frames),static_cast<size_t>(channels)};
+      FluidTensorView<float,2>  v{mBuffer->data,0, static_cast<size_t>(mBuffer->frames),static_cast<size_t>(mBuffer->channels)};
       
       return v.col(rankIdx + channel * mRank );
     }
     //Return a view of all the data
     FluidTensorView<float,2> samps() override
     {
-      return {this->data,0, static_cast<size_t>(frames), static_cast<size_t>(channels)};
+      return {mBuffer->data,0, static_cast<size_t>(mBuffer->frames), static_cast<size_t>(mBuffer->channels)};
     }
     
     //Return a 2D chunk
     FluidTensorView<float,2> samps(size_t offset, size_t nframes, size_t chanoffset, size_t chans) override
     {
-      FluidTensorView<float,2>  v{this->data,0, static_cast<size_t>(frames), static_cast<size_t>(channels)};
+      FluidTensorView<float,2>  v{mBuffer->data,0, static_cast<size_t>(mBuffer->frames), static_cast<size_t>(mBuffer->channels)};
       
       return v(fluid::slice(offset,nframes), fluid::slice(chanoffset,chans));
-      
-      
     }
-    
     
     size_t numFrames() const override
     {
-        return valid() ?  this->frames : 0 ;
+        return valid() ?  this->mBuffer->frames : 0 ;
     }
   
     size_t numChans() const override
     {
-        return valid() ?  this->channels / mRank : 0;
+        return valid() ?  this->mBuffer->channels / mRank : 0;
     }
     
     size_t rank() const override
@@ -118,25 +119,13 @@ namespace sc{
         return valid() ? mRank :0;
     }
     
-    
     void resize(size_t frames, size_t channels, size_t rank) override {
-      
-      SndBuf* thisThing = static_cast<SndBuf*>(this);
-      
+      SndBuf* thisThing = mBuffer;
       float* oldData = thisThing->data;
       mRank = rank;
-      mWorld->ft->fBufAlloc(this, channels * rank, frames, this->samplerate);
-      
-     
-      
-//      FluidTensorView<float,2> v=  FluidTensorView<float,2>(NRTBuf::data,0,static_cast<size_t>(frames),static_cast<size_t>(channels * rank));
-//
-//      static_cast<FluidTensorView<float,2>&>(*this) = std::move(v);
-      
+      mWorld->ft->fBufAlloc(mBuffer, channels * rank, frames, thisThing->samplerate);
       if(oldData)
         boost::alignment::aligned_free(oldData);
-      
-      
     }
   protected:
     bool equal(BufferAdaptor* rhs) const override
