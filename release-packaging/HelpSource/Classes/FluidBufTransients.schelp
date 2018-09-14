@@ -1,7 +1,7 @@
 TITLE:: FluidBufTransients
-summary:: A Non-Real-Time Transient Extractor
+summary:: Buffer-Based Transient Extractor
 categories:: Libraries>FluidDecomposition
-related:: Overviews/FluCoMa
+related:: Guides/FluCoMa, Guides/FluidDecomposition
 
 DESCRIPTION::
 A non-real-time transient extractor implementing  footnote::This  was made possible thanks to the FluCoMa project (http://www.flucoma.org/) funded by the European Research Council (https://erc.europa.eu/) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
@@ -59,11 +59,8 @@ ARGUMENT:: windowSize
 ARGUMENT:: debounce
 	clumps transients within that window size
 
-returns:: (describe returnvalue here)
-
-
-INSTANCEMETHODS::
-
+returns::
+	Nothing, as the various destination buffers are declared in the function call.
 
 EXAMPLES::
 

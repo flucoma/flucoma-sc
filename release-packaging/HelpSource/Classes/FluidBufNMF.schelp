@@ -1,5 +1,5 @@
 TITLE:: FluidBufNMF
-summary:: Non-Negative Matrix Factorisation on Spectral Frames
+summary:: Buffer-Based Non-Negative Matrix Factorisation on Spectral Frames
 categories:: Libraries>FluidDecomposition
 related:: Guides/FluCoMa, Guides/FluidDecomposition
 
