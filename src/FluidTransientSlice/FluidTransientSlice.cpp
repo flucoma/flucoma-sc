@@ -103,5 +103,5 @@ namespace segmentation{
 
 PluginLoad(FluidSTFTUGen) {
   ft = inTable;
-  registerUnit<fluid::segmentation::FluidSliceTransients>(ft, "FluidSliceTransients");
+  registerUnit<fluid::segmentation::FluidSliceTransients>(ft, "FluidTransientSlice");
 }
