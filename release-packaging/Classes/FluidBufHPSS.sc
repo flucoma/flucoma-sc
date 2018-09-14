@@ -1,15 +1,12 @@
 FluidBufHPSS{
-		*process { arg server, src, offsetframes = 0, numframes = -1, offsetchans = 0, numchans = -1, harmbuf, percbuf, psize = 31, hsize = 17, winsize = 4096, hopsize = 1024, fftsize = -1;
+		*process { arg server, srcBufNum, startAt = 0, nFrames = -1, startChan = 0, nChans = -1, harmBufNum, percBufNum, pSize = 31, hSize = 17, winSize = 4096, hopSize = 1024, fftSize = -1;
+
+		if(srcBufNum.isNil) { Error("Invalid buffer").format(thisMethod.name, this.class.name).throw};
 
 		server = server ? Server.default;
+		harmBufNum = harmBufNum ? -1;
+		percBufNum = percBufNum ? -1;
 
-		if(src.bufnum.isNil) {Error("Invalid Buffer").format(thisMethod.name, this.class.name).throw};
-
-			server.sendMsg(\cmd, \BufHPSS, src.bufnum, offsetframes, numframes, offsetchans, numchans,
-if( harmbuf.isNil, -1, {harmbuf.bufnum}),
-if( percbuf.isNil, -1, {percbuf.bufnum}), psize, hsize, winsize, hopsize, fftsize);
-
-
-
+		server.sendMsg(\cmd, \BufHPSS, srcBufNum, startAt, nFrames, startChan, nChans, harmBufNum, percBufNum, pSize, hSize, winSize, hopSize, fftSize);
 }
 }

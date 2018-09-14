@@ -1,14 +1,63 @@
-s.reboot
+TITLE:: FluidBufHPSS
+summary:: Buffer-Based Harmonic-Percussive Source Separation Using Median Filtering
+categories:: Libraries>FluidDecomposition
+related:: Guides/FluCoMa, Guides/FluidDecomposition
 
-(
-	b = Buffer.read(s,"/Users/owen/Desktop/denoise_stn/sources/01-mix.wav");
-	h = Buffer.new(s);
-	p = Buffer.new(s);
-)
+DESCRIPTION::
+It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
+This  was made possible thanks to the FluCoMa project (http://www.flucoma.org/) funded by the European Research Council (https://erc.europa.eu/) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
 
 
+CLASSMETHODS::
 
-FluidBufHPSS.process(s,b,0,1-1,0,-1,h,p,31,17)
+METHOD:: process
+(describe method here)
 
-p.play;
-h.play;
+ARGUMENT:: server
+(describe argument here)
+
+ARGUMENT:: srcBufNum
+(describe argument here)
+
+ARGUMENT:: startAt
+(describe argument here)
+
+ARGUMENT:: nFrames
+(describe argument here)
+
+ARGUMENT:: startChan
+(describe argument here)
+
+ARGUMENT:: nChans
+(describe argument here)
+
+ARGUMENT:: harmBufNum
+(describe argument here)
+
+ARGUMENT:: percBufNum
+(describe argument here)
+
+ARGUMENT:: pSize
+(describe argument here)
+
+ARGUMENT:: hSize
+(describe argument here)
+
+ARGUMENT:: winSize
+(describe argument here)
+
+ARGUMENT:: hopSize
+(describe argument here)
+
+ARGUMENT:: fftSize
+(describe argument here)
+
+returns::
+	Nothing, as the various destination buffers are declared in the function call.
+
+EXAMPLES::
+
+code::
+	b = Buffer.read(s,"../../../AudioFiles/01-mix.wav".resolveRelative);
+	b.play
+::

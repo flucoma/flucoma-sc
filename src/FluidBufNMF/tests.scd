@@ -86,43 +86,52 @@ c.plot;x.plot; y.plot;
 }.play
 )
 
-// test with stereo input
+// test with stereo input (dual mono for best segregation)
 Buffer.freeAll(s)
 
 (
-b = Buffer.read(s,"/Users/pa/Desktop/verystereo.wav");
-c = Buffer.new(s);
-x = Buffer.new(s);
-y = Buffer.new(s);
-~fft_size = 1024;
-~frame_size = 512;
-~hop_size = 256;
+Routine{
+	b = Buffer.read(s,"/Users/pa/Documents/documents@hudd/research/projects/fluid corpus navigation/research/fluid_decomposition/AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
+	c = Buffer.read(s,"/Users/pa/Documents/documents@hudd/research/projects/fluid corpus navigation/research/fluid_decomposition/AudioFiles/Tremblay-AaS-AcousticStrums-M.wav");
+	d = Buffer.new(s);
+	e = Buffer.new(s);
+	x = Buffer.new(s);
+	y = Buffer.new(s);
+	~fft_size = 1024;
+	~frame_size = 512;
+	~hop_size = 256;
+	s.sync;
+	FluidBufCompose.process(s,b.bufnum,srcBufNumB:c.bufnum, srcGainB:0.6, dstStartChanB:1, dstBufNum:d.bufnum);
+}.play;
 )
 
-b.play
+d.query
+d.play
 
 (
 Routine{
 	t = Main.elapsedTime;
-	FluidBufNMF.process(s,b.bufnum,0,-1,0,-1,c.bufnum,x.bufnum,0,y.bufnum,0,5,100,0,~frame_size,~hop_size,~fft_size);
+	FluidBufNMF.process(s,d.bufnum,0,-1,0,-1,e.bufnum,x.bufnum,0,y.bufnum,0,5,100,0,~frame_size,~hop_size,~fft_size);
 	s.sync;
 	(Main.elapsedTime - t).postln;
-}.play
+}.play;
 )
 
+e.query
+
 //test a single rank
-{PlayBuf.ar(10,c.bufnum,doneAction:2)[9].dup}.play
+{PlayBuf.ar(10,e.bufnum,doneAction:2)[9].dup}.play
 
 // play them all across in a sort of upmixed stereo...
-{Splay.ar(PlayBuf.ar(10,c.bufnum,doneAction:2))}.play
+{Splay.ar(PlayBuf.ar(10,e.bufnum,doneAction:2))}.play
 
 //test process on a segment
 Buffer.freeAll(s)
 
 (
-b = Buffer.read(s,"/Users/pa/Desktop/verystereo.wav");
+d = Buffer.read(s,"/Users/pa/Desktop/verystereo.wav");
+b = Buffer.new(s);
 c = Buffer.new(s);
-d = Buffer.new(s);
 )
 
 b.play
@@ -130,16 +139,16 @@ b.play
 (
 Routine{
 	t = Main.elapsedTime;
-	FluidBufNMF.process(s,b.bufnum,44100,44100,0,1,c.bufnum,rank:2);
+	FluidBufNMF.process(s,d.bufnum,44100,44100,0,1,c.bufnum,rank:2);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 	t = Main.elapsedTime;
-	FluidBufNMF.process(s,b.bufnum,8810,44100,1,1,d.bufnum,rank:2);
+	FluidBufNMF.process(s,d.bufnum,8810,44100,1,1,b.bufnum,rank:2);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play
 )
 c.query
 c.play
-d.query
-d.play
+b.query
+b.play
