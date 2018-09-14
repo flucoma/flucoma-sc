@@ -9,7 +9,7 @@ d = Buffer.new(s);
 )
 
 (
-// without basic params (basic summing of each full buffer in all dimensions)
+// with basic params (basic summing of each full buffer in all dimensions)
 Routine{
 	t = Main.elapsedTime;
 	FluidBufCompose.process(s, srcBufNumA: b.bufnum, srcBufNumB: c.bufnum, dstBufNum: d.bufnum);
