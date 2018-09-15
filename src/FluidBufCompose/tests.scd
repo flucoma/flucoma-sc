@@ -43,7 +43,6 @@ Routine{
 )
 
 //constructing a one second buffer: the first second of each buffer, the mono synth on the right, the piano on the left
-process monosynth 0 44100 0 1 1 0 1 stereopiano 0 44100 0 1 1 dst
 (
 Routine{
 	t = Main.elapsedTime;

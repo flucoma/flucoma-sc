@@ -1,4 +1,66 @@
-s.reboot;
-b = Buffer.cueSoundFile(s,"/Users/owen/Box Sync/FluCoMa/Test files/SMS test files/Test Files/PAs 24 bit files/maxou-FR-a-k.wav.wav",0,1);
-b.query
-x = {FluidSines.ar(DiskIn.ar(1,b.bufnum))}.play;
+TITLE:: FluidSines
+summary:: (put short description here)
+categories:: Libraries>FluidDecomposition
+related:: Guides/FluCoMa, Guides/FluidDecomposition
+
+DESCRIPTION::
+It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
+This  was made possible thanks to the FluCoMa project (http://www.flucoma.org/) funded by the European Research Council (https://erc.europa.eu/) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+
+
+CLASSMETHODS::
+
+METHOD:: ar
+(describe method here)
+
+ARGUMENT:: in
+(describe argument here)
+
+ARGUMENT:: bandwidth
+(describe argument here)
+
+ARGUMENT:: threshold
+(describe argument here)
+
+ARGUMENT:: minTrackLen
+(describe argument here)
+
+ARGUMENT:: magnitudeWeight
+(describe argument here)
+
+ARGUMENT:: frequencyWeight
+(describe argument here)
+
+ARGUMENT:: windowSize
+(describe argument here)
+
+ARGUMENT:: hopSize
+(describe argument here)
+
+ARGUMENT:: fftSize
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+
+INSTANCEMETHODS::
+
+METHOD:: checkInputs
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: init
+(describe method here)
+
+ARGUMENT::  ... theInputs
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+
+EXAMPLES::
+
+code::
+(some example code)
+::

@@ -102,10 +102,11 @@ Routine{
 	~hop_size = 256;
 	s.sync;
 	FluidBufCompose.process(s,b.bufnum,srcBufNumB:c.bufnum, srcGainB:0.6, dstStartChanB:1, dstBufNum:d.bufnum);
+	s.sync;
+	d.query;
 }.play;
 )
 
-d.query
 d.play
 
 (
@@ -118,6 +119,8 @@ Routine{
 )
 
 e.query
+x.query
+y.query
 
 //test a single rank
 {PlayBuf.ar(10,e.bufnum,doneAction:2)[9].dup}.play

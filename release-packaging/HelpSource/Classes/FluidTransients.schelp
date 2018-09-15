@@ -1,6 +1,66 @@
-s.reboot;
-b = Buffer.cueSoundFile(s,"/Users/owen/Desktop/denoise_stn/sources/01-mix.wav",0,1);
+TITLE:: FluidTransients
+summary:: (put short description here)
+categories:: Libraries>FluidDecomposition
+related:: Guides/FluCoMa, Guides/FluidDecomposition
+
+DESCRIPTION::
+It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
+This  was made possible thanks to the FluCoMa project (http://www.flucoma.org/) funded by the European Research Council (https://erc.europa.eu/) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
 
 
-b.query
-x = {FluidTransients.ar(DiskIn.ar(1,b.bufnum))}.play;
+CLASSMETHODS::
+
+METHOD:: ar
+(describe method here)
+
+ARGUMENT:: in
+(describe argument here)
+
+ARGUMENT:: order
+(describe argument here)
+
+ARGUMENT:: blockSize
+(describe argument here)
+
+ARGUMENT:: padding
+(describe argument here)
+
+ARGUMENT:: skew
+(describe argument here)
+
+ARGUMENT:: threshFwd
+(describe argument here)
+
+ARGUMENT:: threshBack
+(describe argument here)
+
+ARGUMENT:: winSize
+(describe argument here)
+
+ARGUMENT:: debounce
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+
+INSTANCEMETHODS::
+
+METHOD:: checkInputs
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: init
+(describe method here)
+
+ARGUMENT::  ... theInputs
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+
+EXAMPLES::
+
+code::
+(some example code)
+::
