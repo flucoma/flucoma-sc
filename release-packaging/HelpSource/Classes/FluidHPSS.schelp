@@ -60,4 +60,14 @@ EXAMPLES::
 
 code::
 (some example code)
+	s.reboot
+b = Buffer.cueSoundFile(s,"/Users/owen/Desktop/denoise_stn/sources/01-mix.wav",0,1)
+
+//The world's most expensive stereoizer
+({
+		var hpss = FluidHPSS.ar(DiskIn.ar(1,b.bufnum,loop:1),harmonicBinaryMask:1,percussiveBinaryMask:1,  harmonicThreshAmp1:SinOsc.kr(1.5,mul:20,add:20),harmonicThreshAmp2:SinOsc.kr(3,mul:25,add:25), percussiveThreshAmp1:SinOsc.kr(1.6,0,mul:30,add:30),percussiveThreshAmp2:SinOsc.kr(1.7,0,mul:17,add:24));
+		[hpss.at(2)  + 0.5 * hpss.at(0),hpss.at(1) + 0.5 * hpss.at(0)];
+}.play;)
+
+
 ::
