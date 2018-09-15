@@ -155,3 +155,17 @@ c.query
 c.play
 b.query
 b.play
+
+
+// nmf on empty buffer
+Buffer.freeAll;
+(
+Routine({
+	b = Buffer.alloc(s,44100);
+	c = Buffer.new(s);
+	s.sync;
+	FluidBufNMF.process(s,b.bufnum,dstBufNum:c.bufnum);
+	s.sync;
+	c.getn(0,100,{|x| x.postln});
+}).play;
+)
