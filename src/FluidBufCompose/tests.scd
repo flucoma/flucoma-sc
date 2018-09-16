@@ -51,3 +51,20 @@ Routine{
 	(Main.elapsedTime - t).postln;
 }.play;
 )
+
+// trying to grow a buffer on itself
+e = Buffer.alloc(s,1,1);
+(
+Routine {
+	FluidBufCompose.process(s,srcBufNumA: b.bufnum, srcBufNumB: e.bufnum, dstBufNum: e.bufnum);
+	s.sync;
+	e.query;
+	s.sync;
+	FluidBufCompose.process(s,srcBufNumA: c.bufnum,  nChansA: 1, srcBufNumB: e.bufnum, dstBufNum: e.bufnum);
+	s.sync;
+	e.query;
+}.play;
+)
+
+e.plot
+e.play
