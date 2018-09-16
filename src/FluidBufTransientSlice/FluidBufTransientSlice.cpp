@@ -48,11 +48,16 @@ namespace fluid {
 
       bool postProcess(World* world)
       {
-          static_cast<SCBufferView*>(mModel.trans)->assignToRT(world);
+        static_cast<SCBufferView*>(mModel.trans)->assignToRT(world);
         return true;
       }
       
-      bool postComplete(World* w) { return true; }
+      bool postComplete(World*)
+      {
+        static_cast<SCBufferView*>(mModel.trans)->cleanUp();
+        return true;
+      }
+      
       std::vector<parameter::Instance>& parameters()
       {
         return trans.getParams(); 

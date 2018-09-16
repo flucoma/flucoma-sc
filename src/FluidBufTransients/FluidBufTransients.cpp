@@ -1,8 +1,6 @@
   // FD_BufNMF, an NRT buffer NMF Processor
 // A tool from the FluCoMa project, funded by the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899)
 
-#define EIGEN_USE_BLAS
-
 #include "clients/nrt/TransientNRTClient.hpp"
 #include "fdNRTBase.hpp"
 #include "data/FluidTensor.hpp"
@@ -55,7 +53,15 @@ namespace fluid {
         return true;
       }
       
-      bool postComplete(World* w) { return true; }
+      bool postComplete(World*)
+      {
+        if(mModel.returnTransients)
+          static_cast<SCBufferView*>(mModel.trans)->cleanUp();
+        if(mModel.returnResidual)
+          static_cast<SCBufferView*>(mModel.res)->cleanUp();
+        return true;
+        
+      }
       std::vector<parameter::Instance>& parameters()
       {
         return trans.getParams(); 

@@ -69,14 +69,17 @@ namespace fluid {
 
       bool postProcess(World* world)
       {
-        static_cast<SCBufferView*>
-            (parameter::lookupParam("sinebuf", processor.getParams()).getBuffer())->assignToRT(world);
-        static_cast<SCBufferView*>
-            (parameter::lookupParam("resbuf", processor.getParams()).getBuffer())->assignToRT(world);
+        static_cast<SCBufferView*>(mModel.sine)->assignToRT(world);
+        static_cast<SCBufferView*>(mModel.res)->assignToRT(world);
         return true;
       }
       
-      bool postComplete(World* w) { return true; }
+      bool postComplete(World* w) {
+        static_cast<SCBufferView*>(mModel.sine)->cleanUp();
+        static_cast<SCBufferView*>(mModel.res)->cleanUp();
+        return true;
+      }
+      
       std::vector<parameter::Instance>& parameters()
       {
         return processor.getParams();

@@ -103,7 +103,16 @@ namespace fluid {
         return true;
       }
       
-      bool postComplete(World* w) { return true; }
+      bool postComplete(World*) {
+        if(mModel.resynthesise)
+          resynth->cleanUp();
+        if(mModel.returnDictionaries)
+          dict->cleanUp();
+        if(mModel.returnActivations)
+          act->cleanUp();
+        return true;
+      }
+      
       std::vector<parameter::Instance>& parameters()
       {
         return nmf.getParams(); 
