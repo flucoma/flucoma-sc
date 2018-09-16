@@ -227,7 +227,7 @@ namespace sc{
       if(d.getType() == parameter::Type::Buffer)
       {
         if (count == 0)
-          cmd <<  d.getName() << ".buNum";
+          cmd <<  d.getName() << ".bufnum";
         else
           cmd << "\nif( " << d.getName() << ".isNil, -1, {" << d.getName() << ".bufnum})";
       }
