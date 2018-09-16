@@ -28,12 +28,12 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
     CHECK_CXX_COMPILER_FLAG(-mfpmath=sse HAS_CXX_FPMATH_SSE)
     CHECK_CXX_COMPILER_FLAG(-mavx HAS_AVX)
     CHECK_CXX_COMPILER_FLAG(-mavx2 HAS_AVX2)
-    target_compile_definitions(
-        ${PLUGIN}
-        PRIVATE
-        "$<$<NOT:$<CONFIG:DEBUG>>:-O3"
-        "-mavx"
-    )
+    # target_compile_features(
+    #     ${PLUGIN}
+    #     PUBLIC
+    #     "$<$<NOT:$<CONFIG:DEBUG>>: -mavx -msse -msse2 -msse3 -msse4>"
+    #
+    # )
 
     #     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse")
     # endif()
