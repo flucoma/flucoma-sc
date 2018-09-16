@@ -5,26 +5,58 @@ s.reboot
 (
 b = Buffer.read(s,"/Users/pa/Documents/documents@hudd/research/projects/fluid corpus navigation/research/fluid_decomposition/AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
 c = Buffer.new(s);
-d = Buffer.new(s);
 )
 
 (
-// without basic params
+// with basic params
 Routine{
 	t = Main.elapsedTime;
-	FluidBufTransientSlice.process(s,b.bufnum, transBufNum:c.bufnum, resBufNum:d.bufnum);
+	FluidBufTransientSlice.process(s,b.bufnum, transBufNum:c.bufnum, order:80);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play
 );
 
+//check the number of slices
 c.query;
-c.play;
-d.query;
-d.play;
 
-//nullsumming tests
-{(PlayBuf.ar(1,c.bufnum))+(PlayBuf.ar(1,d.bufnum))+(-1*PlayBuf.ar(1,b.bufnum,doneAction:2))}.play
+//loops over a splice
+(
+{
+	BufRd.ar(
+		1,
+		b.bufnum,
+		Phasor.ar(
+			0,
+			1,
+			BufRd.kr(
+				1,
+				c.bufnum,
+				MouseX.kr(
+					0,
+					BufFrames.kr(c.bufnum) - 1),
+				0,
+				1),
+			BufRd.kr(
+				1,
+				c.bufnum,
+				MouseX.kr(
+					1,
+					BufFrames.kr(c.bufnum)),
+				0,
+				1),
+			BufRd.kr(
+				1,
+				c.bufnum,
+				MouseX.kr(
+					0,
+					BufFrames.kr(c.bufnum) - 1),
+				0,
+				1)),
+		0,
+		1)
+}.play;
+)
 
 
 // with everything changed to make it much faster
