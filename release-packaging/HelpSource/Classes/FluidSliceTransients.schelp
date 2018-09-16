@@ -1,6 +1,0 @@
-s.reboot;
-b = Buffer.cueSoundFile(s,"/Users/owen/Desktop/denoise_stn/sources/01-mix.wav",0,1);
-
-
-b.query
-x = {FluidSliceTransients.ar(DiskIn.ar(1,b.bufnum))}.play;
