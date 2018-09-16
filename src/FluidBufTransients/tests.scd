@@ -3,7 +3,7 @@ s.reboot
 // test for efficiency
 
 (
-b = Buffer.read(s,"/Users/pa/Documents/documents@hudd/research/projects/fluid corpus navigation/research/fluid_decomposition/AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
+b = Buffer.read(s,"../../release-packaging/AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav".resolveRelative);
 c = Buffer.new(s);
 d = Buffer.new(s);
 )

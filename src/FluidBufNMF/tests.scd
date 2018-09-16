@@ -3,7 +3,7 @@ s.reboot
 // test for efficiency
 
 (
-b = Buffer.read(s,"/Users/pa/Documents/documents@hudd/research/projects/fluid corpus navigation/research/archives-2017-18/denoise_stn/sources/01-mix.wav");
+b = Buffer.read(s,"../../release-packaging/AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav".resolveRelative);
 c = Buffer.new(s);
 x = Buffer.new(s);
 y = Buffer.new(s);
@@ -91,8 +91,8 @@ Buffer.freeAll(s)
 
 (
 Routine{
-	b = Buffer.read(s,"/Users/pa/Documents/documents@hudd/research/projects/fluid corpus navigation/research/fluid_decomposition/AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
-	c = Buffer.read(s,"/Users/pa/Documents/documents@hudd/research/projects/fluid corpus navigation/research/fluid_decomposition/AudioFiles/Tremblay-AaS-AcousticStrums-M.wav");
+	b = Buffer.read(s,"../../release-packaging/AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav".resolveRelative);
+	c = Buffer.read(s,"../../release-packaging/AudioFiles/Tremblay-AaS-AcousticStrums-M.wav".resolveRelative);
 	d = Buffer.new(s);
 	e = Buffer.new(s);
 	x = Buffer.new(s);
@@ -129,16 +129,6 @@ y.query
 {Splay.ar(PlayBuf.ar(10,e.bufnum,doneAction:2))}.play
 
 //test process on a segment
-Buffer.freeAll(s)
-
-(
-d = Buffer.read(s,"/Users/pa/Desktop/verystereo.wav");
-b = Buffer.new(s);
-c = Buffer.new(s);
-)
-
-b.play
-
 (
 Routine{
 	t = Main.elapsedTime;

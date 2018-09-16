@@ -3,7 +3,7 @@ s.reboot
 // test for efficiency
 
 (
-b = Buffer.read(s,"/Users/pa/Documents/documents@hudd/research/projects/fluid corpus navigation/research/fluid_decomposition/AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
+b = Buffer.read(s,"../../release-packaging/AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav".resolveRelative);
 c = Buffer.new(s);
 )
 
@@ -11,7 +11,7 @@ c = Buffer.new(s);
 // with basic params
 Routine{
 	t = Main.elapsedTime;
-	FluidBufTransientSlice.process(s,b.bufnum, transBufNum:c.bufnum, order:80);
+	FluidBufTransientSlice.process(s,b.bufnum, transBufNum:c.bufnum, order:80, debounce:4410);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play
