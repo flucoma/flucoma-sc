@@ -41,6 +41,13 @@ if (NOT (EXISTS "${FLUID_ABS_PATH}/build/fluid_decomposition-exports.cmake"))
 	message(FATAL_ERROR "Can't find the fluid_decomposition CMake targets file at ${FLUID_ABS_PATH}/build/fluid_decomposition-expors.cmake. Please go to ${FLUID_ABS_PATH}/build and run CMake")
 endif()
 
+if (NOT (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/release-packaging/AudioFiles/))
+	file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/release-packaging/AudioFiles/)
+endif()
+
+file(COPY ${FLUID_ABS_PATH}/AudioFiles/ DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/release-packaging/AudioFiles/)
+
+
 include("${FLUID_ABS_PATH}/build/fluid_decomposition-exports.cmake")
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/release-packaging/plugins")

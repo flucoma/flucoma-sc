@@ -50,7 +50,11 @@ namespace fluid {
         return true;
       }
       
-      bool postComplete(World* w) { return true; }
+      bool postComplete(World* w) {
+        static_cast<SCBufferView*>(mModel.dst)->cleanUp();        
+        return true;
+      }
+      
       std::vector<parameter::Instance>& parameters()
       {
         return bufferCompose.getParams(); 

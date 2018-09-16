@@ -75,9 +75,20 @@ namespace sc{
       *rtBuf = *mBuffer;
       rtWorld->mSndBufUpdates[mBufnum].writes++;
     }
+    
+    void cleanUp()
+    {
+      if(mOldData)
+        boost::alignment::aligned_free(mOldData);
+    }
+    
     //No locks in (vanilla) SC, so no-ops for these
-    void acquire()  override {}
-    void release()  override {}
+    void acquire()  override {
+//       NRTLock(mWorld);
+    }
+    void release()  override {
+//      NRTUnlock(mWorld);
+    }
     
     //Validity is based on whether this buffer is within the range the server knows about
     bool valid() const override {
@@ -121,11 +132,9 @@ namespace sc{
     
     void resize(size_t frames, size_t channels, size_t rank) override {
       SndBuf* thisThing = mBuffer;
-      float* oldData = thisThing->data;
+      mOldData = thisThing->data;
       mRank = rank;
       mWorld->ft->fBufAlloc(mBuffer, channels * rank, frames, thisThing->samplerate);
-      if(oldData)
-        boost::alignment::aligned_free(oldData);
     }
   protected:
     bool equal(BufferAdaptor* rhs) const override
@@ -138,6 +147,7 @@ namespace sc{
       return false;
     }
     
+    float* mOldData = 0;
     long mBufnum;
     World* mWorld;
     size_t mRank = 1;
