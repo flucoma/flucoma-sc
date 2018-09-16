@@ -60,11 +60,13 @@ ARGUMENT:: hopSize
 ARGUMENT:: fftSize
 (describe argument here)
 
-returns:: (describe returnvalue here)
-
+returns::
+	Nothing, as the various destination buffers are declared in the function call.
 
 EXAMPLES::
 
 code::
-(some example code)
+	b = Buffer.read(s,"../../../AudioFiles/01-mix.wav".resolveRelative);
+	b.play
 ::
+	

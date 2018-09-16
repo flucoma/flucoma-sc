@@ -31,7 +31,7 @@ d.play;
 (
 Routine{
 	t = Main.elapsedTime;
-	FluidBufTransients.process(s,b.bufnum, 44100, 44100, 0, 0, c.bufnum, d.bufnum, 100, 512,256,1,2,1,12,20);
+	FluidBufTransients.process(s,b.bufnum, 0, 88200, 0, 0, c.bufnum, d.bufnum, 100, 512,256,1,2,1,12,20);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play

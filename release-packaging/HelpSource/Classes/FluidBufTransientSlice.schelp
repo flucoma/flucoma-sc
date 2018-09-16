@@ -1,7 +1,68 @@
-s.reboot
-b = Buffer.read(s,"/Users/owen/Desktop/denoise_stn/sources/01-mix.wav",0,44100);
-c = Buffer.new
-FluidBufTransientSlice.process(s,b,0,-1,0,-1,c,20,1024,1024,0,3,1.1,14,25)
-//Num frames => num transients, values = indices (in samps)
-c.query
+TITLE:: FluidBufTransientSlice
+summary:: Buffer-Based Transient-Based Slicer
+categories:: Libraries>FluidDecomposition
+related:: Guides/FluCoMa, Guides/FluidDecomposition
 
+DESCRIPTION::
+A non-real-time transient-based slice extractor implementing  footnote::This  was made possible thanks to the FluCoMa project (http://www.flucoma.org/) funded by the European Research Council (https://erc.europa.eu/) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+
+
+CLASSMETHODS::
+
+METHOD:: process
+(describe method here)
+
+ARGUMENT:: server
+(describe argument here)
+
+ARGUMENT:: srcBufNum
+(describe argument here)
+
+ARGUMENT:: startAt
+(describe argument here)
+
+ARGUMENT:: nFrames
+(describe argument here)
+
+ARGUMENT:: startChan
+(describe argument here)
+
+ARGUMENT:: nChans
+(describe argument here)
+
+ARGUMENT:: transBufNum
+(describe argument here)
+
+ARGUMENT:: order
+(describe argument here)
+
+ARGUMENT:: blockSize
+(describe argument here)
+
+ARGUMENT:: padding
+(describe argument here)
+
+ARGUMENT:: skew
+(describe argument here)
+
+ARGUMENT:: threshFwd
+(describe argument here)
+
+ARGUMENT:: threshBack
+(describe argument here)
+
+ARGUMENT:: windowSize
+(describe argument here)
+
+ARGUMENT:: debounce
+(describe argument here)
+
+returns::
+	Nothing, as the various destination buffers are declared in the function call.
+
+EXAMPLES::
+
+code::
+(some example code)
+::
+	

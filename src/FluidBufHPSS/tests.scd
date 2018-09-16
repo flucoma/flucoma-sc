@@ -36,3 +36,13 @@ Routine{
 	(Main.elapsedTime - t).postln;
 }.play
 );
+
+
+// owen's sexy example (The world's most expensive stereoizer)
+
+(
+{
+	var hpss = FluidHPSS.ar(PlayBuf.ar(1,b.bufnum,loop:1),harmonicBinaryMask:1,percussiveBinaryMask:1,  harmonicThreshAmp1:SinOsc.kr(1.5,mul:20,add:20),harmonicThreshAmp2:SinOsc.kr(3,mul:25,add:25), percussiveThreshAmp1:SinOsc.kr(1.6,0,mul:30,add:30),percussiveThreshAmp2:SinOsc.kr(1.7,0,mul:17,add:24));
+	[hpss[2]  + 0.5 * hpss[0], hpss[1] + 0.5 * hpss[0]];
+}.play;
+)

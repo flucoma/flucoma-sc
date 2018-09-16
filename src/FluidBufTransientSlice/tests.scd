@@ -12,7 +12,7 @@ d = Buffer.new(s);
 // without basic params
 Routine{
 	t = Main.elapsedTime;
-	FluidBufTransients.process(s,b.bufnum, transBufNum:c.bufnum, resBufNum:d.bufnum);
+	FluidBufTransientSlice.process(s,b.bufnum, transBufNum:c.bufnum, resBufNum:d.bufnum);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play

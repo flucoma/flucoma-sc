@@ -31,7 +31,7 @@ d.play;
 (
 Routine{
 	t = Main.elapsedTime;
-	FluidBufSines.process(s,b.bufnum, 44100, 44100, 0, 0, c.bufnum, d.bufnum, 50,0.2,5,0.2,0.9,2048,512,4096); // need to change these for something sensible
+	FluidBufSines.process(s,b.bufnum, 44100, 88200, 0, 0, c.bufnum, d.bufnum, 30,0.3,3,0.1,0.9,2048,512,4096);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play
