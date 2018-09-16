@@ -1,13 +1,11 @@
 FluidBufNoveltySlice{
-		*process { arg server, src, offsetframes = 0, numframes = -1, offsetchans = 0, numchans = -1, transbuf, kernelsize = 3, threshold = 0.8, winsize = 1024, hopsize = 512, fftsize = 2048;
+		*process { arg server, srcBufNum, startAt = 0, nFrames = -1, startChan = 0, nChans = -1, transBufNum, kernelSize = 3, threshold = 0.8, winSize = 1024, hopSize = 512, fftSize = 2048;
+
+		if(srcBufNum.isNil) { Error("Invalid buffer").format(thisMethod.name, this.class.name).throw};
+		if(transBufNum.isNil) { Error("Invalid buffer").format(thisMethod.name, this.class.name).throw};
 
 		server = server ? Server.default;
-		if(src.isNil) {Error("Invalid Source Buffer").format(thisMethod.name, this.class.name).throw};
-		if(transbuf.isNil) {Error("Invalid Slices Buffer").format(thisMethod.name, this.class.name).throw};
-			server.sendMsg(\cmd, \BufNoveltySlice, src, offsetframes, numframes, offsetchans, numchans,
-transbuf, kernelsize, threshold, winsize, hopsize, fftsize);
 
-
-
-}
+		server.sendMsg(\cmd, \BufNoveltySlice, srcBufNum, startAt, nFrames, startChan, nChans, transBufNum, kernelSize, threshold, winSize, hopSize, fftSize);
+	}
 }

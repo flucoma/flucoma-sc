@@ -1,4 +1,4 @@
-TITLE:: FluidBufTransientSlice
+TITLE:: FluidBufNoveltySlice
 summary:: Buffer-Based Transient-Based Slicer
 categories:: Libraries>FluidDecomposition
 related:: Guides/FluCoMa, Guides/FluidDecomposition
@@ -33,28 +33,19 @@ ARGUMENT:: nChans
 ARGUMENT:: transBufNum
 (describe argument here)
 
-ARGUMENT:: order
+ARGUMENT:: kernelSize
 (describe argument here)
 
-ARGUMENT:: blockSize
+ARGUMENT:: threshold
 (describe argument here)
 
-ARGUMENT:: padding
+ARGUMENT:: winSize
 (describe argument here)
 
-ARGUMENT:: skew
+ARGUMENT:: hopSize
 (describe argument here)
 
-ARGUMENT:: threshFwd
-(describe argument here)
-
-ARGUMENT:: threshBack
-(describe argument here)
-
-ARGUMENT:: windowSize
-(describe argument here)
-
-ARGUMENT:: debounce
+ARGUMENT:: fftSize
 (describe argument here)
 
 returns::

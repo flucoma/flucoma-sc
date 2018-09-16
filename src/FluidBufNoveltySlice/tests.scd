@@ -3,15 +3,15 @@ s.reboot
 // test for efficiency
 
 (
-b = Buffer.read(s,"/Users/owen/Box Sync/FluCoMa/Temporary/GLRSegmentation/SegmentationExample.wav");
+b = Buffer.read(s,"../../release-packaging/AudioFiles/Tremblay-AaS-AcousticStrums-M.wav".resolveRelative);
 c = Buffer.new(s);
 )
-b.query
+
 (
 // with basic params
 Routine{
 	t = Main.elapsedTime;
-	FluidBufNoveltySlice.process(s,b.bufnum, transbuf:c.bufnum, threshold:0.5);
+	FluidBufNoveltySlice.process(s,b.bufnum, transBufNum: c.bufnum, threshold:0.6);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play
@@ -19,6 +19,7 @@ Routine{
 
 //check the number of slices
 c.query;
+c.getn(0,34,{|x|x.postln})
 
 //loops over a splice
 (
@@ -63,7 +64,7 @@ c.query;
 (
 Routine{
 	t = Main.elapsedTime;
-	FluidBufNoveltySlice.process(s,b.bufnum, 44100, 44100, 0, 0, c.bufnum, d.bufnum, 100, 512,256,1,2,1,12,20);
+	FluidBufNoveltySlice.process(s,b.bufnum, 44100, 44100, 0, 0, c.bufnum, d.bufnum, 100, 512,256,1,2,1,12,20);//needs something else
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play
