@@ -1,11 +1,13 @@
-title:: Fluid Decomposition Toolbox
-summary:: This section gives an overview of the toolbox for signal decomposition
-categories:: Libraries>FluidDecomposition
-related:: Classes/FluidBufNMF
+TITLE:: Fluid Decomposition Toolbox
+SUMMARY:: An overview of the FluCoMa toolbox for signal decomposition
+CATEGORIES:: Libraries>FluidDecomposition
+RELATED:: Classes/FluidBufNMF
 
-description::
-This is my description. It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
-This  was made possible thanks to the FluCoMa project (http://www.flucoma.org/) funded by the European Research Council (https://erc.europa.eu/) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+DESCRIPTION::
+This is my description of the Fluid Decomposition Toolkit, part of the FluCoMa project. footnote::
+This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
 
 subsection:: stuff
 This is my subsection
+
+	a note about the curated order of params, from source to necessary to poutine

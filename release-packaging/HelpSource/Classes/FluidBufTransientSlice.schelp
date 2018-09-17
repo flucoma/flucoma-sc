@@ -1,64 +1,68 @@
 TITLE:: FluidBufTransientSlice
-summary:: Buffer-Based Transient-Based Slicer
-categories:: Libraries>FluidDecomposition
-related:: Guides/FluCoMa, Guides/FluidDecomposition
+SUMMARY:: Buffer-Based Transient-Based Slicer
+CATEGORIES:: Libraries>FluidDecomposition, UGens>Buffer
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/FluidBufTransients
+
 
 DESCRIPTION::
-A non-real-time transient-based slice extractor implementing  footnote::This  was made possible thanks to the FluCoMa project (http://www.flucoma.org/) funded by the European Research Council (https://erc.europa.eu/) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+This class implements a non-real-time transient-based slice extractor relying on the same algorithm than Classes/FluidBufTransients using clicks/transients/derivation/anomaly in the signal to estimate the slicing points. It is part of the Fluid Decomposition Toolkit of the FluCoMa project.footnote::This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+
+	The process will return a buffer which contains indices (in sample) of estimated starting points of the different slices.
 
 
 CLASSMETHODS::
 
 METHOD:: process
-(describe method here)
+	This is the method that calls for the slicing to be calculated on a given source buffer.
 
 ARGUMENT:: server
-(describe argument here)
+	The server on which the buffers to be processed are allocated.
 
 ARGUMENT:: srcBufNum
-(describe argument here)
+	The index of the buffer to use as the source material to be sliced through transient identification. The different channels of multichannel buffers will be summed.
 
 ARGUMENT:: startAt
-(describe argument here)
+	Where in the srcBuf should the slicing process start, in sample.
 
 ARGUMENT:: nFrames
-(describe argument here)
+	How many frames should be processed.
 
 ARGUMENT:: startChan
-(describe argument here)
+	For multichannel srcBuf, which channel should be processed.
 
 ARGUMENT:: nChans
-(describe argument here)
+	For multichannel srcBuf, how many channel should be summed.
 
 ARGUMENT:: transBufNum
-(describe argument here)
+	The index of the buffer where the indices (in sample) of the estimated starting points of slices will be written. The first and last points are always the boundary points of the analysis.
 
 ARGUMENT:: order
-(describe argument here)
+	The order in samples of the impulse response filter used to model the estimated continuous signal. It is how many previous samples are used by the algorythm to predict the next one as reference for the model. The higher the order, the more accurate is its spectral definition, not unlike fft, improving low frequency resolution, but it differs in that it is not conected to its temporal resolution.
 
 ARGUMENT:: blockSize
-(describe argument here)
+	The size in samples of frame on which it the algorithm is operating. High values are more cpu intensive, and also determines the maximum transient size, which will not be allowed to be more than half that lenght in size.
 
 ARGUMENT:: padding
-(describe argument here)
+	The size of the handles on each sides of the block simply used for analysis purpose and avoid boundary issues.
 
 ARGUMENT:: skew
-(describe argument here)
+	The hysteresis on the bespoke detection function. Values from -10 to 10 will allow to prioritise change in the low or high register.
 
 ARGUMENT:: threshFwd
-(describe argument here)
+	The threshold of the onset of the smoothed error function. It allows tight start of the identification of the anomaly as it proceeds forward.
 
 ARGUMENT:: threshBack
-(describe argument here)
+	The threshold of the offset of the smoothed error function. As it proceeds backwards in time, it allows tight ending of the identification of the anomaly.
 
 ARGUMENT:: windowSize
-(describe argument here)
+	The averaging window of the error detection function. It needs smoothing as it is very jittery. The longer the window, the less precise, but the less false positive.
 
 ARGUMENT:: debounce
-(describe argument here)
+	The window size in sample within with positive detections will be clumped together to avoid overdetecting in time. No slice will be shorter than this duration.
 
-returns::
-	Nothing, as the various destination buffers are declared in the function call.
+RETURNS::
+	Nothing, as the destination buffer is declared in the function call.
+
 
 EXAMPLES::
 

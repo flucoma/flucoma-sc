@@ -1,11 +1,12 @@
 TITLE:: FluidBufCompose
-summary:: NRT Buffer Compositing Utility
-categories:: Libraries>FluidDecomposition, Libraries/Buffers
+summary:: Buffer Compositing Utility
+categories:: Libraries>FluidDecomposition, UGens>Buffer
 related:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/Buffer
 
+
 DESCRIPTION::
-This Class performs basic compositing on buffers on the non-real-time thread. It avoids having to come back to the language side. It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
-This  was made possible thanks to the FluCoMa project (http://www.flucoma.org/) funded by the European Research Council (https://erc.europa.eu/) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+This class performs basic compositing on buffers on the non-real-time thread. It avoids having to come back to the language side. It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
+This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
 
 	The algorythm will take two buffer in, and will put the composited information at the provided dstBuf.
 
@@ -69,8 +70,9 @@ ARGUMENT:: dstStartChanB
 ARGUMENT:: dstBufNum
 	The bufNum of the destination buffer.
 
-returns::
+RETURNS::
 	Nothing, as the various destination buffers are declared in the function call.
+
 
 EXAMPLES::
 

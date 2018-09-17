@@ -1,18 +1,20 @@
 TITLE:: FluidBufNMF
 summary:: Buffer-Based Non-Negative Matrix Factorisation on Spectral Frames
-categories:: Libraries>FluidDecomposition
+categories:: Libraries>FluidDecomposition, UGens>Buffer
 related:: Guides/FluCoMa, Guides/FluidDecomposition
 
-DESCRIPTION::
-This Class performs Non-Negative Matrix Factorisation (NMF for short) on buffers on the non-real-time thread. It is a good way to get different components out of a buffered signal. It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
-This  was made possible thanks to the FluCoMa project (http://www.flucoma.org/) funded by the European Research Council (https://erc.europa.eu/) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
 
-	The algo will take a buffer in, and will divide it in a number of ranks. It can provide back either or all of the following: LIST::
+DESCRIPTION::
+This class triggers a Non-Negative Matrix Factorisation process (NMF for short) on buffers on the non-real-time thread of the server. It is a good way to get different components out of a buffered signal. It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
+This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+
+	The algorithm will take a buffer in, and will divide it in a number of ranks. It can provide back either or all of the following: LIST::
 	## a spectral contour of each rank in the form of a magnitude spectrogramme (called a dictionary in NMF lingo);
-	## an amplitude envoloppe of each rank in the form of gains for each consecutive frames of the unterlying FFT (called an activation in NMF lingo)
+	## an amplitude envoloppe of each rank in the form of gains for each consecutive frames of the unterlying FFT (called an activation in NMF lingo);
 	## a reconstruction of each rank in audio domain. ::
 
-	The whole process can be related to a vocoder, where each filter is instead a spectrograme of magnitudes (no phase information). More information for musicianly uses of NMF are availabe on this website, and in LINK::Guides/FluCoMa:: overview file.
+	The whole process can be related to a vocoder, where each filter is instead a spectrograme of magnitudes (no phase information). More information for musicianly uses of NMF are availabe in LINK::Guides/FluCoMa:: overview file.
+
 
 CLASSMETHODS::
 
@@ -86,8 +88,9 @@ ARGUMENT:: windowType
 ARGUMENT:: randomSeed
 	The NMF process needs to seed its starting point. If specified, the same values will be used. The default of -1 will randomly assign them. (not implemented yet)
 
-returns::
+RETURNS::
 	Nothing, as the various destination buffers are declared in the function call.
+
 
 EXAMPLES::
 

@@ -1,10 +1,11 @@
 TITLE:: FluidSTFTPass
-summary:: Real-Time FFT/IFFT return trip.
-categories:: UGens>Algebraic
-related:: Classes/UnaryOpFunction
+SUMMARY:: Real-Time FFT/IFFT return trip.
+CATEGORIES:: UGens>Algebraic
+RELATED:: Classes/UnaryOpFunction
+
 
 DESCRIPTION::
-A sanity test for the FluCoMa Real-Time Client FFT/IFFT Wrapper footnote::This  was made possible thanks to the FluCoMa project (http://www.flucoma.org/) funded by the European Research Council (https://erc.europa.eu/) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+This class implements a sanity test for the FluCoMa Real-Time Client FFT/IFFT Wrapper. footnote::This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
 
 
 CLASSMETHODS::
@@ -24,7 +25,7 @@ ARGUMENT:: hopSize
 ARGUMENT:: fftSize
 	How large will the FFT be, zero-padding the buffer to the right size, which should be bigger than the windowSize argument, bigger than 4 samples, and should be a power of 2. This is a way to oversample the FFT for extra precision. The -1 default value will default to windowSize. This is not modulatable.
 
-returns::
+RETURNS::
 	Same as input, delayed by the windowSize.
 
 

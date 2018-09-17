@@ -1,59 +1,82 @@
 TITLE:: FluidBufHPSS
-summary:: Buffer-Based Harmonic-Percussive Source Separation Using Median Filtering
-categories:: Libraries>FluidDecomposition
-related:: Guides/FluCoMa, Guides/FluidDecomposition
+SUMMARY:: Buffer-Based Harmonic-Percussive Source Separation Using Median Filtering
+CATEGORIES:: Libraries>FluidDecomposition, UGens>Buffer
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
+
 
 DESCRIPTION::
-It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
-This  was made possible thanks to the FluCoMa project (http://www.flucoma.org/) funded by the European Research Council (https://erc.europa.eu/) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+This class triggers a Harmonic-Percussive Source Separation process (HPSS for short) on buffers on the non-real-time thread of the server. It implements a few academic papers (TODO:refs) with some bespoke improvements. It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
+This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+
+		The algorithm will take a buffer in, and will divide it in two or three outputs, depending on the mode: LIST::
+	## an harmonic component;
+	## a percussive component;
+	## a residual of the previous two if the flag is set to inter-dependant thresholds. See the modeFlag below.::
+
+	The whole process is based on the assumption that, in a spectrogram, a percussive element will be a vertical line (white-ish spectrum) and an harmonic component will be a horizontal line (same spectral bin sustained over time). The way to remove the noisiness inherent to the analysis is a median filter acting on binary masks, which are then applied to the spectrogram of the full file. More information on median filtering, and on HPSS for musicianly usage, are availabe in LINK::Guides/FluCoMa:: overview file.
 
 
 CLASSMETHODS::
 
 METHOD:: process
-(describe method here)
+This is the method that calls for the HPSS to be calculated on a given source buffer.
 
 ARGUMENT:: server
-(describe argument here)
+	The server on which the buffers to be processed are allocated.
 
 ARGUMENT:: srcBufNum
-(describe argument here)
+	The index of the buffer to use as the source material to be decomposed through the NMF process. The different channels of multichannel buffers will be processing sequentially.
 
 ARGUMENT:: startAt
-(describe argument here)
+	Where in the srcBuf should the NMF process start, in sample.
 
 ARGUMENT:: nFrames
-(describe argument here)
+	How many frames should be processed.
 
 ARGUMENT:: startChan
-(describe argument here)
+	For multichannel srcBuf, which channel should be processed first.
 
 ARGUMENT:: nChans
-(describe argument here)
+	For multichannel srcBuf, how many channel should be processed.
 
 ARGUMENT:: harmBufNum
-(describe argument here)
+	The index of the buffer where the extracted harmonic component will be reconstructed.
 
 ARGUMENT:: percBufNum
-(describe argument here)
+	The index of the buffer where the extracted percussive component will be reconstructed.
+
+ARGUMENT:: resBufNum
+	The index of the buffer where the residual component will be reconstructed in mode 2.
 
 ARGUMENT:: pSize
-(describe argument here)
+	The size in spectral bins of the median filter for the percussive component.
 
 ARGUMENT:: hSize
-(describe argument here)
+	The size in consecutive spectral frames of the median filter for the harmonic component.
+
+ARGUMENT:: modeFlag
+	The way the masking is happening on the spectrogram.
+	table::
+	## 0 || Original paper - the loudest winds.
+	## 1 || Relative mode - the thresholds set next on the harmonic counterpart will decide of a binary masking, and the percussive mask is its complement.
+	## 2 || Inter-dependant mode - the thresholds are independant on the harmonic and percussive component, but are then normalised to make a null sum and their difference is sent to the residual buffer.
+	::
+
+ARGUMENT:: thresholdExplanations
+	soon here
 
 ARGUMENT:: winSize
-(describe argument here)
+	The window size. As HPSS relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
 ARGUMENT:: hopSize
-(describe argument here)
+	The window hope size. As HPSS relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts.
 
 ARGUMENT:: fftSize
-(describe argument here)
+	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision.
 
-returns::
+RETURNS::
 	Nothing, as the various destination buffers are declared in the function call.
+
 
 EXAMPLES::
 

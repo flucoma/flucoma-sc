@@ -1,10 +1,12 @@
 TITLE:: FluidGain
-summary:: Real-Time Buffered Gain Changer
-categories:: UGens>Algebraic
-related::Classes/UnaryOpFunction
+SUMMARY:: Real-Time Buffered Gain Changer
+CATEGORIES:: UGens>Algebraic
+RELATED::Classes/UnaryOpFunction
+
 
 DESCRIPTION::
-A sanity test for the FluCoMa Real-Time Client Wrapper footnote::This  was made possible thanks to the FluCoMa project (http://www.flucoma.org/) funded by the European Research Council (https://erc.europa.eu/) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+This class implements a sanity test for the FluCoMa Real-Time Client Wrapper. footnote::This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+
 
 CLASSMETHODS::
 
@@ -20,8 +22,9 @@ ARGUMENT:: frameSize
 ARGUMENT:: gain
 	Audio or control rate change of the gain.
 
-returns::
+RETURNS::
 	Same as input, delayed by the windowSize, multiplied by the gain factor.
+
 
 EXAMPLES::
 	Summing with the inverse (gain of -1) with a delay of the latency gives us CPU-expensive silence.

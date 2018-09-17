@@ -1,66 +1,76 @@
 TITLE:: FluidBufTransients
-summary:: Buffer-Based Transient Extractor
-categories:: Libraries>FluidDecomposition
-related:: Guides/FluCoMa, Guides/FluidDecomposition
+SUMMARY:: Buffer-Based Transient Extractor
+CATEGORIES:: Libraries>FluidDecomposition, UGens>Buffer
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
+
 
 DESCRIPTION::
-A non-real-time transient extractor implementing  footnote::This  was made possible thanks to the FluCoMa project (http://www.flucoma.org/) funded by the European Research Council (https://erc.europa.eu/) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+This class triggers non-real-time transient extractor on buffers on the non-real-time thread of the server. It implements declicking algorithm from chapter 5 of the classic Digital Audio Restoration by Godsill, Simon J., Rayner, Peter J.W. with some bespoke improvements on the detection function tracking. It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
+This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+
+		The algorithm will take a buffer in, and will divide it in two outputs: LIST::
+	## the transients, estimated from the signal and extracted from it;
+	## the remainder of the material, as estimated by the algorithm.::
+
+	The whole process is based on the assumption that a transient is an element that is deviating from the surrounding material, as sort of click or anomaly. The algorythm then estimates what should have happened if the signal had followed its normal path, and resynthesises this estimate, removing the anomaly which is considered as the transient. More information on signal estimation, and on its musicianly usage, are availabe in LINK::Guides/FluCoMa:: overview file.
+
 
 CLASSMETHODS::
 
 METHOD:: process
-(describe method here)
+This is the method that calls for the transient extraction to be performed on a given source buffer.
 
 ARGUMENT:: server
-(describe argument here)
+	The server on which the buffers to be processed are allocated.
 
 ARGUMENT:: srcBufNum
-(describe argument here)
+	The index of the buffer to use as the source material to be decomposed through the NMF process. The different channels of multichannel buffers will be processing sequentially.
 
 ARGUMENT:: startAt
-(describe argument here)
+	Where in the srcBuf should the NMF process start, in sample.
 
 ARGUMENT:: nFrames
-(describe argument here)
+	How many frames should be processed.
 
 ARGUMENT:: startChan
-(describe argument here)
+	For multichannel srcBuf, which channel should be processed first.
 
 ARGUMENT:: nChans
-(describe argument here)
+	For multichannel srcBuf, how many channel should be processed.
 
 ARGUMENT:: transBufNum
-(describe argument here)
+	The index of the buffer where the extracted transient component will be reconstructed.
 
 ARGUMENT:: resBufNum
-(describe argument here)
+	The index of the buffer where the estimated continuous component will be reconstructed.
 
 ARGUMENT:: order
-	order of the IR filter used to model the signal in samples (how many samples previously are used to predict the next one as reference for the model) - higer = more accurate spectral def - like fft - low end res improv as well but not conencted to temporal res
+	The order in samples of the impulse response filter used to model the estimated continuous signal. It is how many previous samples are used by the algorythm to predict the next one as reference for the model. The higher the order, the more accurate is its spectral definition, not unlike fft, improving low frequency resolution, but it differs in that it is not conected to its temporal resolution.
 
 ARGUMENT:: blockSize
-	size of frame on which it is operating - hi is hi cpu but determines max trans size (not more than half)
+	The size in samples of frame on which it the algorithm is operating. High values are more cpu intensive, and also determines the maximum transient size, which will not be allowed to be more than half that lenght in size.
 
 ARGUMENT:: padding
-	handles on each sides of the block just for analyse - just for model param, not processed
+	The size of the handles on each sides of the block simply used for analysis purpose and avoid boundary issues.
 
 ARGUMENT:: skew
-	-10 to 10 -> chapt 5 or 7 of the digital (kind of hysteresis on bespoke detection function)
+	The hysteresis on the bespoke detection function. Values from -10 to 10 will allow to prioritise change in the low or high register.
 
 ARGUMENT:: threshFwd
-	threshold of the onset of error
+	The threshold of the onset of the smoothed error function. It allows tight start of the identification of the anomaly as it proceeds forward.
 
 ARGUMENT:: threshBack
-	threshold of the offset of the error
+	The threshold of the offset of the smoothed error function. As it proceeds backwards in time, it allows tight ending of the identification of the anomaly.
 
 ARGUMENT:: windowSize
-	averaging window of the error detection function (because it is jittery)
+	The averaging window of the error detection function. It needs smoothing as it is very jittery. The longer the window, the less precise, but the less false positive.
 
 ARGUMENT:: debounce
-	clumps transients within that window size
+	The window size in sample within with positive detections will be clumped together to avoid overdetecting in time.
 
-returns::
+RETURNS::
 	Nothing, as the various destination buffers are declared in the function call.
+
 
 EXAMPLES::
 

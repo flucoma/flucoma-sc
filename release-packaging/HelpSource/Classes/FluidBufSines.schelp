@@ -1,66 +1,72 @@
 TITLE:: FluidBufSines
-summary:: Buffer-Based Sinusoidal Modelling and Extraction
-categories:: Libraries>FluidDecomposition
-related:: Guides/FluCoMa, Guides/FluidDecomposition
+SUMMARY:: Buffer-Based Sinusoidal Modelling and Resynthesis
+CATEGORIES:: Libraries>FluidDecomposition, UGens>Buffer
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
+
 
 DESCRIPTION::
-It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
-This  was made possible thanks to the FluCoMa project (http://www.flucoma.org/) funded by the European Research Council (https://erc.europa.eu/) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+This class triggers a Sinusoidal Modelling process on buffers on the non-real-time thread of the server. It implements a mix and match algorithms taken from classic papers. It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote:: This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+
+	The algorithm will take a buffer in, and will divide it in two parts: LIST::
+	## a reconstruction of what its detects as sinusoidal;
+	## a residual derived from the previous buffert to allow null-summing::
+
+	The whole process is based on the assumption that signal is made of pitched steady components that have a long-enough duration and are periodic enough to be perceived as such, that can be tracked, resynthesised and removed from the original, leaving behind what is considered as non-pitched, noisy, and/or transient. It first tracks the peaks, then checks if they are the continuation of a peak in previous spectral frames, by assigning them a track. More information on this model, and on how it links to musicianly thinking, are availabe in LINK::Guides/FluCoMa:: overview file.
 
 CLASSMETHODS::
 
 METHOD:: process
-(describe method here)
+	This is the method that calls for the sinusoidal estimation to be calculated on a given source buffer and to be resynthesised.
 
 ARGUMENT:: server
-(describe argument here)
+	The server on which the buffers to be processed are allocated.
 
 ARGUMENT:: srcBufNum
-(describe argument here)
+	The index of the buffer to use as the source material to be decomposed through the NMF process. The different channels of multichannel buffers will be processing sequentially.
 
 ARGUMENT:: startAt
-(describe argument here)
+	Where in the srcBuf should the NMF process start, in sample.
 
 ARGUMENT:: nFrames
-(describe argument here)
+	How many frames should be processed.
 
 ARGUMENT:: startChan
-(describe argument here)
+	For multichannel srcBuf, which channel should be processed first.
 
 ARGUMENT:: nChans
-(describe argument here)
+	For multichannel srcBuf, how many channel should be processed.
 
 ARGUMENT:: sineBufNum
-(describe argument here)
+	The index of the buffer where the extracted sinusoidal component will be reconstructed.
 
 ARGUMENT:: resBufNum
-(describe argument here)
+	The index of the buffer where the residual of the sinusoidal component will be reconstructed.
 
 ARGUMENT:: bandwidth
-(describe argument here)
+	The width in bins (OR IN PERCENT IN NEW INTERFACE) of the fragment of the fft window that is considered a normal deviation for a potential continuous sinusoidal track. It has an effect on CPU cost: the widest is more accurate but more computationally expensive.
 
 ARGUMENT:: threshold
-(describe argument here)
+	The normalised threshold, between 0 an 1, to consider a peak as a sinusoidal component from the normalized cross-correlation.
 
 ARGUMENT:: minTrackLen
-(describe argument here)
+	The minimum duration, in spectral frames, for a sinusoidal track to be accepted as a real pitch component. It allows to remove space-monkeys, but is more CPU intensive and might reject quick pitch material.
 
 ARGUMENT:: magWeight
-(describe argument here)
+	The weight of the magnitude proximity of a peak when trying to associate it to an existing track (relative to freqWeight - suggested between 0 to 1)
 
 ARGUMENT:: freqWeight
-(describe argument here)
+	The weight of the frequency proximity of a peak when trying to associate it to an existing track (relative to magWeight - suggested between 0 to 1)
 
 ARGUMENT:: winSize
-(describe argument here)
+	The window size. As sinusoidal estimation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
 ARGUMENT:: hopSize
-(describe argument here)
+	The window hope size. As sinusoidal estimation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts.
 
 ARGUMENT:: fftSize
-(describe argument here)
+	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision.
 
-returns::
+RETURNS::
 	Nothing, as the various destination buffers are declared in the function call.
 
 EXAMPLES::

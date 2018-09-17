@@ -184,7 +184,7 @@ Routine {
 {(PlayBuf.ar(10,c.bufnum).sum)+(-1*PlayBuf.ar(1,y.bufnum))}.play
 
 // find the picking
-{PlayBuf.ar(10,c.bufnum)[4]}.play
+{PlayBuf.ar(10,c.bufnum)[8]}.play
 
 // copy all the other ranks on itself (the 5 above is omited from the array and is in the 2nd compose
 (
@@ -199,14 +199,21 @@ Routine{
 }.play;
 )
 
+// hypothesis 2
+e = Buffer.alloc(s,1,1);
+FluidBufCompose.process(s,srcBufNumA: x.bufnum, startChanA: 8, nChansA: 1, srcBufNumB: x.bufnum, startChanB: 0, nChansB: 1, dstStartChanB: 1, dstBufNum: e.bufnum);
+e.query
+e.plot
+
 //process
 (
 Routine{
-	FluidBufNMF.process(s, b.bufnum, dstBufNum: c.bufnum, dictBufNum: e.bufnum, dictFlag: 2, rank:2);
+	FluidBufNMF.process(s, b.bufnum, dstBufNum: c.bufnum, dictBufNum: x.bufnum, dictFlag: 2, actBufNum:y.bufnum, rank:10);
 	s.sync;
 	c.query;
 }.play;
 )
 
 c.play
-
+y.plot
+y.getn(0,100,{|x|x.postln})
