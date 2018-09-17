@@ -168,6 +168,7 @@ b = Buffer.read(s,"../../release-packaging/AudioFiles/Tremblay-AaS-AcousticStrum
 c = Buffer.new(s);
 x = Buffer.new(s);
 e = Buffer.alloc(s,1,1);
+y = Buffer.alloc(s,1,1);
 )
 
 (
@@ -178,13 +179,17 @@ Routine {
 }.play;
 )
 
+// test nullsum array
+(0..9).do({|chan|FluidBufCompose.process(s,srcBufNumA: c.bufnum, startChanA:chan, nChansA: 1, srcBufNumB: y.bufnum, dstBufNum: y.bufnum)});
+{(PlayBuf.ar(10,c.bufnum).sum)+(-1*PlayBuf.ar(1,y.bufnum))}.play
+
 // find the picking
-{PlayBuf.ar(10,c.bufnum)[5]}.play
+{PlayBuf.ar(10,c.bufnum)[4]}.play
 
 // copy all the other ranks on itself (the 5 above is omited from the array and is in the 2nd compose
 (
 Routine{
-	[ 0, 1, 2, 3, 4, 6, 7, 8, 9 ].do({|chan|FluidBufCompose.process(s,srcBufNumA: x.bufnum, startChanA:chan, nChansA: 1, srcBufNumB: e.bufnum, dstBufNum: e.bufnum)});
+	[ 0, 1, 2, 3, 5, 6, 7, 8, 9 ].do({|chan|FluidBufCompose.process(s,srcBufNumA: x.bufnum, startChanA:chan, nChansA: 1, srcBufNumB: e.bufnum, dstBufNum: e.bufnum)});
 	s.sync;
 	e.query;
 	s.sync;
@@ -194,7 +199,7 @@ Routine{
 }.play;
 )
 
-//
+//process
 (
 Routine{
 	FluidBufNMF.process(s, b.bufnum, dstBufNum: c.bufnum, dictBufNum: e.bufnum, dictFlag: 2, rank:2);
@@ -202,3 +207,6 @@ Routine{
 	c.query;
 }.play;
 )
+
+c.play
+
