@@ -48,10 +48,10 @@ ARGUMENT:: percBufNum
 ARGUMENT:: resBufNum
 	The index of the buffer where the residual component will be reconstructed in mode 2.
 
-ARGUMENT:: harmFilterSize
+ARGUMENT:: harmFiltSize
 	The size in consecutive spectral frames of the median filter for the harmonic component.
 
-ARGUMENT:: percFilterSize
+ARGUMENT:: percFiltSize
 	The size in spectral bins of the median filter for the percussive component.
 
 ARGUMENT:: modeFlag
@@ -62,8 +62,29 @@ ARGUMENT:: modeFlag
 	## 2 || Inter-dependant mode - the thresholds are independant on the harmonic and percussive component, but are then normalised to make a null sum and their difference is sent to the residual buffer.
 	::
 
-ARGUMENT:: thresholdExplanations
-	soon here
+ARGUMENT:: htf1
+	In modes 1 and 2, the frequency of the low part of the threshold for the harmonic filter.
+
+ARGUMENT:: hta1
+	In modes 1 and 2, the threshold of the low part for the harmonic filter. That threshold applies to all frequencies up to htf1.
+
+ARGUMENT:: htf2
+	In modes 1 and 2, the frequency of the hight part of the threshold for the harmonic filter.
+
+ARGUMENT:: hta2
+	In modes 1 and 2, the threshold of the high part for the harmonic filter. That threshold applies to all frequencies above htf2. The threshold between htf1 and htf2 is interpolated between hta1 and hta2.
+
+ARGUMENT:: ptf1
+	In mode 2, the frequency of the low part of the threshold for the percussive filter.
+
+ARGUMENT:: pta1
+	In mode 2, the threshold of the low part for the percussive filter. That threshold applies to all frequencies up to ptf1.
+
+ARGUMENT:: ptf2
+	In mode 2, the frequency of the hight part of the threshold for the percussive filter.
+
+ARGUMENT:: pta2
+	In mode 2, the threshold of the high part for the percussive filter. That threshold applies to all frequencies above ptf2. The threshold between ptf1 and ptf2 is interpolated between pta1 and pta2.
 
 ARGUMENT:: winSize
 	The window size. As HPSS relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
