@@ -48,11 +48,11 @@ ARGUMENT:: percBufNum
 ARGUMENT:: resBufNum
 	The index of the buffer where the residual component will be reconstructed in mode 2.
 
-ARGUMENT:: pSize
-	The size in spectral bins of the median filter for the percussive component.
-
-ARGUMENT:: hSize
+ARGUMENT:: harmFilterSize
 	The size in consecutive spectral frames of the median filter for the harmonic component.
+
+ARGUMENT:: percFilterSize
+	The size in spectral bins of the median filter for the percussive component.
 
 ARGUMENT:: modeFlag
 	The way the masking is happening on the spectrogram.

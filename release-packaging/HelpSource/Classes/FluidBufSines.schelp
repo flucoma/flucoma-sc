@@ -45,7 +45,7 @@ ARGUMENT:: resBufNum
 ARGUMENT:: bandwidth
 	The width in bins (OR IN PERCENT IN NEW INTERFACE) of the fragment of the fft window that is considered a normal deviation for a potential continuous sinusoidal track. It has an effect on CPU cost: the widest is more accurate but more computationally expensive.
 
-ARGUMENT:: threshold
+ARGUMENT:: thresh
 	The normalised threshold, between 0 an 1, to consider a peak as a sinusoidal component from the normalized cross-correlation.
 
 ARGUMENT:: minTrackLen

@@ -42,7 +42,7 @@ ARGUMENT:: order
 ARGUMENT:: blockSize
 	The size in samples of frame on which it the algorithm is operating. High values are more cpu intensive, and also determines the maximum transient size, which will not be allowed to be more than half that lenght in size.
 
-ARGUMENT:: padding
+ARGUMENT:: padSize
 	The size of the handles on each sides of the block simply used for analysis purpose and avoid boundary issues.
 
 ARGUMENT:: skew
@@ -54,7 +54,7 @@ ARGUMENT:: threshFwd
 ARGUMENT:: threshBack
 	The threshold of the offset of the smoothed error function. As it proceeds backwards in time, it allows tight ending of the identification of the anomaly.
 
-ARGUMENT:: windowSize
+ARGUMENT:: winSize
 	The averaging window of the error detection function. It needs smoothing as it is very jittery. The longer the window, the less precise, but the less false positive.
 
 ARGUMENT:: debounce

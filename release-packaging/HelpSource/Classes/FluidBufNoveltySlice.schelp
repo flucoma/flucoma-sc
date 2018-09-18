@@ -39,7 +39,7 @@ ARGUMENT:: transBufNum
 ARGUMENT:: kernelSize
 	The granularity of the window in which the algorithm looks for change, in samples. A small number will be sensitive to short term changes, and a large number should look for long term changes.
 
-ARGUMENT:: threshold
+ARGUMENT:: thresh
 	The threshold in the novelty curve, the latter being derived from running the kernel across the diagonal of the similarity matrix, and looking for peak of changes (NOT CLEAR)
 
 ARGUMENT:: winSize

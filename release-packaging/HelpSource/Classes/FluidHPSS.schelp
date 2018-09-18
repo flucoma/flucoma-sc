@@ -1,11 +1,11 @@
 TITLE:: FluidHPSS
-summary:: (put short description here)
-categories:: Libraries>FluidDecomposition
-related:: Guides/FluCoMa, Guides/FluidDecomposition
+SUMMARY:: (put short description here)
+CATEGORIES:: Libraries>FluidDecomposition
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
 
 DESCRIPTION::
 It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
-This  was made possible thanks to the FluCoMa project (http://www.flucoma.org/) funded by the European Research Council (https://erc.europa.eu/) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
 
 
 CLASSMETHODS::
@@ -16,48 +16,37 @@ METHOD:: ar
 ARGUMENT:: in
 (describe argument here)
 
-ARGUMENT:: percussiveFilterSize
+ARGUMENT:: harmFilterSize
 (describe argument here)
 
-ARGUMENT:: harmonicFilterSize
+ARGUMENT:: percFilterSize
 (describe argument here)
 
-ARGUMENT:: percussiveThreshold
-(describe argument here)
+ARGUMENT:: modeFlag
+	The way the masking is happening on the spectrogram.
+	table::
+	## 0 || Original paper - the loudest winds.
+	## 1 || Relative mode - the thresholds set next on the harmonic counterpart will decide of a binary masking, and the percussive mask is its complement.
+	## 2 || Inter-dependant mode - the thresholds are independant on the harmonic and percussive component, but are then normalised to make a null sum and their difference is sent to the residual buffer.
+	::
 
-ARGUMENT:: harmonicThreshold
-(describe argument here)
+ARGUMENT:: thresholdExplanations
+	soon here
 
-ARGUMENT:: windowSize
-(describe argument here)
+ARGUMENT:: winSize
+	The window size. As HPSS relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
 ARGUMENT:: hopSize
-(describe argument here)
+	The window hope size. As HPSS relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts.
 
 ARGUMENT:: fftSize
-(describe argument here)
+	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision.
 
-returns:: (describe returnvalue here)
-
-
-INSTANCEMETHODS::
-
-METHOD:: checkInputs
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: init
-(describe method here)
-
-ARGUMENT::  ... theInputs
-(describe argument here)
-
-returns:: (describe returnvalue here)
-
+RETURNS::
+(describe returnvalue here)
 
 EXAMPLES::
 
-code::
-
+CODE::
+safdsad
 ::

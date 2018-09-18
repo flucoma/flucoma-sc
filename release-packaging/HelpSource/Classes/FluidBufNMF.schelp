@@ -67,13 +67,13 @@ ARGUMENT:: actFlag
 ARGUMENT:: rank
 	The number of elements the NMF algorythim will try to divide the spectrogram of the source in.
 
-ARGUMENT:: iterations
+ARGUMENT:: nIter
 	The NMF process is iterative, trying to converge to the smallest error in its factorisation. The number of iterations will decide how many times it tries to adjust its guestimates. Higher numbers here will be more CPU expensive, lower numbers will be more unpredictable in quality.
 
 ARGUMENT:: sortFlag
 	This allows to choose between the different methods of sorting the ranks in order to get similar sonic qualities on a given rank (not implemented yet)
 
-ARGUMENT:: windowSize
+ARGUMENT:: winSize
 	The window size. As NMF relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
 ARGUMENT:: hopSize
@@ -82,10 +82,10 @@ ARGUMENT:: hopSize
 ARGUMENT:: fftSize
 	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision.
 
-ARGUMENT:: windowType
+ARGUMENT:: winType
 	The inner FFT/IFFT windowing type (not implemented yet)
 
-ARGUMENT:: randomSeed
+ARGUMENT:: randSeed
 	The NMF process needs to seed its starting point. If specified, the same values will be used. The default of -1 will randomly assign them. (not implemented yet)
 
 RETURNS::
