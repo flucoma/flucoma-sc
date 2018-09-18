@@ -11,7 +11,7 @@ This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ 
 CLASSMETHODS::
 
 METHOD:: ar
-(describe method here)
+	The audio rate version of the object.
 
 ARGUMENT:: in
 (describe argument here)
@@ -41,7 +41,8 @@ ARGUMENT:: debounce
 (describe argument here)
 
 RETURNS::
-	(describe returnvalue here)
+	An array of two audio streams: [0] is the transient extracted, [1] is the rest. The latency between the input and the output is (blockSize + padSize - order) samples.
+
 
 EXAMPLES::
 

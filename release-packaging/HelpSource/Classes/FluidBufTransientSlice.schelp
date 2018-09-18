@@ -46,7 +46,7 @@ ARGUMENT:: padSize
 	The size of the handles on each sides of the block simply used for analysis purpose and avoid boundary issues.
 
 ARGUMENT:: skew
-	The hysteresis on the bespoke detection function. Values from -10 to 10 will allow to prioritise change in the low or high register.
+	The nervousness of the bespoke detection function with values from -10 to 10. It allows to decide how peaks are amplified or smoothed before the thresholding. High values increase the sensitivity to small variations.
 
 ARGUMENT:: threshFwd
 	The threshold of the onset of the smoothed error function. It allows tight start of the identification of the anomaly as it proceeds forward.

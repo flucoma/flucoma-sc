@@ -23,7 +23,7 @@ ARGUMENT:: gain
 	Audio or control rate change of the gain.
 
 RETURNS::
-	Same as input, delayed by the windowSize, multiplied by the gain factor.
+	Same as input, delayed by the frameSize, multiplied by the gain factor.
 
 
 EXAMPLES::

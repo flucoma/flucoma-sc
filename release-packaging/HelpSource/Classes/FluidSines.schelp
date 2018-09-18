@@ -11,7 +11,7 @@ This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ 
 CLASSMETHODS::
 
 METHOD:: ar
-(describe method here)
+	The audio rate version of the object.
 
 ARGUMENT:: in
 (describe argument here)
@@ -40,7 +40,8 @@ ARGUMENT:: hopSize
 ARGUMENT:: fftSize
 (describe argument here)
 
-RETURNS:: (describe returnvalue here)
+RETURNS::
+	An array of two audio streams: [0] is the harmonic part extracted, [1] is the rest. The latency between the input and the output is (( hopSize * minTrackLen) + windowSize) samples.
 
 
 EXAMPLES::

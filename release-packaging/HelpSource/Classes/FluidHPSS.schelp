@@ -11,7 +11,7 @@ This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ 
 CLASSMETHODS::
 
 METHOD:: ar
-(describe method here)
+	The audio rate version of the object.
 
 ARGUMENT:: in
 (describe argument here)
@@ -43,10 +43,12 @@ ARGUMENT:: fftSize
 	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision.
 
 RETURNS::
-(describe returnvalue here)
+	An array of three audio streams: [0] is the harmonic part extracted, [1] is the percussive part extracted, [2] is the rest. The latency between the input and the output is TBC samples.
+
 
 EXAMPLES::
 
 CODE::
 safdsad
 ::
+	
