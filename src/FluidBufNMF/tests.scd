@@ -184,36 +184,31 @@ Routine {
 {(PlayBuf.ar(10,c.bufnum).sum)+(-1*PlayBuf.ar(1,y.bufnum))}.play
 
 // find the picking
-{PlayBuf.ar(10,c.bufnum)[8]}.play
+{PlayBuf.ar(10,c.bufnum)[2]}.play
 
-// copy all the other ranks on itself (the 5 above is omited from the array and is in the 2nd compose
+// copy all the other ranks on itself (the 2 above is omited from the array and is in the 2nd compose
 (
 Routine{
-	[ 0, 1, 2, 3, 5, 6, 7, 8, 9 ].do({|chan|FluidBufCompose.process(s,srcBufNumA: x.bufnum, startChanA:chan, nChansA: 1, srcBufNumB: e.bufnum, dstBufNum: e.bufnum)});
+	[ 0, 1, 3, 4, 5, 6, 7, 8, 9 ].do({|chan|FluidBufCompose.process(s,srcBufNumA: x.bufnum, startChanA:chan, nChansA: 1, srcBufNumB: e.bufnum, dstBufNum: e.bufnum)});
 	s.sync;
 	e.query;
 	s.sync;
-	FluidBufCompose.process(s,srcBufNumA: x.bufnum, startChanA: 5, nChansA: 1, srcBufNumB: e.bufnum, dstStartChanB: 1, dstBufNum: e.bufnum);
+	FluidBufCompose.process(s,srcBufNumA: x.bufnum, startChanA: 2, nChansA: 1, srcBufNumB: e.bufnum, dstStartChanB: 1, dstBufNum: e.bufnum);
 	s.sync;
 	e.query;
 }.play;
 )
 
-// hypothesis 2
-e = Buffer.alloc(s,1,1);
-FluidBufCompose.process(s,srcBufNumA: x.bufnum, startChanA: 8, nChansA: 1, srcBufNumB: x.bufnum, startChanB: 0, nChansB: 1, dstStartChanB: 1, dstBufNum: e.bufnum);
-e.query
-e.plot
-
 //process
 (
 Routine{
-	FluidBufNMF.process(s, b.bufnum, dstBufNum: c.bufnum, dictBufNum: x.bufnum, dictFlag: 2, actBufNum:y.bufnum, rank:10);
+	FluidBufNMF.process(s, b.bufnum, dstBufNum: c.bufnum, dictBufNum: e.bufnum, dictFlag: 2, actBufNum:y.bufnum, rank:2);
 	s.sync;
 	c.query;
 }.play;
 )
 
 c.play
+e.plot
+y.query
 y.plot
-y.getn(0,100,{|x|x.postln})

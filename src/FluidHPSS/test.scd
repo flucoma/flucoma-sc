@@ -6,9 +6,11 @@ b.play
 // basic param
 {FluidHPSS.ar(PlayBuf.ar(1,b.bufnum,loop:1))}.play
 
-// sexier params
-{FluidHPSS.ar(PlayBuf.ar(1,b.bufnum,loop:1),17,31,0,0,1024,512,2048)}.play
+// params in mode 1
+{FluidHPSS.ar(PlayBuf.ar(1,b.bufnum,loop:1),17,31,1,0.05,40,0.1,-40)}.play
 
+// params in mode 2
+{FluidHPSS.ar(PlayBuf.ar(1,b.bufnum,loop:1),17,31,2,0.05,40,0.1,-40, 0.1, -10, 0.2, 10)}.play
 
 
 
