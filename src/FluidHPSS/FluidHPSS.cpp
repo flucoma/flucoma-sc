@@ -118,10 +118,10 @@ namespace hpss{
     };
     
     std::map<std::string, Constraint> paramConstraints{
-      {"pthreshf1",{"pthreshf2", std::less<double>()}},
-      {"hthreshf1",{"hthreshf2", std::less<double>()}},
-      {"pthreshf2",{"pthreshf1", std::greater<double>()}},
-      {"hthreshf2",{"hthreshf1", std::greater<double>()}}
+      {"ptf1",{"pthreshf2", std::less<double>()}},
+      {"htf1",{"htf2", std::less<double>()}},
+      {"ptf2",{"ptf1", std::greater<double>()}},
+      {"htf2",{"htf1", std::greater<double>()}}
     };
     
 
