@@ -72,7 +72,30 @@ RETURNS::
 EXAMPLES::
 
 code::
-	b = Buffer.read(s,"../../../AudioFiles/01-mix.wav".resolveRelative);
-	b.play
+// create some buffers
+(
+b = Buffer.read(s,"../../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav".resolveRelative);
+c = Buffer.new(s);
+d = Buffer.new(s);
+)
+
+// run the process with basic parameters
+(
+Routine{
+	t = Main.elapsedTime;
+	FluidBufSines.process(s, b.bufnum, sineBufNum: c.bufnum, resBufNum:d.bufnum);
+	s.sync;
+	(Main.elapsedTime - t).postln;
+}.play
+)
+
+// listen to each component
+c.query;
+c.play;
+d.query;
+d.play;
+
+//nullsumming tests
+{(PlayBuf.ar(1,c.bufnum))+(PlayBuf.ar(1,d.bufnum))-(PlayBuf.ar(1,b.bufnum,doneAction:2))}.play
 ::
 	
