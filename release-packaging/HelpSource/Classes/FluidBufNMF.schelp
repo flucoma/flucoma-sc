@@ -8,9 +8,9 @@ DESCRIPTION::
 The FluidBufNMF object decomposes the spectrum of a sound into a number of components using Non-Negative Matrix Factorisation (NMF) footnote:: Lee, Daniel D., and H. Sebastian Seung. 1999. ‘Learning the Parts of Objects by Non-Negative Matrix Factorization’. Nature 401 (6755): 788–91. https://doi.org/10.1038/44565.
 ::. NMF has been a popular technique in signal processing research for things like source separation and transcription, although its creative potential is so far relatively  unexplored.
 
-The algorithm  takes a buffer in and divides it into a number of components, determined by the rank argument. It works iteratively, by trying to find a combination of spectral templates ('dictionaries') and envelopes ('activations') that yield the original magnitude spectrogram when added together. By and large, there is no unique answer to this question (i.e. there are different ways of accounting for an evolving spectrum in terms of some set of templates and envelopes). In its basic form, NMF is a form of unsupervised learning: it starts with some random data and then converges towards something that minimizes the distance between its generated data and the original:it tends to converge very quickly at first and then level out. Fewer iterations mean less processing, but also less predictable results.
+The algorithm takes a buffer in and divides it into a number of components, determined by the rank argument. It works iteratively, by trying to find a combination of spectral templates ('dictionaries') and envelopes ('activations') that yield the original magnitude spectrogram when added together. By and large, there is no unique answer to this question (i.e. there are different ways of accounting for an evolving spectrum in terms of some set of templates and envelopes). In its basic form, NMF is a form of unsupervised learning: it starts with some random data and then converges towards something that minimizes the distance between its generated data and the original:it tends to converge very quickly at first and then level out. Fewer iterations mean less processing, but also less predictable results.
 
-The obect can provide back either or all of the following: LIST::
+The object can provide back either or all of the following: LIST::
 	## a spectral contour of each component in the form of a magnitude spectrogram (called a dictionary in NMF lingo);
 	## an amplitude envolope of each component in the form of gains for each consecutive frame of the unterlying spectrogram (called an activation in NMF lingo);
 	## a reconstruction of each rank in the time domain. ::
@@ -22,7 +22,6 @@ Some additional options and flexibility can be found through combinations of the
 If supplying pre-formed data, it's up to the user to make sure that the supplied buffers are the right size: LIST::
 ## dictionaries must be STRONG::(fft size / 2) + 1:: frames and STRONG::(rank * input channels):: channels
 ## activations  must be STRONG::(input frames / hopSize) + 1:: frames and STRONG::(rank * input channels):: channels
-
 ::
 
 In this implementation, the components are reconstructed by masking the ogriginal spectrum, such that they will sum to yield the original sound.
@@ -116,7 +115,131 @@ RETURNS::
 EXAMPLES::
 
 code::
-	b = Buffer.read(s,"../../../AudioFiles/01-mix.wav".resolveRelative);
-	b.play
+// set some buffers and parameters
+(
+b = Buffer.read(s,"../../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav".resolveRelative);
+c = Buffer.new(s);
+x = Buffer.new(s);
+y = Buffer.new(s);
+~fft_size = 1024;
+~frame_size = 512;
+~hop_size = 256;
+~which_rank = 0;
+)
+
+// matrix factorisation, requesting everything
+(
+Routine{
+	t = Main.elapsedTime;
+	FluidBufNMF.process(s,b.bufnum, 0,-1,0,-1,c.bufnum,x.bufnum,0,y.bufnum,0,5,100,0,~frame_size,~hop_size,~fft_size);
+	s.sync;
+	(Main.elapsedTime - t).postln;
+	s.sync;
+	c.query;
+	s.sync;
+	x.query;
+	s.sync;
+	y.query;
+}.play
+)
+
+//look at the resynthesised ranks, the dictionaries and the activations
+c.plot;x.plot; y.plot;
+//null test of the sum of sources
+{(PlayBuf.ar(5,c.bufnum,doneAction:2).sum)+(-1*PlayBuf.ar(1,b.bufnum,doneAction:2))}.play
+
+// play the ranks spread in the stereo field
+{Splay.ar(PlayBuf.ar(5,c.bufnum,doneAction:2))}.play
+
+//play a single source
+{PlayBuf.ar(5,c.bufnum,doneAction:2)[~which_rank].dup}.play
+
+//play noise using one of the dictionaries as filter.
+(
+{
+	var chain;
+	chain = FFT(LocalBuf(~fft_size), WhiteNoise.ar());
+
+	chain = chain.pvcollect(~fft_size, {|mag, phase, index|
+		[mag * BufRd.kr(5,x.bufnum,DC.kr(index),0,1)[~which_rank]];
+	});
+
+	IFFT(chain);
+}.play
+)
+
+//play noise using one of the activations as envelope.
+{WhiteNoise.ar(BufRd.kr(5,y.bufnum,Phasor.ar(1,1/~hop_size,0,(b.numFrames / ~hop_size + 1)),0,1)[~which_rank])*0.5}.play
+
+//play noise through both matching activation and filter
+(
+{
+	var chain;
+	chain = FFT(LocalBuf(~fft_size), WhiteNoise.ar(BufRd.kr(5,y.bufnum,Phasor.ar(1,1/~hop_size,0,(b.numFrames / ~hop_size + 1)),0,1)[~which_rank]*12),0.5,1);
+
+	chain = chain.pvcollect(~fft_size, {|mag, phase, index|
+		[mag * BufRd.kr(5,x.bufnum,DC.kr(index),0,1)[~which_rank]];
+	});
+
+	[0,IFFT(chain)];
+}.play
+)
+
+::
+	STRONG::Fixed Dictionnaries:: The process can be trained, and the learnt dictionaries or activations can be used as templates.
+
+	CODE::
+
+	//set some buffers
+(
+b = Buffer.read(s,"../../AudioFiles/Tremblay-AaS-AcousticStrums-M.wav".resolveRelative);
+c = Buffer.new(s);
+x = Buffer.new(s);
+e = Buffer.alloc(s,1,1);
+y = Buffer.alloc(s,1,1);
+)
+
+	// train only 2 seconds
+(
+Routine {
+	FluidBufNMF.process(s,b.bufnum,0,88200,0,1, c.bufnum, x.bufnum, rank:10);
+	s.sync;
+	c.query;
+}.play;
+)
+
+// find the rank that has the picking sound by changing which channel to listen to
+(
+	~element = 0;
+	{PlayBuf.ar(10,c.bufnum)[~element]}.play
+)
+
+// copy all the other ranks on itself and the picking dictionnary as the sole component of the 1st channel
+(
+Routine{
+			(0..9).remove(~element).do({|chan|FluidBufCompose.process(s,srcBufNumA: x.bufnum, startChanA:chan, nChansA: 1, srcBufNumB: e.bufnum, dstBufNum: e.bufnum)});
+	s.sync;
+	e.query;
+	s.sync;
+	FluidBufCompose.process(s,srcBufNumA: x.bufnum, startChanA: ~element, nChansA: 1, srcBufNumB: e.bufnum, dstStartChanB: 1, dstBufNum: e.bufnum);
+	s.sync;
+	e.query;
+}.play;
+)
+
+//process the whole file, splitting it with the 2 trained dictionnaries
+(
+Routine{
+	FluidBufNMF.process(s, b.bufnum, dstBufNum: c.bufnum, dictBufNum: e.bufnum, dictFlag: 2, actBufNum:y.bufnum, rank:2);
+	s.sync;
+	c.query;
+}.play;
+)
+
+// play the result: pick on the left, rest on the right.
+c.play
+
+// it even null-sums
+{(PlayBuf.ar(2,c.bufnum,doneAction:2).sum)-(PlayBuf.ar(1,b.bufnum,doneAction:2))}.play
 ::
 	
