@@ -5,10 +5,14 @@ related:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/Buffer
 
 
 DESCRIPTION::
-This class performs basic compositing on buffers on the non-real-time thread. It avoids having to come back to the language side. It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
+A FluidBufCompose object provides a flexible utility for combining the contents of buffers on the server. It can be used for thing like mixing down multichannel buffers, or converting from left-right stereo to mid-side. We use it extensively in our example code.
+
+At its most simple, the object copies the content of two source buffers into a destination buffer. The flexibility comes from the various flags controlling which portions and channels of the sources to use, and by applying gains (which can be positive or negative) to the source data.
+
+It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
 This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
 
-	The algorythm will take two buffer in, and will put the composited information at the provided dstBuf.
+The algorithm takes two buffers in, and writes the composited information at the provided dstBuf. These buffer arguments can all point to the same buffer, which gives great flexibility in transforming and reshaping.
 
 
 CLASSMETHODS::
@@ -73,6 +77,8 @@ ARGUMENT:: dstBufNum
 RETURNS::
 	Nothing, as the various destination buffers are declared in the function call.
 
+DISCUSSION::
+	It is important to understand the rules used for determining the final desintinaiton buffer dimensions to get the most out of this object. The destination buffer will be resized to the maxima of the requsted source numFrames and numChannels, independently of whether the source buffers are that big or not. Frames will be written up to the limit of actually available samples (meaning you can create zero padding);channels  will be written modulo the available channels, taking into account the channel offsets, meaning you can have channels repeat or loop into the desintation buffer's channels. See the examples below.
 
 EXAMPLES::
 
