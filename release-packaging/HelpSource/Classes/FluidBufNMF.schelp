@@ -5,15 +5,36 @@ related:: Guides/FluCoMa, Guides/FluidDecomposition
 
 
 DESCRIPTION::
-This class triggers a Non-Negative Matrix Factorisation process (NMF for short) on buffers on the non-real-time thread of the server. It is a good way to get different components out of a buffered signal. It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
-This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+The FluidBufNMF object decomposes the spectrum of a sound into a number of components using Non-Negative Matrix Factorisation (NMF) footnote:: Lee, Daniel D., and H. Sebastian Seung. 1999. ‘Learning the Parts of Objects by Non-Negative Matrix Factorization’. Nature 401 (6755): 788–91. https://doi.org/10.1038/44565.
+::. NMF has been a popular technique in signal processing research for things like source separation and transcription, although its creative potential is so far relatively  unexplored.
 
-	The algorithm will take a buffer in, and will divide it in a number of ranks. It can provide back either or all of the following: LIST::
-	## a spectral contour of each rank in the form of a magnitude spectrogramme (called a dictionary in NMF lingo);
-	## an amplitude envoloppe of each rank in the form of gains for each consecutive frames of the unterlying FFT (called an activation in NMF lingo);
-	## a reconstruction of each rank in audio domain. ::
+The algorithm  takes a buffer in and divides it into a number of components, determined by the rank argument. It works iteratively, by trying to find a combination of spectral templates ('dictionaries') and envelopes ('activations') that yield the original magnitude spectrogram when added together. By and large, there is no unique answer to this question (i.e. there are different ways of accounting for an evolving spectrum in terms of some set of templates and envelopes). In its basic form, NMF is a form of unsupervised learning: it starts with some random data and then converges towards something that minimizes the distance between its generated data and the original:it tends to converge very quickly at first and then level out. Fewer iterations mean less processing, but also less predictable results.
 
-	The whole process can be related to a vocoder, where each filter is instead a spectrograme of magnitudes (no phase information). More information for musicianly uses of NMF are availabe in LINK::Guides/FluCoMa:: overview file.
+The obect can provide back either or all of the following: LIST::
+	## a spectral contour of each component in the form of a magnitude spectrogram (called a dictionary in NMF lingo);
+	## an amplitude envolope of each component in the form of gains for each consecutive frame of the unterlying spectrogram (called an activation in NMF lingo);
+	## a reconstruction of each rank in the time domain. ::
+
+The dictionaries and activations can be used to make a kind of vocoder based on what NMF has 'learned' from the original data. Alternatively, taking the matrix product of a dictionary and an activation will yield a synthetic magnitude spectrogram of a component (which could be reconsructed, given some phase informaiton from somewhere).
+
+Some additional options and flexibility can be found through combinations of the dictFlag and actFlag arguments. If this flag is set to 1, then object expects to be supplied with pre-formed spectra (resp. envelopes) that will be used as seeds for the decomposition, providing more guided results. When set to 2, the supplied buffers won't be updated, so become templates to match against instead. Note that having both dictionaries and activations set to 2 doesn't make sense, so the object will complain.
+
+If supplying pre-formed data, it's up to the user to make sure that the supplied buffers are the right size: LIST::
+## dictionaries must be STRONG::(fft size / 2) + 1:: frames and STRONG::(rank * input channels):: channels
+## activations  must be STRONG::(input frames / hopSize) + 1:: frames and STRONG::(rank * input channels):: channels
+
+::
+
+In this implementation, the components are reconstructed by masking the ogriginal spectrum, such that they will sum to yield the original sound.
+
+The whole process can be related to a channel vocoder where, instead of fixed bandpass filters, we get more complex filter shapes that are learned from the data, and the activations correspond to channel envelopes.
+
+More information on possible musicianly uses of NMF are availabe in LINK::Guides/FluCoMa:: overview file.
+
+FluidBufNMF is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
+This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).
+::
+
 
 
 CLASSMETHODS::
