@@ -5,15 +5,24 @@ RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
 
 
 DESCRIPTION::
-This class triggers a Harmonic-Percussive Source Separation process (HPSS for short) on buffers on the non-real-time thread of the server. It implements a few academic papers (TODO:refs) with some bespoke improvements. It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
-This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+A FluidBufHPSS object performs Harmonic-Percussive Source Separation (HPSS) on the contents of a link::Classes/Buffer::. The class performs HPSS as described in its original form footnote::
+Fitzgerald, Derry. 2010. ‘Harmonic/Percussive Separation Using Median Filtering’. In Proceedings DaFx 10. https://arrow.dit.ie/argcon/67.
+:: as well as a variation on the extension propsoed by Driedger et al. footnote::
+Driedger, Jonathan, Meinard Uller, and Sascha Disch. 2014. ‘Extending Harmonic-Percussive Separation of Audio Signals’. In Proc. ISMIR. http://www.terasoft.com.tw/conf/ismir2014/proceedings/T110_127_Paper.pdf.
+::
 
-		The algorithm will take a buffer in, and will divide it in two or three outputs, depending on the mode: LIST::
+The algorithm takes a buffer in, and divides it into two or three outputs, depending on the mode: LIST::
 	## an harmonic component;
 	## a percussive component;
 	## a residual of the previous two if the flag is set to inter-dependant thresholds. See the modeFlag below.::
 
-	The whole process is based on the assumption that, in a spectrogram, a percussive element will be a vertical line (white-ish spectrum) and an harmonic component will be a horizontal line (same spectral bin sustained over time). The way to remove the noisiness inherent to the analysis is a median filter acting on binary masks, which are then applied to the spectrogram of the full file. More information on median filtering, and on HPSS for musicianly usage, are availabe in LINK::Guides/FluCoMa:: overview file.
+It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
+This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).
+::
+
+
+
+ More information on median filtering, and on HPSS for musicianly usage, are availabe in LINK::Guides/FluCoMa:: overview file.
 
 
 CLASSMETHODS::
@@ -25,19 +34,19 @@ ARGUMENT:: server
 	The server on which the buffers to be processed are allocated.
 
 ARGUMENT:: srcBufNum
-	The index of the buffer to use as the source material to be decomposed through the NMF process. The different channels of multichannel buffers will be processing sequentially.
+	The index of the buffer to use as the source material. The channels of multichannel buffers will be processed sequentially.
 
 ARGUMENT:: startAt
-	Where in the srcBuf should the NMF process start, in sample.
+	Where in the srcBuf should the NMF process start, in samples.
 
 ARGUMENT:: nFrames
 	How many frames should be processed.
 
 ARGUMENT:: startChan
-	For multichannel srcBuf, which channel should be processed first.
+	For multichannel srcBuf, which channel to start processing at.
 
 ARGUMENT:: nChans
-	For multichannel srcBuf, how many channel should be processed.
+	For multichannel srcBuf, how many channels should be processed.
 
 ARGUMENT:: harmBufNum
 	The index of the buffer where the extracted harmonic component will be reconstructed.
@@ -49,55 +58,61 @@ ARGUMENT:: resBufNum
 	The index of the buffer where the residual component will be reconstructed in mode 2.
 
 ARGUMENT:: harmFiltSize
-	The size in consecutive spectral frames of the median filter for the harmonic component.
+	The size, in spectral frames, of the median filter for the harmonic component. Must be an odd number, >= 3.
 
 ARGUMENT:: percFiltSize
-	The size in spectral bins of the median filter for the percussive component.
+	The size, in spectral bins, of the median filter for the percussive component. Must be an odd number, >=3
 
 ARGUMENT:: modeFlag
-	The way the masking is happening on the spectrogram.
+	The way the masking is applied to the original spectrogram. (0,1,2)
 	table::
-	## 0 || Original paper - the loudest winds.
-	## 1 || Relative mode - the thresholds set next on the harmonic counterpart will decide of a binary masking, and the percussive mask is its complement.
-	## 2 || Inter-dependant mode - the thresholds are independant on the harmonic and percussive component, but are then normalised to make a null sum and their difference is sent to the residual buffer.
+	## 0 || Fitzgerald's original method of 'Wiener-inspired' filtering. Compllimentary, soft masks are made for the harmonic and percussive parts by allocating some fraction of a point in time-frequency to each. This provides the fewest artefacts, but the weakest separation. The two resulting buffers will sum to exactly the original material.
+	## 1 || Relative mode - Better separation, with more artefacts. The harmonic mask is constructed using a binary decision, based on whether a threshold is exceeded at a given time-frequency point (these are set using htf1, hta1, htf2, hta2, see below). The percussive mask is then formed as the inverse of the harmonic one, meaning that as above, the two components will sum to the original sound.
+
+	## 2 || Inter-dependent mode - Thresholds can be varied independently, but are coupled in effect. Binary masks are made for each of the harmonic and percussive components, but these aren't gurranteed to cover the whole sound. In this case the 'leftovers' will placed into a third buffer. This method tuneable, but hardest to control.
 	::
 
 ARGUMENT:: htf1
-	In modes 1 and 2, the frequency of the low part of the threshold for the harmonic filter.
+	In modes 1 and 2, the frequency of the low part of the threshold for the harmonic filter (0-1)
 
 ARGUMENT:: hta1
-	In modes 1 and 2, the threshold of the low part for the harmonic filter. That threshold applies to all frequencies up to htf1.
+	In modes 1 and 2, the threshold of the low part for the harmonic filter. That threshold applies to all frequencies up to htf1: how much more powerful (in dB) the harmonic median filter needs to be than the percussive median filter for this bin to be counted as harmonic.
 
 ARGUMENT:: htf2
-	In modes 1 and 2, the frequency of the hight part of the threshold for the harmonic filter.
+	In modes 1 and 2, the frequency of the hight part of the threshold for the harmonic filter. (0-1)
 
 ARGUMENT:: hta2
-	In modes 1 and 2, the threshold of the high part for the harmonic filter. That threshold applies to all frequencies above htf2. The threshold between htf1 and htf2 is interpolated between hta1 and hta2.
+	In modes 1 and 2, the threshold of the high part for the harmonic filter. That threshold applies to all frequencies above htf2. The threshold between htf1 and htf2 is interpolated between hta1 and hta2. How much more powerful (in dB) the harmonic median filter needs to be than the percussive median filter for this bin to be counted as harmonic.
 
 ARGUMENT:: ptf1
-	In mode 2, the frequency of the low part of the threshold for the percussive filter.
+	In mode 2, the frequency of the low part of the threshold for the percussive filter. (0-1)
 
 ARGUMENT:: pta1
-	In mode 2, the threshold of the low part for the percussive filter. That threshold applies to all frequencies up to ptf1.
+	In mode 2, the threshold of the low part for the percussive filter. That threshold applies to all frequencies up to ptf1. How much more powerful (in dB) the percussive median filter needs to be than the harmonic median filter for this bin to be counted as percussive.
 
 ARGUMENT:: ptf2
-	In mode 2, the frequency of the hight part of the threshold for the percussive filter.
+	In mode 2, the frequency of the hight part of the threshold for the percussive filter. (0-1)
 
 ARGUMENT:: pta2
-	In mode 2, the threshold of the high part for the percussive filter. That threshold applies to all frequencies above ptf2. The threshold between ptf1 and ptf2 is interpolated between pta1 and pta2.
+	In mode 2, the threshold of the high part for the percussive filter. That threshold applies to all frequencies above ptf2. The threshold between ptf1 and ptf2 is interpolated between pta1 and pta2. How much more powerful (in dB) the percussive median filter needs to be than the harmonic median filter for this bin to be counted as percussive.
 
 ARGUMENT:: winSize
-	The window size. As HPSS relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
+	The window size in samples. As HPSS relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
 ARGUMENT:: hopSize
-	The window hope size. As HPSS relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts.
+	The window hop size in samples. As HPSS relies on spectral frames, we need to move the window forward. It can be any size but low overlap may create audible artefacts.
 
 ARGUMENT:: fftSize
-	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision.
+	The inner FFT/IFFT size. It should be at least 4 samples long; at least the size of the window; and a power of 2. Making it larger than the window size provides interpolation in frequency.
 
 RETURNS::
 	Nothing, as the various destination buffers are declared in the function call.
 
+
+Discussion::
+	HPSS works by using median filters on the spectral magnitudes of a sound. It hinges on a simple modelling assumption that tonal components will tend to yield concentrations of energy across time, spread out in frequency, and percussive components will manifest as concentrations of energy across frequency, spread out in time. By using median filters across time and frequency respectively, we get initial esitmates of the tonal-ness / transient-ness of a point in time and frequency.These are then combined into 'masks' that are applied to the orginal spectral data in order to produce a separation.
+
+	The modeFlag parameter provides different approaches to combinging estimates and producing masks. Some settings (especially in modes 1 & 2) will provide better separation but with more artefacts.These can, in principle, be ameliorated by applying smoothing filters to the masks before transforming back to the time-domain (not yet implemented).
 
 EXAMPLES::
 
