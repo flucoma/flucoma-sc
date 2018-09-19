@@ -31,7 +31,7 @@ d.play;
 (
 Routine{
 	t = Main.elapsedTime;
-	FluidBufHPSS.process(s,b.bufnum, 44100, 44100, 0, 0, c.bufnum, d.bufnum, 51, 31  ,2048,512,4096); // need to change these for something sensible
+	FluidBufHPSS.process(s,b.bufnum, 44100, 44100, 0, 0, c.bufnum, d.bufnum, nil, 51, 31  ,2048,512,4096); // need to change these for something sensible
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play
@@ -42,7 +42,7 @@ Routine{
 
 (
 {
-	var hpss = FluidHPSS.ar(PlayBuf.ar(1,b.bufnum,loop:1),harmonicBinaryMask:1,percussiveBinaryMask:1,  harmonicThreshAmp1:SinOsc.kr(1.5,mul:20,add:20),harmonicThreshAmp2:SinOsc.kr(3,mul:25,add:25), percussiveThreshAmp1:SinOsc.kr(1.6,0,mul:30,add:30),percussiveThreshAmp2:SinOsc.kr(1.7,0,mul:17,add:24));
+	var hpss = FluidHPSS.ar(PlayBuf.ar(1,b.bufnum,loop:1),modeFlag:2,hta1:SinOsc.kr(1.5,mul:20,add:20),hta2:SinOsc.kr(3,mul:25,add:25), pta1:SinOsc.kr(1.6,0,mul:30,add:30),pta2:SinOsc.kr(1.7,0,mul:17,add:24));
 	[hpss[2]  + 0.5 * hpss[0], hpss[1] + 0.5 * hpss[0]];
 }.play;
 )

@@ -11,7 +11,7 @@ c = Buffer.new(s);
 // with basic params
 Routine{
 	t = Main.elapsedTime;
-	FluidBufNoveltySlice.process(s,b.bufnum, transBufNum: c.bufnum, threshold:0.6);
+	FluidBufNoveltySlice.process(s,b.bufnum, transBufNum: c.bufnum, thresh:0.6);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play

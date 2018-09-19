@@ -7,6 +7,6 @@ FluidBufHPSS{
 		harmBufNum = harmBufNum ? -1;
 		percBufNum = percBufNum ? -1;
 
-		server.sendMsg(\cmd, \BufHPSS, srcBufNum, startAt, nFrames, startChan, nChans, harmBufNum, percBufNum, percFiltSize, harmFiltSize, modeFlag, htf1, hta1, htf2, hta2, ptf1, pta1, ptf2, pta2, winSize, hopSize, fftSize);
+		server.sendMsg(\cmd, \BufHPSS, srcBufNum, startAt, nFrames, startChan, nChans, harmBufNum, percBufNum, resBufNum, percFiltSize, harmFiltSize, modeFlag, htf1, hta1, htf2, hta2, ptf1, pta1, ptf2, pta2, winSize, hopSize, fftSize);
 }
 }
