@@ -83,6 +83,38 @@ DISCUSSION::
 EXAMPLES::
 
 code::
-(some example code)
+// load some buffers
+(
+b = Buffer.read(s,"../../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav".resolveRelative);
+c = Buffer.read(s,"../../AudioFiles/Tremblay-SA-UprightPianoPedalWide.wav".resolveRelative);
+d = Buffer.new(s);
+)
+
+// with basic params (basic summing of each full buffer in all dimensions)
+FluidBufCompose.process(s, srcBufNumA: b.bufnum, srcBufNumB: c.bufnum, dstBufNum: d.bufnum);
+d.query;
+d.play;
+
+//constructing a mono buffer, with a quiet punch from the synth, with a choked piano resonance from the left channel
+FluidBufCompose.process(s, srcBufNumA: b.bufnum, nFramesA: 9000, srcGainA: 0.5, srcBufNumB: c.bufnum, startAtB:30000, nFramesB:44100, nChansB:1, srcGainB:0.9, dstBufNum: d.bufnum);
+d.query;
+d.play;
+
+//constructing a stereo buffer, with the end of the mono synth in both channels, with a piano resonance in swapped stereo
+FluidBufCompose.process(s, srcBufNumA: b.bufnum, startAtA: 441000, nChansA: 2, srcGainA: 0.6, srcBufNumB: c.bufnum, nFramesB: 80000, startChanB: 1, nChansB: 2, srcGainB: 0.5, dstStartAtB: 22050, dstStartChanB: 0, dstBufNum: d.bufnum);
+d.query;
+d.play;
+
+//constructing a one second buffer: the first second of each buffer, the mono synth on the right, the piano on the left
+FluidBufCompose.process(s, srcBufNumA: b.bufnum, nFramesA: 44100, nChansA: 1, dstStartChanA: 1, srcBufNumB: c.bufnum, nFramesB:44100, nChansB:1, dstBufNum: d.bufnum);
+d.query;
+d.play;
+
+// growing a buffer on itself
+e = Buffer.alloc(s,1,1);
+FluidBufCompose.process(s,srcBufNumA: b.bufnum, srcBufNumB: e.bufnum, dstBufNum: e.bufnum);
+FluidBufCompose.process(s,srcBufNumA: c.bufnum,  nChansA: 1, srcBufNumB: e.bufnum, dstBufNum: e.bufnum);
+e.plot
+e.play
 ::
 	

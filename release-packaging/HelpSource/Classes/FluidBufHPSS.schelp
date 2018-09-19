@@ -110,14 +110,59 @@ RETURNS::
 
 
 Discussion::
-	HPSS works by using median filters on the spectral magnitudes of a sound. It hinges on a simple modelling assumption that tonal components will tend to yield concentrations of energy across time, spread out in frequency, and percussive components will manifest as concentrations of energy across frequency, spread out in time. By using median filters across time and frequency respectively, we get initial esitmates of the tonal-ness / transient-ness of a point in time and frequency.These are then combined into 'masks' that are applied to the orginal spectral data in order to produce a separation.
+	HPSS works by using median filters on the spectral magnitudes of a sound. It hinges on a simple modelling assumption that tonal components will tend to yield concentrations of energy across time, spread out in frequency, and percussive components will manifest as concentrations of energy across frequency, spread out in time. By using median filters across time and frequency respectively, we get initial esitmates of the tonal-ness / transient-ness of a point in time and frequency. These are then combined into 'masks' that are applied to the orginal spectral data in order to produce a separation.
 
-	The modeFlag parameter provides different approaches to combinging estimates and producing masks. Some settings (especially in modes 1 & 2) will provide better separation but with more artefacts.These can, in principle, be ameliorated by applying smoothing filters to the masks before transforming back to the time-domain (not yet implemented).
+	The modeFlag parameter provides different approaches to combinging estimates and producing masks. Some settings (especially in modes 1 & 2) will provide better separation but with more artefacts. These can, in principle, be ameliorated by applying smoothing filters to the masks before transforming back to the time-domain (not yet implemented).
 
 EXAMPLES::
 
 code::
-	b = Buffer.read(s,"../../../AudioFiles/01-mix.wav".resolveRelative);
-	b.play
-::
+	//load buffers
+	(
+		b = Buffer.read(s,"../../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav".resolveRelative);
+		c = Buffer.new(s);
+		d = Buffer.new(s);
+		e = Buffer.new(s);
+	)
+
+	// run with basic parameters
+	(
+		Routine{
+			t = Main.elapsedTime;
+			FluidBufHPSS.process(s, b.bufnum, harmBufNum: c.bufnum, percBufNum: d.bufnum);
+			s.sync;
+			(Main.elapsedTime - t).postln;
+		}.play
+	);
+
+	//query and play the harmonic
+	c.query;
+	c.play;
+	//querry and play the percussive
+	d.query;
+	d.play;
+
+	//nullsumming tests
+	{(PlayBuf.ar(1,c.bufnum))+(PlayBuf.ar(1,d.bufnum))+(-1*PlayBuf.ar(1,b.bufnum,doneAction:2))}.play
+
+	//more daring parameters, in mode 2
+	(
+		Routine{
+			t = Main.elapsedTime;
+			FluidBufHPSS.process(s, b.bufnum, harmBufNum: c.bufnum, percBufNum: d.bufnum, resBufNum:e.bufnum, harmFiltSize:31, modeFlag:2);
+				s.sync;
+			(Main.elapsedTime - t).postln;
+		}.play
+	);
+
+	//query and play the harmonic
+	c.query;
+	c.play;
+	//query and play the percussive
+	d.query;
+	d.play;
+	//query and play the residual
+	e.query;
+	e.play;
+	::
 	

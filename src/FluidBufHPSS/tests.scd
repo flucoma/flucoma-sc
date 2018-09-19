@@ -6,6 +6,7 @@ s.reboot
 b = Buffer.read(s,"../../release-packaging/AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav".resolveRelative);
 c = Buffer.new(s);
 d = Buffer.new(s);
+e = Buffer.new(s);
 )
 
 (
@@ -22,6 +23,8 @@ c.query;
 c.play;
 d.query;
 d.play;
+e.query;
+e.play;
 
 //nullsumming tests
 {(PlayBuf.ar(1,c.bufnum))+(PlayBuf.ar(1,d.bufnum))+(-1*PlayBuf.ar(1,b.bufnum,doneAction:2))}.play
@@ -31,7 +34,7 @@ d.play;
 (
 Routine{
 	t = Main.elapsedTime;
-	FluidBufHPSS.process(s,b.bufnum, 44100, 44100, 0, 0, c.bufnum, d.bufnum, nil, 51, 31  ,2048,512,4096); // need to change these for something sensible
+	FluidBufHPSS.process(s,b.bufnum, 44100, 44100, 0, 0, c.bufnum, d.bufnum, e.bufnum, 51, 31, 2); // need to change these for something sensible
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play
