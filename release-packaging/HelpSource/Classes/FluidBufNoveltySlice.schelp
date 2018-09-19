@@ -58,5 +58,36 @@ RETURNS::
 EXAMPLES::
 
 code::
-(some example code)
-::
+// load some buffers
+(
+b = Buffer.read(s,"../../AudioFiles/Tremblay-AaS-AcousticStrums-M.wav".resolveRelative);
+c = Buffer.new(s);
+)
+
+(
+// with basic params
+Routine{
+	t = Main.elapsedTime;
+	FluidBufNoveltySlice.process(s,b.bufnum, transBufNum: c.bufnum, thresh:0.6);
+	s.sync;
+	(Main.elapsedTime - t).postln;
+}.play
+)
+
+//check the number of slices: it is the number of frames in the transBuf minus the boundary index.
+c.query;
+
+//loops over a splice with the MouseX
+(
+{
+	BufRd.ar(1, b.bufnum,
+		Phasor.ar(0,1,
+			BufRd.kr(1, c.bufnum,
+				MouseX.kr(0, BufFrames.kr(c.bufnum) - 1), 0, 1),
+			BufRd.kr(1, c.bufnum,
+				MouseX.kr(1, BufFrames.kr(c.bufnum)), 0, 1),
+			BufRd.kr(1,c.bufnum,
+				MouseX.kr(0, BufFrames.kr(c.bufnum) - 1), 0, 1)), 0, 1);
+		}.play;
+)
+	::
