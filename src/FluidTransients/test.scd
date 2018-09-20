@@ -1,4 +1,5 @@
 s.reboot;
+s.quit
 
 b = Buffer.read(s,"../../release-packaging/AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav".resolveRelative);
 
@@ -10,3 +11,4 @@ b = Buffer.read(s,"../../release-packaging/AudioFiles/Tremblay-AaS-SynthTwoVoice
 
 // null test (the process add a latency of (blockSize + padding - order) samples
 {var sig = PlayBuf.ar(1,b.bufnum,loop:1); [FluidTransients.ar(sig).sum - DelayN.ar(sig, 1, ((256 + 128 - 20)/ s.sampleRate))]}.play
+

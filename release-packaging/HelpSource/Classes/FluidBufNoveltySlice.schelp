@@ -60,7 +60,7 @@ EXAMPLES::
 code::
 // load some buffers
 (
-b = Buffer.read(s,"../../AudioFiles/Tremblay-AaS-AcousticStrums-M.wav".resolveRelative);
+b = Buffer.read(s,File.realpath(FluidBufNoveltySlice.class.filenameSymbol).dirname.replace("Classes","AudioFiles/Tremblay-AaS-AcousticStrums-M.wav"));
 c = Buffer.new(s);
 )
 

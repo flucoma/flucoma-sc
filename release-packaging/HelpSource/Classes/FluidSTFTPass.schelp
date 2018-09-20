@@ -1,7 +1,7 @@
 TITLE:: FluidSTFTPass
 SUMMARY:: Real-Time FFT/IFFT return trip.
-CATEGORIES:: UGens>Algebraic
-RELATED:: Classes/UnaryOpFunction
+CATEGORIES:: UGens>Algebraic, Libraries>FluidDecomposition, UGens>Buffer
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition,Classes/UnaryOpFunction
 
 
 DESCRIPTION::

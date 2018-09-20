@@ -4,9 +4,14 @@ CATEGORIES:: Libraries>FluidDecomposition
 RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
 
 DESCRIPTION::
-It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
+This class applies a real-time transient extractor on its input. It implements declicking algorithm from chapter 5 of the classic Digital Audio Restoration by Godsill, Simon J., Rayner, Peter J.W. with some bespoke improvements on the detection function tracking. It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
 This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
 
+		The algorithm will take an audio in, and will divide it in two outputs: LIST::
+	## the transients, estimated from the signal and extracted from it;
+	## the remainder of the material, as estimated by the algorithm.::
+
+	The whole process is based on the assumption that a transient is an element that is deviating from the surrounding material, as sort of click or anomaly. The algorythm then estimates what should have happened if the signal had followed its normal path, and resynthesises this estimate, removing the anomaly which is considered as the transient. More information on signal estimation, and on its musicianly usage, are availabe in LINK::Guides/FluCoMa:: overview file.
 
 CLASSMETHODS::
 
@@ -14,31 +19,31 @@ METHOD:: ar
 	The audio rate version of the object.
 
 ARGUMENT:: in
-(describe argument here)
+	The audio to be processed.
 
 ARGUMENT:: order
-(describe argument here)
+	The order in samples of the impulse response filter used to model the estimated continuous signal. It is how many previous samples are used by the algorythm to predict the next one as reference for the model. The higher the order, the more accurate is its spectral definition, not unlike fft, improving low frequency resolution, but it differs in that it is not conected to its temporal resolution.
 
 ARGUMENT:: blockSize
-(describe argument here)
+	The size in samples of frame on which it the algorithm is operating. High values are more cpu intensive, and also determines the maximum transient size, which will not be allowed to be more than half that lenght in size.
 
 ARGUMENT:: padSize
-(describe argument here)
+	The size of the handles on each sides of the block simply used for analysis purpose and avoid boundary issues.
 
 ARGUMENT:: skew
-(describe argument here)
+	The nervousness of the bespoke detection function with values from -10 to 10. It allows to decide how peaks are amplified or smoothed before the thresholding. High values increase the sensitivity to small variations.
 
 ARGUMENT:: threshFwd
-(describe argument here)
+	The threshold of the onset of the smoothed error function. It allows tight start of the identification of the anomaly as it proceeds forward.
 
 ARGUMENT:: threshBack
-(describe argument here)
+	The threshold of the offset of the smoothed error function. As it proceeds backwards in time, it allows tight ending of the identification of the anomaly.
 
 ARGUMENT:: winSize
-(describe argument here)
+	The averaging window of the error detection function. It needs smoothing as it is very jittery. The longer the window, the less precise, but the less false positive.
 
 ARGUMENT:: debounce
-(describe argument here)
+	The window size in sample within with positive detections will be clumped together to avoid overdetecting in time.
 
 RETURNS::
 	An array of two audio streams: [0] is the transient extracted, [1] is the rest. The latency between the input and the output is (blockSize + padSize - order) samples.
@@ -46,6 +51,16 @@ RETURNS::
 
 EXAMPLES::
 
-CODE::
-(some example code)
+CODE:
+//load some buffer
+b = Buffer.read(s,File.realpath(FluidTransients.class.filenameSymbol).dirname.replace("Classes","AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav"));
+
+// basic parameters
+{FluidTransients.ar(PlayBuf.ar(1,b.bufnum,loop:1))}.play
+
+// tweaked parameterss
+{FluidTransients.ar(PlayBuf.ar(1,b.bufnum,loop:1),80,threshFwd:MouseX.kr(0,5),threshBack:MouseY.kr(0,2))}.play
+
+// null test (the process add a latency of (blockSize + padding - order) samples
+{var sig = PlayBuf.ar(1,b.bufnum,loop:1); [FluidTransients.ar(sig).sum - DelayN.ar(sig, 1, ((256 + 128 - 20)/ s.sampleRate))]}.play
 ::

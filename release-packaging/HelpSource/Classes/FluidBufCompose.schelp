@@ -85,8 +85,8 @@ EXAMPLES::
 code::
 // load some buffers
 (
-b = Buffer.read(s,"../../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav".resolveRelative);
-c = Buffer.read(s,"../../AudioFiles/Tremblay-SA-UprightPianoPedalWide.wav".resolveRelative);
+b = Buffer.read(s,File.realpath(FluidBufCompose.class.filenameSymbol).dirname.replace("Classes","AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav"));
+c = Buffer.read(s,File.realpath(FluidBufCompose.class.filenameSymbol).dirname.replace("Classes","AudioFiles/Tremblay-SA-UprightPianoPedalWide.wav"));
 d = Buffer.new(s);
 )
 

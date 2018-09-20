@@ -1,7 +1,7 @@
 TITLE:: FluidGain
 SUMMARY:: Real-Time Buffered Gain Changer
-CATEGORIES:: UGens>Algebraic
-RELATED::Classes/UnaryOpFunction
+CATEGORIES:: UGens>Algebraic, Libraries>FluidDecomposition, UGens>Buffer
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition,Classes/UnaryOpFunction
 
 
 DESCRIPTION::

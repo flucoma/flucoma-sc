@@ -119,7 +119,7 @@ EXAMPLES::
 code::
 	//load buffers
 	(
-		b = Buffer.read(s,"../../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav".resolveRelative);
+		b = Buffer.read(s,File.realpath(FluidBufHPSS.class.filenameSymbol).dirname.replace("Classes","AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav"));
 		c = Buffer.new(s);
 		d = Buffer.new(s);
 		e = Buffer.new(s);
