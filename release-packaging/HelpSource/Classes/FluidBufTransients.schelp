@@ -5,14 +5,14 @@ RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
 
 
 DESCRIPTION::
-This class triggers non-real-time transient extractor on buffers on the non-real-time thread of the server. It implements declicking algorithm from chapter 5 of the classic Digital Audio Restoration by Godsill, Simon J., Rayner, Peter J.W. with some bespoke improvements on the detection function tracking. It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
+This class triggers a transient extractor on buffers on the non-real-time thread of the server. It implements declicking algorithm from chapter 5 of the classic Digital Audio Restoration by Godsill, Simon J., Rayner, Peter J.W. with some bespoke improvements on the detection function tracking. It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
 This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
 
 		The algorithm will take a buffer in, and will divide it in two outputs: LIST::
 	## the transients, estimated from the signal and extracted from it;
 	## the remainder of the material, as estimated by the algorithm.::
 
-	The whole process is based on the assumption that a transient is an element that is deviating from the surrounding material, as sort of click or anomaly. The algorythm then estimates what should have happened if the signal had followed its normal path, and resynthesises this estimate, removing the anomaly which is considered as the transient. More information on signal estimation, and on its musicianly usage, are availabe in LINK::Guides/FluCoMa:: overview file.
+	The whole process is based on the assumption that a transient is an element that is deviating from the surrounding material, as sort of click or anomaly. The algorithm then estimates what should have happened if the signal had followed its normal path, and resynthesises this estimate, removing the anomaly which is considered as the transient. More information on signal estimation, and on its musicianly usage, are availabe in LINK::Guides/FluCoMa:: overview file.
 
 
 CLASSMETHODS::
@@ -45,7 +45,7 @@ ARGUMENT:: resBufNum
 	The index of the buffer where the estimated continuous component will be reconstructed.
 
 ARGUMENT:: order
-	The order in samples of the impulse response filter used to model the estimated continuous signal. It is how many previous samples are used by the algorythm to predict the next one as reference for the model. The higher the order, the more accurate is its spectral definition, not unlike fft, improving low frequency resolution, but it differs in that it is not conected to its temporal resolution.
+	The order in samples of the impulse response filter used to model the estimated continuous signal. It is how many previous samples are used by the algorithm to predict the next one as reference for the model. The higher the order, the more accurate is its spectral definition, not unlike fft, improving low frequency resolution, but it differs in that it is not conected to its temporal resolution.
 
 ARGUMENT:: blockSize
 	The size in samples of frame on which it the algorithm is operating. High values are more cpu intensive, and also determines the maximum transient size, which will not be allowed to be more than half that lenght in size.
@@ -66,7 +66,7 @@ ARGUMENT:: winSize
 	The averaging window of the error detection function. It needs smoothing as it is very jittery. The longer the window, the less precise, but the less false positive.
 
 ARGUMENT:: debounce
-	The window size in sample within with positive detections will be clumped together to avoid overdetecting in time.
+	The window size in sample within which positive detections will be clumped together to avoid overdetecting in time.
 
 RETURNS::
 	Nothing, as the various destination buffers are declared in the function call.

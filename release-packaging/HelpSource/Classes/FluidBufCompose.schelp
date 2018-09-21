@@ -114,7 +114,7 @@ d.play;
 e = Buffer.alloc(s,1,1);
 FluidBufCompose.process(s,srcBufNumA: b.bufnum, srcBufNumB: e.bufnum, dstBufNum: e.bufnum);
 FluidBufCompose.process(s,srcBufNumA: c.bufnum,  nChansA: 1, srcBufNumB: e.bufnum, dstBufNum: e.bufnum);
-e.plot
-e.play
+e.plot;
+e.play;
 ::
 	

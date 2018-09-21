@@ -6,18 +6,18 @@ related:: Guides/FluCoMa, Guides/FluidDecomposition
 
 DESCRIPTION::
 The FluidBufNMF object decomposes the spectrum of a sound into a number of components using Non-Negative Matrix Factorisation (NMF) footnote:: Lee, Daniel D., and H. Sebastian Seung. 1999. ‘Learning the Parts of Objects by Non-Negative Matrix Factorization’. Nature 401 (6755): 788–91. https://doi.org/10.1038/44565.
-::. NMF has been a popular technique in signal processing research for things like source separation and transcription, although its creative potential is so far relatively  unexplored.
+::. NMF has been a popular technique in signal processing research for things like source separation and transcription footnote:: Smaragdis and Brown, Non-Negative Matrix Factorization for Polyphonic Music Transcription.::, although its creative potential is so far relatively  unexplored.
 
 The algorithm takes a buffer in and divides it into a number of components, determined by the rank argument. It works iteratively, by trying to find a combination of spectral templates ('dictionaries') and envelopes ('activations') that yield the original magnitude spectrogram when added together. By and large, there is no unique answer to this question (i.e. there are different ways of accounting for an evolving spectrum in terms of some set of templates and envelopes). In its basic form, NMF is a form of unsupervised learning: it starts with some random data and then converges towards something that minimizes the distance between its generated data and the original:it tends to converge very quickly at first and then level out. Fewer iterations mean less processing, but also less predictable results.
 
-The object can provide back either or all of the following: LIST::
+The object can return either or all of the following: LIST::
 	## a spectral contour of each component in the form of a magnitude spectrogram (called a dictionary in NMF lingo);
-	## an amplitude envolope of each component in the form of gains for each consecutive frame of the unterlying spectrogram (called an activation in NMF lingo);
-	## a reconstruction of each rank in the time domain. ::
+	## an amplitude envelope of each component in the form of gains for each consecutive frame of the underlying spectrogram (called an activation in NMF lingo);
+	## an audio reconstruction of each components in the time domain. ::
 
 The dictionaries and activations can be used to make a kind of vocoder based on what NMF has 'learned' from the original data. Alternatively, taking the matrix product of a dictionary and an activation will yield a synthetic magnitude spectrogram of a component (which could be reconsructed, given some phase informaiton from somewhere).
 
-Some additional options and flexibility can be found through combinations of the dictFlag and actFlag arguments. If this flag is set to 1, then object expects to be supplied with pre-formed spectra (resp. envelopes) that will be used as seeds for the decomposition, providing more guided results. When set to 2, the supplied buffers won't be updated, so become templates to match against instead. Note that having both dictionaries and activations set to 2 doesn't make sense, so the object will complain.
+Some additional options and flexibility can be found through combinations of the dictFlag and actFlag arguments. If these flags are set to 1, the object expects to be supplied with pre-formed spectra (or envelopes) that will be used as seeds for the decomposition, providing more guided results. When set to 2, the supplied buffers won't be updated, so become templates to match against instead. Note that having both dictionaries and activations set to 2 doesn't make sense, so the object will complain.
 
 If supplying pre-formed data, it's up to the user to make sure that the supplied buffers are the right size: LIST::
 ## dictionaries must be STRONG::(fft size / 2) + 1:: frames and STRONG::(rank * input channels):: channels
@@ -63,7 +63,7 @@ ARGUMENT:: dstBufNum
 	The index of the buffer where the different reconstructed ranks will be reconstructed. The buffer will be resized to STRONG::rank * numChannelsProcessed:: channels and STRONG::sourceDuration:: lenght. If STRONG::nil:: is provided, the reconstruction will not happen.
 
 ARGUMENT:: dictBufNum
-	The index of the buffer where the different dictionaries will be written to and/or read from: the behaviour is set in the following argument. If STRONG::nil:: is provided, no dictionary will be provided.
+	The index of the buffer where the different dictionaries will be written to and/or read from: the behaviour is set in the following argument. If STRONG::nil:: is provided, no dictionary will be returned.
 
 ARGUMENT:: dictFlag
 	This flag decides of how the dictionnary buffer passed as the previous argument is treated.
@@ -74,7 +74,7 @@ ARGUMENT:: dictFlag
 	::
 
 ARGUMENT:: actBufNum
-	The index of the buffer where the different activations will be written to and/or read from: the behaviour is set in the following argument. If STRONG::nil:: is provided, no activation will be provided.
+	The index of the buffer where the different activations will be written to and/or read from: the behaviour is set in the following argument. If STRONG::nil:: is provided, no activation will be returned.
 
 ARGUMENT:: actFlag
 	This flag decides of how the activation buffer passed as the previous argument is treated.
@@ -85,10 +85,10 @@ ARGUMENT:: actFlag
 	::
 
 ARGUMENT:: rank
-	The number of elements the NMF algorythim will try to divide the spectrogram of the source in.
+	The number of elements the NMF algorithm will try to divide the spectrogram of the source in.
 
 ARGUMENT:: nIter
-	The NMF process is iterative, trying to converge to the smallest error in its factorisation. The number of iterations will decide how many times it tries to adjust its guestimates. Higher numbers here will be more CPU expensive, lower numbers will be more unpredictable in quality.
+	The NMF process is iterative, trying to converge to the smallest error in its factorisation. The number of iterations will decide how many times it tries to adjust its estimates. Higher numbers here will be more CPU expensive, lower numbers will be more unpredictable in quality.
 
 ARGUMENT:: sortFlag
 	This allows to choose between the different methods of sorting the ranks in order to get similar sonic qualities on a given rank (not implemented yet)
