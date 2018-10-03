@@ -90,7 +90,7 @@ EXAMPLES::
 
 CODE::
 	//load a soundfile to play
-	b = Buffer.read(s,File.realpath(FluidHPSS.class.filenameSymbol).dirname.replace("Classes","AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav"));
+	b = Buffer.read(s,File.realpath(FluidHPSS.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
 
 	// run with basic parameters (left is harmonic, right is percussive)
 	{FluidHPSS.ar(PlayBuf.ar(1,b.bufnum,loop:1))}.play

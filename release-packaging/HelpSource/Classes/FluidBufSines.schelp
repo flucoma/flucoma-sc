@@ -74,7 +74,7 @@ EXAMPLES::
 code::
 // create some buffers
 (
-b = Buffer.read(s,File.realpath(FluidBufSines.class.filenameSymbol).dirname.replace("Classes","AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav"));
+b = Buffer.read(s,File.realpath(FluidBufSines.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
 c = Buffer.new(s);
 d = Buffer.new(s);
 )

@@ -117,7 +117,7 @@ EXAMPLES::
 code::
 // set some buffers and parameters
 (
-b = Buffer.read(s,File.realpath(FluidBufNMF.class.filenameSymbol).dirname.replace("Classes","AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav"));
+b = Buffer.read(s,File.realpath(FluidBufNMF.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
 c = Buffer.new(s);
 x = Buffer.new(s);
 y = Buffer.new(s);
@@ -192,7 +192,7 @@ c.plot;x.plot; y.plot;
 
 	//set some buffers
 (
-b = Buffer.read(s,File.realpath(FluidBufNMF.class.filenameSymbol).dirname.replace("Classes","AudioFiles/Tremblay-AaS-AcousticStrums-M.wav"));
+b = Buffer.read(s,File.realpath(FluidBufNMF.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-AcousticStrums-M.wav");
 c = Buffer.new(s);
 x = Buffer.new(s);
 e = Buffer.alloc(s,1,1);
