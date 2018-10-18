@@ -26,8 +26,8 @@ namespace sc{
   struct NRTBuf//: public SndBuf
   {
     NRTBuf(SndBuf* b):mBuffer(b){}
-    NRTBuf(World* world,long bufnum):
-    NRTBuf(World_GetNRTBuf(world,bufnum))
+    NRTBuf(World* world,long bufnum, bool rt=false):
+    NRTBuf(rt?World_GetBuf(world, bufnum):World_GetNRTBuf(world,bufnum))
     {
       if(mBuffer && !mBuffer->samplerate)
         mBuffer->samplerate = world->mFullRate.mSampleRate;
@@ -57,10 +57,9 @@ namespace sc{
     SCBufferView(SCBufferView&) = delete;
     SCBufferView operator=(SCBufferView&) = delete;
     
-    SCBufferView(long bufnum,World* world):
-      NRTBuf(world,bufnum),
-//      BufferAdaptor({0,{static_cast<size_t>(frames),static_cast<size_t>(channels)}},NRTBuf::data),
-      mBufnum(bufnum), mWorld(world)
+    
+    SCBufferView(long bufnum,World* world,bool rt=false):
+      NRTBuf(world,bufnum,rt), mBufnum(bufnum), mWorld(world)
     {
       
       
@@ -101,18 +100,18 @@ namespace sc{
       
       return v.col(rankIdx + channel * mRank );
     }
-    //Return a view of all the data
-    FluidTensorView<float,2> samps() override
-    {
-      return {mBuffer->data,0, static_cast<size_t>(mBuffer->frames), static_cast<size_t>(mBuffer->channels)};
-    }
+//    //Return a view of all the data
+//    FluidTensorView<float,2> samps() override
+//    {
+//      return {mBuffer->data,0, static_cast<size_t>(mBuffer->frames), static_cast<size_t>(mBuffer->channels)};
+//    }
     
     //Return a 2D chunk
-    FluidTensorView<float,2> samps(size_t offset, size_t nframes, size_t chanoffset, size_t chans) override
+    FluidTensorView<float,1> samps(size_t offset, size_t nframes, size_t chanoffset) override
     {
       FluidTensorView<float,2>  v{mBuffer->data,0, static_cast<size_t>(mBuffer->frames), static_cast<size_t>(mBuffer->channels)};
       
-      return v(fluid::slice(offset,nframes), fluid::slice(chanoffset,chans));
+      return v(fluid::slice(offset,nframes), fluid::slice(chanoffset,1)).col(0);
     }
     
     size_t numFrames() const override
@@ -151,6 +150,83 @@ namespace sc{
     long mBufnum;
     World* mWorld;
     size_t mRank = 1;
+  };
+  
+  class RTBufferView: public parameter::BufferAdaptor
+  {
+  public:
+    RTBufferView(World* world, int bufnum): mWorld(world), mBufnum(bufnum) {}
+    
+    void acquire()  override {
+      mBuffer = World_GetBuf(mWorld, mBufnum);
+    }
+    void release()  override {
+      //      NRTUnlock(mWorld);
+    }
+    
+    //Validity is based on whether this buffer is within the range the server knows about
+    bool valid() const override {
+      return (mBuffer && mBufnum >=0 && mBufnum < mWorld->mNumSndBufs);
+    }
+    
+    FluidTensorView<float,1> samps(size_t channel, size_t rankIdx = 0) override
+    {
+      FluidTensorView<float,2>  v{mBuffer->data,0, static_cast<size_t>(mBuffer->frames),static_cast<size_t>(mBuffer->channels)};
+      
+      return v.col(rankIdx + channel * mRank );
+    }
+ 
+    FluidTensorView<float,1> samps(size_t offset, size_t nframes, size_t chanoffset) override
+    {
+      FluidTensorView<float,2>  v{mBuffer->data,0, static_cast<size_t>(mBuffer->frames), static_cast<size_t>(mBuffer->channels)};
+      
+      return v(fluid::slice(offset,nframes), fluid::slice(chanoffset,1)).col(0);
+    }
+    
+    size_t numFrames() const override
+    {
+      return valid() ?  this->mBuffer->frames : 0 ;
+    }
+    
+    size_t numChans() const override
+    {
+      return valid() ?  this->mBuffer->channels / mRank : 0;
+    }
+    
+    size_t rank() const override
+    {
+      return valid() ? mRank :0;
+    }
+    
+    void resize(size_t frames, size_t channels, size_t rank) override {
+      assert(false && "Don't try and resize real-time buffers");
+//      SndBuf* thisThing = mBuffer;
+//      mOldData = thisThing->data;
+//      mRank = rank;
+//      mWorld->ft->fBufAlloc(mBuffer, channels * rank, frames, thisThing->samplerate);
+    }
+    
+    int bufnum() {
+      return mBufnum;
+    }
+    
+
+  private:
+    
+    bool equal(BufferAdaptor* rhs) const override
+    {
+      RTBufferView* x = dynamic_cast<RTBufferView*>(rhs);
+      if(x)
+      {
+        return mBufnum == x->mBufnum;
+      }
+      return false;
+    }
+    
+    size_t mRank = 1;
+    World* mWorld;
+    int mBufnum = -1;
+    SndBuf* mBuffer = nullptr;
   };
   
   
