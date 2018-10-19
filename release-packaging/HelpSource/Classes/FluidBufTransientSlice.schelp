@@ -81,7 +81,7 @@ c = Buffer.new(s);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play
-);
+)
 
 //check the number of slices
 c.query;
