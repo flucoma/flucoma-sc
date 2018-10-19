@@ -38,7 +38,10 @@ namespace nmf{
       std::tie(isOK, feedback) = mClient->sanityCheck();
       if(!isOK)
       {
-        Print("fdNMFMatch Error: %s",feedback.c_str());
+        std::cout << "FluidNMFMatch Error: " << feedback << '\n';
+        
+        mCalcFunc = ClearUnitOutputs;
+        
         return;
       }
       
