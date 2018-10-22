@@ -1,7 +1,7 @@
 TITLE:: FluidBufNMF
-summary:: Buffer-Based Non-Negative Matrix Factorisation on Spectral Frames
-categories:: Libraries>FluidDecomposition, UGens>Buffer
-related:: Guides/FluCoMa, Guides/FluidDecomposition
+SUMMARY:: Buffer-Based Non-Negative Matrix Factorisation on Spectral Frames
+CATEGORIES:: Libraries>FluidDecomposition, UGens>Buffer
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/FluidNMFMatch
 
 
 DESCRIPTION::
@@ -24,7 +24,7 @@ If supplying pre-formed data, it's up to the user to make sure that the supplied
 ## activations  must be STRONG::(input frames / hopSize) + 1:: frames and STRONG::(rank * input channels):: channels
 ::
 
-In this implementation, the components are reconstructed by masking the ogriginal spectrum, such that they will sum to yield the original sound.
+In this implementation, the components are reconstructed by masking the original spectrum, such that they will sum to yield the original sound.
 
 The whole process can be related to a channel vocoder where, instead of fixed bandpass filters, we get more complex filter shapes that are learned from the data, and the activations correspond to channel envelopes.
 

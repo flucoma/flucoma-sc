@@ -1,7 +1,7 @@
 TITLE:: FluidBufCompose
-summary:: Buffer Compositing Utility
-categories:: Libraries>FluidDecomposition, UGens>Buffer
-related:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/Buffer
+SUMMARY:: Buffer Compositing Utility
+CATEGORIES:: Libraries>FluidDecomposition, UGens>Buffer
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/Buffer
 
 
 DESCRIPTION::
