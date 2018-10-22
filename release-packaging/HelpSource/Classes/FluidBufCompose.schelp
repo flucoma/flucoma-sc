@@ -117,4 +117,70 @@ FluidBufCompose.process(s,srcBufNumA: c.bufnum,  nChansA: 1, srcBufNumB: e.bufnu
 e.plot;
 e.play;
 ::
-	
+
+	STRONG::A more complex example: using composition as an Mid-Side filtering process::
+
+	CODE::
+// load a stereo buffer and initialise the many destinations
+(
+b = Buffer.read(s,File.realpath(FluidBufCompose.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-SA-UprightPianoPedalWide.wav");
+c = Buffer.new(s);
+d = Buffer.new(s);
+e = Buffer.alloc(s,1,1);
+f = Buffer.new(s);
+)
+
+// encode the mid (in c) and the side (in d)
+(
+FluidBufCompose.process(s,b.bufnum,nChansA: 1, srcGainA: -3.0.dbamp, srcBufNumB:b.bufnum,startChanB: 1, nChansB: 1, srcGainB: -3.0.dbamp, dstBufNum: c.bufnum);
+FluidBufCompose.process(s,b.bufnum,nChansA: 1, srcGainA: -3.0.dbamp, srcBufNumB:b.bufnum,startChanB: 1, nChansB: 1, srcGainB: -3.0.dbamp * -1.0, dstBufNum: d.bufnum);
+)
+
+// (optional) compare auraly the stereo with the MS
+c.query;d.query;
+b.play;
+{PlayBuf.ar(1,[c.bufnum,d.bufnum])}.play;
+
+// The geeky bit: copy the side (buffer d) on itself with specific amplitudes and delays, in effect applying a FIR filter through expensive convolution
+
+// Important: do either of the 3 options below
+
+// option 1: apply a high pass on the side, with a cutoff of nyquist / 4
+(
+[1.0, -1.0].do({ arg x,y;
+	FluidBufCompose.process(s,d.bufnum,srcGainA: x, dstStartAtA: y, srcBufNumB: e.bufnum, dstBufNum: e.bufnum);
+});
+)
+
+// option 2: apply a high pass on the side, with a cutoff of nyquist / 10
+(
+[0.8, -0.32, -0.24, -0.16, -0.08].do({ arg x,y;
+	FluidBufCompose.process(s,d.bufnum,srcGainA: x, dstStartAtA: y, srcBufNumB: e.bufnum, dstBufNum: e.bufnum);
+});
+)
+
+// option 3: apply a high pass on the side, with a cutoff of nyquist / 100
+(
+[0.982494, -0.066859, -0.064358, -0.061897, -0.059477, -0.057098, -0.054761, -0.052466, -0.050215, -0.048007, -0.045843, -0.043724, -0.041649, -0.03962, -0.037636, -0.035697, -0.033805, -0.031959, -0.030159, -0.028406, -0.026699, -0.025038, -0.023425, -0.021857, -0.020337].do({ arg x,y;
+	FluidBufCompose.process(s,d.bufnum,srcGainA: x, dstStartAtA: y, srcBufNumB: e.bufnum, dstBufNum: e.bufnum);
+});
+)
+
+// play the high-passed side buffer
+e.play;
+// if you want to try the other filters, do not forget to clear the destination buffer since it will add programmatically onto itself and would not create the expected frequency response
+
+// decode the MS back to stereo
+(
+FluidBufCompose.process(s,c.bufnum, srcGainA: -3.0.dbamp, srcBufNumB:e.bufnum, srcGainB: -3.0.dbamp, dstBufNum: f.bufnum);
+FluidBufCompose.process(s,c.bufnum, srcGainA: -3.0.dbamp, dstStartChanA: 1, srcBufNumB:f.bufnum, dstBufNum: f.bufnum);
+FluidBufCompose.process(s,e.bufnum, srcGainA: -3.0.dbamp * -1.0,dstStartChanA: 1, srcBufNumB:f.bufnum, dstBufNum: f.bufnum);
+)
+
+// query and play
+f.query;
+f.play;
+
+// compare with the original
+b.play;
+	::
