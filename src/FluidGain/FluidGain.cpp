@@ -7,7 +7,7 @@
 
 
 static InterfaceTable *ft;
-
+namespace fluid {
 class FDGain: public SCUnit
 {
   using AudioClient = fluid::audio::GainAudioClient<double, float>;
@@ -22,6 +22,12 @@ public:
   FDGain()
   {
     mClient = ClientPointer(new AudioClient(65536));
+    
+    std::vector<parameter::Instance>& params =  mClient->getParams();
+    
+    parameter::lookupParam("winsize", params).setLong(in0(1));
+    parameter::lookupParam("hopsize", params).setLong(in0(1)); 
+    
     mClient->set_host_buffer_size(bufferSize());
     mClient->reset();
     
@@ -53,8 +59,8 @@ private:
   SignalArray<2> inputSignals;
   SignalArray<1> outputSignals;
 };
-
+}
 PluginLoad(BoringMixer2UGens) {
   ft = inTable;
-  registerUnit<FDGain>(ft, "FluidGain");
+  registerUnit<fluid::FDGain>(ft, "FluidGain");
 }
