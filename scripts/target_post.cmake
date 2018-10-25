@@ -1,6 +1,6 @@
 target_include_directories(
   ${PLUGIN}
-  PRIVATE
+  SYSTEM PRIVATE
   ${SC_PATH}/include/plugin_interface
   ${SC_PATH}/include/common
   ${SC_PATH}/common
@@ -10,7 +10,7 @@ target_include_directories(
 if (SUPERNOVA)
     target_include_directories(
       ${PLUGIN}
-      PRIVATE
+      SYSTEM PRIVATE
       ${SC_PATH}/external_libraries/nova-tt
 
       ${SC_PATH}/external_libraries/boost_lockfree
