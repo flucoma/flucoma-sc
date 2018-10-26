@@ -110,8 +110,9 @@ namespace sc{
     FluidTensorView<float,1> samps(size_t offset, size_t nframes, size_t chanoffset) override
     {
       FluidTensorView<float,2>  v{mBuffer->data,0, static_cast<size_t>(mBuffer->frames), static_cast<size_t>(mBuffer->channels)};
-      
-      return v(fluid::slice(offset,nframes), fluid::slice(chanoffset,1)).col(0);
+
+      return v(fluid::Slice(offset, nframes), fluid::Slice(chanoffset, 1))
+          .col(0);
     }
     
     size_t numFrames() const override
@@ -179,8 +180,9 @@ namespace sc{
     FluidTensorView<float,1> samps(size_t offset, size_t nframes, size_t chanoffset) override
     {
       FluidTensorView<float,2>  v{mBuffer->data,0, static_cast<size_t>(mBuffer->frames), static_cast<size_t>(mBuffer->channels)};
-      
-      return v(fluid::slice(offset,nframes), fluid::slice(chanoffset,1)).col(0);
+
+      return v(fluid::Slice(offset, nframes), fluid::Slice(chanoffset, 1))
+          .col(0);
     }
     
     size_t numFrames() const override
@@ -310,8 +312,7 @@ namespace sc{
       }
       
       cmd << ", ";
-      if(d.getType() == parameter::Type::Buffer)
-      {
+      if (d.getType() == parameter::Type::kBuffer) {
         if (count == 0)
           cmd <<  d.getName() << ".bufnum";
         else
@@ -325,9 +326,9 @@ namespace sc{
     cmd << ");\n\n";
     
     ss << ";\n\n\t\tserver = server ? Server.default\n;" ;
-    
-    if(Client::getParamDescriptors()[0].getType() == parameter::Type::Buffer)
-    {
+
+    if (Client::getParamDescriptors()[0].getType() ==
+        parameter::Type::kBuffer) {
       ss << "if("<<Client::getParamDescriptors()[0].getName()
       << ".bufnum.isNil) {Error(\"Invalid Buffer\").format(thisMethod.name, this.class.name).throw};\n\n";
     }
@@ -351,22 +352,19 @@ namespace sc{
     {
       switch(p.getDescriptor().getType())
       {
-        case parameter::Type::Buffer:
-        {
-          long bufnum = static_cast<long>(args->geti());
-          if(bufnum >= 0){
-            SCBufferView* buf = new SCBufferView(bufnum,inWorld);
-            p.setBuffer(buf);
-          }
-          break;
+      case parameter::Type::kBuffer: {
+        long bufnum = static_cast<long>(args->geti());
+        if (bufnum >= 0) {
+          SCBufferView *buf = new SCBufferView(bufnum, inWorld);
+          p.setBuffer(buf);
         }
-        case parameter::Type::Long:
-        {
+        break;
+        }
+        case parameter::Type::kLong: {
           p.setLong(static_cast<long>(args->geti()));
           break;
         }
-        case parameter::Type::Float:
-        {
+        case parameter::Type::kFloat: {
           p.setFloat(args->getf());
           break;
         }

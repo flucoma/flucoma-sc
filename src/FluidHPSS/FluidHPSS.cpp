@@ -38,14 +38,14 @@ namespace hpss{
       }
       
       
-      mClient->set_host_buffer_size(bufferSize());
+      mClient->setHostBufferSize(bufferSize());
       mClient->reset();
       
       //Work out what signals we need. For now keep it simple:
-      input_signals[0] =  SignalPointer(new AudioSignalWrapper());
-      output_signals[0] = SignalPointer(new AudioSignalWrapper());
-      output_signals[1] = SignalPointer(new AudioSignalWrapper());
-      output_signals[2] = SignalPointer(new AudioSignalWrapper());
+      inputSignals[0] =  SignalPointer(new AudioSignalWrapper());
+      outputSignals[0] = SignalPointer(new AudioSignalWrapper());
+      outputSignals[1] = SignalPointer(new AudioSignalWrapper());
+      outputSignals[2] = SignalPointer(new AudioSignalWrapper());
       
       mCalcFunc = make_calc_function<FDRTHPSS,&FDRTHPSS::next>();
       Unit* unit = this;
@@ -66,32 +66,32 @@ namespace hpss{
           continue;
         switch(p.getDescriptor().getType())
         {
-          case parameter::Type::Long:
-            p.setLong(in0(i+1));
-            p.checkRange();
-            break;
-          case parameter::Type::Float:
-          {
-            
-            //We need to constrain threshold (normalised) frequency pairs at runtime.
-            std::string attrname  = p.getDescriptor().getName();
-            auto constraint = paramConstraints.find(attrname);
-            
-            if(constraint != paramConstraints.end())
-            {
-              double limit = parameter::lookupParam(constraint->second.param, mClient->getParams()).getFloat();
-              
-              if(!constraint->second.condition(in0(i+1),limit))
-              {
-                return;
-              }
+        case parameter::Type::kLong:
+          p.setLong(in0(i + 1));
+          p.checkRange();
+          break;
+        case parameter::Type::kFloat: {
+
+          // We need to constrain threshold (normalised) frequency pairs at
+          // runtime.
+          std::string attrname = p.getDescriptor().getName();
+          auto constraint = paramConstraints.find(attrname);
+
+          if (constraint != paramConstraints.end()) {
+            double limit = parameter::lookupParam(constraint->second.param,
+                                                  mClient->getParams())
+                               .getFloat();
+
+            if (!constraint->second.condition(in0(i + 1), limit)) {
+              return;
             }
-            
-            p.setFloat(in0(i+1));
-            p.checkRange();
+          }
+
+          p.setFloat(in0(i + 1));
+          p.checkRange();
           }
             break;
-          case parameter::Type::Buffer:
+          case parameter::Type::kBuffer:
             //            p.setBuffer( in0(i+1));
             break;
           default:
@@ -105,11 +105,11 @@ namespace hpss{
       setParams(false);
       const float* input = in(0);
       const float inscalar = in0(0);
-      input_signals[0]->set(const_cast<float*>(input), inscalar);
-      output_signals[0]->set(out(0), out0(0));
-      output_signals[1]->set(out(1), out0(1));
-      output_signals[2]->set(out(2), out0(2));
-      mClient->do_process(std::begin(input_signals),std::end(input_signals),std::begin(output_signals), std::end(output_signals),numsamples,1,3);
+      inputSignals[0]->set(const_cast<float*>(input), inscalar);
+      outputSignals[0]->set(out(0), out0(0));
+      outputSignals[1]->set(out(1), out0(1));
+      outputSignals[2]->set(out(2), out0(2));
+      mClient->doProcess(std::begin(inputSignals),std::end(inputSignals),std::begin(outputSignals), std::end(outputSignals),numsamples,1,3);
     }
     
     struct Constraint{
@@ -126,8 +126,8 @@ namespace hpss{
     
 
     ClientPointer mClient;
-    SignalArray<1> input_signals;
-    SignalArray<3> output_signals;
+    SignalArray<1> inputSignals;
+    SignalArray<3> outputSignals;
   };
 }
 }

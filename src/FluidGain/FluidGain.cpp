@@ -28,7 +28,7 @@ public:
     parameter::lookupParam("winsize", params).setLong(in0(1));
     parameter::lookupParam("hopsize", params).setLong(in0(1)); 
     
-    mClient->set_host_buffer_size(bufferSize());
+    mClient->setHostBufferSize(bufferSize());
     mClient->reset();
     
     inputSignals[0] =  SignalPointer(new AudioSignal());
@@ -52,7 +52,7 @@ private:
     inputSignals[0]->set(const_cast<float*>(in(0)), in0(0));
     inputSignals[1]->set(const_cast<float*>(in(2)), in0(2));
     outputSignals[0]->set(out(0), out0(0));
-    mClient->do_process(inputSignals.begin(),inputSignals.end(),outputSignals.begin(),outputSignals.end(),numsamples,2,1);
+    mClient->doProcess(inputSignals.begin(),inputSignals.end(),outputSignals.begin(),outputSignals.end(),numsamples,2,1);
   }
   
   ClientPointer mClient;

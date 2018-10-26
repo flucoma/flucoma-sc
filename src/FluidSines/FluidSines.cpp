@@ -31,7 +31,7 @@ namespace stn{
 //
       
       //Oh NO! Heap allocation! Make client object
-      m_client =  new stn::SinesClient<double,float>(65536);
+      mClient =  new stn::SinesClient<double,float>(65536);
       setParams(true);
       
 //      m_client->getParams()[0].setLong(pfilter_size);
@@ -43,7 +43,7 @@ namespace stn{
       bool isOK;
       std::string feedback;
       
-      std::tie(isOK, feedback) = m_client->sanityCheck();
+      std::tie(isOK, feedback) = mClient->sanityCheck();
       if(!isOK)
       {
         Print("fdRTHPSS Error: %s",feedback.c_str());
@@ -51,15 +51,15 @@ namespace stn{
       }
       
       
-      m_client->set_host_buffer_size(bufferSize());
-      m_client->reset();
+      mClient->setHostBufferSize(bufferSize());
+      mClient->reset();
       
       //Work out what signals we need. For now keep it simple:
       //in 0 => only audio
       //out 0 => only audio
-      input_signals[0] =  new AudioSignalWrapper();
-      output_signals[0] = new AudioSignalWrapper();
-      output_signals[1] = new AudioSignalWrapper();
+      inputSignals[0] =  new AudioSignalWrapper();
+      outputSignals[0] = new AudioSignalWrapper();
+      outputSignals[1] = new AudioSignalWrapper();
       
       mCalcFunc = make_calc_function<FDRTSines,&FDRTSines::next>();
       Unit* unit = this;
@@ -68,39 +68,39 @@ namespace stn{
     
     ~FDRTSines()
     {
-      delete input_signals[0];
-      delete output_signals[0];
-      delete output_signals[1];
-      delete  m_client;
+      delete inputSignals[0];
+      delete outputSignals[0];
+      delete outputSignals[1];
+      delete  mClient;
     }
     
   private:
     
     void setParams(bool instantiation)
     {
-      assert(m_client);
-      for(size_t i = 0; i < m_client->getParams().size(); ++i)
+      assert(mClient);
+      for(size_t i = 0; i < mClient->getParams().size(); ++i)
       {
-        parameter::Instance& p = m_client->getParams()[i];
+        parameter::Instance& p = mClient->getParams()[i];
         
         if(!instantiation && p.getDescriptor().instantiation())
           continue;
         
         switch(p.getDescriptor().getType())
         {
-          case parameter::Type::Long:
-            p.setLong(in0(i+1));
-            p.checkRange();
-            break;
-          case parameter::Type::Float:
-            p.setFloat(in0(i+1));
-            p.checkRange();
-            break;
-          case parameter::Type::Buffer:
-//            p.setBuffer( in0(i+1));
-            break;
-          default:
-            break;
+        case parameter::Type::kLong:
+          p.setLong(in0(i + 1));
+          p.checkRange();
+          break;
+        case parameter::Type::kFloat:
+          p.setFloat(in0(i + 1));
+          p.checkRange();
+          break;
+        case parameter::Type::kBuffer:
+          //            p.setBuffer( in0(i+1));
+          break;
+        default:
+          break;
         }
       }
     }
@@ -111,15 +111,15 @@ namespace stn{
       setParams(false);
       const float* input = in(0);
       const float inscalar = in0(0);
-      input_signals[0]->set(const_cast<float*>(input), inscalar);
-      output_signals[0]->set(out(0), out0(0));
-      output_signals[1]->set(out(1), out0(1));
-      m_client->do_process(std::begin(input_signals),std::end(input_signals),std::begin(output_signals), std::end(output_signals),numsamples,1,2);
+      inputSignals[0]->set(const_cast<float*>(input), inscalar);
+      outputSignals[0]->set(out(0), out0(0));
+      outputSignals[1]->set(out(1), out0(1));
+      mClient->doProcess(std::begin(inputSignals),std::end(inputSignals),std::begin(outputSignals), std::end(outputSignals),numsamples,1,2);
     }
-    
-    stn::SinesClient<double, float>* m_client;
-    SignalWrapper* input_signals[1];
-    SignalWrapper*  output_signals[2];
+
+    stn::SinesClient<double, float> *mClient;
+    SignalWrapper *inputSignals[1];
+    SignalWrapper *outputSignals[2];
   };
 }
 }

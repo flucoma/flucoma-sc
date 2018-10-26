@@ -48,7 +48,7 @@ namespace nmf{
       mRank = parameter::lookupParam("rank", mClient->getParams()).getLong();
       
       
-      mClient->set_host_buffer_size(bufferSize());
+      mClient->setHostBufferSize(bufferSize());
       mClient->reset();
       
      inputSignals[0] =  SignalPointer(new AudioSignalWrapper());
@@ -76,18 +76,16 @@ namespace nmf{
           continue;
         switch(p.getDescriptor().getType())
         {
-          case parameter::Type::Long:
-            p.setLong(in0(i+1));
-            p.checkRange();
-            break;
-          case parameter::Type::Float:
-          {
-            p.setFloat(in0(i+1));
-            p.checkRange();
+        case parameter::Type::kLong:
+          p.setLong(in0(i + 1));
+          p.checkRange();
+          break;
+        case parameter::Type::kFloat: {
+          p.setFloat(in0(i + 1));
+          p.checkRange();
           }
             break;
-          case parameter::Type::Buffer:
-          {
+          case parameter::Type::kBuffer: {
             long bufnum = static_cast<long>(in0(i+1));
             sc::RTBufferView* currentBuf = static_cast<sc::RTBufferView*>(p.getBuffer());
             
@@ -113,7 +111,7 @@ namespace nmf{
       for(size_t i = 0; i < mRank; ++i)
         outputSignals[i]->set(out(i),out0(i));
       
-      mClient->do_process_noOLA(inputSignals.begin(),inputSignals.end(), outputSignals.begin(), outputSignals.end(), mWorld->mFullRate.mBufLength ,1,mRank);
+      mClient->doProcessNoOla(inputSignals.begin(),inputSignals.end(), outputSignals.begin(), outputSignals.end(), mWorld->mFullRate.mBufLength ,1,mRank);
       for(size_t i = 0; i < mRank; ++i)
         out0(i) = outputSignals[i]->next();
     }
