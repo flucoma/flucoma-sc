@@ -14,12 +14,12 @@
 static InterfaceTable *ft;
 
 namespace fluid {
-  namespace sc{
+  namespace wrapper{
     
     class BufTransientsSlice: public NRTCommandBase
     {
     public:
-      using client_type = segmentation::TransientSliceNRT;
+      using client_type = client::TransientSliceNRT;
       using NRTCommandBase::NRTCommandBase;
       
       ~BufTransientsSlice() {}
@@ -58,7 +58,7 @@ namespace fluid {
         return true;
       }
       
-      std::vector<parameter::Instance>& parameters()
+      std::vector<client::Instance>& parameters()
       {
         return trans.getParams(); 
       }
@@ -66,12 +66,12 @@ namespace fluid {
       client_type trans;
       client_type::ProcessModel mModel;
     };//class
-  } //namespace sc
+  } //namespace wrapper
 }//namespace fluid
 
 
 PluginLoad(OfflineFluidDecompositionUGens) {
   ft = inTable;
-  registerCommand<fluid::sc::BufTransientsSlice,fluid::segmentation::TransientSliceNRT>(ft, "BufTransientSlice");
-  fluid::sc::printCmd<fluid::segmentation::TransientSliceNRT>(ft,"BufTransientsSlice","FluidBufTransientSlice");
+  registerCommand<fluid::wrapper::BufTransientsSlice,fluid::client::TransientSliceNRT>(ft, "BufTransientSlice");
+  fluid::wrapper::printCmd<fluid::client::TransientSliceNRT>(ft,"BufTransientsSlice","FluidBufTransientSlice");
 }

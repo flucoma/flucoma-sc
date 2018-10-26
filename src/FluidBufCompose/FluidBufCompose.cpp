@@ -12,12 +12,12 @@
 static InterfaceTable *ft;
 
 namespace fluid {
-  namespace sc{
+  namespace wrapper{
     
     class BufCompose: public NRTCommandBase
     {
     public:
-      using client_type =  buf::BufferComposeClient;
+      using client_type =  client::BufferComposeClient;
       using NRTCommandBase::NRTCommandBase;
       
       ~BufCompose() {}
@@ -55,7 +55,7 @@ namespace fluid {
         return true;
       }
       
-      std::vector<parameter::Instance>& parameters()
+      std::vector<client::Instance>& parameters()
       {
         return bufferCompose.getParams(); 
       }
@@ -63,12 +63,12 @@ namespace fluid {
       client_type bufferCompose;
       client_type::ProcessModel mModel;
     };//class
-  } //namespace sc
+  } //namespace wrapper
 }//namespace fluid
 
 
 PluginLoad(OfflineFluidDecompositionUGens) {
   ft = inTable;
-  registerCommand<fluid::sc::BufCompose,fluid:: buf::BufferComposeClient>(ft, "BufCompose");
-  fluid::sc::printCmd<fluid::buf::BufferComposeClient>(ft,"BufCompose","FDCompose"); 
+  registerCommand<fluid::wrapper::BufCompose,fluid:: client::BufferComposeClient>(ft, "BufCompose");
+  fluid::wrapper::printCmd<fluid::client::BufferComposeClient>(ft,"BufCompose","FDCompose");
 }

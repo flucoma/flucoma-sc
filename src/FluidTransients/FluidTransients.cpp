@@ -7,11 +7,11 @@
 
 static InterfaceTable *ft;
 namespace fluid {
-namespace stn{
+namespace wrapper{
   class FluidTransients: public SCUnit
   {
-    using AudioSignalWrapper = stn::TransientsClient<double, float>::AudioSignal;
-    using SignalWrapper      = stn::TransientsClient<double, float>::Signal<float>;
+    using AudioSignalWrapper = client::TransientsClient<double, float>::AudioSignal;
+    using SignalWrapper      = client::TransientsClient<double, float>::Signal<float>;
 
     //  using SignalPointer = std::unique_ptr<signal_wrapper>;
   public:
@@ -31,7 +31,7 @@ namespace stn{
 //
 
       //Oh NO! Heap allocation! Make client object
-      mClient =  new stn::TransientsClient<double,float>(65536);
+      mClient =  new client::TransientsClient<double,float>(65536);
       setParams(true);
 
 //      mClient->geParams()[0].setLong(pfilter_size);
@@ -80,22 +80,22 @@ namespace stn{
       assert(mClient);
    for(size_t i = 0; i < mClient->getParams().size(); ++i)
       {
-        parameter::Instance& p = mClient->getParams()[i];
+        client::Instance& p = mClient->getParams()[i];
 
         if(!instantiation && p.getDescriptor().instantiation())
           continue;
 
         switch(p.getDescriptor().getType())
         {
-        case parameter::Type::kLong:
+        case client::Type::kLong:
           p.setLong(in0(i + 1));
           p.checkRange();
           break;
-        case parameter::Type::kFloat:
+        case client::Type::kFloat:
           p.setFloat(in0(i + 1));
           p.checkRange();
           break;
-        case parameter::Type::kBuffer:
+        case client::Type::kBuffer:
           //            p.setBuffer( in0(i+1));
           break;
         default:
@@ -116,7 +116,7 @@ namespace stn{
       mClient->doProcess(std::begin(inputSignals),std::end(inputSignals),std::begin(outputSignals), std::end(outputSignals),numsamples,1,2);
     }
 
-    stn::TransientsClient<double, float> *mClient;
+    client::TransientsClient<double, float> *mClient;
     SignalWrapper *inputSignals[1];
     SignalWrapper *outputSignals[2];
   };
@@ -125,5 +125,5 @@ namespace stn{
 
 PluginLoad(FluidSTFTUGen) {
   ft = inTable;
-  registerUnit<fluid::stn::FluidTransients>(ft, "FluidTransients");
+  registerUnit<fluid::wrapper::FluidTransients>(ft, "FluidTransients");
 }

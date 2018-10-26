@@ -19,10 +19,10 @@ static InterfaceTable *ft;
 //Using statements for fluidtensor
 using fluid::FluidTensor;
 using fluid::FluidTensorView;
-using fluid::nmf::NMFClient;
+using fluid::client::NMFClient;
 
 namespace fluid {
-  namespace sc{
+  namespace wrapper{
     
     class BufNMF: public NRTCommandBase
     {
@@ -81,10 +81,10 @@ namespace fluid {
         nmf.process(processModel);
         mModel = processModel;
 
-        src     = static_cast<SCBufferView*>(parameter::lookupParam("src",      nmf.getParams()).getBuffer());
-        resynth = static_cast<SCBufferView*>(parameter::lookupParam("resynthbuf", nmf.getParams()).getBuffer());
-        dict    = static_cast<SCBufferView*>(parameter::lookupParam("filterbuf",  nmf.getParams()).getBuffer());
-        act     = static_cast<SCBufferView*>(parameter::lookupParam("envbuf",  nmf.getParams()).getBuffer());
+        src     = static_cast<SCBufferView*>(client::lookupParam("src",      nmf.getParams()).getBuffer());
+        resynth = static_cast<SCBufferView*>(client::lookupParam("resynthbuf", nmf.getParams()).getBuffer());
+        dict    = static_cast<SCBufferView*>(client::lookupParam("filterbuf",  nmf.getParams()).getBuffer());
+        act     = static_cast<SCBufferView*>(client::lookupParam("envbuf",  nmf.getParams()).getBuffer());
 
         return true;
       }
@@ -113,7 +113,7 @@ namespace fluid {
         return true;
       }
       
-      std::vector<parameter::Instance>& parameters()
+      std::vector<client::Instance>& parameters()
       {
         return nmf.getParams(); 
       }
@@ -125,11 +125,11 @@ namespace fluid {
       SCBufferView* dict;
       SCBufferView* act;
     };//class
-  } //namespace sc
+  } //namespace wrapper
 }//namespace fluid
 
 
 PluginLoad(OfflineFluidDecompositionUGens) {
   ft = inTable;
-  registerCommand<fluid::sc::BufNMF,fluid::nmf::NMFClient>(ft, "BufNMF");
+  registerCommand<fluid::wrapper::BufNMF,fluid::client::NMFClient>(ft, "BufNMF");
 }

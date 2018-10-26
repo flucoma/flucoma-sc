@@ -10,7 +10,7 @@ static InterfaceTable *ft;
 namespace fluid {
 class FDGain: public SCUnit
 {
-  using AudioClient = fluid::audio::GainAudioClient<double, float>;
+  using AudioClient = fluid::client::GainAudioClient<double, float>;
   using ClientPointer = std::unique_ptr<AudioClient>;
   using SignalWrapper = AudioClient::Signal;
   using AudioSignal= AudioClient::AudioSignal;
@@ -23,10 +23,10 @@ public:
   {
     mClient = ClientPointer(new AudioClient(65536));
     
-    std::vector<parameter::Instance>& params =  mClient->getParams();
+    std::vector<client::Instance>& params =  mClient->getParams();
     
-    parameter::lookupParam("winsize", params).setLong(in0(1));
-    parameter::lookupParam("hopsize", params).setLong(in0(1)); 
+    client::lookupParam("winsize", params).setLong(in0(1));
+    client::lookupParam("hopsize", params).setLong(in0(1)); 
     
     mClient->setHostBufferSize(bufferSize());
     mClient->reset();

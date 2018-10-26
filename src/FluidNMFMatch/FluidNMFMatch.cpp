@@ -13,7 +13,7 @@ namespace fluid {
 namespace nmf{
   class FDNMFMatch: public SCUnit
   {
-    using Client             = NMFMatch<double,float>;
+    using Client             = client::NMFMatch<double,float>;
     using AudioSignalWrapper = Client::AudioSignal;
     using SignalWrapper      = Client::Signal<float>;
     using SignalPointer      = std::unique_ptr<SignalWrapper>;
@@ -45,7 +45,7 @@ namespace nmf{
         return;
       }
       
-      mRank = parameter::lookupParam("rank", mClient->getParams()).getLong();
+      mRank = client::lookupParam("rank", mClient->getParams()).getLong();
       
       
       mClient->setHostBufferSize(bufferSize());
@@ -71,27 +71,27 @@ namespace nmf{
       assert(mClient);
       for(size_t i = 0; i < mClient->getParams().size(); ++i)
       {
-        parameter::Instance& p = mClient->getParams()[i];
+        client::Instance& p = mClient->getParams()[i];
         if(!instantiation && p.getDescriptor().instantiation())
           continue;
         switch(p.getDescriptor().getType())
         {
-        case parameter::Type::kLong:
+        case client::Type::kLong:
           p.setLong(in0(i + 1));
           p.checkRange();
           break;
-        case parameter::Type::kFloat: {
+        case client::Type::kFloat: {
           p.setFloat(in0(i + 1));
           p.checkRange();
           }
             break;
-          case parameter::Type::kBuffer: {
+          case client::Type::kBuffer: {
             long bufnum = static_cast<long>(in0(i+1));
-            sc::RTBufferView* currentBuf = static_cast<sc::RTBufferView*>(p.getBuffer());
+            wrapper::RTBufferView* currentBuf = static_cast<wrapper::RTBufferView*>(p.getBuffer());
             
             
             if(bufnum >= 0 && (currentBuf? (currentBuf->bufnum() != bufnum) : true)){
-              sc::RTBufferView* buf = new sc::RTBufferView(mWorld,bufnum);
+              wrapper::RTBufferView* buf = new wrapper::RTBufferView(mWorld,bufnum);
               p.setBuffer(buf);
             }
             break;

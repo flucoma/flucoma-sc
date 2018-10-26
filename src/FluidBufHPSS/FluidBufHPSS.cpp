@@ -17,7 +17,7 @@ using fluid::FluidTensor;
 using fluid::FluidTensorView;
 
 namespace fluid {
-  namespace sc{
+  namespace wrapper{
     
     class BufHPSS: public NRTCommandBase
     {
@@ -34,7 +34,7 @@ namespace fluid {
        – fft size
        */
     public:
-      using client_type = hpss::HPSSClient;
+      using client_type = client::HPSSClient;
       using NRTCommandBase::NRTCommandBase;
       
       ~BufHPSS()  {}
@@ -48,7 +48,7 @@ namespace fluid {
       {
         //sanity check the parameters
         bool parametersOk;
-        hpss::HPSSClient::ProcessModel processModel;
+        client::HPSSClient::ProcessModel processModel;
         std::string whatHappened;//this will give us a message to pass back if param check fails
         std::tie(parametersOk,whatHappened,processModel) = processor.sanityCheck();
         if(!parametersOk)
@@ -82,20 +82,20 @@ namespace fluid {
       }
       
       
-      std::vector<parameter::Instance>& parameters()
+      std::vector<client::Instance>& parameters()
       {
         return processor.getParams();
       }
     private:
-      hpss::HPSSClient processor;
-      hpss::HPSSClient::ProcessModel mModel;
+      client::HPSSClient processor;
+      client::HPSSClient::ProcessModel mModel;
     };//class
-  } //namespace sc
+  } //namespace wrapper
 }//namespace fluid
 
 
 PluginLoad(OfflineFluidDecompositionUGens) {
   ft = inTable;
-  registerCommand<fluid::sc::BufHPSS,fluid::hpss::HPSSClient>(ft, "BufHPSS");
-  fluid::sc::printCmd<fluid::hpss::HPSSClient>(ft,"BufHPSS","FDHPSS");
+  registerCommand<fluid::wrapper::BufHPSS,fluid::client::HPSSClient>(ft, "BufHPSS");
+  fluid::wrapper::printCmd<fluid::client::HPSSClient>(ft,"BufHPSS","FDHPSS");
 }

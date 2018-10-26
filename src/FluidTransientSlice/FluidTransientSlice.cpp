@@ -10,7 +10,7 @@ namespace fluid {
 namespace segmentation{
   class FluidSliceTransients: public SCUnit
   {
-    using audio_client       = TransientsSlice<double, float>;
+    using audio_client       = client::TransientsSlice<double, float>;
     using AudioSignalWrapper = audio_client::AudioSignal;
     using SignalWrapper      = audio_client::Signal<float>;
 
@@ -59,22 +59,22 @@ namespace segmentation{
       assert(mClient);
       for(size_t i = 0; i < mClient->getParams().size(); ++i)
       {
-        parameter::Instance& p = mClient->getParams()[i];
+        client::Instance& p = mClient->getParams()[i];
 
         if(!instantiation && p.getDescriptor().instantiation())
           continue;
 
         switch(p.getDescriptor().getType())
         {
-        case parameter::Type::kLong:
+        case client::Type::kLong:
           p.setLong(in0(i + 1));
           p.checkRange();
           break;
-        case parameter::Type::kFloat:
+        case client::Type::kFloat:
           p.setFloat(in0(i + 1));
           p.checkRange();
           break;
-        case parameter::Type::kBuffer:
+        case client::Type::kBuffer:
           //            p.setBuffer( in0(i+1));
           break;
         default:

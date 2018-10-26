@@ -12,8 +12,8 @@ namespace fluid {
 
 class FDSTFTPass: public SCUnit
 {
-  using AudioSignalWrapper = audio::BaseSTFTClient<double, float>::AudioSignal;
-  using SignalWrapper      = audio::BaseSTFTClient<double, float>::Signal<float>;
+  using AudioSignalWrapper = client::BaseSTFTClient<double, float>::AudioSignal;
+  using SignalWrapper      = client::BaseSTFTClient<double, float>::Signal<float>;
 
 //  using SignalPointer = std::unique_ptr<signal_wrapper>;
 public:
@@ -28,7 +28,7 @@ public:
         const float fftSize = in0(3);
 
         //Oh NO! Heap allocation! Make client object
-        mClient =  new audio::BaseSTFTClient<double,float>(65536);
+        mClient =  new client::BaseSTFTClient<double,float>(65536);
         mClient->getParams()[0].setLong(windowSize);
         mClient->getParams()[1].setLong(hopSize);
         mClient->getParams()[2].setLong(fftSize);
@@ -75,7 +75,7 @@ private:
         mClient->doProcess(std::begin(inputSignals),std::end(inputSignals),std::begin(outputSignals), std::end(outputSignals),numsamples,1,1);
     }
 
-    audio::BaseSTFTClient<double, float> *mClient;
+    client::BaseSTFTClient<double, float> *mClient;
     SignalWrapper *inputSignals[1];
     SignalWrapper *outputSignals[1];
 };

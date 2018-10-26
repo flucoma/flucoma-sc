@@ -17,7 +17,7 @@ using fluid::FluidTensor;
 using fluid::FluidTensorView;
 
 namespace fluid {
-  namespace sc{
+  namespace wrapper{
     
     class BufSines: public NRTCommandBase
     {
@@ -39,7 +39,7 @@ namespace fluid {
        – fft size
        */
     public:
-      using client_type = stn::SinesClient;
+      using client_type = client::SinesClient;
       using NRTCommandBase::NRTCommandBase;
       
       ~BufSines()  {}
@@ -53,7 +53,7 @@ namespace fluid {
       {
         //sanity check the parameters
         bool parametersOk;
-        stn::SinesClient::ProcessModel processModel;
+        client::SinesClient::ProcessModel processModel;
         std::string whatHappened;//this will give us a message to pass back if param check fails
         std::tie(parametersOk,whatHappened,processModel) = processor.sanityCheck();
         if(!parametersOk)
@@ -80,20 +80,20 @@ namespace fluid {
         return true;
       }
       
-      std::vector<parameter::Instance>& parameters()
+      std::vector<client::Instance>& parameters()
       {
         return processor.getParams();
       }
     private:
-      stn::SinesClient processor;
-      stn::SinesClient::ProcessModel mModel;
+      client::SinesClient processor;
+      client::SinesClient::ProcessModel mModel;
     };//class
-  } //namespace sc
+  } //namespace wrapper
 }//namespace fluid
 
 
 PluginLoad(OfflineFluidDecompositionUGens) {
   ft = inTable;
-  registerCommand<fluid::sc::BufSines,fluid::stn::SinesClient>(ft, "BufSines");
-  fluid::sc::printCmd<fluid::stn::SinesClient>(ft,"BufSines","FDSines");
+  registerCommand<fluid::wrapper::BufSines,fluid::client::SinesClient>(ft, "BufSines");
+  fluid::wrapper::printCmd<fluid::client::SinesClient>(ft,"BufSines","FDSines");
 }

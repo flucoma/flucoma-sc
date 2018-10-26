@@ -18,7 +18,7 @@
 //static InterfaceTable *ft;
 
 namespace fluid {
-namespace sc{
+namespace wrapper{
   /**
    A descendent of SndBuf that will populate itself
    from the NRT mirror buffers given a world and a bufnum
@@ -37,7 +37,7 @@ namespace sc{
   };
   
   /**
-   A combination of SndBuf and parameter::BufferAdaptor (which, in turn, exposes FluidTensorView<float,2>), for simple transfer of data
+   A combination of SndBuf and client::BufferAdaptor (which, in turn, exposes FluidTensorView<float,2>), for simple transfer of data
    
    Given a World* and a buffer number, this will populate its SndBuf stuff
    from the NRT mirror buffers, and create a FluidTensorView wrapper of
@@ -50,7 +50,7 @@ namespace sc{
    nSamps = rows
    nChans = columns
    **/
-  class SCBufferView: public NRTBuf, public parameter::BufferAdaptor
+  class SCBufferView: public NRTBuf, public client::BufferAdaptor
   {
   public:
     SCBufferView() = delete;
@@ -153,7 +153,7 @@ namespace sc{
     size_t mRank = 1;
   };
   
-  class RTBufferView: public parameter::BufferAdaptor
+  class RTBufferView: public client::BufferAdaptor
   {
   public:
     RTBufferView(World* world, int bufnum): mWorld(world), mBufnum(bufnum) {}
@@ -233,7 +233,7 @@ namespace sc{
   
   
   class NRTCommandBase{
-    using param_type = fluid::parameter::Instance;
+    using param_type = fluid::client::Instance;
   public:
     NRTCommandBase() = delete;
     NRTCommandBase(NRTCommandBase&) = delete;
@@ -312,7 +312,7 @@ namespace sc{
       }
       
       cmd << ", ";
-      if (d.getType() == parameter::Type::kBuffer) {
+      if (d.getType() == client::Type::kBuffer) {
         if (count == 0)
           cmd <<  d.getName() << ".bufnum";
         else
@@ -328,7 +328,7 @@ namespace sc{
     ss << ";\n\n\t\tserver = server ? Server.default\n;" ;
 
     if (Client::getParamDescriptors()[0].getType() ==
-        parameter::Type::kBuffer) {
+        client::Type::kBuffer) {
       ss << "if("<<Client::getParamDescriptors()[0].getName()
       << ".bufnum.isNil) {Error(\"Invalid Buffer\").format(thisMethod.name, this.class.name).throw};\n\n";
     }
@@ -347,12 +347,12 @@ namespace sc{
     NRT_Plug* cmd = new NRT_Plug(inUserData);
     
     //Iterate over parameter descriptions associated with this client object, fill with data from language side
-//    std::vector<parameter::Instance> params = NRT_Plug::client_type::newParameterSet();
+//    std::vector<client::Instance> params = NRT_Plug::client_type::newParameterSet();
     for (auto&& p: cmd->parameters())
     {
       switch(p.getDescriptor().getType())
       {
-      case parameter::Type::kBuffer: {
+      case client::Type::kBuffer: {
         long bufnum = static_cast<long>(args->geti());
         if (bufnum >= 0) {
           SCBufferView *buf = new SCBufferView(bufnum, inWorld);
@@ -360,11 +360,11 @@ namespace sc{
         }
         break;
         }
-        case parameter::Type::kLong: {
+        case client::Type::kLong: {
           p.setLong(static_cast<long>(args->geti()));
           break;
         }
-        case parameter::Type::kFloat: {
+        case client::Type::kFloat: {
           p.setFloat(args->getf());
           break;
         }
@@ -388,14 +388,14 @@ namespace sc{
     
     cmd->runCommand(inWorld, replyAddr, completionMsgData, completionMsgSize);
   }
-} //namespace sc
+} //namespace wrapper
 }//namespace fluid
 
 
 template <typename NRT_Plug,typename NRT_Client>
 void registerCommand(InterfaceTable* ft, const char* name)
 {
-  PlugInCmdFunc cmd =  fluid::sc::command<NRT_Plug>;
+  PlugInCmdFunc cmd =  fluid::wrapper::command<NRT_Plug>;
   (*ft->fDefinePlugInCmd)(name,cmd,nullptr);
 
 }

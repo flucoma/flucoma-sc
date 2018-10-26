@@ -7,13 +7,13 @@
 
 static InterfaceTable *ft;
 namespace fluid {
-namespace hpss{
+namespace wrapper{
   class FDRTHPSS: public SCUnit
   {
-    using AudioSignalWrapper = hpss::HPSSClient<double, float>::AudioSignal;
-    using SignalWrapper      = hpss::HPSSClient<double, float>::Signal<float>;
+    using AudioSignalWrapper = client::HPSSClient<double, float>::AudioSignal;
+    using SignalWrapper      = client::HPSSClient<double, float>::Signal<float>;
     using SignalPointer      = std::unique_ptr<SignalWrapper>;
-    using ClientPointer      = std::unique_ptr<hpss::HPSSClient<double,float>>;
+    using ClientPointer      = std::unique_ptr<client::HPSSClient<double,float>>;
     template <size_t N>
     using SignalArray        = std::array<SignalPointer,N>;
   public:
@@ -23,7 +23,7 @@ namespace hpss{
       //psize hszie pthresh hthresh   Window size, Hop size, FFT Size
    
       //Oh NO! Heap allocation! Make client object
-      mClient =  ClientPointer(new hpss::HPSSClient<double,float>(65536));
+      mClient =  ClientPointer(new client::HPSSClient<double,float>(65536));
       
       setParams(true);
       
@@ -61,16 +61,16 @@ namespace hpss{
       assert(mClient);
       for(size_t i = 0; i < mClient->getParams().size(); ++i)
       {
-        parameter::Instance& p = mClient->getParams()[i];
+        client::Instance& p = mClient->getParams()[i];
         if(!instantiation && p.getDescriptor().instantiation())
           continue;
         switch(p.getDescriptor().getType())
         {
-        case parameter::Type::kLong:
+        case client::Type::kLong:
           p.setLong(in0(i + 1));
           p.checkRange();
           break;
-        case parameter::Type::kFloat: {
+        case client::Type::kFloat: {
 
           // We need to constrain threshold (normalised) frequency pairs at
           // runtime.
@@ -78,7 +78,7 @@ namespace hpss{
           auto constraint = paramConstraints.find(attrname);
 
           if (constraint != paramConstraints.end()) {
-            double limit = parameter::lookupParam(constraint->second.param,
+            double limit = client::lookupParam(constraint->second.param,
                                                   mClient->getParams())
                                .getFloat();
 
@@ -91,7 +91,7 @@ namespace hpss{
           p.checkRange();
           }
             break;
-          case parameter::Type::kBuffer:
+          case client::Type::kBuffer:
             //            p.setBuffer( in0(i+1));
             break;
           default:
@@ -134,7 +134,7 @@ namespace hpss{
 
 PluginLoad(FluidSTFTUGen) {
   ft = inTable;
-  registerUnit<fluid::hpss::FDRTHPSS>(ft, "FluidHPSS");
+  registerUnit<fluid::wrapper::FDRTHPSS>(ft, "FluidHPSS");
 }
 
 
