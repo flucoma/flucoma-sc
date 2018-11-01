@@ -22,31 +22,31 @@ This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ 
 CLASSMETHODS::
 
 METHOD:: kr
-The real-time processing method. It takes an audio or control input, and will yield a control stream in the form of a multichannel array of size STRONG::rank::.
+The real-time processing method. It takes an audio or control input, and will yield a control stream in the form of a multichannel array of size STRONG::maxrank::. If the dictionary buffer has fewer than maxrank channels, the remaining outputs will be zeroed.
 
 ARGUMENT:: in
-The input to the factorisation process.
+The signal input to the factorisation process.
 
 ARGUMENT:: dictBufNum
-	The index of the buffer where the different dictionaries will be matched against. Dictionaries must be STRONG::(fft size / 2) + 1:: frames and STRONG::rank:: channels
+	The server index of the buffer containing the different dictionaries that the input signal will be matched against. Dictionaries must be STRONG::(fft size / 2) + 1:: frames. If the buffer has more than STRONG::(maxrank) channels, the excess will be ignored.
 
-ARGUMENT:: rank
-	The number of elements the NMF algorithm will try to divide the spectrogram of the source in. This should match the number of channels of the dictBuf defined above.
+ARGUMENT::maxrank
+	The maximum number of elements the NMF algorithm will try to divide the spectrogram of the source in. This dictates the number of output channelsfor the ugen.
 
 ARGUMENT:: nIter
-	The NMF process is iterative, trying to converge to the smallest error in its factorisation. The number of iterations will decide how many times it tries to adjust its estimates. Higher numbers here will be more CPU expensive, lower numbers will be more unpredictable in quality.
+	The NMF process is iterative, trying to converge to the smallest error in its factorisation. The number of iterations will decide how many times it tries to adjust its estimates. Higher numbers here will be more CPU intensive, lower numbers will be more unpredictable in quality.
 
 ARGUMENT:: winSize
-	The window size. As NMF relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
+	The number of samples that are analysed at a time. A lower number yields greater temporal resolution, at the expense of spectral resoultion, and vice-versa.
 
 ARGUMENT:: hopSize
-	The window hope size. As NMF relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts.
+	The window hope size. As NMF relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. Default = winSize / 2
 
 ARGUMENT:: fftSize
-	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision.
+	The FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. Default = winSize
 
 returns::
-	A multichannel array, giving for each dictionary the activation value.
+	A multichannel kr output, giving for each dictionary component the activation amount.
 
 
 EXAMPLES::
