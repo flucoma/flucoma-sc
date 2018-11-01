@@ -45,7 +45,7 @@ namespace nmf{
         return;
       }
       
-      mRank = parameter::lookupParam("rank", mClient->getParams()).getLong();
+      mMaxRank = parameter::lookupParam("maxrank", mClient->getParams()).getLong();
       
       
       mClient->set_host_buffer_size(bufferSize());
@@ -53,8 +53,8 @@ namespace nmf{
       
      inputSignals[0] =  SignalPointer(new AudioSignalWrapper());
       
-      outputSignals.resize(mRank);
-      for(size_t i = 0; i < mRank; ++i)
+      outputSignals.resize(mMaxRank);
+      for(size_t i = 0; i < mMaxRank; ++i)
         outputSignals[i].reset(new Client::ScalarSignal());
       
       mCalcFunc = make_calc_function<FDNMFMatch,&FDNMFMatch::next>();
@@ -106,21 +106,32 @@ namespace nmf{
     
     void next(int numsamples)
     {
+      auto filters = parameter::lookupParam("filterbuf", mClient->getParams()).getBuffer();
+      
+      if(!filters) return;
+      
       setParams(false);
       const float* input = zin(0);
       const float inscalar = in0(0);
       inputSignals[0]->set(const_cast<float*>(input), inscalar);
-      for(size_t i = 0; i < mRank; ++i)
+      
+      for(size_t i = 0; i < mMaxRank; ++i)
         outputSignals[i]->set(out(i),out0(i));
       
-      mClient->do_process_noOLA(inputSignals.begin(),inputSignals.end(), outputSignals.begin(), outputSignals.end(), mWorld->mFullRate.mBufLength ,1,mRank);
-      for(size_t i = 0; i < mRank; ++i)
+      mClient->do_process_noOLA(inputSignals.begin(),inputSignals.end(), outputSignals.begin(), outputSignals.end(), mWorld->mFullRate.mBufLength ,1,mMaxRank);
+      
+      parameter::BufferAdaptor::Access buf(filters);
+      long actualRank = buf.numChans();
+      for(size_t i = 0; i < actualRank; ++i)
+        out0(i) = outputSignals[i]->next();
+      
+      for(size_t i = actualRank; i < mMaxRank; ++i)
         out0(i) = outputSignals[i]->next();
     }
     
 
 
-    size_t mRank;
+    size_t mMaxRank;
     ClientPointer mClient;
     SignalArray<1> inputSignals;
     SignalVector   outputSignals;

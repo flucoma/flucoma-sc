@@ -37,5 +37,5 @@ Routine{
 }.play;
 )
 
-{DelayN.ar(PlayBuf.ar(1,b.bufnum),0.1,1024/44100, FluidNMFMatch.kr(PlayBuf.ar(1,b.bufnum),e.bufnum,2))}.play
+{DelayN.ar(PlayBuf.ar(1,b.bufnum),0.1,1024/44100, FluidNMFMatch.kr(PlayBuf.ar(1,b.bufnum),e.bufnum,maxrank:2))}.play
 
