@@ -48,7 +48,7 @@ namespace nmf{
       mMaxRank = parameter::lookupParam("maxrank", mClient->getParams()).getLong();
       
       
-      mClient->set_host_buffer_size(bufferSize());
+      mClient->set_host_buffer_size(mWorld->mFullRate.mBufLength);
       mClient->reset();
       
      inputSignals[0] =  SignalPointer(new AudioSignalWrapper());
