@@ -69,23 +69,25 @@ Routine {
 
 // find the rank that has the picking sound by changing which channel to listen to
 (
-    ~element = 8;
+    ~element = 4;
     {PlayBuf.ar(10,c.bufnum)[~element]}.play
 )
 
 // copy all the other ranks on itself and the picking dictionnary as the sole component of the 1st channel
 (
 Routine{
-            (0..9).remove(~element).do({|chan|FluidBufCompose.process(s,srcBufNumA: x.bufnum, startChanA:chan, nChansA: 1, srcBufNumB: e.bufnum, dstBufNum: e.bufnum)});
+	z = (0..9);
+	FluidBufCompose.process(s,srcBufNumA: x.bufnum, startChanA: z.removeAt(~element), nChansA: 1, srcBufNumB: e.bufnum,  dstBufNum: e.bufnum);
     s.sync;
     e.query;
     s.sync;
-    FluidBufCompose.process(s,srcBufNumA: x.bufnum, startChanA: ~element, nChansA: 1, srcBufNumB: e.bufnum, dstStartChanB: 1, dstBufNum: e.bufnum);
+	z.do({|chan|FluidBufCompose.process(s,srcBufNumA: x.bufnum, startChanA:chan, nChansA: 1, dstStartChanA: 1, srcBufNumB: e.bufnum, dstBufNum: e.bufnum)});
     s.sync;
     e.query;
 }.play;
 )
-e.plot
+e.plot;
+
 //using this trained dictionary we can see the envelop (activations) of each rank
 {FluidNMFMatch.kr(PlayBuf.ar(1,b.bufnum),e.bufnum,2,fftSize:2048)}.plot(10);
 

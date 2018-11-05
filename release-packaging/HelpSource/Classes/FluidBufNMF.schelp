@@ -187,7 +187,7 @@ c.plot;x.plot; y.plot;
 
 	CODE::
 
-	//set some buffers
+//set some buffers
 (
 b = Buffer.read(s,File.realpath(FluidBufNMF.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-AcousticStrums-M.wav");
 c = Buffer.new(s);
@@ -196,7 +196,7 @@ e = Buffer.alloc(s,1,1);
 y = Buffer.alloc(s,1,1);
 )
 
-	// train only 2 seconds
+// train only 2 seconds
 (
 Routine {
 	FluidBufNMF.process(s,b.bufnum,0,88200,0,1, c.bufnum, x.bufnum, rank:10);
@@ -207,27 +207,28 @@ Routine {
 
 // find the rank that has the picking sound by changing which channel to listen to
 (
-	~element = 0;
+	~element = 9;
 	{PlayBuf.ar(10,c.bufnum)[~element]}.play
 )
 
 // copy all the other ranks on itself and the picking dictionnary as the sole component of the 1st channel
 (
 Routine{
-			(0..9).remove(~element).do({|chan|FluidBufCompose.process(s,srcBufNumA: x.bufnum, startChanA:chan, nChansA: 1, srcBufNumB: e.bufnum, dstBufNum: e.bufnum)});
-	s.sync;
-	e.query;
-	s.sync;
-	FluidBufCompose.process(s,srcBufNumA: x.bufnum, startChanA: ~element, nChansA: 1, srcBufNumB: e.bufnum, dstStartChanB: 1, dstBufNum: e.bufnum);
-	s.sync;
-	e.query;
+	z = (0..9);
+	FluidBufCompose.process(s,srcBufNumA: x.bufnum, startChanA: z.removeAt(~element), nChansA: 1, srcBufNumB: e.bufnum,  dstBufNum: e.bufnum);
+    s.sync;
+    e.query;
+    s.sync;
+	z.do({|chan|FluidBufCompose.process(s,srcBufNumA: x.bufnum, startChanA:chan, nChansA: 1, dstStartChanA: 1, srcBufNumB: e.bufnum, dstBufNum: e.bufnum)});
+    s.sync;
+    e.query;
 }.play;
 )
 
 //process the whole file, splitting it with the 2 trained dictionnaries
 (
 Routine{
-	FluidBufNMF.process(s, b.bufnum, dstBufNum: c.bufnum, dictBufNum: e.bufnum, dictFlag: 2, actBufNum:y.bufnum, rank:2);
+	FluidBufNMF.process(s, b.bufnum, dstBufNum: c.bufnum, dictBufNum: e.bufnum, dictFlag: 2, actBufNum: y.bufnum, rank:2);
 	s.sync;
 	c.query;
 }.play;
