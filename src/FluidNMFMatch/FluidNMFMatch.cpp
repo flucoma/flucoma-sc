@@ -104,14 +104,14 @@ namespace nmf{
       }
     }
     
-    void next(int numsamples)
+    void next(int)
     {
       auto filters = parameter::lookupParam("filterbuf", mClient->getParams()).getBuffer();
       
       if(!filters) return;
       
       setParams(false);
-      const float* input = zin(0);
+      const float* input = in(0);
       const float inscalar = in0(0);
       inputSignals[0]->set(const_cast<float*>(input), inscalar);
       
@@ -126,7 +126,7 @@ namespace nmf{
         out0(i) = outputSignals[i]->next();
       
       for(size_t i = actualRank; i < mMaxRank; ++i)
-        out0(i) = outputSignals[i]->next();
+        out0(i) = 0; // outputSignals[i]->next();
     }
     
 
