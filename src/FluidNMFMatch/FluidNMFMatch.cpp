@@ -121,7 +121,7 @@ namespace nmf{
       mClient->do_process_noOLA(inputSignals.begin(),inputSignals.end(), outputSignals.begin(), outputSignals.end(), mWorld->mFullRate.mBufLength ,1,mMaxRank);
       
       parameter::BufferAdaptor::Access buf(filters);
-      long actualRank = buf.numChans();
+      long actualRank = std::min(buf.numChans(),mMaxRank); 
       for(size_t i = 0; i < actualRank; ++i)
         out0(i) = outputSignals[i]->next();
       
