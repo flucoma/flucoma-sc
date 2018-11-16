@@ -94,6 +94,10 @@ namespace sc{
       return (mBuffer && mBufnum >=0  && mBufnum < mWorld->mNumSndBufs);
     }
     
+    bool exists() const override {
+      return mBufnum >=0  && mBufnum < mWorld->mNumSndBufs; 
+    }
+    
     FluidTensorView<float,1> samps(size_t channel, size_t rankIdx = 0) override
     {
       FluidTensorView<float,2>  v{mBuffer->data,0, static_cast<size_t>(mBuffer->frames),static_cast<size_t>(mBuffer->channels)};
@@ -167,6 +171,10 @@ namespace sc{
     //Validity is based on whether this buffer is within the range the server knows about
     bool valid() const override {
       return (mBuffer && mBufnum >=0 && mBufnum < mWorld->mNumSndBufs);
+    }
+    
+    bool exists() const override {
+      return mBufnum >=0 && mBufnum < mWorld->mNumSndBufs;
     }
     
     FluidTensorView<float,1> samps(size_t channel, size_t rankIdx = 0) override
