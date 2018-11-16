@@ -106,11 +106,13 @@ namespace nmf{
     
     void next(int)
     {
+      
+      setParams(false);
       auto filters = parameter::lookupParam("filterbuf", mClient->getParams()).getBuffer();
       
       if(!filters) return;
       
-      setParams(false);
+      
       const float* input = in(0);
       const float inscalar = in0(0);
       inputSignals[0]->set(const_cast<float*>(input), inscalar);
