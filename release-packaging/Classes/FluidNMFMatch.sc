@@ -1,6 +1,6 @@
 FluidNMFMatch : MultiOutUGen {
 
-	*kr { arg in = 0, dictBufNum, maxRank = 1, nIter = 10, winSize = 1024, hopSize = 256, fftSize = -1;
+	*kr { arg in = 0, dictBufNum, maxRank = 1, nIter = 10, winSize = 1024, hopSize = 512, fftSize = -1;
 		^this.multiNew('control', in, dictBufNum, maxRank, nIter, winSize, hopSize, fftSize);
 	}
 

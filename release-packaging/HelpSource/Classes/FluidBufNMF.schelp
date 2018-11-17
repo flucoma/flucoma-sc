@@ -110,6 +110,58 @@ RETURNS::
 
 
 EXAMPLES::
+STRONG::A didactic example::
+	CODE::
+(
+// create buffers
+b = Buffer.alloc(s,44100);
+c = Buffer.alloc(s, 44100);
+d = Buffer.new(s);
+e = Buffer.new(s);
+f = Buffer.new(s);
+g = Buffer.new(s);
+)
+
+(
+// fill them with 2 clearly segregated sine waves and composite a buffer where they are consecutive
+Routine {
+	b.sine2([500],[1], false, false);
+	c.sine2([5000],[1],false, false);
+	s.sync;
+	FluidBufCompose.process(s,srcBufNumA:b.bufnum, srcBufNumB:c.bufnum,dstStartAtB:44100,dstBufNum:d.bufnum);
+	s.sync;
+	d.query;
+}.play;
+)
+
+// check
+d.plot
+d.play //////(beware !!!! loud!!!)
+
+(
+// separate them in 2 ranks
+Routine {
+	FluidBufNMF.process(s, d.bufnum, dstBufNum:e.bufnum, dictBufNum: f.bufnum, actBufNum:g.bufnum, rank:2);
+	s.sync;
+	e.query;
+	f.query;
+	g.query;
+}.play
+)
+
+// look at the resynthesised separated signal
+e.plot;
+
+// look at the dictionaries signal for 2 spikes
+f.plot;
+
+// look at the activations
+g.plot;
+
+//trying running the same process on superimposed sinewaves instead of consecutive in the source and see how it fails.
+::
+
+STRONG::Basic musical examples::
 
 code::
 // set some buffers and parameters

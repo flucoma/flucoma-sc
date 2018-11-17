@@ -1,5 +1,5 @@
 FluidBufNMF {
-	*process { arg server,  srcBufNum, startAt = 0, nFrames = -1, startChan = 0, nChans = -1, dstBufNum, dictBufNum, dictFlag = 0, actBufNum, actFlag = 0, rank = 1, nIter = 100, sortFlag = 0, winSize = 1024, hopSize = 256, fftSize = -1, winType = 0, randSeed = -1;
+	*process { arg server,  srcBufNum, startAt = 0, nFrames = -1, startChan = 0, nChans = -1, dstBufNum, dictBufNum, dictFlag = 0, actBufNum, actFlag = 0, rank = 1, nIter = 100, sortFlag = 0, winSize = 1024, hopSize = 512, fftSize = -1, winType = 0, randSeed = -1;
 
 		if(srcBufNum.isNil) { Error("Invalid buffer").format(thisMethod.name, this.class.name).throw};
 
