@@ -14,7 +14,7 @@ target_include_directories(
 )
 
 target_link_libraries(
-  ${PLUGIN} PRIVATE FLUID_DECOMPOSITION
+  ${PLUGIN} PRIVATE FLUID_DECOMPOSITION FLUID_SC_WRAPPER
 )
 
 include(${CMAKE_CURRENT_LIST_DIR}/../../scripts/target_post.cmake)
