@@ -45,7 +45,7 @@ public:
 
   void next(int n) {
 
-    setParams(mInBuf + 1); //forward on inputs N + 1 as params
+    setParams(mInBuf + 1); // forward on inputs N + 1 as params
 
     const Unit *unit = this;
     for (int i = 0; i < mClient.audioChannelsIn(); ++i) {
@@ -68,8 +68,10 @@ public:
 private:
   template <size_t... Is>
   void setParams(float **inputs, std::index_sequence<Is...>) {
-    (void)std::initializer_list<int>{(
-        impl::SetterDispatchImpl<Client, Ts, Is>::f(mClient, 1, inputs[Is]), 0)...};
+    (void)std::initializer_list<int>{
+        (impl::SetterDispatchImpl<Client, Ts, Is>::f(mClient, 1, inputs[Is],
+                                                     mInputConnections[Is+1]),
+         0)...};
   }
 
   std::vector<bool> mInputConnections;
@@ -83,22 +85,34 @@ private:
 namespace impl {
 template <typename Client, size_t N>
 struct SetterDispatchImpl<Client, FloatT, N> {
-  static void f(Client &x, long ac, float *av) { x.template setter<N>()(*av); }
+  static void f(Client &x, long ac, float *av, bool isAudio) {
+    if (!isAudio)
+      x.template setter<N>()(*av);
+  }
 };
 
 template <typename Client, size_t N>
 struct SetterDispatchImpl<Client, LongT, N> {
-  static void f(Client &x, long ac, float *av) { x.template setter<N>()(*av); }
+  static void f(Client &x, long ac, float *av, bool isAudio) {
+    if (!isAudio)
+      x.template setter<N>()(*av);
+  }
 };
 
 template <typename Client, size_t N>
 struct SetterDispatchImpl<Client, BufferT, N> {
-  static void f(Client *x, long ac, float *av) { x->template setter<N>()(*av); }
+  static void f(Client *x, long ac, float *av, bool isAudio) {
+    if (!isAudio)
+      x->template setter<N>()(*av);
+  }
 };
 
 template <typename Client, size_t N>
 struct SetterDispatchImpl<Client, EnumT, N> {
-  static void f(Client *x, long ac, float *av) { x->template setter<N>()(*av); }
+  static void f(Client *x, long ac, float *av, bool isAudio) {
+    if (!isAudio)
+      x->template setter<N>()(*av);
+  }
 };
 
 } // namespace impl
