@@ -59,6 +59,9 @@ if(APPLE OR WIN32)
 set(CMAKE_SHARED_MODULE_SUFFIX ".scx")
 endif()
 
+add_library(FLUID_SC_WRAPPER INTERFACE)
+target_sources(FLUID_SC_WRAPPER INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include/FluidSCWrapper.hpp")
+
 SUBDIRLIST(PROJECT_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src)
 foreach (project_dir ${PROJECT_DIRS})
 	if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/${project_dir}/CMakeLists.txt")
