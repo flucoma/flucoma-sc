@@ -2,6 +2,7 @@
 
 #include <clients/rt/GainClient.hpp>
 #include <data/FluidTensor.hpp>
+#include <data/TensorTypes.hpp>
 
 #include <SC_PlugIn.hpp>
 
@@ -30,17 +31,19 @@ public:
       mAudioInputs.emplace_back(nullptr, 0, 0);
     }
 
-    const Unit *unit = this;
-
+//    const Unit *unit = this;
+//
     for (int i = 0; i < mClient.audioChannelsOut(); ++i) {
-      mOutputConnections.emplace_back(BUFLENGTH != 1);
+      mOutputConnections.emplace_back(true);
       mAudioOutputs.emplace_back(nullptr, 0, 0);
     }
 
-    mCalcFunc = [](Unit *u, int n) {
-      FluidSCWrapper *f = static_cast<FluidSCWrapper *>(u);
-      f->next(n);
-    };
+    set_calc_function<FluidSCWrapper, &FluidSCWrapper::next>(); 
+
+//    mCalcFunc = [](Unit *u, int n) {
+//      FluidSCWrapper *f = static_cast<FluidSCWrapper *>(u);
+//      f->next(n);
+//    };
   }
 
   void next(int n) {
@@ -76,8 +79,8 @@ private:
 
   std::vector<bool> mInputConnections;
   std::vector<bool> mOutputConnections;
-  std::vector<FluidTensorView<float, 1>> mAudioInputs;
-  std::vector<FluidTensorView<float, 1>> mAudioOutputs;
+  std::vector<HostVector<float>> mAudioInputs;
+  std::vector<HostVector<float>> mAudioOutputs;
 
   Client mClient;
 };
