@@ -17,7 +17,7 @@ template <typename Client, typename T, size_t N> struct SetterDispatchImpl;
 template <typename Client, typename T, size_t N> struct GetterDispatchImpl;
 } // namespace impl
 
-template <typename Client, typename... Ts>
+template <typename Client>
 class FluidSCWrapper : public SCUnit {
 public:
   FluidSCWrapper() {
@@ -65,7 +65,7 @@ public:
   }
 
   void setParams(float **inputs) {
-    setParams(inputs, std::index_sequence_for<Ts...>());
+    setParams(inputs, ParamIndexList());
   }
 
 private:
@@ -120,11 +120,10 @@ struct SetterDispatchImpl<Client, EnumT, N> {
 
 } // namespace impl
 
-template <typename Client, typename... Ts>
-void makeSCWrapper(InterfaceTable *ft, const char *className,
-                   const std::tuple<Ts...> &params) {
-  registerUnit<FluidSCWrapper<Client, typename Ts::first_type...>>(ft,
-                                                                   className);
+template <typename Client>
+void makeSCWrapper(InterfaceTable *ft, const char *className, Client::ParamType &params)
+{
+  registerUnit<FluidSCWrapper<Client>(ft, className);
 }
 
 } // namespace client
