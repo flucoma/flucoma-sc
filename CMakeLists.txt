@@ -60,7 +60,14 @@ set(CMAKE_SHARED_MODULE_SUFFIX ".scx")
 endif()
 
 add_library(FLUID_SC_WRAPPER INTERFACE)
-target_sources(FLUID_SC_WRAPPER INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include/FluidSCWrapper.hpp")
+target_sources(FLUID_SC_WRAPPER
+INTERFACE
+${CMAKE_CURRENT_SOURCE_DIR}/include/FluidSCWrapper.hpp
+${CMAKE_CURRENT_SOURCE_DIR}/include/NRTCommand.hpp
+${CMAKE_CURRENT_SOURCE_DIR}/include/SCBufferAdaptor.hpp
+${CMAKE_CURRENT_SOURCE_DIR}/include/GenerateSCCode.hpp
+${CMAKE_CURRENT_SOURCE_DIR}/include/fdNRTBase.hpp
+)
 
 SUBDIRLIST(PROJECT_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src)
 foreach (project_dir ${PROJECT_DIRS})
