@@ -9,5 +9,5 @@ static InterfaceTable *ft;
 PluginLoad(FluidGainUgen) {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<GainClient<double,float>>(ft, "FluidGain",GainParams);
+  makeSCWrapper<GainClient<double,float>>(ft, "FluidGain");
 }

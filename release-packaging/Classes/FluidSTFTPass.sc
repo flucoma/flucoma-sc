@@ -3,3 +3,4 @@ FluidSTFTPass : UGen {
 		^this.multiNew('audio', in.asAudioRateInput(this),windowSize, hopSize, fftSize, maxWinSize)
 	}
 }
+// 
