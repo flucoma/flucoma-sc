@@ -3,3 +3,4 @@ build
 **/.DS_Store
 release-packaging/Plugins
 release-packaging/AudioFiles
+*.scx
