@@ -26,18 +26,18 @@ template <typename T> using msg_iter_method = T (sc_msg_iter::*)(T);
 
 template <size_t N, typename T, msg_iter_method<T> Method> struct GetArgument
 {
-  T operator()(sc_msg_iter *args)
+  T operator()(World* w, sc_msg_iter *args)
   {
     T r = (args->*Method)(0);
-    std::cout << r << '\n';
     return r;
   }
 };
 
 template <size_t N, typename T> struct GetControl
 {
-  T operator()(float **controls) { return *controls[N]; }
+  T operator()(World*, float **controls) { return *controls[N]; }
 };
+
 
 template <size_t N> struct ArgumentGetter<N, FloatT> : public GetArgument<N, float, &sc_msg_iter::getf>
 {};
@@ -45,8 +45,24 @@ template <size_t N> struct ArgumentGetter<N, FloatT> : public GetArgument<N, flo
 template <size_t N> struct ArgumentGetter<N, LongT> : public GetArgument<N, int32, &sc_msg_iter::geti>
 {};
 
+template <size_t N> struct ArgumentGetter<N, EnumT> : public GetArgument<N, int32, &sc_msg_iter::geti>
+{};
+
+template <size_t N> struct ArgumentGetter<N, BufferT>
+{
+  auto operator()(World* w, sc_msg_iter *args)
+  {
+  
+    long bufnum = args->geti(-1);
+  
+    return std::unique_ptr<BufferAdaptor>(new SCBufferAdaptor(bufnum,w));
+  }
+};
+
 template <size_t N, typename T> struct ControlGetter : public GetControl<N, typename T::type>
 {};
+
+//template <size_t N, typename 
 
 template <class Wrapper> class RealTime : public SCUnit
 {
@@ -89,7 +105,7 @@ public:
   {
     Wrapper *w = static_cast<Wrapper *>(this);
     auto &client = w->client();
-    w->setParams(mInBuf + client.audioChannelsIn(), mWorld->mVerbosity > 0); // forward on inputs N + audio inputs as params
+    w->setParams( mWorld->mVerbosity > 0, mWorld,mInBuf + client.audioChannelsIn()); // forward on inputs N + audio inputs as params
     const Unit *unit = this;
     for (int i = 0; i < client.audioChannelsIn(); ++i)
     {
@@ -123,15 +139,16 @@ public:
     Wrapper *w = new Wrapper(); //this has to be on the heap, because it doesn't get destoryed until the async command is done
     w->parseBuffers(w, world, args);
     int argsPosition = args->count;
-    Result result = validateParameters(w, args);
+    Result result = validateParameters(w, world, args);
     if (!result.ok())
     {
       std::cout << "FluCoMa Error " << Wrapper::getName() << ": " << result.message().c_str();
       return;
     }
     args->count = argsPosition; 
-    w->setParams(args,false);
-    size_t msgSize           = args->getbsize();
+    w->setParams(false, world, args);
+    
+    size_t msgSize  = args->getbsize();
     char * completionMsgData = 0;
     if (msgSize)
     {
@@ -148,13 +165,13 @@ public:
   static void destroy(World *world, void *data) { delete static_cast<Wrapper *>(data); }
 
 private:
-  static Result validateParameters(Wrapper *w, sc_msg_iter *args)
+  static Result validateParameters(Wrapper *w, World* world, sc_msg_iter *args)
   {
     auto &c       = w->client();
-    auto  results = c.template checkParameterValues<ArgumentGetter, sc_msg_iter>(args);
+    auto  results = c.template checkParameterValues<ArgumentGetter>(world, args);
     for (auto &r : results)
     {
-      std::cout << r.message() << r.status() << '\n';
+      std::cout << r.message() << '\n';
       if (!r.ok()) return r;
     }
     return {};
@@ -275,14 +292,14 @@ public:
     impl::FluidSCWrapperBase<Client>::setup(ft, name);
   }
 
-  auto setParams(float **inputs, bool verbose)
+  auto setParams(bool verbose, World* world, float **inputs)
   {
-    return mClient.template setParameterValues<impl::ControlGetter, float*>(inputs, verbose);
+    return mClient.template setParameterValues<impl::ControlGetter>(verbose, world, inputs);
   }
 
-  auto setParams(sc_msg_iter *args, bool verbose)
+  auto setParams(bool verbose, World* world, sc_msg_iter *args)
   {
-    return mClient.template setParameterValues<impl::ArgumentGetter, sc_msg_iter>(args, verbose);
+    return mClient.template setParameterValues<impl::ArgumentGetter>(verbose,world, args);
   }
 
   Client &client() { return mClient; }
