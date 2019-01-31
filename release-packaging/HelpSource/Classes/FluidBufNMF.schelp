@@ -111,7 +111,7 @@ RETURNS::
 
 EXAMPLES::
 STRONG::A didactic example::
-	CODE::
+CODE::
 (
 // create buffers
 b = Buffer.alloc(s,44100);
@@ -235,9 +235,9 @@ c.plot;x.plot; y.plot;
 )
 
 ::
-	STRONG::Fixed Dictionnaries:: The process can be trained, and the learnt dictionaries or activations can be used as templates.
+STRONG::Fixed Dictionnaries:: The process can be trained, and the learnt dictionaries or activations can be used as templates.
 
-	CODE::
+CODE::
 
 //set some buffers
 (
@@ -292,4 +292,86 @@ c.play
 // it even null-sums
 {(PlayBuf.ar(2,c.bufnum,doneAction:2).sum)-(PlayBuf.ar(1,b.bufnum,doneAction:2))}.play
 ::
-	
+
+STRONG::Updating Dictionnaries:: The process can update dictionaries provided as seed.
+
+CODE::
+(
+// create buffers
+b = Buffer.alloc(s,44100);
+c = Buffer.alloc(s, 44100);
+d = Buffer.new(s);
+e = Buffer.alloc(s,513,3);
+f = Buffer.new(s);
+g = Buffer.new(s);
+)
+
+(
+// fill them with 2 clearly segregated sine waves and composite a buffer where they are consecutive
+Routine {
+	b.sine2([500],[1], false, false);
+	c.sine2([5000],[1],false, false);
+	s.sync;
+	FluidBufCompose.process(s,srcBufNumA:b.bufnum, srcBufNumB:c.bufnum,dstStartAtB:44100,dstBufNum:d.bufnum);
+	s.sync;
+	d.query;
+}.play;
+)
+
+// check
+d.plot
+d.play //////(beware !!!! loud!!!)
+
+(
+//make a seeding dictionary of 3 ranks:
+var highpass, lowpass, direct;
+highpass = Array.fill(513,{|i| (i < 50).asInteger});
+lowpass = 1 - highpass;
+direct = Array.fill(513,0.1);
+e.setn(0,[highpass, lowpass, direct].flop.flat);
+)
+
+//check the dictionary: a steep lowpass, a steep highpass, and a small DC
+e.plot
+e.query
+
+(
+// use the seeding dictionary, without updating
+Routine {
+	FluidBufNMF.process(s, d.bufnum, dstBufNum:f.bufnum, dictBufNum: e.bufnum, dictFlag: 2, actBufNum:g.bufnum, rank:3);
+	s.sync;
+	e.query;
+	f.query;
+	g.query;
+}.play
+)
+
+// look at the resynthesised separated signal
+f.plot;
+
+// look at the dictionaries that have not changed
+e.plot;
+
+// look at the activations
+g.plot;
+
+(
+// use the seeding dictionary, with updating this time
+Routine {
+	FluidBufNMF.process(s, d.bufnum, dstBufNum:f.bufnum, dictBufNum: e.bufnum, dictFlag: 1, actBufNum:g.bufnum, rank:3);
+	s.sync;
+	e.query;
+	f.query;
+	g.query;
+}.play
+)
+
+// look at the resynthesised separated signal
+f.plot;
+
+// look at the dictionaries that have now updated in place (with the 3rd channel being more focused
+e.plot;
+
+// look at the activations (sharper 3rd rank at transitions)
+g.plot;
+::
