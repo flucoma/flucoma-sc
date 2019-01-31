@@ -89,24 +89,23 @@ Discussion::
 EXAMPLES::
 
 CODE::
-	//load a soundfile to play
-	b = Buffer.read(s,File.realpath(FluidHPSS.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
+//load a soundfile to play
+b = Buffer.read(s,File.realpath(FluidHPSS.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
 
-	// run with basic parameters (left is harmonic, right is percussive)
-	{FluidHPSS.ar(PlayBuf.ar(1,b.bufnum,loop:1))}.play
+// run with basic parameters (left is harmonic, right is percussive)
+{FluidHPSS.ar(PlayBuf.ar(1,b.bufnum,loop:1))}.play
 
-	// run in mode 1
-	{FluidHPSS.ar(PlayBuf.ar(1,b.bufnum,loop:1),17,31,1,0.05,40,0.1,-40)}.play
+// run in mode 1
+{FluidHPSS.ar(PlayBuf.ar(1,b.bufnum,loop:1),17,31,1,0.05,40,0.1,-40)}.play
 
-	// run in mode 2m listening to
-	//the harmonic stream
-	{FluidHPSS.ar(PlayBuf.ar(1,b.bufnum,loop:1),17,31,2,0.05,40,0.1,-40, 0.1, -10, 0.2, 10)[0].dup}.play
-	// the percussive stream
-	{FluidHPSS.ar(PlayBuf.ar(1,b.bufnum,loop:1),17,31,2,0.05,40,0.1,-40, 0.1, -10, 0.2, 10)[1].dup}.play
-	// the residual stream
-	{FluidHPSS.ar(PlayBuf.ar(1,b.bufnum,loop:1),17,31,2,0.05,40,0.1,-40, 0.1, -10, 0.2, 10)[2].dup}.play
+// run in mode 2m listening to
+//the harmonic stream
+{FluidHPSS.ar(PlayBuf.ar(1,b.bufnum,loop:1),17,31,2,0.05,40,0.1,-40, 0.1, -10, 0.2, 10)[0].dup}.play
+// the percussive stream
+{FluidHPSS.ar(PlayBuf.ar(1,b.bufnum,loop:1),17,31,2,0.05,40,0.1,-40, 0.1, -10, 0.2, 10)[1].dup}.play
+// the residual stream
+{FluidHPSS.ar(PlayBuf.ar(1,b.bufnum,loop:1),17,31,2,0.05,40,0.1,-40, 0.1, -10, 0.2, 10)[2].dup}.play
 
-	// null test (the process add a latency of ((harmFiltSize + (winSize / hopSize) - 1) *  hopSize) samples
-	{var sig = PlayBuf.ar(1,b.bufnum,loop:1); [FluidHPSS.ar(sig,17,31, winSize:1024,hopSize:512,fftSize:2048).sum - DelayN.ar(sig, 1, ((31 + 1) *  512 / s.sampleRate))]}.play
+// null test (the process add a latency of ((harmFiltSize + (winSize / hopSize) - 1) *  hopSize) samples
+{var sig = PlayBuf.ar(1,b.bufnum,loop:1); [FluidHPSS.ar(sig,17,31, winSize:1024,hopSize:512,fftSize:2048).sum - DelayN.ar(sig, 1, ((31 + 1) *  512 / s.sampleRate))]}.play
 ::
-	
