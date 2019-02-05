@@ -66,14 +66,17 @@ public:
   SCBufferAdaptor& operator=(SCBufferAdaptor&&) = default;
 
 
-  SCBufferAdaptor(long bufnum, World *world, bool rt = false)
+  SCBufferAdaptor(long bufnum,World *world, bool rt = false)
       : NRTBuf(world, bufnum, rt)
       , mBufnum(bufnum)
       , mWorld(world)
   {
   }
+  
 
   SCBufferAdaptor() = default;
+
+  ~SCBufferAdaptor(){ cleanUp(); }
 
   void assignToRT(World *rtWorld)
   {
