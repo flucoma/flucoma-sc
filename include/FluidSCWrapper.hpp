@@ -41,8 +41,9 @@ struct FloatControlsIter
   
   float next()
   {
-    assert(mCount + 1 < mSize);
-    return *mValues[mCount++];
+    assert(mCount < mSize && "Boundary error fail horror");
+    float f =  *mValues[mCount++];
+    return f;
   }
   
   void reset(float** vals)
