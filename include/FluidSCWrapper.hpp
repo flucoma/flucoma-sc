@@ -153,7 +153,6 @@ public:
   static void setup(InterfaceTable *ft, const char *name) { registerUnit<Wrapper>(ft, name); }
   
   RealTime():
-    SCUnit{},
     mControlsIterator{mInBuf + mSpecialIndex + 1,mNumInputs - mSpecialIndex - 1},
     mClient{ClientFactory<Client,FloatControlsIter,ControlGetter>::create(mWorld,&mControlsIterator)}
   {}
