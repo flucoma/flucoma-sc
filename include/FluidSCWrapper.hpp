@@ -46,6 +46,12 @@ struct FloatControlsIter
     return f;
   }
   
+  float operator[](size_t i)
+  {
+    assert(i < mSize);
+    return *mValues[i];
+  }
+  
   void reset(float** vals)
   {
     mValues = vals;
@@ -60,7 +66,7 @@ struct FloatControlsIter
 
 template <size_t N, typename T> struct GetControl
 {
-  T operator()(World*, FloatControlsIter& controls) { return controls.next(); }
+  T operator()(World*, FloatControlsIter& controls) { return controls[N]; }
 };
 
 template <size_t N> struct ArgumentGetter<N, FloatT> : public GetArgument<N, float, &sc_msg_iter::getf>
@@ -165,9 +171,7 @@ public:
     mInputConnections.reserve(mClient.audioChannelsIn());
     mOutputConnections.reserve(mClient.audioChannelsOut());
     mAudioInputs.reserve(mClient.audioChannelsIn());
-    mAudioOutputs.reserve(mClient.audioChannelsOut());
-    mControlOutputs.reserve(mClient.controlChannelsOut());
-//    mControlOutputData.resize(mClient.controlChannelsOut(),)
+    mOutputs.reserve(std::max(mClient.audioChannelsOut(),mClient.controlChannelsOut()));
     
     for (int i = 0; i < mClient.audioChannelsIn(); ++i)
     {
@@ -178,13 +182,13 @@ public:
     for (int i = 0; i < mClient.audioChannelsOut(); ++i)
     {
       mOutputConnections.emplace_back(true);
-      mAudioOutputs.emplace_back(nullptr, 0, 0);
+      mOutputs.emplace_back(nullptr, 0, 0);
     }
 
-//    for (int i = 0; i < mClient.controlChannelsOut(); ++i)
-//    {
-//      mControlOutputs.emplace_back()
-//    }
+    for (int i = 0; i < mClient.controlChannelsOut(); ++i)
+    {
+      mOutputs.emplace_back(nullptr, 0, 0);
+    }
 
     set_calc_function<RealTime, &RealTime::next>();
     Wrapper::getInterfaceTable()->fClearUnitOutputs(this, 1);
@@ -203,20 +207,19 @@ public:
     }
     for (int i = 0; i < mClient.audioChannelsOut(); ++i)
     {
-      if (mOutputConnections[i]) mAudioOutputs[i].reset(out(i), 0, fullBufferSize());
+      if (mOutputConnections[i]) mOutputs[i].reset(out(i), 0, fullBufferSize());
     }
     for(int i = 0; i < mClient.controlChannelsOut();++i)
     {
-      if(mOutputConnections[i]) mControlOutputs[i].reset(out(i),0,1);
+       mOutputs[i].reset(out(i),0,1);
     }
-    mClient.process(mAudioInputs, mAudioOutputs);
+    mClient.process(mAudioInputs, mOutputs);
   }
 private:
   std::vector<bool>       mInputConnections;
   std::vector<bool>       mOutputConnections;
   std::vector<HostVector> mAudioInputs;
-  std::vector<HostVector> mAudioOutputs;
-  std::vector<HostVector> mControlOutputs;
+  std::vector<HostVector> mOutputs;
   FloatControlsIter       mControlsIterator;
 protected:
   Client mClient;
