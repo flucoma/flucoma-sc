@@ -30,6 +30,8 @@ MACRO(SUBDIRLIST result curdir)
 ENDMACRO()
 
 set(FLUID_PATH ~/fluid_decomposition CACHE PATH "The top level of the fluid_decomposition repo")
+set(LOCAL_INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 
 get_filename_component(FLUID_ABS_PATH ${FLUID_PATH} ABSOLUTE)
 message(${FLUID_ABS_PATH})
