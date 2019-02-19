@@ -1,7 +1,7 @@
 FluidNMFMatch : MultiOutUGen {
 
 	*kr { arg in = 0, dictBufNum, rank = 1, nIter = 10, winSize = 1024, hopSize = 256, fftSize = -1;
-		^this.multiNew('control', in, dictBufNum, rank, nIter, winSize, hopSize, fftSize);
+		^this.multiNew('control', in, dictBufNum, rank, nIter, winSize, hopSize, fftSize,16384);
 	}
 
 	init {arg ...theInputs;
