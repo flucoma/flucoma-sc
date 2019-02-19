@@ -124,7 +124,9 @@ template <class Wrapper> class RealTime : public SCUnit
 public:
   static void setup(InterfaceTable *ft, const char *name) { registerUnit<Wrapper>(ft, name); }
 
-  RealTime():mControlsIterator{nullptr,0} {}
+  RealTime(): mControlsIterator{mInBuf + mSpecialIndex + 1,mNumInputs - mSpecialIndex - 1}
+  {}
+  //mControlsIterator{nullptr,0} {}
 
   void init()
   {
