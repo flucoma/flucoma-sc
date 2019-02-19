@@ -3,7 +3,6 @@
 
 
 #include <clients/rt/TransientClient.hpp>
-#include <SC_PlugIn.hpp>
 
 #include <FluidSCWrapper.hpp>
 
@@ -13,5 +12,5 @@ PluginLoad(FluidSTFTUGen) {
   ft = inTable;
 //  registerUnit<fluid::wrapper::FluidTransients>(ft, "FluidTransients");
   using namespace fluid::client;
-  makeSCWrapper<TransientClient<double,float>>(ft, "FluidTransients",TransientParams);
+  makeSCWrapper<TransientClient<double,float>>(ft, "FluidTransients");
 }
