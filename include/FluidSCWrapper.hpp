@@ -19,6 +19,7 @@ namespace client {
 template <typename Client> class FluidSCWrapper;
 
 namespace impl {
+
 template <typename Client, typename T, size_t N> struct Setter;
 template <size_t N, typename T> struct ArgumentGetter;
 template <size_t N, typename T> struct ControlGetter;
@@ -33,11 +34,33 @@ template <size_t N, typename T, msg_iter_method<T> Method> struct GetArgument
   }
 };
 
-template <size_t N, typename T> struct GetControl
+
+struct FloatControlsIter
 {
-  T operator()(World*, float **controls) { return *controls[N]; }
+  FloatControlsIter(float** vals, size_t N):mValues(vals), mSize(N) {}
+  
+  float next()
+  {
+    assert(mCount + 1 < mSize);
+    return *mValues[mCount++];
+  }
+  
+  void reset(float** vals)
+  {
+    mValues = vals;
+    mCount = 0;
+  }
+  
+  private:
+    float** mValues;
+    size_t mSize;
+    size_t mCount{0};
 };
 
+template <size_t N, typename T> struct GetControl
+{
+  T operator()(World*, FloatControlsIter& controls) { return controls.next(); }
+};
 
 template <size_t N> struct ArgumentGetter<N, FloatT> : public GetArgument<N, float, &sc_msg_iter::getf>
 {};
@@ -59,8 +82,37 @@ template <size_t N> struct ArgumentGetter<N, BufferT>
   }
 };
 
+template <size_t N> struct ArgumentGetter<N, FloatPairsArrayT>
+{
+  typename FloatPairsArrayT::type operator()(World* w, sc_msg_iter *args)
+  {
+    return {{args->getf(),args->getf()},{args->getf(),args->getf()}};
+  }
+};
+
+
+
 template <size_t N, typename T> struct ControlGetter : public GetControl<N, typename T::type>
 {};
+
+
+template <size_t N> struct ControlGetter<N, BufferT>
+{
+  auto operator()(World* w, FloatControlsIter& iter)
+  {
+    long bufnum = iter.next();
+    return std::unique_ptr<BufferAdaptor>(new SCBufferAdaptor(bufnum,w));
+  }
+};
+
+template<size_t N>
+struct ControlGetter<N,FloatPairsArrayT>
+{
+  typename FloatPairsArrayT::type operator()(World*, FloatControlsIter& iter)
+  {
+    return {{iter.next(),iter.next()},{iter.next(),iter.next()}};
+  }
+};
 
 //template <size_t N, typename 
 
@@ -72,7 +124,7 @@ template <class Wrapper> class RealTime : public SCUnit
 public:
   static void setup(InterfaceTable *ft, const char *name) { registerUnit<Wrapper>(ft, name); }
 
-  RealTime() {}
+  RealTime():mControlsIterator{nullptr,0} {}
 
   void init()
   {
@@ -105,7 +157,8 @@ public:
   {
     Wrapper *w = static_cast<Wrapper *>(this);
     auto &client = w->client();
-    w->setParams( mWorld->mVerbosity > 0, mWorld,mInBuf + client.audioChannelsIn()); // forward on inputs N + audio inputs as params
+    mControlsIterator.reset(mInBuf + client.audioChannelsIn());
+    w->setParams( mWorld->mVerbosity > 0, mWorld,mControlsIterator); // forward on inputs N + audio inputs as params
     const Unit *unit = this;
     for (int i = 0; i < client.audioChannelsIn(); ++i)
     {
@@ -123,6 +176,7 @@ private:
   std::vector<bool>       mOutputConnections;
   std::vector<HostVector> mAudioInputs;
   std::vector<HostVector> mAudioOutputs;
+  FloatControlsIter       mControlsIterator;
 };
 
 template <class Wrapper> class NonRealTime
@@ -292,7 +346,7 @@ public:
     impl::FluidSCWrapperBase<Client>::setup(ft, name);
   }
 
-  auto setParams(bool verbose, World* world, float **inputs)
+  auto setParams(bool verbose, World* world, impl::FloatControlsIter& inputs)
   {
     return mClient.template setParameterValues<impl::ControlGetter>(verbose, world, inputs);
   }
