@@ -41,7 +41,7 @@ struct FloatControlsIter
   
   float next()
   {
-    assert(mCount + 1 < mSize);
+    assert(mCount < mSize);
     return *mValues[mCount++];
   }
   
