@@ -38,19 +38,19 @@ template <size_t N, typename T, msg_iter_method<T> Method> struct GetArgument
 struct FloatControlsIter
 {
   FloatControlsIter(float** vals, size_t N):mValues(vals), mSize(N) {}
-  
+
   float next()
   {
-    assert(mCount + 1 < mSize);
+    assert(mCount < mSize);
     return *mValues[mCount++];
   }
-  
+
   void reset(float** vals)
   {
     mValues = vals;
     mCount = 0;
   }
-  
+
   private:
     float** mValues;
     size_t mSize;
@@ -75,9 +75,9 @@ template <size_t N> struct ArgumentGetter<N, BufferT>
 {
   auto operator()(World* w, sc_msg_iter *args)
   {
-  
+
     long bufnum = args->geti(-1);
-  
+
     return std::unique_ptr<BufferAdaptor>(new SCBufferAdaptor(bufnum,w));
   }
 };
@@ -114,7 +114,7 @@ struct ControlGetter<N,FloatPairsArrayT>
   }
 };
 
-//template <size_t N, typename 
+//template <size_t N, typename
 
 template <class Wrapper> class RealTime : public SCUnit
 {
@@ -201,9 +201,9 @@ public:
       std::cout << "FluCoMa Error " << Wrapper::getName() << ": " << result.message().c_str();
       return;
     }
-    args->count = argsPosition; 
+    args->count = argsPosition;
     w->setParams(false, world, args);
-    
+
     size_t msgSize  = args->getbsize();
     char * completionMsgData = 0;
     if (msgSize)
@@ -265,13 +265,13 @@ private:
   {
     Wrapper *wrapper = static_cast<Wrapper *>(this);
     Result r = wrapper->client().process(mInputs, mOutputs);
-    
+
     if(!r.ok())
     {
       std::cout << "FluCoMa Error " << Wrapper::getName() << ": " << r.message().c_str();
-      return false; 
+      return false;
     }
-    
+
     return true;
   }
 
