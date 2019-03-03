@@ -10,6 +10,6 @@ static InterfaceTable *ft;
 PluginLoad(OfflineFluidDecompositionUGens) {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<NRTStreamAdaptor<SinesClient<double,float>>>(ft, "BufSines");
+  makeSCWrapper<NRTSines,double,float>("BufSines",NRTSineParams,ft);
   
 }

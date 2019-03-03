@@ -115,55 +115,54 @@ Discussion::
 EXAMPLES::
 
 code::
-	//load buffers
-	(
-		b = Buffer.read(s,File.realpath(FluidBufHPSS.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
-		c = Buffer.new(s);
-		d = Buffer.new(s);
-		e = Buffer.new(s);
-	)
+//load buffers
+(
+	b = Buffer.read(s,File.realpath(FluidBufHPSS.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
+	c = Buffer.new(s);
+	d = Buffer.new(s);
+	e = Buffer.new(s);
+)
 
-	// run with basic parameters
-	(
-		Routine{
-			t = Main.elapsedTime;
-			FluidBufHPSS.process(s, b.bufnum, harmBufNum: c.bufnum, percBufNum: d.bufnum);
+// run with basic parameters
+(
+	Routine{
+		t = Main.elapsedTime;
+		FluidBufHPSS.process(s, b.bufnum, harmBufNum: c.bufnum, percBufNum: d.bufnum);
+		s.sync;
+		(Main.elapsedTime - t).postln;
+	}.play
+)
+
+//query and play the harmonic
+c.query;
+c.play;
+//querry and play the percussive
+d.query;
+d.play;
+
+//nullsumming tests
+{(PlayBuf.ar(1,c.bufnum))+(PlayBuf.ar(1,d.bufnum))+(-1*PlayBuf.ar(1,b.bufnum,doneAction:2))}.play
+
+//more daring parameters, in mode 2
+(
+	Routine{
+		t = Main.elapsedTime;
+          FluidBufHPSS.process(s, b.bufnum, harmBufNum: c.bufnum, percBufNum: d.bufnum, resBufNum:e.bufnum, harmFiltSize:31, modeFlag:2, htf1: 0.005, hta1: 7.5, htf2: 0.168, hta2: 7.5, ptf1: 0.004, pta1: 26.5, ptf2: 0.152, pta2: 26.5);
 			s.sync;
-			(Main.elapsedTime - t).postln;
-		}.play
-	)
+		(Main.elapsedTime - t).postln;
+	}.play
+)
 
-	//query and play the harmonic
-	c.query;
-	c.play;
-	//querry and play the percussive
-	d.query;
-	d.play;
+//query and play the harmonic
+c.query;
+c.play;
+//query and play the percussive
+d.query;
+d.play;
+//query and play the residual
+e.query;
+e.play;
 
-	//nullsumming tests
-	{(PlayBuf.ar(1,c.bufnum))+(PlayBuf.ar(1,d.bufnum))+(-1*PlayBuf.ar(1,b.bufnum,doneAction:2))}.play
-
-	//more daring parameters, in mode 2
-	(
-		Routine{
-			t = Main.elapsedTime;
-            FluidBufHPSS.process(s, b.bufnum, harmBufNum: c.bufnum, percBufNum: d.bufnum, resBufNum:e.bufnum, harmFiltSize:31, modeFlag:2, htf1: 0.005, hta1: 7.5, htf2: 0.168, hta2: 7.5, ptf1: 0.004, pta1: 26.5, ptf2: 0.152, pta2: 26.5);
-				s.sync;
-			(Main.elapsedTime - t).postln;
-		}.play
-	)
-
-	//query and play the harmonic
-	c.query;
-	c.play;
-	//query and play the percussive
-	d.query;
-	d.play;
-	//query and play the residual
-	e.query;
-	e.play;
-
-	//still nullsumming
-	{PlayBuf.ar(1,c.bufnum) + PlayBuf.ar(1,d.bufnum) + PlayBuf.ar(1,e.bufnum) - PlayBuf.ar(1,b.bufnum,doneAction:2)}.play;
-	::
-	
+//still nullsumming
+{PlayBuf.ar(1,c.bufnum) + PlayBuf.ar(1,d.bufnum) + PlayBuf.ar(1,e.bufnum) - PlayBuf.ar(1,b.bufnum,doneAction:2)}.play;
+::

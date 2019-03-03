@@ -38,7 +38,10 @@ ARGUMENT:: winSize
 	The averaging window of the error detection function. It needs smoothing as it is very jittery. The longer the window, the less precise, but the less false positives.
 
 ARGUMENT:: debounce
-	The window size in sample within with positive detections will be clumped together to avoid overdetecting in time. No slice will be shorter than this duration.
+	The window size in sample within with positive detections will be clumped together to avoid overdetecting in time.
+
+ARGUMENT:: minSlice
+	The minimum duration of a slice in samples.
 
 RETURNS::
 	An audio stream with impulses at detected transients. The latency between the input and the output is (blockSize + padSize - order) samples.
@@ -54,18 +57,17 @@ b = Buffer.read(s,File.realpath(FluidTransientSlice.class.filenameSymbol).dirnam
 {var sig = PlayBuf.ar(1,b.bufnum,loop:1); [FluidTransientSlice.ar(sig)*0.5, DelayN.ar(sig, 1, ((256 + 128 - 20)/ s.sampleRate))]}.play
 
 // other parameters
-{var sig = PlayBuf.ar(1,b.bufnum,loop:1); [FluidTransientSlice.ar(sig,order:80,debounce:2205)*0.5, DelayN.ar(sig, 1, ((256 + 128 - 80)/ s.sampleRate))]}.play
+{var sig = PlayBuf.ar(1,b.bufnum,loop:1); [FluidTransientSlice.ar(sig,order:80,minSlice:2205)*0.5, DelayN.ar(sig, 1, ((256 + 128 - 80)/ s.sampleRate))]}.play
 
 // more musical trans-trigged autopan
 (
 {
 	var sig, trig, syncd, pan;
 	sig = PlayBuf.ar(1,b.bufnum,loop:1);
-	trig = FluidTransientSlice.ar(sig,order:10,debounce:2205);
+	trig = FluidTransientSlice.ar(sig,order:10,minSlice:4410);
 	syncd = DelayN.ar(sig, 1, ((256 + 128 - 10)/ s.sampleRate));
 	pan = TRand.ar(-1,1,trig);
 	Pan2.ar(syncd,pan);
 }.play
 )
 ::
-

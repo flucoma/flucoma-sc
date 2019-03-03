@@ -66,14 +66,17 @@ public:
   SCBufferAdaptor& operator=(SCBufferAdaptor&&) = default;
 
 
-  SCBufferAdaptor(long bufnum, World *world, bool rt = false)
+  SCBufferAdaptor(long bufnum,World *world, bool rt = false)
       : NRTBuf(world, bufnum, rt)
       , mBufnum(bufnum)
       , mWorld(world)
   {
   }
+  
 
   SCBufferAdaptor() = default;
+
+  ~SCBufferAdaptor(){ cleanUp(); }
 
   void assignToRT(World *rtWorld)
   {
@@ -84,7 +87,11 @@ public:
 
   void cleanUp()
   {
-    if (mOldData) boost::alignment::aligned_free(mOldData);
+    if (mOldData)
+    {
+      boost::alignment::aligned_free(mOldData);
+      mOldData = nullptr;
+    } 
   }
 
   // No locks in (vanilla) SC, so no-ops for these
@@ -144,10 +151,8 @@ public:
                           thisThing->samplerate);
   }
 
-  int bufnum()
-  {
-    return mBufnum; 
-  }
+  int bufnum() { return mBufnum; }
+  void realTime(bool rt) { mRealTime = rt;  }
 
 protected:
   bool equal(BufferAdaptor *rhs) const override
@@ -157,10 +162,11 @@ protected:
     return false;
   }
 
-  float *mOldData = 0;
+  bool  mRealTime{false};
+  float *mOldData{0};
   long   mBufnum;
   World *mWorld;
-  size_t mRank = 1;
+  size_t mRank{1};
 };
 
 class RTBufferView : public client::BufferAdaptor

@@ -7,6 +7,9 @@ FluidBufTransients {
 		transBufNum = transBufNum ? -1;
 		resBufNum = resBufNum ? -1;
 
+		("Source" + srcBufNum).postln;
+		("Trans" + transBufNum).postln;
+		("Res" + resBufNum).postln;
 		server.sendMsg(\cmd, \BufTransients, srcBufNum, startAt, nFrames, startChan, nChans, transBufNum, resBufNum, order, blockSize, padSize, skew, threshFwd, threshBack, winSize, debounce);
 	}
 }

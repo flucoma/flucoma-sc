@@ -9,7 +9,7 @@ target_link_libraries(
 target_include_directories(
   ${PLUGIN}
   PRIVATE
-  ${CMAKE_CURRENT_LIST_DIR}/../../include
+  ${LOCAL_INCLUDES}
   SYSTEM PRIVATE
   ${SC_PATH}/include/plugin_interface
   ${SC_PATH}/include/common
