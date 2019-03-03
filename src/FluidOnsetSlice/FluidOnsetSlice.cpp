@@ -1,15 +1,13 @@
-  // FD_BufSines, an NRT buffer Sinusoidal Modelling Processor
+
 // A tool from the FluCoMa project, funded by the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899)
 
-#include <clients/rt/SinesClient.hpp>
-#include <clients/nrt/FluidNRTClientWrapper.hpp>
+#include <clients/rt/OnsetSlice.hpp>
 #include <FluidSCWrapper.hpp>
 
 static InterfaceTable *ft;
 
-PluginLoad(OfflineFluidDecompositionUGens) {
+PluginLoad(FluidSTFTUGen) {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<NRTSines,double,float>("BufSines",NRTSineParams,ft);
-  
+  makeSCWrapper<OnsetSlice<double,float>>(ft, "FluidOnsetSlice");
 }

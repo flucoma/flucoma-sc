@@ -1,66 +1,13 @@
 // A tool from the FluCoMa project, funded by the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899)
 
-#include "SC_PlugIn.hpp"
-#include "data/FluidTensor.hpp"
-#include "clients/rt/GainClient.hpp"
-#include "clients/common/FluidParams.hpp"
-
+#include <FluidSCWrapper.hpp>
+#include <clients/rt/GainClient.hpp>
+#include <SC_PlugIn.hpp>
 
 static InterfaceTable *ft;
-namespace fluid {
-class FDGain: public SCUnit
-{
-  using AudioClient = fluid::client::GainAudioClient<double, float>;
-  using ClientPointer = std::unique_ptr<AudioClient>;
-  using SignalWrapper = AudioClient::Signal;
-  using AudioSignal= AudioClient::AudioSignal;
-  using ControlSignal = AudioClient::ScalarSignal;
-  using SignalPointer = std::unique_ptr<SignalWrapper>;
-  template <size_t N>
-  using SignalArray = std::array<SignalPointer, N>;
-public:
-  FDGain()
-  {
-    mClient = ClientPointer(new AudioClient(65536));
-    
-    std::vector<client::Instance>& params =  mClient->getParams();
-    
-    client::lookupParam("winsize", params).setLong(in0(1));
-    client::lookupParam("hopsize", params).setLong(in0(1)); 
-    
-    mClient->setHostBufferSize(bufferSize());
-    mClient->reset();
-    
-    inputSignals[0] =  SignalPointer(new AudioSignal());
-    outputSignals[0] = SignalPointer(new AudioSignal());
-    
-    if(isAudioRateIn(2))
-      inputSignals[1] = SignalPointer(new AudioSignal());
-    else
-      inputSignals[1] = SignalPointer(new ControlSignal());
-    
-    mCalcFunc = make_calc_function<FDGain,&FDGain::next>();
-    Unit* unit = this;
-    ClearUnitOutputs(unit,1);
-  }
-  
-  ~FDGain() {}
-private:
-  void next(int numsamples)
-  {
-    //TODO: Remove const_cast code smell by making input_signal type for const
-    inputSignals[0]->set(const_cast<float*>(in(0)), in0(0));
-    inputSignals[1]->set(const_cast<float*>(in(2)), in0(2));
-    outputSignals[0]->set(out(0), out0(0));
-    mClient->doProcess(inputSignals.begin(),inputSignals.end(),outputSignals.begin(),outputSignals.end(),numsamples,2,1);
-  }
-  
-  ClientPointer mClient;
-  SignalArray<2> inputSignals;
-  SignalArray<1> outputSignals;
-};
-}
-PluginLoad(BoringMixer2UGens) {
+
+PluginLoad(FluidGainUgen) {
   ft = inTable;
-  registerUnit<fluid::FDGain>(ft, "FluidGain");
+  using namespace fluid::client;
+  makeSCWrapper<GainClient,double,float>("FluidGain", GainParams,ft);
 }

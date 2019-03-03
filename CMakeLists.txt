@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.3)
 
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -mavx -msse -msse2 -msse3 -msse4")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++")
@@ -30,6 +30,8 @@ MACRO(SUBDIRLIST result curdir)
 ENDMACRO()
 
 set(FLUID_PATH ~/fluid_decomposition CACHE PATH "The top level of the fluid_decomposition repo")
+set(LOCAL_INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 
 get_filename_component(FLUID_ABS_PATH ${FLUID_PATH} ABSOLUTE)
 message(${FLUID_ABS_PATH})
@@ -58,6 +60,13 @@ set(CMAKE_SHARED_MODULE_PREFIX "")
 if(APPLE OR WIN32)
 set(CMAKE_SHARED_MODULE_SUFFIX ".scx")
 endif()
+
+add_library(FLUID_SC_WRAPPER INTERFACE)
+target_sources(FLUID_SC_WRAPPER
+INTERFACE
+${CMAKE_CURRENT_SOURCE_DIR}/include/FluidSCWrapper.hpp
+${CMAKE_CURRENT_SOURCE_DIR}/include/SCBufferAdaptor.hpp
+)
 
 SUBDIRLIST(PROJECT_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src)
 foreach (project_dir ${PROJECT_DIRS})

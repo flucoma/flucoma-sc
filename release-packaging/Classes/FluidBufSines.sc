@@ -7,6 +7,9 @@ FluidBufSines{
 		sineBufNum = sineBufNum ? -1;
 		resBufNum = resBufNum ? -1;
 
-		server.sendMsg(\cmd, \BufSines, srcBufNum, startAt, nFrames, startChan, nChans, sineBufNum, resBufNum, bandwidth, thresh, minTrackLen, magWeight, freqWeight, winSize, hopSize, fftSize);
+		//NB For wrapped versions of NRT classes, we set the params for maxima to
+		//whatever has been passed in language-side (e.g maxFFTSize still exists as a parameter for the server plugin, but makes less sense here: it just needs to be set to a legal value)
+
+		server.sendMsg(\cmd, \BufSines, srcBufNum, startAt, nFrames, startChan, nChans, sineBufNum, resBufNum, bandwidth, thresh, minTrackLen, magWeight, freqWeight, winSize, hopSize, fftSize, fftSize);
 }
 }

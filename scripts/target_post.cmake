@@ -1,5 +1,15 @@
+
+target_link_libraries(
+  ${PLUGIN}
+  PRIVATE
+  FLUID_DECOMPOSITION
+  FLUID_SC_WRAPPER
+)
+
 target_include_directories(
   ${PLUGIN}
+  PRIVATE
+  ${LOCAL_INCLUDES}
   SYSTEM PRIVATE
   ${SC_PATH}/include/plugin_interface
   ${SC_PATH}/include/common
@@ -7,12 +17,15 @@ target_include_directories(
   ${SC_PATH}/external_libraries/boost #we need boost::align for deallocating buffer memory :-(
 )
 
+get_property(HEADERS TARGET FLUID_DECOMPOSITION PROPERTY INTERFACE_SOURCES)
+source_group(TREE ${FLUID_PATH}/include FILES ${HEADERS})
+
+
 if (SUPERNOVA)
     target_include_directories(
       ${PLUGIN}
       SYSTEM PRIVATE
       ${SC_PATH}/external_libraries/nova-tt
-
       ${SC_PATH}/external_libraries/boost_lockfree
       ${SC_PATH}/external_libraries/boost-lockfree
     )
