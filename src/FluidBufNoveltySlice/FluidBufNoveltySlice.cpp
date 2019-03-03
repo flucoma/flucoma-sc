@@ -10,5 +10,5 @@ static InterfaceTable* ft;
 PluginLoad(OfflineFluidDecompositionUGens) {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<NoveltyClient>(ft, "BufNoveltySlice");
+  makeSCWrapper<NoveltyClient,double,float>("BufNoveltySlice",NoveltyParams,ft);
 }

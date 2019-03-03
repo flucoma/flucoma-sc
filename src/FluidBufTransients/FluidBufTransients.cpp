@@ -7,5 +7,5 @@ static InterfaceTable *ft;
 PluginLoad(OfflineFluidDecompositionUGens) {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<NRTStreamAdaptor<TransientClient<double,float>>>(ft,"BufTransients");
+  makeSCWrapper<NRTTransients,double,float>("BufTransients",NRTTransientParams,ft);
 }

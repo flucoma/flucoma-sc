@@ -8,7 +8,7 @@ static InterfaceTable *ft;
 PluginLoad(FluidSTFTUGen) {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<HPSSClient<double,float>>(ft, "FluidHPSS");  
+  makeSCWrapper<HPSSClient,double,float>("FluidHPSS",HPSSParams,ft);  
 }
 
 

@@ -6,5 +6,5 @@ static InterfaceTable *ft;
 PluginLoad(OfflineFluidDecompositionUGens) {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<NMFClient>(ft, "BufNMF");
+  makeSCWrapper<NMFClient,double,float>("BufNMF",NMFParams, ft);
 }

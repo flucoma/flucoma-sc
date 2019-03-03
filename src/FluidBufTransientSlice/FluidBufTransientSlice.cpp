@@ -10,6 +10,5 @@ static InterfaceTable* ft;
 PluginLoad(OfflineFluidDecompositionUGens) {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<NRTSliceAdaptor<TransientsSlice<double,float>>>(ft, "BufTransientSlice");
-  
+  makeSCWrapper<NRTTransientSlice,double,float>("BufTransientSlice",NRTTransientSliceParams, ft);
 }
