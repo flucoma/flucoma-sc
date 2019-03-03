@@ -1,4 +1,4 @@
-#pragma once
+  #pragma once
 
 #include "SCBufferAdaptor.hpp"
 #include <clients/common/FluidBaseClient.hpp>
@@ -16,7 +16,7 @@
 namespace fluid {
 namespace client {
 
-template <typename Client> class FluidSCWrapper;
+template <typename Client, typename Params> class FluidSCWrapper;
 
 namespace impl {
 
@@ -25,16 +25,8 @@ template <size_t N, typename T> struct ArgumentGetter;
 template <size_t N, typename T> struct ControlGetter;
 template <typename T> using msg_iter_method = T (sc_msg_iter::*)(T);
 
-template <size_t N, typename T, msg_iter_method<T> Method> struct GetArgument
-{
-  T operator()(World* w, sc_msg_iter *args)
-  {
-    T r = (args->*Method)(T{0});
-    return r;
-  }
-};
-
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Iterate over kr/ir inputs via callbacks from params object
 struct FloatControlsIter
 {
   FloatControlsIter(float** vals, size_t N):mValues(vals), mSize(N) {}
@@ -46,11 +38,11 @@ struct FloatControlsIter
     return f;
   }
   
-  float operator[](size_t i)
-  {
-    assert(i < mSize);
-    return *mValues[i];
-  }
+//  float operator[](size_t i)
+//  {
+//    assert(i < mSize);
+//    return *mValues[i];
+//  }
   
   void reset(float** vals)
   {
@@ -64,52 +56,16 @@ struct FloatControlsIter
     size_t mCount{0};
 };
 
+//General case
 template <size_t N, typename T> struct GetControl
 {
-  T operator()(World*, FloatControlsIter& controls) { return controls[N]; }
+  T operator()(World*, FloatControlsIter& controls) { return controls.next(); }
 };
-
-template <size_t N> struct ArgumentGetter<N, FloatT> : public GetArgument<N, float, &sc_msg_iter::getf>
-{
-//  ArgumentGetter() { std::cout << "FloatT @ " << N << '\n'; }
-};
-
-template <size_t N> struct ArgumentGetter<N, LongT> : public GetArgument<N, int32, &sc_msg_iter::geti>
-{
-//    ArgumentGetter() { std::cout << "LongT @ " << N << '\n'; }
-
-};
-
-template <size_t N> struct ArgumentGetter<N, EnumT> : public GetArgument<N, int32, &sc_msg_iter::geti>
-{
-//  ArgumentGetter() { std::cout << "Enum @ " << N << '\n'; }
-
-};
-
-template <size_t N> struct ArgumentGetter<N, BufferT>
-{
-//  ArgumentGetter() { std::cout << "Buffer @ " << N << '\n'; }
-  auto operator() (World* w, sc_msg_iter *args)
-  {
-    typename LongT::type bufnum = args->geti(-1);
-    return std::unique_ptr<BufferAdaptor>(bufnum >= 0 ? new SCBufferAdaptor(bufnum,w) : nullptr);
-  }
-};
-
-template <size_t N> struct ArgumentGetter<N, FloatPairsArrayT>
-{
-  typename FloatPairsArrayT::type operator()(World* w, sc_msg_iter *args)
-  {
-    return {{args->getf(),args->getf()},{args->getf(),args->getf()}};
-  }
-};
-
-
 
 template <size_t N, typename T> struct ControlGetter : public GetControl<N, typename T::type>
 {};
 
-
+//Specializations
 template <size_t N> struct ControlGetter<N, BufferT>
 {
   auto operator() (World* w, FloatControlsIter& iter)
@@ -128,40 +84,90 @@ struct ControlGetter<N,FloatPairsArrayT>
   }
 };
 
-
-template<typename Client, typename Args, template <size_t,typename> class Fetcher>
-struct ClientFactory
+template<size_t N>
+struct ControlGetter<N,FFTParamsT>
 {
-  static Client create(World* world,  Args* args)
+  typename FFTParamsT::type operator()(World*, FloatControlsIter& iter)
   {
-    return createImpl(world, args, FixedParamIndices{});
-  }
-
-private:
-  using FixedParamIndices = typename Client::FixedParams;
-  template<size_t N>
-  using ThisParamType = typename Client::template ParamDescriptorTypeAt<N>;
-  
-  template<size_t...Is>
-  static Client createImpl(World* world,  Args* args, std::index_sequence<Is...>)
-  {
-    return Client{Fetcher<Is, ThisParamType<Is>>{}(world,*args)...};
+    return {static_cast<long>(iter.next()),static_cast<long>(iter.next()),static_cast<long>(iter.next())};
   }
 };
 
-//template <size_t N, typename 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Iterate over arguments in sc_msg_iter, via callbacks from params object
 
-template <typename Client,class Wrapper> class RealTime : public SCUnit
+template <size_t N, typename T, msg_iter_method<T> Method> struct GetArgument
+{
+  T operator()(World* w, sc_msg_iter *args)
+  {
+    T r = (args->*Method)(T{0});
+    return r;
+  }
+};
+
+//General cases
+template <size_t N> struct ArgumentGetter<N, FloatT> : public GetArgument<N, float, &sc_msg_iter::getf>
+{};
+
+template <size_t N> struct ArgumentGetter<N, LongT> : public GetArgument<N, int32, &sc_msg_iter::geti>
+{};
+
+template <size_t N> struct ArgumentGetter<N, EnumT> : public GetArgument<N, int32, &sc_msg_iter::geti>
+{};
+
+//Specializations
+template <size_t N> struct ArgumentGetter<N, BufferT>
+{
+  auto operator() (World* w, sc_msg_iter *args)
+  {
+    typename LongT::type bufnum = args->geti(-1);
+    return std::unique_ptr<BufferAdaptor>(bufnum >= 0 ? new SCBufferAdaptor(bufnum,w) : nullptr);
+  }
+};
+
+template <size_t N> struct ArgumentGetter<N, FloatPairsArrayT>
+{
+  typename FloatPairsArrayT::type operator()(World* w, sc_msg_iter *args)
+  {
+    return {{args->getf(),args->getf()},{args->getf(),args->getf()}};
+  }
+};
+
+template <size_t N> struct ArgumentGetter<N, FFTParamsT>
+{
+  typename FFTParamsT::type operator()(World* w, sc_msg_iter *args)
+  {
+    return {args->geti(),args->geti(),args->geti()};
+  }
+};
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Real Time Processor
+
+template <typename Client,class Wrapper, class Params> class RealTime : public SCUnit
 {
   using HostVector = FluidTensorView<float, 1>;
   //  using Client     = typename Wrapper::ClientType;
 
 public:
-  static void setup(InterfaceTable *ft, const char *name) { registerUnit<Wrapper>(ft, name); }
+  static void setup(InterfaceTable *ft, const char *name)
+  {
+    registerUnit<Wrapper>(ft, name);
+    ft->fDefineUnitCmd(name,"latency",doLatency);
+  }
+  
+  static void doLatency(Unit *unit, sc_msg_iter *args)
+  {
+    float l[] {static_cast<float>(static_cast<Wrapper*>(unit)->mClient.latency())};
+    auto ft = Wrapper::getInterfaceTable();
+    ft->fSendNodeReply(&unit->mParent->mNode,-1,Wrapper::getName(), 1, l);
+  }
   
   RealTime():
     mControlsIterator{mInBuf + mSpecialIndex + 1,mNumInputs - mSpecialIndex - 1},
-    mClient{ClientFactory<Client,FloatControlsIter,ControlGetter>::create(mWorld,&mControlsIterator)}
+    mParams{*Wrapper::getParamDescriptors()},
+    mClient{Wrapper::setParams(mParams,mWorld->mVerbosity > 0, mWorld, mControlsIterator)}
   {}
 
   void init()
@@ -196,10 +202,8 @@ public:
 
   void next(int n)
   {
-    Wrapper *w = static_cast<Wrapper *>(this);
-//    auto &client = w->client();
-    mControlsIterator.reset(mInBuf + mClient.audioChannelsIn());
-    w->setParams( mWorld->mVerbosity > 0, mWorld,mControlsIterator); // forward on inputs N + audio inputs as params
+    mControlsIterator.reset(mInBuf + 1); //mClient.audioChannelsIn());
+    Wrapper::setParams(mParams,mWorld->mVerbosity > 0, mWorld,mControlsIterator); // forward on inputs N + audio inputs as params
     const Unit *unit = this;
     for (int i = 0; i < mClient.audioChannelsIn(); ++i)
     {
@@ -222,61 +226,71 @@ private:
   std::vector<HostVector> mOutputs;
   FloatControlsIter       mControlsIterator;
 protected:
+  ParameterSet<Params> mParams;
   Client mClient;
-
 };
 
-template <typename Client, typename Wrapper> class NonRealTime
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Non Real Time Processor
+template <typename Client, typename Wrapper, typename Params> class NonRealTime
 {
 public:
   static void setup(InterfaceTable *ft, const char *name) { DefinePlugInCmd(name, launch, nullptr); }
 
   NonRealTime(World *world,sc_msg_iter *args):
-    mClient{ClientFactory<Client, sc_msg_iter, ArgumentGetter>::create(world,args)}
+    mParams{*Wrapper::getParamDescriptors()},
+    mClient{mParams}
   {}
 
   void init(){};
 
   static void launch(World *world, void *inUserData, struct sc_msg_iter *args, void *replyAddr)
   {
+
+  
     Wrapper *w = new Wrapper(world,args); //this has to be on the heap, because it doesn't get destoryed until the async command is done
-    w->parseBuffers(w, world, args);
     int argsPosition = args->count;
     auto argsRdPos   = args->rdpos;
     Result result = validateParameters(w, world, args);
     if (!result.ok())
     {
       std::cout << "FluCoMa Error " << Wrapper::getName() << ": " << result.message().c_str();
+      delete w;
       return;
     }
     args->count = argsPosition;
     args->rdpos = argsRdPos;
-    w->setParams(false, world, args);
+    Wrapper::setParams(w->mParams,false, world, args);
     
     size_t msgSize  = args->getbsize();
-    char * completionMsgData = 0;
+    std::vector<char> completionMessage(msgSize);
+//    char * completionMsgData = 0;
     if (msgSize)
     {
-      completionMsgData = (char *) world->ft->fRTAlloc(world, msgSize);
-      args->getb(completionMsgData, msgSize);
+      args->getb(completionMessage.data(), msgSize);      
     }
-    world->ft->fDoAsynchronousCommand(world, replyAddr, Wrapper::getName(), w, process, exchangeBuffers, tidyUp, destroy,
-                                      msgSize, completionMsgData);
+
+    world->ft->fDoAsynchronousCommand(world, replyAddr, Wrapper::getName(), w, process, exchangeBuffers, tidyUp, destroy,msgSize, completionMessage.data());
   }
 
   static bool process(World *world, void *data) { return static_cast<Wrapper *>(data)->process(world); }
   static bool exchangeBuffers(World *world, void *data) { return static_cast<Wrapper *>(data)->exchangeBuffers(world); }
   static bool tidyUp(World *world, void *data) { return static_cast<Wrapper *>(data)->tidyUp(world); }
-  static void destroy(World *world, void *data) { delete static_cast<Wrapper *>(data); }
+  static void destroy(World *world, void *data)
+  {
+    
+//    void* c = static_cast<Wrapper *>(data)->mCompletionMessage;
+//    if(c) world->ft->fRTFree(world,c);
+    delete static_cast<Wrapper *>(data);
+  }
 
 protected:
+  ParameterSet<Params> mParams;
   Client mClient;
-
 private:
   static Result validateParameters(NonRealTime *w, World* world, sc_msg_iter *args)
   {
-    auto &c       = w->mClient;
-    auto  results = c.template checkParameterValues<ArgumentGetter>(world, args);
+    auto  results = w->mParams.template checkParameterValues<ArgumentGetter>(world, args);
     for (auto &r : results)
     {
       std::cout << r.message() << '\n';
@@ -285,37 +299,9 @@ private:
     return {};
   }
 
-  void parseBuffers(Wrapper *w, World *world, sc_msg_iter *args)
-  {
-    auto &c = mClient;
-
-    mBuffersIn.reserve(c.audioBuffersIn());
-    mInputs.reserve(c.audioBuffersIn());
-    mBuffersOut.reserve(c.audioBuffersOut());
-    mOutputs.reserve(c.audioBuffersOut());
-
-    for (int i = 0; i < c.audioBuffersIn(); i++)
-    {
-      mBuffersIn.emplace_back(args->geti(0), world);
-      mInputs.emplace_back();
-      mInputs[i].buffer     = &mBuffersIn[i];
-      mInputs[i].startFrame = args->geti(0);
-      mInputs[i].nFrames    = args->geti(0);
-      mInputs[i].startChan  = args->geti(0);
-      mInputs[i].nChans     = args->geti(0);
-    }
-
-    for (int i = 0; i < c.audioBuffersOut(); i++)
-    {
-      mBuffersOut.emplace_back(args->geti(0), world);
-      mOutputs.emplace_back();
-      mOutputs[i].buffer = &mBuffersOut[i];
-    }
-  }
-
   bool process(World *world)
   {
-    Result r = mClient.process(mInputs, mOutputs);
+    Result r = mClient.process();///mInputs, mOutputs);
     
     if(!r.ok())
     {
@@ -328,16 +314,16 @@ private:
 
   bool exchangeBuffers(World *world)
   {
-    
-    mClient.template forEachParamType<BufferT,AssignBuffer>(world);
-    for (auto &b : mBuffersOut) b.assignToRT(world);
+    mParams.template forEachParamType<BufferT,AssignBuffer>(world);
+//    for (auto &b : mBuffersOut) b.assignToRT(world);
     return true;
   }
 
   bool tidyUp(World *world)
   {
-    for (auto &b : mBuffersIn) b.cleanUp();
-    for (auto &b : mBuffersOut) b.cleanUp();
+//    for (auto &b : mBuffersIn) b.cleanUp();
+//    for (auto &b : mBuffersOut) b.cleanUp()
+    mParams.template forEachParamType<BufferT,CleanUpBuffer>(); 
     return true;
   }
 
@@ -350,59 +336,84 @@ private:
        b->assignToRT(w);
     }
   };
+  
+  template<size_t N,typename T>
+  struct CleanUpBuffer
+  {
+    void operator()(typename BufferT::type& p)
+    {
+      if(auto b = static_cast<SCBufferAdaptor*>(p.get()))
+         b->cleanUp();
+    }
+  };
 
-  std::vector<SCBufferAdaptor>   mBuffersIn;
-  std::vector<SCBufferAdaptor>   mBuffersOut;
-  std::vector<BufferProcessSpec> mInputs;
-  std::vector<BufferProcessSpec> mOutputs;
-  void *                         mReplyAddr;
-  const char *                   mName;
+//  std::vector<SCBufferAdaptor>   mBuffersIn;
+//  std::vector<SCBufferAdaptor>   mBuffersOut;
+//  std::vector<BufferProcessSpec> mInputs;
+//  std::vector<BufferProcessSpec> mOutputs;
+  char *        mCompletionMessage = nullptr;
+  void *        mReplyAddr = nullptr;
+  const char *  mName = nullptr;
 };
 
-template <typename Client, typename Wrapper> class NonRealTimeAndRealTime : public RealTime<Client,Wrapper>, public NonRealTime<Client,Wrapper>
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// An impossible monstrosty
+template <typename Client, typename Wrapper, typename Params> class NonRealTimeAndRealTime : public RealTime<Client,Wrapper, Params>, public NonRealTime<Client,Wrapper, Params>
 {
   static void setup(InterfaceTable *ft, const char *name)
   {
-    RealTime<Client,Wrapper>::setup(ft, name);
-    NonRealTime<Client,Wrapper>::setup(ft, name);
+    RealTime<Client,Wrapper,Params >::setup(ft, name);
+    NonRealTime<Client,Wrapper, Params>::setup(ft, name);
   }
 };
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Template Specialisations for NRT/RT
 
-template <typename Client, typename Wrapper, typename NRT, typename RT> class FluidSCWrapperImpl;
+template <typename Client, typename Wrapper, typename Params, typename NRT, typename RT> class FluidSCWrapperImpl;
 
-template <typename Client, typename Wrapper> class FluidSCWrapperImpl<Client, Wrapper, std::true_type, std::false_type> : public NonRealTime<Client, Wrapper>
+template <typename Client, typename Wrapper, typename Params> class FluidSCWrapperImpl<Client, Wrapper, Params, std::true_type, std::false_type> : public NonRealTime<Client, Wrapper, Params>
 {
 public:
-  FluidSCWrapperImpl(World* w, sc_msg_iter *args): NonRealTime<Client, Wrapper>(w,args){};
+  FluidSCWrapperImpl(World* w, sc_msg_iter *args): NonRealTime<Client, Wrapper, Params>(w,args){};
 };
 
-template <typename Client, typename Wrapper> class FluidSCWrapperImpl<Client, Wrapper, std::false_type, std::true_type> : public RealTime<Client, Wrapper>
+template <typename Client, typename Wrapper, typename Params> class FluidSCWrapperImpl<Client, Wrapper,Params, std::false_type, std::true_type> : public RealTime<Client, Wrapper, Params>
 {};
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Make base class(es), full of CRTP mixin goodness
-template <typename Client>
-using FluidSCWrapperBase = FluidSCWrapperImpl<Client, FluidSCWrapper<Client>, isNonRealTime<Client>, isRealTime<Client>>;
+template <typename Client,typename Params>
+using FluidSCWrapperBase = FluidSCWrapperImpl<Client, FluidSCWrapper<Client, Params>,Params, isNonRealTime<Client>, isRealTime<Client>>;
 
 } // namespace impl
 
-template <typename Client> class FluidSCWrapper : public impl::FluidSCWrapperBase<Client>
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///The main wrapper
+template <typename C, typename P> class FluidSCWrapper : public impl::FluidSCWrapperBase<C,P>
 {
 
 public:
-  using ClientType = Client;
+  using Client = C;
+  using Params = P;
 
-  FluidSCWrapper() { impl::FluidSCWrapperBase<Client>::init(); }
+  FluidSCWrapper() //mParams{*getParamDescriptors()}, //impl::FluidSCWrapperBase<Client,Params>()
+  { impl::FluidSCWrapperBase<Client,Params>::init(); }
 
-  FluidSCWrapper(World* w, sc_msg_iter *args): impl::FluidSCWrapperBase<Client>(w,args)
-    { impl::FluidSCWrapperBase<Client>::init(); }
+  FluidSCWrapper(World* w, sc_msg_iter *args): impl::FluidSCWrapperBase<Client, Params>(w,args)
+    { impl::FluidSCWrapperBase<Client, Params>::init(); }
 
 
   static const char *getName(const char *setName = nullptr)
   {
     static const char *name = nullptr;
     return (name = setName ? setName : name);
+  }
+  
+  static Params *getParamDescriptors(Params *setParams = nullptr)
+  {
+    static Params* descriptors = nullptr;
+    return (descriptors = setParams ? setParams : descriptors);
   }
 
   static InterfaceTable *getInterfaceTable(InterfaceTable *setTable = nullptr)
@@ -411,32 +422,40 @@ public:
     return (ft = setTable ? setTable : ft);
   }
 
-  static void setup(InterfaceTable *ft, const char *name)
+  static void setup(Params& p, InterfaceTable *ft, const char *name)
   {
     getName(name);
     getInterfaceTable(ft);
-    impl::FluidSCWrapperBase<Client>::setup(ft, name);
+    getParamDescriptors(&p);
+    impl::FluidSCWrapperBase<Client, Params>::setup(ft, name);
   }
 
-  auto setParams(bool verbose, World* world, impl::FloatControlsIter& inputs)
+  template<typename ParameterSet>
+  static auto& setParams(ParameterSet& p, bool verbose, World* world, impl::FloatControlsIter& inputs)
   {
-    return impl::FluidSCWrapperBase<Client>::mClient.template setParameterValues<impl::ControlGetter>(verbose, world, inputs);
+    p.template setParameterValues<impl::ControlGetter>(verbose, world, inputs);
+    return p;
   }
 
-  auto setParams(bool verbose, World* world, sc_msg_iter *args)
+  template<typename ParameterSet>
+  static auto& setParams(ParameterSet& p, bool verbose, World* world, sc_msg_iter *args)
   {
-    return impl::FluidSCWrapperBase<Client>::mClient.template setParameterValues<impl::ArgumentGetter>(verbose,world, args);
+     p.template setParameterValues<impl::ArgumentGetter>(verbose,world, args);
+     return p;
   }
+
+//  impl::ParameterSet<Params> mParams;
 
 //  Client &client() { return mClient; }
-
+//
 //private:
 //  Client mClient;
 };
 
-template <typename Client> void makeSCWrapper(InterfaceTable *ft, const char *name)
+template <template <typename...> class Client,typename...Rest,typename Params>
+void makeSCWrapper(const char *name, Params& params, InterfaceTable *ft)
 {
-  FluidSCWrapper<Client>::setup(ft, name);
+  FluidSCWrapper<Client<ParameterSet<Params>,Rest...>, Params>::setup(params, ft, name);
 }
 
 } // namespace client
