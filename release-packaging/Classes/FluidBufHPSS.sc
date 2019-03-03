@@ -7,6 +7,9 @@ FluidBufHPSS{
 		harmBufNum = harmBufNum ? -1;
 		percBufNum = percBufNum ? -1;
 
-		server.sendMsg(\cmd, \BufHPSS, srcBufNum, startAt, nFrames, startChan, nChans, harmBufNum, percBufNum, resBufNum, percFiltSize, harmFiltSize, modeFlag, htf1, hta1, htf2, hta2, ptf1, pta1, ptf2, pta2, winSize, hopSize, fftSize);
+		//For wrapped RT clients, send maximal param values as aliases of the ones that are passed
+		harmFiltSize.postln;
+
+		server.sendMsg(\cmd, \BufHPSS, srcBufNum, startAt, nFrames, startChan, nChans, harmBufNum, percBufNum, resBufNum, harmFiltSize,percFiltSize, modeFlag, htf1, hta1, htf2, hta2, ptf1, pta1, ptf2, pta2, winSize, hopSize, fftSize, fftSize,harmFiltSize, percFiltSize);
 }
 }

@@ -1,5 +1,5 @@
 FluidSTFTPass : UGen {
-	*ar { arg in = 0, windowSize= 1024, hopSize= 256, fftSize= -1;
-		^this.multiNew('audio', in.asAudioRateInput(this),windowSize, hopSize, fftSize)
+	*ar { arg in = 0, windowSize= 1024, hopSize= 256, fftSize= -1, maxFFTSize = 16384;
+		^this.multiNew('audio', in.asAudioRateInput(this),windowSize, hopSize, fftSize, maxFFTSize)
 	}
 }
