@@ -1,55 +1,313 @@
 TITLE:: FluidNMFMatch
-SUMMARY:: Real-Time Non-Negative Matrix Factorisation on Buffered Dictionaries
+SUMMARY:: Real-Time Non-Negative Matrix Factorisation with Fixed Dictionaries
 CATEGORIES:: Libraries>FluidDecomposition
 RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/FluidBufNMF
 
 DESCRIPTION::
-The FluidBufNMF object provides the activation (linked to amplitude) for each pre-defined dictionaries (similar to spectra) predefined in a buffer. These dictionaries would have usually be computed through an offline Non-Negative Matrix Factorisation (NMF) footnote:: Lee, Daniel D., and H. Sebastian Seung. 1999. ‘Learning the Parts of Objects by Non-Negative Matrix Factorization’. Nature 401 (6755): 788–91. https://doi.org/10.1038/44565 :: with the link::Classes/FluidBufNMF:: UGen. NMF has been a popular technique in signal processing research for things like source separation and transcription footnote:: Smaragdis and Brown, Non-Negative Matrix Factorization for Polyphonic Music Transcription.::, although its creative potential is so far relatively  unexplored.
+The FluidNMFMatch object matches an incoming audio signal against a set of spectral templates using an slimmed-down version of Nonnegative Matrix Factorisation (NMF) footnote:: Lee, Daniel D., and H. Sebastian Seung. 1999. ‘Learning the Parts of Objects by Non-Negative Matrix Factorization’. Nature 401 (6755): 788–91. https://doi.org/10.1038/44565. ::
 
-The algorithm takes a buffer in which provides a spectral definition of a number of components, determined by the rank argument and the dictionary buffer channel count. It works iteratively, by trying to find a combination of amplitudes ('activations') that yield the original magnitude spectrogram of the audio input when added together. By and large, there is no unique answer to this question (i.e. there are different ways of accounting for an evolving spectrum in terms of some set of templates and envelopes). In its basic form, NMF is a form of unsupervised learning: it starts with some random data and then converges towards something that minimizes the distance between its generated data and the original:it tends to converge very quickly at first and then level out. Fewer iterations mean less processing, but also less predictable results.
+It outputs at kr the degree of detected match for each template (the activation amount, in NMF-terms). The spectral templates are presumed to have been produced by the offline NMF process (link::Classes/FluidBufNMF::), and must be the correct size with respect to the FFT settings being used (FFT size / 2 + 1 frames long). The rank of the decomposition is determined by the number of channels in the supplied buffer of templates, up to a maximum set by the STRONG::maxRank:: parameter.
+
+NMF has been a popular technique in signal processing research for things like source separation and transcription footnote:: Smaragdis and Brown, Non-Negative Matrix Factorization for Polyphonic Music Transcription.::, although its creative potential is so far relatively unexplored. It works iteratively, by trying to find a combination of amplitudes ('activations') that yield the original magnitude spectrogram of the audio input when added together. By and large, there is no unique answer to this question (i.e. there are different ways of accounting for an evolving spectrum in terms of some set of templates and envelopes). In its basic form, NMF is a form of unsupervised learning: it starts with some random data and then converges towards something that minimizes the distance between its generated data and the original:it tends to converge very quickly at first and then level out. Fewer iterations mean less processing, but also less predictable results.
 
 The whole process can be related to a channel vocoder where, instead of fixed bandpass filters, we get more complex filter shapes and the activations correspond to channel envelopes.
 
 More information on possible musicianly uses of NMF are availabe in LINK::Guides/FluCoMa:: overview file.
 
-FluidBufNMF is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
-This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).
-::
+FluidBufNMF is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899). ::
 
 
 CLASSMETHODS::
 
 METHOD:: kr
-The real-time processing method. It takes an audio or control input, and will yield a control stream in the form of a multichannel array of size STRONG::rank::.
+The real-time processing method. It takes an audio or control input, and will yield a control stream in the form of a multichannel array of size STRONG::maxRank:: . If the dictionary buffer has fewer than maxRank channels, the remaining outputs will be zeroed.
 
 ARGUMENT:: in
-The input to the factorisation process.
+The signal input to the factorisation process.
 
 ARGUMENT:: dictBufNum
-	The index of the buffer where the different dictionaries will be matched against. Dictionaries must be STRONG::(fft size / 2) + 1:: frames and STRONG::rank:: channels
+	The server index of the buffer containing the different dictionaries that the input signal will be matched against. Dictionaries must be STRONG::(fft size / 2) + 1:: frames. If the buffer has more than STRONG::maxRank:: channels, the excess will be ignored.
 
-ARGUMENT:: rank
-	The number of elements the NMF algorithm will try to divide the spectrogram of the source in. This should match the number of channels of the dictBuf defined above.
+ARGUMENT::maxRank
+	The maximum number of elements the NMF algorithm will try to divide the spectrogram of the source in. This dictates the number of output channelsfor the ugen.
 
 ARGUMENT:: nIter
-	The NMF process is iterative, trying to converge to the smallest error in its factorisation. The number of iterations will decide how many times it tries to adjust its estimates. Higher numbers here will be more CPU expensive, lower numbers will be more unpredictable in quality.
+	The NMF process is iterative, trying to converge to the smallest error in its factorisation. The number of iterations will decide how many times it tries to adjust its estimates. Higher numbers here will be more CPU intensive, lower numbers will be more unpredictable in quality.
 
 ARGUMENT:: winSize
-	The window size. As NMF relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
+	The number of samples that are analysed at a time. A lower number yields greater temporal resolution, at the expense of spectral resoultion, and vice-versa.
 
 ARGUMENT:: hopSize
-	The window hope size. As NMF relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts.
+	The window hope size. As NMF relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. Default = winSize / 2
 
 ARGUMENT:: fftSize
-	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision.
+	The FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. Default = winSize
 
-returns::
-	A multichannel array, giving for each dictionary the activation value.
+RETURNS::
+	A multichannel kr output, giving for each dictionary component the activation amount.
 
 
 EXAMPLES::
-yes
+STRONG::A didactic example::
 	CODE::
-	//indeed
+(
+// create buffers
+b= Buffer.alloc(s,44100);
+c = Buffer.alloc(s, 44100);
+d = Buffer.new(s);
+e= Buffer.new(s);
+)
+
+(
+// fill them with 2 clearly segregated sine waves and composite a buffer where they are consecutive
+Routine {
+	b.sine2([500],[1], false, false);
+	c.sine2([5000],[1],false, false);
+	s.sync;
+	FluidBufCompose.process(s,srcBufNumA:b.bufnum, srcBufNumB:c.bufnum,dstStartAtB:44100,dstBufNum:d.bufnum);
+	s.sync;
+	d.query;
+}.play;
+)
+
+// check
+d.plot
+d.play //////(beware !!!! loud!!!)
+
+(
+// separate them in 2 ranks
+Routine {
+	FluidBufNMF.process(s, d.bufnum, dictBufNum: e.bufnum, rank:2);
+	s.sync;
+	e.query;
+}.play
+)
+
+// check for 2 spikes in the spectra
+e.query
+e.plot
+
+// test the activations values with test one, another, or both ideal material
+{FluidNMFMatch.kr(SinOsc.ar(500),e.bufnum,2, hopSize:512)}.plot(1)
+
+{FluidNMFMatch.kr(SinOsc.ar(5000),e.bufnum,2, hopSize:512)}.plot(1)
+
+{FluidNMFMatch.kr(SinOsc.ar([500,5000]).sum,e.bufnum,2, hopSize:512)}.plot(1)
+::
+
+STRONG::A pick compressor::
+	CODE::
+//set some buffers
+(
+b = Buffer.read(s,File.realpath(FluidNMFMatch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-AcousticStrums-M.wav");
+c = Buffer.new(s);
+x = Buffer.new(s);
+e = Buffer.alloc(s,1,1);
+)
+
+// train only 2 seconds
+(
+Routine {
+    FluidBufNMF.process(s,b.bufnum,0,88200,0,1, c.bufnum, x.bufnum, rank:10,fftSize:2048);
+    s.sync;
+    c.query;
+}.play;
+)
+
+// wait for the query to print
+// then find the rank that has the picking sound by changing which channel to listen to
+(
+    ~element = 8;
+    {PlayBuf.ar(10,c.bufnum)[~element]}.play
+)
+
+// copy all the other ranks on itself and the picking dictionnary as the sole component of the 1st channel
+(
+Routine{
+	z = (0..9);
+	FluidBufCompose.process(s,srcBufNumA: x.bufnum, startChanA: z.removeAt(~element), nChansA: 1, srcBufNumB: e.bufnum,  dstBufNum: e.bufnum);
+    s.sync;
+    e.query;
+    s.sync;
+	z.do({|chan|FluidBufCompose.process(s,srcBufNumA: x.bufnum, startChanA:chan, nChansA: 1, dstStartChanA: 1, srcBufNumB: e.bufnum, dstBufNum: e.bufnum)});
+    s.sync;
+    e.query;
+}.play;
+)
+e.plot;
+
+//using this trained dictionary we can see the envelop (activations) of each rank
+{FluidNMFMatch.kr(PlayBuf.ar(1,b.bufnum),e.bufnum,2,fftSize:2048)}.plot(1);
+// the left/top activations are before, the pick before the sustain.
+
+//we can then use the activation value to sidechain a compression patch that is sent in a delay
+(
+{
+	var source, todelay, delay1, delay2, delay3, feedback, mod1, mod2, mod3, mod4;
+	//read the source
+	source = PlayBuf.ar(1, b.bufnum);
+
+	// generate modulators that are coprime in frequency
+	mod1 = SinOsc.ar(1, 0, 0.001);
+	mod2 = SinOsc.ar(((617 * 181) / (461 * 991)), 0, 0.001);
+	mod3 = SinOsc.ar(((607 * 193) / (491 * 701)), 0, 0.001);
+	mod4 = SinOsc.ar(((613 * 191) / (463 * 601)), 0, 0.001);
+
+	// compress the signal to send to the delays
+	todelay = DelayN.ar(source,0.1, 800/44100, //delaying it to compensate for FluidNMFMatch's latency
+		LagUD.ar(K2A.ar(FluidNMFMatch.kr(source,e.bufnum,2,fftSize:2048)[0]), //reading the channel of the activations on the pick dictionary
+			80/44100, // lag uptime (compressor's attack)
+			1000/44100, // lag downtime (compressor's decay)
+			(1/(2.dbamp) // compressor's threshold inverted
+	)).clip(1,1000).pow((8.reciprocal)-1)); //clipping it so we only affect above threshold, then ratio(8) becomes the exponent of that base
+
+	// delay network
+	feedback = LocalIn.ar(3);// take the feedback in for the delays
+	delay1 = DelayC.ar(BPF.ar(todelay+feedback[1]+(feedback[2] * 0.3), 987, 6.7,0.8),0.123,0.122+(mod1*mod2));
+	delay2 = DelayC.ar(BPF.ar(todelay+feedback[0]+(feedback[2] * 0.3), 1987, 6.7,0.8),0.345,0.344+(mod3*mod4));
+	delay3 = DelayC.ar(BPF.ar(todelay+feedback[1], 1456, 6.7,0.8),0.567,0.566+(mod1*mod3),0.6);
+	LocalOut.ar([delay1,delay2, delay3]); // write the feedback for the delays
+
+	//listen to the delays only by uncommenting the following line
+	// [delay1+delay3,delay2+delay3]
+	source.dup + ([delay1+delay3,delay2+delay3]*(-3.dbamp))
+}.play;
+)
+
+::
+STRONG::Object finder::
+	CODE::
+/set some buffers
+(
+b = Buffer.read(s,File.realpath(FluidNMFMatch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-BaB-SoundscapeGolcarWithDog.wav");
+c = Buffer.new(s);
+x = Buffer.new(s);
+e = Buffer.alloc(s,1,1);
+)
+
+// train where all objects are present
+(
+Routine {
+    FluidBufNMF.process(s,b.bufnum,130000,150000,0,1, c.bufnum, x.bufnum, rank:10);
+    s.sync;
+    c.query;
+}.play;
+)
+
+// wait for the query to print
+// then find a rank for each item you want to find. You could also sum them. Try to find a rank with a good object-to-rest ratio
+(
+    ~dog =0;
+    {PlayBuf.ar(10,c.bufnum)[~dog]}.play
+)
+
+(
+    ~bird = 5;
+    {PlayBuf.ar(10,c.bufnum)[~bird]}.play
+)
+
+
+// copy at least one other rank to a third rank, a sort of left-over channel
+(
+Routine{
+	FluidBufCompose.process(s,srcBufNumA: x.bufnum, startChanA:~dog, nChansA: 1, srcBufNumB: e.bufnum, dstBufNum: e.bufnum);
+	FluidBufCompose.process(s,srcBufNumA: x.bufnum, startChanA:~bird, nChansA: 1, dstStartChanA: 1, srcBufNumB: e.bufnum, dstBufNum: e.bufnum);
+    s.sync;
+	(0..9).removeAll([~dog,~bird]).do({|chan|FluidBufCompose.process(s,srcBufNumA: x.bufnum, startChanA:chan, nChansA: 1, dstStartChanA: 2, srcBufNumB: e.bufnum, dstBufNum: e.bufnum)});
+    s.sync;
+    e.query;
+}.play;
+)
+e.plot;
+
+//using this trained dictionary we can then see the activation...
+(
+{
+	var source, blips;
+	//read the source
+	source = PlayBuf.ar(2, b.bufnum);
+	blips = FluidNMFMatch.kr(source.sum,e.bufnum,3);
+	}.plot(10);
+)
+
+// ...and use some threshold to 'find' objects...
+(
+{
+	var source, blips;
+	//read the source
+	source = PlayBuf.ar(2, b.bufnum);
+	blips = Schmidt.kr(FluidNMFMatch.kr(source.sum,e.bufnum,3),0.5,[10,1,1000]);
+	}.plot(10);
+)
+
+// ...and use these to sonify them
+(
+{
+	var source, blips, dogs, birds;
+	//read the source
+	source = PlayBuf.ar(2, b.bufnum);
+	blips = Schmidt.kr(FluidNMFMatch.kr(source.sum,e.bufnum,3),0.5,[10,1,1000]);
+	dogs = SinOsc.ar(100,0,Lag.kr(blips[0],0.05,0.15));
+	birds = SinOsc.ar(1000,0,Lag.kr(blips[1],0.05,0.05));
+	[dogs, birds] + source;
+	}.play;
+)
+::
+	STRONG::Pretrained piano::
+	CODE::
+//load in the sound in and a pretrained dictionary
+(
+	b = Buffer.read(s,File.realpath(FluidNMFMatch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-SA-UprightPianoPedalWide.wav");
+	c = Buffer.read(s,File.realpath(FluidNMFMatch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/filters/piano-dicts.wav");
+)
+b.play
+c.query
+
+//use the pretrained dictionary to compute activations of each notes to drive the amplitude of a resynth
+(
+{
+	var source, resynth;
+	source = PlayBuf.ar(2, b.bufnum,loop:1).sum;
+	resynth = SinOsc.ar((21..108).midicps, 0, FluidNMFMatch.kr(source,c.bufnum,88,10,4096).madd(0.002)).sum;
+	[source, resynth]
+}.play
+)
+
+
+//now sample and hold the same stream to get notes identified, played and sent back via osc
+(
+{
+	var source, resynth, chain, trig, acts;
+	source = PlayBuf.ar(2,b.bufnum,loop:1).sum;
+
+	// built in attack detection, delayed until the stable part of the sound
+	chain = FFT(LocalBuf(256), source);
+	trig = TDelay.kr(Onsets.kr(chain, 0.5),0.1);
+
+	// samples and holds activation values that are scaled and capped, in effect thresholding them
+	acts = Latch.kr(FluidNMFMatch.kr(source,c.bufnum,88,10,4096).linlin(15,20,0,0.1),trig);
+
+	// resynths as in the previous example, with the values sent back to the language
+	resynth = SinOsc.ar((21..108).midicps, 0, acts).sum;
+	SendReply.kr(trig, '/activations', acts);
+	[source, resynth]
+	// [source, T2A.ar(trig)]
+	// resynth
+}.play
+)
+
+// define a receiver for the activations
+(
+	OSCdef(\listener, {|msg|
+		var data = msg[3..];
+		// removes the silent and spits out the indicies as midinote number
+		data.collect({arg item, i; if (item > 0.01, {i + 21})}).reject({arg item; item.isNil}).postln;
+	}, '/activations');
+)
+
+::
+	STRONG::Strange Resonators::
+	CODE::
+	//to be completed
 ::
 	

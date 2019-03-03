@@ -1,5 +1,5 @@
 FluidBufNoveltySlice{
-		*process { arg server, srcBufNum, startAt = 0, nFrames = -1, startChan = 0, nChans = -1, transBufNum, kernelSize = 3, thresh = 0.8, filterSize = 11, winSize = 1024, hopSize = 512, fftSize = 2048, maxWindowSize=16384;
+		*process { arg server, srcBufNum, startAt = 0, nFrames = -1, startChan = 0, nChans = -1, transBufNum, kernelSize = 3, thresh = 0.8, filterSize = 0, winSize = 1024, hopSize = 512, fftSize = 2048;
 
 		if(srcBufNum.isNil) { Error("Invalid buffer").format(thisMethod.name, this.class.name).throw};
 		if(transBufNum.isNil) { Error("Invalid buffer").format(thisMethod.name, this.class.name).throw};
