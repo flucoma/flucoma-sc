@@ -7,12 +7,12 @@ RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/Buffer
 DESCRIPTION::
 A FluidBufCompose object provides a flexible utility for combining the contents of buffers on the server. It can be used for thing like mixing down multichannel buffers, or converting from left-right stereo to mid-side. We use it extensively in our example code.
 
-At its most simple, the object copies the content of two source buffers into a destination buffer. The flexibility comes from the various flags controlling which portions and channels of the sources to use, and by applying gains (which can be positive or negative) to the source data.
+At its most simple, the object copies the content of a source buffer into a destination buffer. The flexibility comes from the various flags controlling which portions and channels of the sources to use, and by applying gains (which can be positive or negative) to the source data and the portion of the destination that would be overwritten.
 
 It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
 This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
 
-The algorithm takes two buffers in, and writes the composited information at the provided dstBuf. These buffer arguments can all point to the same buffer, which gives great flexibility in transforming and reshaping.
+The algorithm takes a srcBuf, and writes the information at the provided dstBuf. These buffer arguments can all point to the same buffer, which gives great flexibility in transforming and reshaping.
 
 
 CLASSMETHODS::
@@ -23,62 +23,41 @@ METHOD:: process
 ARGUMENT:: server
 	The server on which the buffers to be processed are allocated.
 
-ARGUMENT:: srcBufNumA
-	The bufNum of the first source buffer.
+ARGUMENT:: srcBufNum
+	The bufNum of the source buffer.
 
-ARGUMENT:: startAtA
-	The starting point (in samples) from which to copy in the first source buffer.
+ARGUMENT:: startAt
+	The starting point (in samples) from which to copy in the source buffer.
 
-ARGUMENT:: nFramesA
-	The duration (in samples) to copy from the first source buffer.
+ARGUMENT:: nFrames
+	The duration (in samples) to copy from the source buffer.
 
-ARGUMENT:: startChanA
-	The first channel from which to copy in the first source buffer.
+ARGUMENT:: startChan
+	The first channel from which to copy in the source buffer.
 
-ARGUMENT:: nChansA
-	The number of channels from which to copy in the first source buffer. This parameter will wrap around the number of channels in the source buffer.
+ARGUMENT:: nChans
+	The number of channels from which to copy in the source buffer. This parameter will wrap around the number of channels in the source buffer.
 
-ARGUMENT:: srcGainA
-	The gain applied to the samples to be copied from the first source buffer.
-
-ARGUMENT:: dstStartAtA
-	The time offset (in samples) in the destination buffer to start writing the first source at. The destination buffer will be resized if the portion to copy is overflowing.
-
-ARGUMENT:: dstStartChanA
-	The channel offest in the destination buffer to start writing the first source at. The destination buffer will be resized if the number of channels to copy is overflowing.
-
-ARGUMENT:: srcBufNumB
-	The bufNum of the second source buffer.
-
-ARGUMENT:: startAtB
-	The starting point (in samples) from which to copy in the second source buffer.
-
-ARGUMENT:: nFramesB
-	The duration (in samples) to copy from the second source buffer.
-
-ARGUMENT:: startChanB
-	The first channel from which to copy in the second source buffer.
-
-ARGUMENT:: nChansB
-	The number of channels from which to copy in the second source buffer. This parameter will wrap around the number of channels in the source buffer.
-
-ARGUMENT:: srcGainB
-	The gain applied to the samples to be copied from the second source buffer.
-
-ARGUMENT:: dstStartAtB
-	The time offset (in samples) in the destination buffer to start writing the second source at. The destination buffer will be resized if the portion to copy is overflowing.
-
-ARGUMENT:: dstStartChanB
-	The channel offest in the destination buffer to start writing the second source at. The destination buffer will be resized if the number of channels to copy is overflowing.
+ARGUMENT:: srcGain
+	The gain applied to the samples to be copied from the source buffer.
 
 ARGUMENT:: dstBufNum
 	The bufNum of the destination buffer.
+
+ARGUMENT:: dstStartAt
+	The time offset (in samples) in the destination buffer to start writing the source at. The destination buffer will be resized if the portion to copy is overflowing.
+
+ARGUMENT:: dstStartChan
+	The channel offest in the destination buffer to start writing the source at. The destination buffer will be resized if the number of channels to copy is overflowing.
+
+ARGUMENT:: dstGain
+	The gain applied to the samples in the region of the destination buffer over which the source is to be copied. The default value of 0. would overwrite completely, and a value of 1.0 would sum the source to the material that was present.
 
 RETURNS::
 	Nothing, as the various destination buffers are declared in the function call.
 
 DISCUSSION::
-	It is important to understand the rules used for determining the final desintinaiton buffer dimensions to get the most out of this object. The destination buffer will be resized to the maxima of the requsted source numFrames and numChannels, independently of whether the source buffers are that big or not. Frames will be written up to the limit of actually available samples (meaning you can create zero padding);channels  will be written modulo the available channels, taking into account the channel offsets, meaning you can have channels repeat or loop into the desintation buffer's channels. See the examples below.
+	It is important to understand the rules used for determining the final desintinaiton buffer dimensions to get the most out of this object. If needs be, the destination buffer will be resized to the maxima of the requsted source numFrames and numChannels. Frames will be written up to the limit of actually available samples (meaning you can create zero padding); channels  will be written modulo the available channels, taking into account the channel offsets, meaning you can have channels repeat or loop into the source buffer's channels. See the examples below.
 
 EXAMPLES::
 
@@ -91,31 +70,31 @@ d = Buffer.new(s);
 )
 
 // with basic params (basic summing of each full buffer in all dimensions)
-FluidBufCompose.process(s, srcBufNumA: b.bufnum, srcBufNumB: c.bufnum, dstBufNum: d.bufnum);
+FluidBufCompose.process(s, srcBufNum: b.bufnum,  dstBufNum: d.bufnum);
+FluidBufCompose.process(s, srcBufNum: c.bufnum,  dstBufNum: d.bufnum, dstGain: 1.0);
 d.query;
 d.play;
 
 //constructing a mono buffer, with a quiet punch from the synth, with a choked piano resonance from the left channel
-FluidBufCompose.process(s, srcBufNumA: b.bufnum, nFramesA: 9000, srcGainA: 0.5, srcBufNumB: c.bufnum, startAtB:30000, nFramesB:44100, nChansB:1, srcGainB:0.9, dstBufNum: d.bufnum);
+d.free; d = Buffer.new(s);
+FluidBufCompose.process(s, srcBufNum: b.bufnum, nFrames: 9000, srcGain: 0.5, dstBufNum: d.bufnum);
+FluidBufCompose.process(s, srcBufNum: c.bufnum, startAt:30000, nFrames:44100, nChans:1, srcGain:0.9, dstBufNum: d.bufnum, dstGain: 1.0);
 d.query;
 d.play;
 
 //constructing a stereo buffer, with the end of the mono synth in both channels, with a piano resonance in swapped stereo
-FluidBufCompose.process(s, srcBufNumA: b.bufnum, startAtA: 441000, nChansA: 2, srcGainA: 0.6, srcBufNumB: c.bufnum, nFramesB: 80000, startChanB: 1, nChansB: 2, srcGainB: 0.5, dstStartAtB: 22050, dstStartChanB: 0, dstBufNum: d.bufnum);
+d.free; d = Buffer.new(s);
+FluidBufCompose.process(s, srcBufNum: b.bufnum, startAt: 441000, nChans: 2, srcGain: 0.6, dstBufNum: d.bufnum);
+FluidBufCompose.process(s, srcBufNum: c.bufnum, nFrames: 78000, startChan: 1, nChans: 2, srcGain: 0.5, dstStartAt: 22050, dstBufNum: d.bufnum,  dstGain: 1.0);
 d.query;
 d.play;
 
 //constructing a one second buffer: the first second of each buffer, the mono synth on the right, the piano on the left
-FluidBufCompose.process(s, srcBufNumA: b.bufnum, nFramesA: 44100, nChansA: 1, dstStartChanA: 1, srcBufNumB: c.bufnum, nFramesB:44100, nChansB:1, dstBufNum: d.bufnum);
+d.free; d = Buffer.new(s);
+FluidBufCompose.process(s, srcBufNum: b.bufnum, nFrames: 44100, nChans: 1, dstStartChan: 1, dstBufNum: d.bufnum);
+FluidBufCompose.process(s, srcBufNum: c.bufnum, nFrames:44100, nChans:1, dstBufNum: d.bufnum,  dstGain: 1.0);
 d.query;
 d.play;
-
-// growing a buffer on itself
-e = Buffer.alloc(s,1,1);
-FluidBufCompose.process(s,srcBufNumA: b.bufnum, srcBufNumB: e.bufnum, dstBufNum: e.bufnum);
-FluidBufCompose.process(s,srcBufNumA: c.bufnum,  nChansA: 1, srcBufNumB: e.bufnum, dstBufNum: e.bufnum);
-e.plot;
-e.play;
 ::
 
 	STRONG::A more complex example: using composition as an Mid-Side filtering process::
@@ -126,14 +105,16 @@ e.play;
 b = Buffer.read(s,File.realpath(FluidBufCompose.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-SA-UprightPianoPedalWide.wav");
 c = Buffer.new(s);
 d = Buffer.new(s);
-e = Buffer.alloc(s,1,1);
+e = Buffer.new(s);
 f = Buffer.new(s);
 )
 
 // encode the mid (in c) and the side (in d)
 (
-FluidBufCompose.process(s,b.bufnum,nChansA: 1, srcGainA: -3.0.dbamp, srcBufNumB:b.bufnum,startChanB: 1, nChansB: 1, srcGainB: -3.0.dbamp, dstBufNum: c.bufnum);
-FluidBufCompose.process(s,b.bufnum,nChansA: 1, srcGainA: -3.0.dbamp, srcBufNumB:b.bufnum,startChanB: 1, nChansB: 1, srcGainB: -3.0.dbamp * -1.0, dstBufNum: d.bufnum);
+FluidBufCompose.process(s,b.bufnum, nChans: 1, srcGain: -3.0.dbamp, dstBufNum: c.bufnum);
+FluidBufCompose.process(s,b.bufnum, nChans: 1, srcGain: -3.0.dbamp, dstBufNum: d.bufnum);
+FluidBufCompose.process(s,b.bufnum, nChans: 1, srcGain: -3.0.dbamp, startChan: 1, dstBufNum: c.bufnum,  dstGain: 1.0);
+FluidBufCompose.process(s,b.bufnum, nChans: 1, srcGain: -3.0.dbamp * -1.0, startChan: 1, dstBufNum: d.bufnum,  dstGain: 1.0);
 )
 
 // (optional) compare auraly the stereo with the MS
@@ -146,35 +127,39 @@ b.play;
 // Important: do either of the 3 options below
 
 // option 1: apply a high pass on the side, with a cutoff of nyquist / 4
+e.free; e = Buffer.new(s);
 (
 [1.0, -1.0].do({ arg x,y;
-	FluidBufCompose.process(s,d.bufnum,srcGainA: x, dstStartAtA: y, srcBufNumB: e.bufnum, dstBufNum: e.bufnum);
+	FluidBufCompose.process(s, d.bufnum, srcGain: x, dstStartAt: y, dstBufNum: e.bufnum, dstGain: 1.0);
 });
 )
 
 // option 2: apply a high pass on the side, with a cutoff of nyquist / 10
+e.free; e = Buffer.new(s);
 (
 [0.8, -0.32, -0.24, -0.16, -0.08].do({ arg x,y;
-	FluidBufCompose.process(s,d.bufnum,srcGainA: x, dstStartAtA: y, srcBufNumB: e.bufnum, dstBufNum: e.bufnum);
+	FluidBufCompose.process(s, d.bufnum, srcGain: x, dstStartAt: y, dstBufNum: e.bufnum, dstGain: 1.0);
 });
 )
 
 // option 3: apply a high pass on the side, with a cutoff of nyquist / 100
+e.free; e = Buffer.new(s);
 (
 [0.982494, -0.066859, -0.064358, -0.061897, -0.059477, -0.057098, -0.054761, -0.052466, -0.050215, -0.048007, -0.045843, -0.043724, -0.041649, -0.03962, -0.037636, -0.035697, -0.033805, -0.031959, -0.030159, -0.028406, -0.026699, -0.025038, -0.023425, -0.021857, -0.020337].do({ arg x,y;
-	FluidBufCompose.process(s,d.bufnum,srcGainA: x, dstStartAtA: y, srcBufNumB: e.bufnum, dstBufNum: e.bufnum);
+	FluidBufCompose.process(s, d.bufnum, srcGain: x, dstStartAt: y, dstBufNum: e.bufnum, dstGain: 1.0);
 });
 )
 
 // play the high-passed side buffer
+e.query;
 e.play;
 // if you want to try the other filters, do not forget to clear the destination buffer since it will add programmatically onto itself and would not create the expected frequency response
 
 // decode the MS back to stereo
 (
-FluidBufCompose.process(s,c.bufnum, srcGainA: -3.0.dbamp, srcBufNumB:e.bufnum, srcGainB: -3.0.dbamp, dstBufNum: f.bufnum);
-FluidBufCompose.process(s,c.bufnum, srcGainA: -3.0.dbamp, dstStartChanA: 1, srcBufNumB:f.bufnum, dstBufNum: f.bufnum);
-FluidBufCompose.process(s,e.bufnum, srcGainA: -3.0.dbamp * -1.0,dstStartChanA: 1, srcBufNumB:f.bufnum, dstBufNum: f.bufnum);
+FluidBufCompose.process(s,c.bufnum, nChans: 2, srcGain: -3.0.dbamp, dstBufNum: f.bufnum);
+FluidBufCompose.process(s,e.bufnum, srcGain: -3.0.dbamp, dstBufNum: f.bufnum,  dstGain: 1.0);
+FluidBufCompose.process(s,e.bufnum, srcGain: -3.0.dbamp * -1.0, dstBufNum: f.bufnum, dstStartChan: 1, dstGain: 1.0);
 )
 
 // query and play
