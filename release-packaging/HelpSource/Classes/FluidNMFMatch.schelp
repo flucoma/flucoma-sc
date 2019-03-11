@@ -29,7 +29,7 @@ ARGUMENT:: dictBufNum
 	The server index of the buffer containing the different dictionaries that the input signal will be matched against. Dictionaries must be STRONG::(fft size / 2) + 1:: frames. If the buffer has more than STRONG::maxRank:: channels, the excess will be ignored.
 
 ARGUMENT::maxRank
-	The maximum number of elements the NMF algorithm will try to divide the spectrogram of the source in. This dictates the number of output channelsfor the ugen.
+	The maximum number of elements the NMF algorithm will try to divide the spectrogram of the source in. This dictates the number of output channelsfor the ugen. This is not modulatable.
 
 ARGUMENT:: nIter
 	The NMF process is iterative, trying to converge to the smallest error in its factorisation. The number of iterations will decide how many times it tries to adjust its estimates. Higher numbers here will be more CPU intensive, lower numbers will be more unpredictable in quality.
@@ -38,10 +38,13 @@ ARGUMENT:: winSize
 	The number of samples that are analysed at a time. A lower number yields greater temporal resolution, at the expense of spectral resoultion, and vice-versa.
 
 ARGUMENT:: hopSize
-	The window hope size. As NMF relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. Default = winSize / 2
+	The window hope size. As NMF relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of winSize (overlap of 2).
 
 ARGUMENT:: fftSize
-	The FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. Default = winSize
+	The FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will default to windowSize.
+
+ARGUMENT:: maxFFTSize
+	How large can the FFT be, by allocating memory at instantiation time. This is not modulatable.
 
 RETURNS::
 	A multichannel kr output, giving for each dictionary component the activation amount.
@@ -64,7 +67,8 @@ Routine {
 	b.sine2([500],[1], false, false);
 	c.sine2([5000],[1],false, false);
 	s.sync;
-	FluidBufCompose.process(s,srcBufNumA:b.bufnum, srcBufNumB:c.bufnum,dstStartAtB:44100,dstBufNum:d.bufnum);
+	FluidBufCompose.process(s,b.bufnum, dstBufNum:d.bufnum);
+	FluidBufCompose.process(s,c.bufnum, dstStartAt:44100, dstBufNum:d.bufnum, dstGain:1);
 	s.sync;
 	d.query;
 }.play;
@@ -88,11 +92,11 @@ e.query
 e.plot
 
 // test the activations values with test one, another, or both ideal material
-{FluidNMFMatch.kr(SinOsc.ar(500),e.bufnum,2, hopSize:512)}.plot(1)
+{FluidNMFMatch.kr(SinOsc.ar(500),e.bufnum,2)}.plot(1)
 
-{FluidNMFMatch.kr(SinOsc.ar(5000),e.bufnum,2, hopSize:512)}.plot(1)
+{FluidNMFMatch.kr(SinOsc.ar(5000),e.bufnum,2)}.plot(1)
 
-{FluidNMFMatch.kr(SinOsc.ar([500,5000]).sum,e.bufnum,2, hopSize:512)}.plot(1)
+{FluidNMFMatch.kr(SinOsc.ar([500,5000]).sum,e.bufnum,2)}.plot(1)
 ::
 
 STRONG::A pick compressor::
@@ -117,7 +121,7 @@ Routine {
 // wait for the query to print
 // then find the rank that has the picking sound by changing which channel to listen to
 (
-    ~element = 8;
+    ~element = 3;
     {PlayBuf.ar(10,c.bufnum)[~element]}.play
 )
 
@@ -125,15 +129,16 @@ Routine {
 (
 Routine{
 	z = (0..9);
-	FluidBufCompose.process(s,srcBufNumA: x.bufnum, startChanA: z.removeAt(~element), nChansA: 1, srcBufNumB: e.bufnum,  dstBufNum: e.bufnum);
+	FluidBufCompose.process(s, x.bufnum, startChan: z.removeAt(~element), nChans: 1, dstBufNum: e.bufnum);
     s.sync;
     e.query;
     s.sync;
-	z.do({|chan|FluidBufCompose.process(s,srcBufNumA: x.bufnum, startChanA:chan, nChansA: 1, dstStartChanA: 1, srcBufNumB: e.bufnum, dstBufNum: e.bufnum)});
+	z.do({|chan| FluidBufCompose.process(s, x.bufnum, startChan:chan, nChans: 1, dstStartChan: 1, dstBufNum: e.bufnum, dstGain:1)});
     s.sync;
     e.query;
 }.play;
 )
+
 e.plot;
 
 //using this trained dictionary we can see the envelop (activations) of each rank
@@ -168,21 +173,21 @@ e.plot;
 	delay3 = DelayC.ar(BPF.ar(todelay+feedback[1], 1456, 6.7,0.8),0.567,0.566+(mod1*mod3),0.6);
 	LocalOut.ar([delay1,delay2, delay3]); // write the feedback for the delays
 
-	//listen to the delays only by uncommenting the following line
-	// [delay1+delay3,delay2+delay3]
 	source.dup + ([delay1+delay3,delay2+delay3]*(-3.dbamp))
+	//listen to the delays in solo by uncommenting the following line
+	// [delay1+delay3,delay2+delay3]
 }.play;
 )
 
 ::
 STRONG::Object finder::
 	CODE::
-/set some buffers
+//set some buffers
 (
 b = Buffer.read(s,File.realpath(FluidNMFMatch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-BaB-SoundscapeGolcarWithDog.wav");
 c = Buffer.new(s);
 x = Buffer.new(s);
-e = Buffer.alloc(s,1,1);
+e = Buffer.new(s);
 )
 
 // train where all objects are present
@@ -197,7 +202,7 @@ Routine {
 // wait for the query to print
 // then find a rank for each item you want to find. You could also sum them. Try to find a rank with a good object-to-rest ratio
 (
-    ~dog =0;
+    ~dog =2;
     {PlayBuf.ar(10,c.bufnum)[~dog]}.play
 )
 
@@ -210,10 +215,10 @@ Routine {
 // copy at least one other rank to a third rank, a sort of left-over channel
 (
 Routine{
-	FluidBufCompose.process(s,srcBufNumA: x.bufnum, startChanA:~dog, nChansA: 1, srcBufNumB: e.bufnum, dstBufNum: e.bufnum);
-	FluidBufCompose.process(s,srcBufNumA: x.bufnum, startChanA:~bird, nChansA: 1, dstStartChanA: 1, srcBufNumB: e.bufnum, dstBufNum: e.bufnum);
+	FluidBufCompose.process(s, x.bufnum, startChan:~dog, nChans: 1, dstBufNum: e.bufnum);
+	FluidBufCompose.process(s, x.bufnum, startChan:~bird, nChans: 1, dstStartChan: 1, dstBufNum: e.bufnum, dstGain:1);
     s.sync;
-	(0..9).removeAll([~dog,~bird]).do({|chan|FluidBufCompose.process(s,srcBufNumA: x.bufnum, startChanA:chan, nChansA: 1, dstStartChanA: 2, srcBufNumB: e.bufnum, dstBufNum: e.bufnum)});
+	(0..9).removeAll([~dog,~bird]).do({|chan|FluidBufCompose.process(s,x.bufnum, startChan:chan, nChans: 1, dstStartChan: 2, dstBufNum: e.bufnum, dstGain:1)});
     s.sync;
     e.query;
 }.play;
