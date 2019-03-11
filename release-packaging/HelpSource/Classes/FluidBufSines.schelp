@@ -96,6 +96,6 @@ d.query;
 d.play;
 
 //nullsumming tests
-{(PlayBuf.ar(1,c.bufnum))+(PlayBuf.ar(1,d.bufnum))-(PlayBuf.ar(1,b.bufnum,doneAction:2))}.play
+{(PlayBuf.ar(1, c.bufnum)) + (PlayBuf.ar(1,d.bufnum)) - (PlayBuf.ar(1,b.bufnum,doneAction:2))}.play
 ::
 	

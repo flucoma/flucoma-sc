@@ -55,10 +55,10 @@ ARGUMENT:: percBufNum
 ARGUMENT:: resBufNum
 	The index of the buffer where the residual component will be reconstructed in mode 2.
 
-ARGUMENT:: harmFiltSize
+ARGUMENT:: hFiltSize
 	The size, in spectral frames, of the median filter for the harmonic component. Must be an odd number, >= 3.
 
-ARGUMENT:: percFiltSize
+ARGUMENT:: pFiltSize
 	The size, in spectral bins, of the median filter for the percussive component. Must be an odd number, >=3
 
 ARGUMENT:: modeFlag
@@ -147,7 +147,7 @@ d.play;
 (
 	Routine{
 		t = Main.elapsedTime;
-          FluidBufHPSS.process(s, b.bufnum, harmBufNum: c.bufnum, percBufNum: d.bufnum, resBufNum:e.bufnum, harmFiltSize:31, modeFlag:2, htf1: 0.005, hta1: 7.5, htf2: 0.168, hta2: 7.5, ptf1: 0.004, pta1: 26.5, ptf2: 0.152, pta2: 26.5);
+          FluidBufHPSS.process(s, b.bufnum, harmBufNum: c.bufnum, percBufNum: d.bufnum, resBufNum:e.bufnum, hFiltSize:31, modeFlag:2, htf1: 0.005, hta1: 7.5, htf2: 0.168, hta2: 7.5, ptf1: 0.004, pta1: 26.5, ptf2: 0.152, pta2: 26.5);
 			s.sync;
 		(Main.elapsedTime - t).postln;
 	}.play
