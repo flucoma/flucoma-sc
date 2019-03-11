@@ -16,20 +16,17 @@ METHOD:: ar
 ARGUMENT:: in
 	The input to be processed
 
-ARGUMENT:: frameSize
-	The size of the real-time i/o buffer, in samples. It will add that much latency to the signal. This is not modulatable.
-
 ARGUMENT:: gain
 	Audio or control rate change of the gain.
 
 RETURNS::
-	Same as input, delayed by the frameSize, multiplied by the gain factor.
+	Same as input, multiplied by the gain factor.
 
 
 EXAMPLES::
 	Summing with the inverse (gain of -1) with a delay of the latency gives us CPU-expensive silence.
 CODE::
-{ var source = PinkNoise.ar(0.1); DelayN.ar(source,delaytime:1000/s.sampleRate) + FluidGain.ar(source,1000,-1); }.play
+{ var source = PinkNoise.ar(0.1); source + FluidGain.ar(source,-1); }.play
 ::
 Varying the gain at audio rate.
 CODE::
