@@ -293,7 +293,6 @@ private:
     auto  results = w->mParams.template checkParameterValues<ArgumentGetter>(world, args);
     for (auto &r : results)
     {
-      std::cout << r.message() << '\n';
       if (!r.ok()) return r;
     }
     return {};
