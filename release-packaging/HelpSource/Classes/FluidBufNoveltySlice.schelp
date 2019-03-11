@@ -33,16 +33,16 @@ ARGUMENT:: startChan
 ARGUMENT:: nChans
 	For multichannel srcBuf, how many channel should be summed.
 
-ARGUMENT:: transBufNum
+ARGUMENT:: indBufNum
 	The index of the buffer where the indices (in sample) of the estimated starting points of slices will be written. The first and last points are always the boundary points of the analysis.
 
-ARGUMENT:: kernelSize
+ARGUMENT:: kernSize
 	The granularity of the window in which the algorithm looks for change, in samples. A small number will be sensitive to short term changes, and a large number should look for long term changes.
 
 ARGUMENT:: thresh
 	The normalised threshold, between 0 an 1, on the novelty curve to consider it a segmentation point.
 
-ARGUMENT:: filterSize
+ARGUMENT:: filtSize
 	The size of a smoothing filter that is applied on the novelty curve. A larger filter filter size allows for cleaner cuts on very sharp changes.
 
 ARGUMENT:: winSize
@@ -71,7 +71,7 @@ c = Buffer.new(s);
 // with basic params
 Routine{
 	t = Main.elapsedTime;
-	FluidBufNoveltySlice.process(s,b.bufnum, transBufNum: c.bufnum, thresh:0.6);
+	FluidBufNoveltySlice.process(s,b.bufnum, indBufNum: c.bufnum, thresh:0.6);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play
@@ -105,7 +105,7 @@ c = Buffer.new(s);
 )
 
 // process with a given filterSize
-FluidBufNoveltySlice.process(s,b.bufnum, transBufNum: c.bufnum, kernelSize:31, thresh:0.35, filterSize:0)
+FluidBufNoveltySlice.process(s,b.bufnum, indBufNum: c.bufnum, kernSize:31, thresh:0.35, filtSize:1)
 
 //check the number of slices: it is the number of frames in the transBuf minus the boundary index.
 c.query;
@@ -124,7 +124,7 @@ c.query;
 
 // change the filterSize in the code above to 4. Then to 8. Listen in between to the differences.
 
-// What's happening? In the first instance (filterSize = 0), the novelty line is jittery and therefore overtriggers on the arpegiated guitar. We also can hear attacks at the end of the segment. Setting the threshold higher (like in the 'Basic Example' pane) misses some more subtle variations.
+// What's happening? In the first instance (filterSize = 1), the novelty line is jittery and therefore overtriggers on the arpegiated guitar. We also can hear attacks at the end of the segment. Setting the threshold higher (like in the 'Basic Example' pane) misses some more subtle variations.
 
 // So in the second settings (filterSize = 4), we smooth the novelty line a little, which allows us to catch small differences that are not jittery. It also corrects the ending cutting by the same trick: the averaging of the sharp pick is sliding up, crossing the threshold slightly earlier.
 
