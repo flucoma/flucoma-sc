@@ -17,7 +17,7 @@ ARGUMENT:: in
 	The audio to be processed.
 
 ARGUMENT:: order
-	The order in samples of the impulse response filter used to model the estimated continuous signal. It is how many previous samples are used by the algorithm to predict the next one as reference for the model. The higher the order, the more accurate is its spectral definition, not unlike fft, improving low frequency resolution, but it differs in that it is not conected to its temporal resolution.
+	The order in samples of the impulse response filter used to model the estimated continuous signal. It is how many previous samples are used by the algorithm to predict the next one as reference for the model. The higher the order, the more accurate is its spectral definition, not unlike fft, improving low frequency resolution, but it differs in that it is not connected to its temporal resolution.
 
 ARGUMENT:: blockSize
 	The size in samples of frame on which it the algorithm is operating. High values are more cpu intensive, and also determines the maximum transient size, which will not be allowed to be more than half that lenght in size.
@@ -53,11 +53,11 @@ CODE::
 //load some sounds
 b = Buffer.read(s,File.realpath(FluidTransientSlice.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
 
-// basic param (the process add a latency of (blockSize + padding - order) samples
-{var sig = PlayBuf.ar(1,b.bufnum,loop:1); [FluidTransientSlice.ar(sig)*0.5, DelayN.ar(sig, 1, ((256 + 128 - 20)/ s.sampleRate))]}.play
+// basic param (the process add a latency of (blockSize + padSize - order) samples
+{var sig = PlayBuf.ar(1,b.bufnum,loop:1); [FluidTransientSlice.ar(sig) * 0.5, DelayN.ar(sig, 1, ((256 + 128 - 20)/ s.sampleRate))]}.play
 
 // other parameters
-{var sig = PlayBuf.ar(1,b.bufnum,loop:1); [FluidTransientSlice.ar(sig,order:80,minSlice:2205)*0.5, DelayN.ar(sig, 1, ((256 + 128 - 80)/ s.sampleRate))]}.play
+{var sig = PlayBuf.ar(1,b.bufnum,loop:1); [FluidTransientSlice.ar(sig,order:80,minSlice:2205) * 0.5, DelayN.ar(sig, 1, ((256 + 128 - 80)/ s.sampleRate))]}.play
 
 // more musical trans-trigged autopan
 (
