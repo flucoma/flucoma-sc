@@ -86,7 +86,7 @@ ARGUMENT:: maxPFiltSize
 
 
 RETURNS::
-	An array of three audio streams: [0] is the harmonic part extracted, [1] is the percussive part extracted, [2] is the rest. The latency between the input and the output is ((harmFiltSize + (winSize / hopSize) - 1) *  hopSize) samples.
+	An array of three audio streams: [0] is the harmonic part extracted, [1] is the percussive part extracted, [2] is the rest. The latency between the input and the output is ((hFiltSize - 1) * hopSize) + winSize) samples.
 
 
 Discussion::
