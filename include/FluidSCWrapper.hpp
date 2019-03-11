@@ -161,7 +161,11 @@ public:
   {
     float l[] {static_cast<float>(static_cast<Wrapper*>(unit)->mClient.latency())};
     auto ft = Wrapper::getInterfaceTable();
-    ft->fSendNodeReply(&unit->mParent->mNode,-1,Wrapper::getName(), 1, l);
+    
+    std::stringstream ss;
+    ss << '/' << Wrapper::getName() << "_latency";
+    std::cout << ss.str() << '\n';
+    ft->fSendNodeReply(&unit->mParent->mNode,-1,ss.str().c_str() , 1, l);
   }
   
   RealTime():
