@@ -128,7 +128,8 @@ Routine {
 	b.sine2([500],[1], false, false);
 	c.sine2([5000],[1],false, false);
 	s.sync;
-	FluidBufCompose.process(s,srcBufNumA:b.bufnum, srcBufNumB:c.bufnum,dstStartAtB:44100,dstBufNum:d.bufnum);
+	FluidBufCompose.process(s,b.bufnum, dstBufNum:d.bufnum);
+	FluidBufCompose.process(s,c.bufnum, dstStartAt:44100, dstBufNum:d.bufnum, dstGain:1);
 	s.sync;
 	d.query;
 }.play;
@@ -173,7 +174,7 @@ y = Buffer.new(s);
 ~fft_size = 1024;
 ~frame_size = 512;
 ~hop_size = 256;
-~which_rank = 0;
+~which_rank = 3;
 )
 
 // matrix factorisation, requesting everything
@@ -244,8 +245,8 @@ CODE::
 b = Buffer.read(s,File.realpath(FluidBufNMF.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-AcousticStrums-M.wav");
 c = Buffer.new(s);
 x = Buffer.new(s);
-e = Buffer.alloc(s,1,1);
-y = Buffer.alloc(s,1,1);
+e = Buffer.new(s);
+y = Buffer.new(s);
 )
 
 // train only 2 seconds
@@ -259,7 +260,7 @@ Routine {
 
 // find the rank that has the picking sound by changing which channel to listen to
 (
-	~element = 9;
+	~element = 4;
 	{PlayBuf.ar(10,c.bufnum)[~element]}.play
 )
 
@@ -267,11 +268,11 @@ Routine {
 (
 Routine{
 	z = (0..9);
-	FluidBufCompose.process(s,srcBufNumA: x.bufnum, startChanA: z.removeAt(~element), nChansA: 1, srcBufNumB: e.bufnum,  dstBufNum: e.bufnum);
+	FluidBufCompose.process(s, x.bufnum, startChan: z.removeAt(~element), nChans: 1, dstBufNum: e.bufnum);
     s.sync;
     e.query;
     s.sync;
-	z.do({|chan|FluidBufCompose.process(s,srcBufNumA: x.bufnum, startChanA:chan, nChansA: 1, dstStartChanA: 1, srcBufNumB: e.bufnum, dstBufNum: e.bufnum)});
+	z.do({|chan| FluidBufCompose.process(s, x.bufnum, startChan:chan, nChans: 1, dstStartChan: 1, dstBufNum: e.bufnum, dstGain:1)});
     s.sync;
     e.query;
 }.play;
@@ -312,7 +313,8 @@ Routine {
 	b.sine2([500],[1], false, false);
 	c.sine2([5000],[1],false, false);
 	s.sync;
-	FluidBufCompose.process(s,srcBufNumA:b.bufnum, srcBufNumB:c.bufnum,dstStartAtB:44100,dstBufNum:d.bufnum);
+	FluidBufCompose.process(s,b.bufnum, dstBufNum:d.bufnum);
+	FluidBufCompose.process(s,c.bufnum, dstStartAt:44100, dstBufNum:d.bufnum, dstGain:1);
 	s.sync;
 	d.query;
 }.play;
