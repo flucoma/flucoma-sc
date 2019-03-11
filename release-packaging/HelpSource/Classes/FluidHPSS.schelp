@@ -27,10 +27,10 @@ METHOD:: ar
 ARGUMENT:: in
 	The input to be processed.
 
-ARGUMENT:: harmFiltSize
+ARGUMENT:: hFiltSize
 	The size, in spectral frames, of the median filter for the harmonic component. Must be an odd number, >= 3.
 
-ARGUMENT:: percFiltSize
+ARGUMENT:: pFiltSize
 	The size, in spectral bins, of the median filter for the percussive component. Must be an odd number, >=3
 
 ARGUMENT:: modeFlag
@@ -67,13 +67,22 @@ ARGUMENT:: pta2
 	In mode 2, the threshold of the high part for the percussive filter. That threshold applies to all frequencies above ptf2. The threshold between ptf1 and ptf2 is interpolated between pta1 and pta2. How much more powerful (in dB) the percussive median filter needs to be than the harmonic median filter for this bin to be counted as percussive.
 
 ARGUMENT:: winSize
-	The window size in samples. As HPSS relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
+	The window size. As sinusoidal estimation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
 ARGUMENT:: hopSize
-	The window hop size in samples. As HPSS relies on spectral frames, we need to move the window forward. It can be any size but low overlap may create audible artefacts.
+	The window hope size. As sinusoidal estimation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of winSize (overlap of 2).
 
 ARGUMENT:: fftSize
-	The inner FFT/IFFT size. It should be at least 4 samples long; at least the size of the window; and a power of 2. Making it larger than the window size provides interpolation in frequency.
+	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will default to windowSize.
+
+ARGUMENT:: maxFFTSize
+	How large can the FFT be, by allocating memory at instantiation time. This is not modulatable.
+
+ARGUMENT::maxHFlitSize
+	How large can the harmonic filter be modulated to (hFiltSize), by allocating memory at instantiation time. This is not modulatable.
+
+ARGUMENT:: maxPFiltSize
+	How large can the percussive filter be modulated to (pFiltSize), by allocating memory at instantiation time. This is not modulatable.
 
 
 RETURNS::
@@ -96,16 +105,16 @@ b = Buffer.read(s,File.realpath(FluidHPSS.class.filenameSymbol).dirname.withTrai
 {FluidHPSS.ar(PlayBuf.ar(1,b.bufnum,loop:1))}.play
 
 // run in mode 1
-{FluidHPSS.ar(PlayBuf.ar(1,b.bufnum,loop:1),17,31,1,0.05,40,0.1,-40)}.play
+{FluidHPSS.ar(PlayBuf.ar(1,b.bufnum,loop:1),17,51,1,0.05,40,0.1,-40)}.play
 
-// run in mode 2m listening to
+// run in mode 2, listening to:
 //the harmonic stream
-{FluidHPSS.ar(PlayBuf.ar(1,b.bufnum,loop:1),17,31,2,0.05,40,0.1,-40, 0.1, -10, 0.2, 10)[0].dup}.play
+{FluidHPSS.ar(PlayBuf.ar(1,b.bufnum,loop:1),15,31,2,0.05,40,0.1,-40, 0.1, -10, 0.2, 10)[0].dup}.play
 // the percussive stream
-{FluidHPSS.ar(PlayBuf.ar(1,b.bufnum,loop:1),17,31,2,0.05,40,0.1,-40, 0.1, -10, 0.2, 10)[1].dup}.play
+{FluidHPSS.ar(PlayBuf.ar(1,b.bufnum,loop:1),15,31,2,0.05,40,0.1,-40, 0.1, -10, 0.2, 10)[1].dup}.play
 // the residual stream
-{FluidHPSS.ar(PlayBuf.ar(1,b.bufnum,loop:1),17,31,2,0.05,40,0.1,-40, 0.1, -10, 0.2, 10)[2].dup}.play
+{FluidHPSS.ar(PlayBuf.ar(1,b.bufnum,loop:1),15,31,2,0.05,40,0.1,-40, 0.1, -10, 0.2, 10)[2].dup}.play
 
-// null test (the process add a latency of ((harmFiltSize + (winSize / hopSize) - 1) *  hopSize) samples
-{var sig = PlayBuf.ar(1,b.bufnum,loop:1); [FluidHPSS.ar(sig,17,31, winSize:1024,hopSize:512,fftSize:2048).sum - DelayN.ar(sig, 1, ((31 + 1) *  512 / s.sampleRate))]}.play
+// null test (the process add a latency of ((hFiltSize - 1) * hopSize) + winSize) samples
+	{var sig = PlayBuf.ar(1,b.bufnum,loop:1); [FluidHPSS.ar(sig, 17, 31).sum - DelayN.ar(sig, 1, ((((17 - 1) *  512) + 1024) / s.sampleRate))]}.play
 ::
