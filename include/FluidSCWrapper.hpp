@@ -33,22 +33,16 @@ struct FloatControlsIter
   
   float next()
   {
-    assert(mCount < mSize && "Boundary error fail horror");
-    float f =  *mValues[mCount++];
-    return f;
+    return mCount >= mSize ? 0 : *mValues[mCount++];
   }
-  
-//  float operator[](size_t i)
-//  {
-//    assert(i < mSize);
-//    return *mValues[i];
-//  }
-  
+
   void reset(float** vals)
   {
     mValues = vals;
     mCount = 0;
   }
+  
+  size_t size() const noexcept { return mSize; }
   
   private:
     float** mValues;
@@ -178,6 +172,17 @@ public:
   {
     assert(!(mClient.audioChannelsOut() > 0 && mClient.controlChannelsOut() > 0) && "Client can't have both audio and control outputs");
 
+    //If we don't the number of arguments we expect, the language side code is probably the wrong version
+    //set plugin to no-op, squawk, and bail;
+    if(mControlsIterator.size() != Wrapper::getParamDescriptors()->count())
+    {
+      mCalcFunc = Wrapper::getInterfaceTable()->fClearUnitOutputs;
+      std::cout << "ERROR: " << Wrapper::getName() <<
+            " wrong number of arguments. Expected " << Wrapper::getParamDescriptors()->count() <<
+            ", got " << mControlsIterator.size() << ". Your .sc file and binary plugin might be different versions." << std::endl;
+      return;
+    }
+    
     mInputConnections.reserve(mClient.audioChannelsIn());
     mOutputConnections.reserve(mClient.audioChannelsOut());
     mAudioInputs.reserve(mClient.audioChannelsIn());
@@ -251,14 +256,23 @@ public:
   static void launch(World *world, void *inUserData, struct sc_msg_iter *args, void *replyAddr)
   {
 
+    
+    if(args->tags && ((std::string{args->tags}.size() - 1) !=  Wrapper::getParamDescriptors()->count()))
+    {
+      std::cout << "ERROR: " << Wrapper::getName() <<
+            " wrong number of arguments. Expected " << Wrapper::getParamDescriptors()->count() <<
+            ", got " << (std::string{args->tags}.size() - 1) << ". Your .sc file and binary plugin might be different versions." << std::endl;
+      return;
+    }
   
     Wrapper *w = new Wrapper(world,args); //this has to be on the heap, because it doesn't get destoryed until the async command is done
+    
     int argsPosition = args->count;
     auto argsRdPos   = args->rdpos;
     Result result = validateParameters(w, world, args);
     if (!result.ok())
     {
-      std::cout << "FluCoMa Error " << Wrapper::getName() << ": " << result.message().c_str();
+      std::cout << "ERROR: " << Wrapper::getName() << ": " << result.message().c_str() << std::endl;
       delete w;
       return;
     }
@@ -308,7 +322,7 @@ private:
     
     if(!r.ok())
     {
-      std::cout << "FluCoMa Error " << Wrapper::getName() << ": " << r.message().c_str();
+      std::cout << "ERROR: " << Wrapper::getName() << ": " << r.message().c_str();
       return false; 
     }
     
@@ -436,7 +450,9 @@ public:
   template<typename ParameterSet>
   static auto& setParams(ParameterSet& p, bool verbose, World* world, impl::FloatControlsIter& inputs)
   {
-    p.template setParameterValues<impl::ControlGetter>(verbose, world, inputs);
+    //We won't even try and set params if the arguments don't match 
+    if(inputs.size() == getParamDescriptors()->count())
+      p.template setParameterValues<impl::ControlGetter>(verbose, world, inputs);
     return p;
   }
 
