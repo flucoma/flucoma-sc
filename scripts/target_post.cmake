@@ -11,23 +11,23 @@ target_include_directories(
   PRIVATE
   ${LOCAL_INCLUDES}
   SYSTEM PRIVATE
-  ${SC_PATH}/include/plugin_interface
-  ${SC_PATH}/include/common
-  ${SC_PATH}/common
-  ${SC_PATH}/external_libraries/boost #we need boost::align for deallocating buffer memory :-(
+  "${SC_PATH}/include/plugin_interface"
+  "${SC_PATH}/include/common"
+  "${SC_PATH}/common"
+  "${SC_PATH}/external_libraries/boost" #we need boost::align for deallocating buffer memory :-(
 )
 
 get_property(HEADERS TARGET FLUID_DECOMPOSITION PROPERTY INTERFACE_SOURCES)
-source_group(TREE ${FLUID_PATH}/include FILES ${HEADERS})
+source_group(TREE "${FLUID_PATH}/include" FILES ${HEADERS})
 
 
 if (SUPERNOVA)
     target_include_directories(
       ${PLUGIN}
       SYSTEM PRIVATE
-      ${SC_PATH}/external_libraries/nova-tt
-      ${SC_PATH}/external_libraries/boost_lockfree
-      ${SC_PATH}/external_libraries/boost-lockfree
+      "${SC_PATH}/external_libraries/nova-tt"
+      "${SC_PATH}/external_libraries/boost_lockfree"
+      "${SC_PATH}/external_libraries/boost-lockfree"
     )
 endif()
 
