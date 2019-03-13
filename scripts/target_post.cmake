@@ -81,6 +81,10 @@ if(MINGW)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mstackrealign")
 endif()
 
+if(MSVC)
+  target_compile_options(${PLUGIN} PRIVATE /arch:AVX -D_USE_MATH_DEFINES)
+endif()
+
 ####### added the fluid_decomposition
 
 if(SUPERNOVA)
