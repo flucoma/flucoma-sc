@@ -16,7 +16,7 @@
 namespace fluid {
 namespace client {
 
-template <typename Client, typename Params>
+template <typename Client>
 class FluidSCWrapper;
 
 namespace impl {
@@ -31,6 +31,7 @@ template <typename T>
 using msg_iter_method = T (sc_msg_iter::*)(T);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
 // Iterate over kr/ir inputs via callbacks from params object
 struct FloatControlsIter
 {
@@ -96,6 +97,7 @@ struct ControlGetter<N, FFTParamsT>
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
 /// Iterate over arguments in sc_msg_iter, via callbacks from params object
 
 template <size_t N, typename T, msg_iter_method<T> Method>
@@ -148,12 +150,15 @@ struct ArgumentGetter<N, FFTParamsT>
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
 // Real Time Processor
 
-template <typename Client, class Wrapper, class Params>
+template <typename Client, class Wrapper>
 class RealTime : public SCUnit
 {
   using HostVector = FluidTensorView<float, 1>;
+  using Params = typename Client::Params;
+    
   //  using Client     = typename Wrapper::ClientType;
 
 public:
@@ -173,11 +178,11 @@ public:
     std::cout << ss.str() << '\n';
     ft->fSendNodeReply(&unit->mParent->mNode, -1, ss.str().c_str(), 1, l);
   }
-
+    
   RealTime()
-      : mControlsIterator{mInBuf + mSpecialIndex + 1, mNumInputs - mSpecialIndex - 1}
-      , mParams{*Wrapper::getParamDescriptors()}
-      , mClient{Wrapper::setParams(mParams, mWorld->mVerbosity > 0, mWorld, mControlsIterator)}
+    : mControlsIterator{mInBuf + mSpecialIndex + 1,mNumInputs - mSpecialIndex - 1}
+    , mParams{Wrapper::Client::getParameterDescriptor()}
+    , mClient{Wrapper::setParams(mParams,mWorld->mVerbosity > 0, mWorld, mControlsIterator)}
   {}
 
   void init()
@@ -185,13 +190,13 @@ public:
     assert(!(mClient.audioChannelsOut() > 0 && mClient.controlChannelsOut() > 0) &&
            "Client can't have both audio and control outputs");
 
-    // If we don't the number of arguments we expect, the language side code is probably the wrong version
-    // set plugin to no-op, squawk, and bail;
-    if (mControlsIterator.size() != Wrapper::getParamDescriptors()->count())
+    //If we don't the number of arguments we expect, the language side code is probably the wrong version
+    //set plugin to no-op, squawk, and bail;
+    if(mControlsIterator.size() != Client::getParameterDescriptor().count())
     {
       mCalcFunc = Wrapper::getInterfaceTable()->fClearUnitOutputs;
       std::cout << "ERROR: " << Wrapper::getName() << " wrong number of arguments. Expected "
-                << Wrapper::getParamDescriptors()->count() << ", got " << mControlsIterator.size()
+                << Client::getParameterDescriptor().count() << ", got " << mControlsIterator.size()
                 << ". Your .sc file and binary plugin might be different versions." << std::endl;
       return;
     }
@@ -221,9 +226,8 @@ public:
 
   void next(int n)
   {
-    mControlsIterator.reset(mInBuf + 1); // mClient.audioChannelsIn());
-    Wrapper::setParams(mParams, mWorld->mVerbosity > 0, mWorld,
-                       mControlsIterator); // forward on inputs N + audio inputs as params
+    mControlsIterator.reset(mInBuf + 1); //mClient.audioChannelsIn());
+    Wrapper::setParams(mParams, mWorld->mVerbosity > 0, mWorld, mControlsIterator); // forward on inputs N + audio inputs as params
     const Unit *unit = this;
     for (int i = 0; i < mClient.audioChannelsIn(); ++i)
     {
@@ -250,10 +254,14 @@ protected:
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 /// Non Real Time Processor
-template <typename Client, typename Wrapper, typename Params>
+
+template <typename Client, typename Wrapper>
 class NonRealTime
 {
+  using Params = typename Client::Params;
+
 public:
   static void setup(InterfaceTable *ft, const char *name) { DefinePlugInCmd(name, launch, nullptr); }
 
@@ -369,63 +377,63 @@ private:
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
 /// An impossible monstrosty
-template <typename Client, typename Wrapper, typename Params>
-class NonRealTimeAndRealTime : public RealTime<Client, Wrapper, Params>, public NonRealTime<Client, Wrapper, Params>
+template <typename Client, typename Wrapper>
+class NonRealTimeAndRealTime : public RealTime<Client, Wrapper>, public NonRealTime<Client, Wrapper>
 {
   static void setup(InterfaceTable *ft, const char *name)
   {
-    RealTime<Client, Wrapper, Params>::setup(ft, name);
-    NonRealTime<Client, Wrapper, Params>::setup(ft, name);
+    RealTime<Client,Wrapper>::setup(ft, name);
+    NonRealTime<Client,Wrapper>::setup(ft, name);
   }
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
 // Template Specialisations for NRT/RT
 
-template <typename Client, typename Wrapper, typename Params, typename NRT, typename RT>
+template <typename Client, typename Wrapper, typename NRT, typename RT>
 class FluidSCWrapperImpl;
 
-template <typename Client, typename Wrapper, typename Params>
-class FluidSCWrapperImpl<Client, Wrapper, Params, std::true_type, std::false_type>
-    : public NonRealTime<Client, Wrapper, Params>
+template <typename Client, typename Wrapper>
+class FluidSCWrapperImpl<Client, Wrapper, std::true_type, std::false_type>
+    : public NonRealTime<Client, Wrapper>
 {
 public:
-  FluidSCWrapperImpl(World *w, sc_msg_iter *args)
-      : NonRealTime<Client, Wrapper, Params>(w, args){};
+  FluidSCWrapperImpl(World* w, sc_msg_iter *args): NonRealTime<Client, Wrapper>(w,args){};
 };
 
-template <typename Client, typename Wrapper, typename Params>
-class FluidSCWrapperImpl<Client, Wrapper, Params, std::false_type, std::true_type> : public RealTime<Client, Wrapper, Params>
+template <typename Client, typename Wrapper>
+class FluidSCWrapperImpl<Client, Wrapper, std::false_type, std::true_type> : public RealTime<Client, Wrapper>
 {};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      
 // Make base class(es), full of CRTP mixin goodness
-template <typename Client, typename Params>
-using FluidSCWrapperBase =
-    FluidSCWrapperImpl<Client, FluidSCWrapper<Client, Params>, Params, isNonRealTime<Client>, isRealTime<Client>>;
+template <typename Client>
+using FluidSCWrapperBase = FluidSCWrapperImpl<Client, FluidSCWrapper<Client>, isNonRealTime<Client>, isRealTime<Client>>;
 
 } // namespace impl
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// The main wrapper
-template <typename C, typename P>
-class FluidSCWrapper : public impl::FluidSCWrapperBase<C, P>
-{
 
+///The main wrapper
+template <typename C>
+class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
+{
 public:
   using Client = C;
-  using Params = P;
+  using ParameterSetType = ParameterSet<typename C::Params>;
 
   FluidSCWrapper() // mParams{*getParamDescriptors()}, //impl::FluidSCWrapperBase<Client,Params>()
   {
-    impl::FluidSCWrapperBase<Client, Params>::init();
+    impl::FluidSCWrapperBase<Client>::init();
   }
 
-  FluidSCWrapper(World *w, sc_msg_iter *args)
-      : impl::FluidSCWrapperBase<Client, Params>(w, args)
+  FluidSCWrapper(World* w, sc_msg_iter *args): impl::FluidSCWrapperBase<Client>(w,args)
   {
-    impl::FluidSCWrapperBase<Client, Params>::init();
+    impl::FluidSCWrapperBase<Client>::init();
   }
 
   static const char *getName(const char *setName = nullptr)
@@ -434,47 +442,38 @@ public:
     return (name = setName ? setName : name);
   }
 
-  static Params *getParamDescriptors(Params *setParams = nullptr)
-  {
-    static Params *descriptors = nullptr;
-    return (descriptors = setParams ? setParams : descriptors);
-  }
-
   static InterfaceTable *getInterfaceTable(InterfaceTable *setTable = nullptr)
   {
     static InterfaceTable *ft = nullptr;
     return (ft = setTable ? setTable : ft);
   }
 
-  static void setup(Params &p, InterfaceTable *ft, const char *name)
+  static void setup(InterfaceTable *ft, const char *name)
   {
     getName(name);
     getInterfaceTable(ft);
-    getParamDescriptors(&p);
-    impl::FluidSCWrapperBase<Client, Params>::setup(ft, name);
+    impl::FluidSCWrapperBase<Client>::setup(ft, name);
   }
 
-  template <typename ParameterSet>
-  static auto &setParams(ParameterSet &p, bool verbose, World *world, impl::FloatControlsIter &inputs)
+  static auto& setParams(ParameterSetType& p, bool verbose, World* world, impl::FloatControlsIter& inputs)
   {
-    // We won't even try and set params if the arguments don't match
-    if (inputs.size() == getParamDescriptors()->count())
-      p.template setParameterValues<impl::ControlGetter>(verbose, world, inputs);
+    //We won't even try and set params if the arguments don't match 
+    if(inputs.size() == C::getParameterDescriptor().count())
+        p.template setParameterValues<impl::ControlGetter>(verbose, world, inputs);
     return p;
   }
 
-  template <typename ParameterSet>
-  static auto &setParams(ParameterSet &p, bool verbose, World *world, sc_msg_iter *args)
+  static auto& setParams(ParameterSetType& p, bool verbose, World* world, sc_msg_iter *args)
   {
-    p.template setParameterValues<impl::ArgumentGetter>(verbose, world, args);
-    return p;
+      p.template setParameterValues<impl::ArgumentGetter>(verbose,world, args);
+     return p;
   }
 };
 
-template <template <typename...> class Client, typename... Rest, typename Params>
-void makeSCWrapper(const char *name, Params &params, InterfaceTable *ft)
+template <class Client>
+void makeSCWrapper(const char *name, InterfaceTable *ft)
 {
-  FluidSCWrapper<Client<ParameterSet<Params>, Rest...>, Params>::setup(params, ft, name);
+  FluidSCWrapper<Client>::setup(ft, name);
 }
 
 } // namespace client

@@ -9,5 +9,5 @@ static InterfaceTable *ft;
 PluginLoad(FluidSTFTUGen) {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<TransientClient, double, float>("FluidTransients", TransientParams, ft);
+  makeSCWrapper<TransientClient<float>>("FluidTransients", ft);
 }
