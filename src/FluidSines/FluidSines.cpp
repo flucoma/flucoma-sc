@@ -6,9 +6,9 @@
 
 static InterfaceTable *ft;
 
-PluginLoad(FluidSTFTUGen) {
+PluginLoad(FluidSTFTUGen)
+{
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<SinesClient<float>>("FluidSines", ft);
+  makeSCWrapper<SinesClient>("FluidSines", ft);
 }
-

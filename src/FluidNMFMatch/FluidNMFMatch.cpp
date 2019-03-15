@@ -6,12 +6,9 @@
 
 static InterfaceTable *ft;
 
-PluginLoad(FluidSTFTUGen) {
+PluginLoad(FluidSTFTUGen)
+{
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<NMFMatch<float>>("FluidNMFMatch", ft);
+  makeSCWrapper<NMFMatch>("FluidNMFMatch", ft);
 }
-
-
-
-

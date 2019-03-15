@@ -260,13 +260,13 @@ protected:
 template <typename Client, typename Wrapper>
 class NonRealTime
 {
-  using Params = typename Client::Params;
+  using ParamSetType = typename Client::ParamSetType;
 
 public:
   static void setup(InterfaceTable *ft, const char *name) { DefinePlugInCmd(name, launch, nullptr); }
 
   NonRealTime(World *world, sc_msg_iter *args)
-      : mParams{*Wrapper::getParamDescriptors()}
+      : mParams{Client::getParameterDescriptor()}
       , mClient{mParams}
   {}
 
@@ -275,10 +275,10 @@ public:
   static void launch(World *world, void *inUserData, struct sc_msg_iter *args, void *replyAddr)
   {
 
-    if (args->tags && ((std::string{args->tags}.size() - 1) != Wrapper::getParamDescriptors()->count()))
+    if (args->tags && ((std::string{args->tags}.size() - 1) != Client::getParameterDescriptor().count()))
     {
       std::cout << "ERROR: " << Wrapper::getName() << " wrong number of arguments. Expected "
-                << Wrapper::getParamDescriptors()->count() << ", got " << (std::string{args->tags}.size() - 1)
+                << Client::getParameterDescriptor().count() << ", got " << (std::string{args->tags}.size() - 1)
                 << ". Your .sc file and binary plugin might be different versions." << std::endl;
       return;
     }
@@ -314,8 +314,8 @@ public:
   static void destroy(World *world, void *data) { delete static_cast<Wrapper *>(data); }
 
 protected:
-  ParameterSet<Params> mParams;
-  Client               mClient;
+  ParamSetType  mParams;
+  Client        mClient;
 
 private:
   static Result validateParameters(NonRealTime *w, World *world, sc_msg_iter *args)
@@ -470,10 +470,10 @@ public:
   }
 };
 
-template <class Client>
+template <template<typename T> class Client>
 void makeSCWrapper(const char *name, InterfaceTable *ft)
 {
-  FluidSCWrapper<Client>::setup(ft, name);
+  FluidSCWrapper<Client<float>>::setup(ft, name);
 }
 
 } // namespace client

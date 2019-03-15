@@ -7,9 +7,10 @@
 
 static InterfaceTable *ft;
 
-PluginLoad(OfflineFluidDecompositionUGens) {
+PluginLoad(OfflineFluidDecompositionUGens)
+{
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<NRTSines,double,float>("BufSines",NRTSineParams,ft);
+  makeSCWrapper<NRTSines>("BufSines", ft);
   
 }

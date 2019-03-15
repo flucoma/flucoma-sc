@@ -6,8 +6,9 @@
 
 static InterfaceTable *ft;
 
-PluginLoad(FluidGainUgen) {
+PluginLoad(FluidGainUgen)
+{
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<GainClient<float>>("FluidGain", ft);
+  makeSCWrapper<GainClient>("FluidGain", ft);
 }
