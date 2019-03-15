@@ -9,7 +9,7 @@ static InterfaceTable *ft;
 PluginLoad(FluidSTFTUGen) {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<NMFMatch,double, float>("FluidNMFMatch",NMFMatchParams,ft);
+  makeSCWrapper<NMFMatch<float>>("FluidNMFMatch", ft);
 }
 
 
