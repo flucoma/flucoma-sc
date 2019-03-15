@@ -157,7 +157,7 @@ template <typename Client, class Wrapper>
 class RealTime : public SCUnit
 {
   using HostVector = FluidTensorView<float, 1>;
-  using Params = typename Client::Params;
+  using ParamSetType = typename Client::ParamSetType;
     
   //  using Client     = typename Wrapper::ClientType;
 
@@ -249,8 +249,8 @@ private:
   FloatControlsIter       mControlsIterator;
 
 protected:
-  ParameterSet<Params> mParams;
-  Client               mClient;
+  ParamSetType  mParams;
+  Client        mClient;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -424,7 +424,7 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
 {
 public:
   using Client = C;
-  using ParameterSetType = ParameterSet<typename C::Params>;
+  using ParameterSetType = typename C::ParamSetType;
 
   FluidSCWrapper() // mParams{*getParamDescriptors()}, //impl::FluidSCWrapperBase<Client,Params>()
   {
