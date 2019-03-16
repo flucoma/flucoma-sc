@@ -83,7 +83,7 @@ struct ControlGetter<N, FloatPairsArrayT>
 {
   typename FloatPairsArrayT::type operator()(World *, FloatControlsIter &iter)
   {
-    return {{iter.next(), iter.next()}, {iter.next(), iter.next()}};
+    return {std::array<std::pair<double,double>,2>{{{iter.next(), iter.next()}, {iter.next(), iter.next()}}}};
   }
 };
 
@@ -139,7 +139,7 @@ struct ArgumentGetter<N, FloatPairsArrayT>
 {
   typename FloatPairsArrayT::type operator()(World *w, sc_msg_iter *args)
   {
-    return {{args->getf(), args->getf()}, {args->getf(), args->getf()}};
+    return {std::array<std::pair<double,double>,2>{{{args->getf(), args->getf()}, {args->getf(), args->getf()}}}};
   }
 };
 
