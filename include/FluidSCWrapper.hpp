@@ -284,7 +284,7 @@ public:
     }
 
     Wrapper *w = new Wrapper(
-        world, args); // this has to be on the heap, because it doesn't get destoryed until the async command is done
+        world, args); // this has to be on the heap, because it doesn't get destroyed until the async command is done
 
     int    argsPosition = args->count;
     auto   argsRdPos    = args->rdpos;
