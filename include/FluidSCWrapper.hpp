@@ -356,7 +356,7 @@ private:
   template <size_t N, typename T>
   struct AssignBuffer
   {
-    void operator()(typename BufferT::type &p, World *w)
+    void operator()(const typename BufferT::type &p, World *w)
     {
       if (auto b = static_cast<SCBufferAdaptor *>(p.get())) b->assignToRT(w);
     }
@@ -365,7 +365,7 @@ private:
   template <size_t N, typename T>
   struct CleanUpBuffer
   {
-    void operator()(typename BufferT::type &p)
+    void operator()(const typename BufferT::type &p)
     {
       if (auto b = static_cast<SCBufferAdaptor *>(p.get())) b->cleanUp();
     }
