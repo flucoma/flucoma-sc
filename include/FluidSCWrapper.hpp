@@ -74,7 +74,7 @@ struct ControlGetter<N, BufferT>
   auto operator()(World *w, FloatControlsIter &iter)
   {
     typename LongT::type bufnum = iter.next();
-    return std::unique_ptr<BufferAdaptor>(bufnum >= 0 ? new SCBufferAdaptor(bufnum, w) : nullptr);
+    return typename BufferT::type(bufnum >= 0 ? new SCBufferAdaptor(bufnum, w) : nullptr);
   }
 };
 
@@ -130,7 +130,7 @@ struct ArgumentGetter<N, BufferT>
   auto operator()(World *w, sc_msg_iter *args)
   {
     typename LongT::type bufnum = args->geti(-1);
-    return std::unique_ptr<BufferAdaptor>(bufnum >= 0 ? new SCBufferAdaptor(bufnum, w) : nullptr);
+    return typename BufferT::type(bufnum >= 0 ? new SCBufferAdaptor(bufnum, w) : nullptr);
   }
 };
 
