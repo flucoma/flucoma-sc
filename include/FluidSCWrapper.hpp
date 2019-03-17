@@ -286,19 +286,16 @@ public:
     Wrapper *w = new Wrapper(
         world, args); // this has to be on the heap, because it doesn't get destroyed until the async command is done
 
-    int    argsPosition = args->count;
-    auto   argsRdPos    = args->rdpos;
-    Result result       = validateParameters(w, world, args);
-    if (!result.ok())
-    {
-      std::cout << "ERROR: " << Wrapper::getName() << ": " << result.message().c_str() << std::endl;
-      delete w;
-      return;
-    }
-    args->count = argsPosition;
-    args->rdpos = argsRdPos;
     Wrapper::setParams(w->mParams, false, world, args);
 
+    Result result = validateParameters(w);
+    if (!result.ok())
+    {
+        std::cout << "ERROR: " << Wrapper::getName() << ": " << result.message().c_str() << std::endl;
+        delete w;
+          return;
+    }
+    
     size_t            msgSize = args->getbsize();
     std::vector<char> completionMessage(msgSize);
     //    char * completionMsgData = 0;
@@ -318,9 +315,10 @@ protected:
   Client        mClient;
 
 private:
-  static Result validateParameters(NonRealTime *w, World *world, sc_msg_iter *args)
+    
+  static Result validateParameters(NonRealTime *w)
   {
-    auto results = w->mParams.template checkParameterValues();//<ArgumentGetter>(world, args);
+    auto results = w->mParams.template checkParameterValues();
     for (auto &r : results)
     {
       if (!r.ok()) return r;
