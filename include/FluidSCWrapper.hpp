@@ -320,7 +320,7 @@ protected:
 private:
   static Result validateParameters(NonRealTime *w, World *world, sc_msg_iter *args)
   {
-    auto results = w->mParams.template checkParameterValues<ArgumentGetter>(world, args);
+    auto results = w->mParams.template checkParameterValues();//<ArgumentGetter>(world, args);
     for (auto &r : results)
     {
       if (!r.ok()) return r;
