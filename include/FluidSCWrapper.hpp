@@ -318,7 +318,7 @@ private:
     
   static Result validateParameters(NonRealTime *w)
   {
-    auto results = w->mParams.template checkParameterValues();
+    auto results = w->mParams.template constrainParameterValues();
     for (auto &r : results)
     {
       if (!r.ok()) return r;
