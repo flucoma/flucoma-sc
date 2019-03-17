@@ -181,7 +181,7 @@ public:
     
   RealTime()
     : mControlsIterator{mInBuf + mSpecialIndex + 1,mNumInputs - mSpecialIndex - 1}
-    , mParams{Wrapper::Client::getParameterDescriptor()}
+    , mParams{Wrapper::Client::getParameterDescriptors()}
     , mClient{Wrapper::setParams(mParams,mWorld->mVerbosity > 0, mWorld, mControlsIterator)}
   {}
 
@@ -192,11 +192,11 @@ public:
 
     //If we don't the number of arguments we expect, the language side code is probably the wrong version
     //set plugin to no-op, squawk, and bail;
-    if(mControlsIterator.size() != Client::getParameterDescriptor().count())
+    if(mControlsIterator.size() != Client::getParameterDescriptors().count())
     {
       mCalcFunc = Wrapper::getInterfaceTable()->fClearUnitOutputs;
       std::cout << "ERROR: " << Wrapper::getName() << " wrong number of arguments. Expected "
-                << Client::getParameterDescriptor().count() << ", got " << mControlsIterator.size()
+                << Client::getParameterDescriptors().count() << ", got " << mControlsIterator.size()
                 << ". Your .sc file and binary plugin might be different versions." << std::endl;
       return;
     }
@@ -266,7 +266,7 @@ public:
   static void setup(InterfaceTable *ft, const char *name) { DefinePlugInCmd(name, launch, nullptr); }
 
   NonRealTime(World *world, sc_msg_iter *args)
-      : mParams{Client::getParameterDescriptor()}
+      : mParams{Client::getParameterDescriptors()}
       , mClient{mParams}
   {}
 
@@ -275,10 +275,10 @@ public:
   static void launch(World *world, void *inUserData, struct sc_msg_iter *args, void *replyAddr)
   {
 
-    if (args->tags && ((std::string{args->tags}.size() - 1) != Client::getParameterDescriptor().count()))
+    if (args->tags && ((std::string{args->tags}.size() - 1) != Client::getParameterDescriptors().count()))
     {
       std::cout << "ERROR: " << Wrapper::getName() << " wrong number of arguments. Expected "
-                << Client::getParameterDescriptor().count() << ", got " << (std::string{args->tags}.size() - 1)
+                << Client::getParameterDescriptors().count() << ", got " << (std::string{args->tags}.size() - 1)
                 << ". Your .sc file and binary plugin might be different versions." << std::endl;
       return;
     }
@@ -458,7 +458,7 @@ public:
   static auto& setParams(ParameterSetType& p, bool verbose, World* world, impl::FloatControlsIter& inputs)
   {
     //We won't even try and set params if the arguments don't match 
-    if(inputs.size() == C::getParameterDescriptor().count())
+    if(inputs.size() == C::getParameterDescriptors().count())
         p.template setParameterValues<impl::ControlGetter>(verbose, world, inputs);
     return p;
   }
