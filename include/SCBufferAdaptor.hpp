@@ -93,7 +93,7 @@ public:
   }
 
   // No locks in (vanilla) SC, so no-ops for these
-  void acquire() override {}
+  bool acquire() override { return true; }
   void release() override {}
 
   // Validity is based on whether this buffer is within the range the server
@@ -153,12 +153,6 @@ public:
   void realTime(bool rt) { mRealTime = rt;  }
 
 protected:
-  bool equal(BufferAdaptor *rhs) const override
-  {
-    SCBufferAdaptor *x = dynamic_cast<SCBufferAdaptor *>(rhs);
-    if (x) { return mBufnum == x->mBufnum; }
-    return false;
-  }
 
   bool  mRealTime{false};
   float *mOldData{0};
