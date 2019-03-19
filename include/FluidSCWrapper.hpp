@@ -8,6 +8,7 @@
 
 #include <SC_PlugIn.hpp>
 
+#include <array>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -21,132 +22,28 @@ class FluidSCWrapper;
 
 namespace impl {
 
-template <typename Client, typename T, size_t N>
-struct Setter;
-template <size_t N, typename T>
-struct ArgumentGetter;
-template <size_t N, typename T>
-struct ControlGetter;
-template <typename T>
-using msg_iter_method = T (sc_msg_iter::*)(T);
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
 // Iterate over kr/ir inputs via callbacks from params object
 struct FloatControlsIter
 {
   FloatControlsIter(float **vals, size_t N)
-      : mValues(vals)
-      , mSize(N)
+  : mValues(vals)
+  , mSize(N)
   {}
-
+    
   float next() { return mCount >= mSize ? 0 : *mValues[mCount++]; }
-
+    
   void reset(float **vals)
   {
     mValues = vals;
     mCount  = 0;
   }
-
+    
   size_t size() const noexcept { return mSize; }
-
+    
 private:
   float **mValues;
   size_t  mSize;
   size_t  mCount{0};
-};
-
-// General case
-template <size_t N, typename T>
-struct GetControl
-{
-  T operator()(World *, FloatControlsIter &controls) { return controls.next(); }
-};
-
-template <size_t N, typename T>
-struct ControlGetter : public GetControl<N, typename T::type>
-{};
-
-// Specializations
-template <size_t N>
-struct ControlGetter<N, BufferT>
-{
-  auto operator()(World *w, FloatControlsIter &iter)
-  {
-    typename LongT::type bufnum = iter.next();
-    return typename BufferT::type(bufnum >= 0 ? new SCBufferAdaptor(bufnum, w) : nullptr);
-  }
-};
-
-template <size_t N>
-struct ControlGetter<N, FloatPairsArrayT>
-{
-  typename FloatPairsArrayT::type operator()(World *, FloatControlsIter &iter)
-  {
-    return {iter.next(), iter.next(),iter.next(), iter.next()};
-  }
-};
-
-template <size_t N>
-struct ControlGetter<N, FFTParamsT>
-{
-  typename FFTParamsT::type operator()(World *, FloatControlsIter &iter)
-  {
-    return {static_cast<long>(iter.next()), static_cast<long>(iter.next()), static_cast<long>(iter.next())};
-  }
-};
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
-/// Iterate over arguments in sc_msg_iter, via callbacks from params object
-
-template <size_t N, typename T, msg_iter_method<T> Method>
-struct GetArgument
-{
-  T operator()(World *w, sc_msg_iter *args)
-  {
-    T r = (args->*Method)(T{0});
-    return r;
-  }
-};
-
-// General cases
-template <size_t N>
-struct ArgumentGetter<N, FloatT> : public GetArgument<N, float, &sc_msg_iter::getf>
-{};
-
-template <size_t N>
-struct ArgumentGetter<N, LongT> : public GetArgument<N, int32, &sc_msg_iter::geti>
-{};
-
-template <size_t N>
-struct ArgumentGetter<N, EnumT> : public GetArgument<N, int32, &sc_msg_iter::geti>
-{};
-
-// Specializations
-template <size_t N>
-struct ArgumentGetter<N, BufferT>
-{
-  auto operator()(World *w, sc_msg_iter *args)
-  {
-    typename LongT::type bufnum = args->geti(-1);
-    return typename BufferT::type(bufnum >= 0 ? new SCBufferAdaptor(bufnum, w) : nullptr);
-  }
-};
-
-template <size_t N>
-struct ArgumentGetter<N, FloatPairsArrayT>
-{
-  typename FloatPairsArrayT::type operator()(World *w, sc_msg_iter *args)
-  {
-    return {args->getf(), args->getf(),args->getf(), args->getf()};
-  }
-};
-
-template <size_t N>
-struct ArgumentGetter<N, FFTParamsT>
-{
-  typename FFTParamsT::type operator()(World *w, sc_msg_iter *args) { return {args->geti(), args->geti(), args->geti()}; }
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -421,6 +318,53 @@ using FluidSCWrapperBase = FluidSCWrapperImpl<Client, FluidSCWrapper<Client>, is
 template <typename C>
 class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
 {
+  using FloatControlsIter = impl::FloatControlsIter;
+  
+  // Iterate over arguments in sc_msg_iter, via callbacks from params object
+  
+  template <typename ArgType, size_t N, typename T>
+  struct Setter
+  {
+    static constexpr size_t argSize = C::getParameterDescriptors().template get<N>().fixedSize;
+    using ArrayType = std::array<ParamLiteralType<T>, argSize>;
+
+    auto fromArgs(World *w, FloatControlsIter& args, LongT::type) { return args.next(); }
+    auto fromArgs(World *w, FloatControlsIter& args, FloatT::type) { return args.next(); }
+    auto fromArgs(World *w, sc_msg_iter* args, LongT::type) { return args->geti(); }
+    auto fromArgs(World *w, sc_msg_iter* args, FloatT::type) { return args->getf(); }
+    
+    auto fromArgs(World *w, sc_msg_iter* args) { return args->geti(-1); }
+    auto fromArgs(World *w, FloatControlsIter& args) { return args.next(); }
+
+    auto fromArgs(World *w, ArgType args, BufferT::type)
+    {
+      typename LongT::type bufnum = fromArgs(w, args);
+      return BufferT::type(bufnum >= 0 ? new SCBufferAdaptor(bufnum, w) : nullptr);
+    }
+    
+    template <size_t... Is>
+    static typename T::type makeVal(ArrayType &a, std::index_sequence<Is...>)
+    {
+      return typename T::type{a[Is]...};
+    }
+    
+    typename T::type operator()(World *w, ArgType args)
+    {
+      ArrayType a;
+      
+      for (auto i = 0; i < argSize; i++)
+        a[i] = fromArgs(w, args, a[0]);
+      
+      return makeVal(a, std::make_index_sequence<argSize>());
+    }
+  };
+  
+  template <size_t N, typename T>
+  using ArgumentSetter = Setter<sc_msg_iter*, N, T>;
+  
+  template <size_t N, typename T>
+  using ControlSetter = Setter<FloatControlsIter&, N, T>;
+  
 public:
   using Client = C;
   using ParameterSetType = typename C::ParamSetType;
@@ -454,17 +398,17 @@ public:
     impl::FluidSCWrapperBase<Client>::setup(ft, name);
   }
 
-  static auto& setParams(ParameterSetType& p, bool verbose, World* world, impl::FloatControlsIter& inputs)
+  static auto& setParams(ParameterSetType& p, bool verbose, World* world, FloatControlsIter& inputs)
   {
     //We won't even try and set params if the arguments don't match 
     if(inputs.size() == C::getParameterDescriptors().count())
-        p.template setParameterValues<impl::ControlGetter>(verbose, world, inputs);
+        p.template setParameterValues<ControlSetter>(verbose, world, inputs);
     return p;
   }
 
   static auto& setParams(ParameterSetType& p, bool verbose, World* world, sc_msg_iter *args)
   {
-      p.template setParameterValues<impl::ArgumentGetter>(verbose,world, args);
+      p.template setParameterValues<ArgumentSetter>(verbose,world, args);
      return p;
   }
 };
@@ -477,4 +421,3 @@ void makeSCWrapper(const char *name, InterfaceTable *ft)
 
 } // namespace client
 } // namespace fluid
-
