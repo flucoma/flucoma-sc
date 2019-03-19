@@ -8,6 +8,7 @@
 
 #include <SC_PlugIn.hpp>
 
+#include <array>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -321,8 +322,11 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
   // Iterate over arguments in sc_msg_iter, via callbacks from params object
   
   template <typename ArgType, size_t N, typename T>
-  struct GetArgument
+  struct Setter
   {
+    static constexpr size_t argSize = C::getParameterDescriptors().template get<N>().fixedSize;
+    using ArrayType = std::array<ParamLiteralType<T>, argSize>;
+
     auto fromArgs(World *w, FloatControlsIter& args, LongT::type) { return args.next(); }
     auto fromArgs(World *w, FloatControlsIter& args, FloatT::type) { return args.next(); }
     auto fromArgs(World *w, sc_msg_iter* args, LongT::type) { return args->geti(); }
@@ -338,29 +342,27 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
     }
     
     template <size_t... Is>
-    static typename T::type makeVal(std::vector<ParamLiteralType<T>> &v, std::index_sequence<Is...>)
+    static typename T::type makeVal(ArrayType &a, std::index_sequence<Is...>)
     {
-      return typename T::type{v[Is]...};
+      return typename T::type{a[Is]...};
     }
     
     typename T::type operator()(World *w, ArgType args)
     {
-      constexpr size_t argSize = Client::getParameterDescriptors().template get<N>().fixedSize;
-      
-      std::vector<ParamLiteralType<T>> v;
+      ArrayType a;
       
       for (auto i = 0; i < argSize; i++)
-        v.push_back(fromArgs(w, args, ParamLiteralType<T>()));
+        a[i] = fromArgs(w, args, a[0]);
       
-      return makeVal(v,  std::make_index_sequence<argSize>());
+      return makeVal(a, std::make_index_sequence<argSize>());
     }
   };
   
   template <size_t N, typename T>
-  using ArgumentGetter = GetArgument<sc_msg_iter*, N, T>;
+  using ArgumentSetter = Setter<sc_msg_iter*, N, T>;
   
   template <size_t N, typename T>
-  using ControlGetter = GetArgument<FloatControlsIter&, N, T>;
+  using ControlSetter = Setter<FloatControlsIter&, N, T>;
   
 public:
   using Client = C;
@@ -399,13 +401,13 @@ public:
   {
     //We won't even try and set params if the arguments don't match 
     if(inputs.size() == C::getParameterDescriptors().count())
-        p.template setParameterValues<ControlGetter>(verbose, world, inputs);
+        p.template setParameterValues<ControlSetter>(verbose, world, inputs);
     return p;
   }
 
   static auto& setParams(ParameterSetType& p, bool verbose, World* world, sc_msg_iter *args)
   {
-      p.template setParameterValues<ArgumentGetter>(verbose,world, args);
+      p.template setParameterValues<ArgumentSetter>(verbose,world, args);
      return p;
   }
 };
