@@ -125,6 +125,7 @@ public:
   {
     mControlsIterator.reset(mInBuf + 1); //mClient.audioChannelsIn());
     Wrapper::setParams(mParams, mWorld->mVerbosity > 0, mWorld, mControlsIterator); // forward on inputs N + audio inputs as params
+    mParams.template constrainParameterValues(); 
     const Unit *unit = this;
     for (int i = 0; i < mClient.audioChannelsIn(); ++i)
     {
