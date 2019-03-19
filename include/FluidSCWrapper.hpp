@@ -343,7 +343,7 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
     
     typename T::type operator()(World *w, ArgType args)
     {
-      ParamArraySetter<T, argSize> a;
+      ParamLiteralConvertor<T, argSize> a;
       
       for (auto i = 0; i < argSize; i++)
         a[i] = fromArgs(w, args, a[0]);
