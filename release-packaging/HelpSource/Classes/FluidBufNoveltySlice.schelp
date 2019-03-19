@@ -105,7 +105,7 @@ c = Buffer.new(s);
 )
 
 // process with a given filterSize
-FluidBufNoveltySlice.process(s,b.bufnum, indBufNum: c.bufnum, kernSize:31, thresh:0.35, filtSize:1)
+FluidBufNoveltySlice.process(s,b.bufnum, indBufNum: c.bufnum, kernSize:31, thresh:0.3, filtSize:0)
 
 //check the number of slices: it is the number of frames in the transBuf minus the boundary index.
 c.query;
