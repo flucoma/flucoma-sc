@@ -325,8 +325,7 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
   struct Setter
   {
     static constexpr size_t argSize = C::getParameterDescriptors().template get<N>().fixedSize;
-    using ArrayType = std::array<ParamLiteralType<T>, argSize>;
-
+    
     auto fromArgs(World *w, FloatControlsIter& args, LongT::type) { return args.next(); }
     auto fromArgs(World *w, FloatControlsIter& args, FloatT::type) { return args.next(); }
     auto fromArgs(World *w, sc_msg_iter* args, LongT::type) { return args->geti(); }
@@ -341,20 +340,14 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
       return BufferT::type(bufnum >= 0 ? new SCBufferAdaptor(bufnum, w) : nullptr);
     }
     
-    template <size_t... Is>
-    static typename T::type makeVal(ArrayType &a, std::index_sequence<Is...>)
-    {
-      return typename T::type{a[Is]...};
-    }
-    
     typename T::type operator()(World *w, ArgType args)
     {
-      ArrayType a;
+      ParamArraySetter<T, argSize> a;
       
       for (auto i = 0; i < argSize; i++)
         a[i] = fromArgs(w, args, a[0]);
       
-      return makeVal(a, std::make_index_sequence<argSize>());
+      return a.value();
     }
   };
   
