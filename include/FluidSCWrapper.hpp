@@ -326,17 +326,14 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
   {
     static constexpr size_t argSize = C::getParameterDescriptors().template get<N>().fixedSize;
     
-    auto fromArgs(World *w, FloatControlsIter& args, LongT::type) { return args.next(); }
-    auto fromArgs(World *w, FloatControlsIter& args, FloatT::type) { return args.next(); }
-    auto fromArgs(World *w, sc_msg_iter* args, LongT::type) { return args->geti(); }
-    auto fromArgs(World *w, sc_msg_iter* args, FloatT::type) { return args->getf(); }
-    
-    auto fromArgs(World *w, sc_msg_iter* args) { return args->geti(-1); }
-    auto fromArgs(World *w, FloatControlsIter& args) { return args.next(); }
+    auto fromArgs(World *w, FloatControlsIter& args, LongT::type, int) { return args.next(); }
+    auto fromArgs(World *w, FloatControlsIter& args, FloatT::type, int) { return args.next(); }
+    auto fromArgs(World *w, sc_msg_iter* args, LongT::type, int defVal) { return args->geti(defVal); }
+    auto fromArgs(World *w, sc_msg_iter* args, FloatT::type, int) { return args->getf(); }
 
-    auto fromArgs(World *w, ArgType args, BufferT::type)
+    auto fromArgs(World *w, ArgType args, BufferT::type, int)
     {
-      typename LongT::type bufnum = fromArgs(w, args);
+      typename LongT::type bufnum = fromArgs(w, args, LongT::type(), -1);
       return BufferT::type(bufnum >= 0 ? new SCBufferAdaptor(bufnum, w) : nullptr);
     }
     
@@ -345,7 +342,7 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
       ParamLiteralConvertor<T, argSize> a;
       
       for (auto i = 0; i < argSize; i++)
-        a[i] = fromArgs(w, args, a[0]);
+        a[i] = fromArgs(w, args, a[0], 0);
       
       return a.value();
     }
