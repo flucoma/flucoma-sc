@@ -1,5 +1,5 @@
 FluidOnsetSlice : UGen {
-	*ar { arg in = 0, function = 0, threshold = 0.1, debounce = 2, filterSize = 5, frameDelta = 0, winSize = 1024, hopSize = 256, fftSize = 1024, maFFTSize = 16384;
-		^this.multiNew('audio', in.asAudioRateInput(this), function, threshold, debounce, filterSize, frameDelta, winSize, hopSize, fftSize, maFFTSize)
+	*ar { arg in = 0, function = 0, thresh = 0.5, debounce = 2, filtSize = 5, frameDelta = 0, winSize = 1024, hopSize = -1, fftSize = -1, maxFFTSize = 16384;
+		^this.multiNew('audio', in.asAudioRateInput(this), function, thresh, debounce, filtSize, winSize, hopSize, frameDelta, fftSize, maxFFTSize)
 	}
 }
