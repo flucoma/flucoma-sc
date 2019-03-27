@@ -1,0 +1,48 @@
+TITLE:: FluidSpectralShape
+SUMMARY:: Seven Spectral Shape Descriptors in Real-Time
+CATEGORIES:: Libraries>FluidDecomposition
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
+
+DESCRIPTION::
+This class implements seven of the most popular spectral shape descriptors, computed on a linear scale for both amplitude and frequency. It is part of the Fluid Decomposition Toolkit of the FluCoMa project. FOOTNOTE::This was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899). ::
+
+The descriptors are:
+LIST::
+##the four first statistical moments (https://en.wikipedia.org/wiki/Moment_(mathematics)), more commonly known as:
+	LIST::
+	## the spectral centroid (1) in spectral bin. This is the point that splits the spectrum in 2 halves of equal energy. It is the weighted average.
+	## the spectral spread (2) in spectral bin. This is the standard deviation of the statistical curve, or the average of the distance to the centroid.
+	## the normalised skewness (3) as ratio. This indicates how tilted is the statistical curve. If it is below the bin representing half-Nyquist, it is positive.
+	## the normalised kurtosis (4) as ratio. This indicates how focused is the statistical curve. If it is peaky, it is high.
+	::
+	## the rolloff (5) in bin number. This indicates the bin under which 95% of the energy is included.
+	## the flatness (6) in dB. This is the ratio of geometric mean to the arithmetic mean. It yields a measure on how noisy a signal is.
+	## the crest (7) in dB. This is the ratio of the loudest amplitude over the RMS of the whole frame. A high number is an indication of a loud peak emerging.
+
+	The drawings in Peeters 2003 (http://recherche.ircam.fr/anasyn/peeters/ARTICLES/Peeters_2003_cuidadoaudiofeatures.pdf) are useful, as are the commented examples below. For the mathematically-inclined reader, the tutorials and code offered here (https://www.audiocontentanalysis.org/) are interesting to further the understanding.
+::
+
+		The process will return a control steam with the seven values, which will be repeated if no change happens within the algorythm, i.e. when the hopSize is larger than the server's kr period.
+
+CLASSMETHODS::
+
+METHOD:: kr
+	The audio rate in, control rate out version of the object.
+
+ARGUMENT:: in
+	The audio to be processed.
+
+ARGUMENT:: winSize
+	The window size. As sinusoidal estimation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
+
+ARGUMENT:: hopSize
+	The window hope size. As sinusoidal estimation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of winSize (overlap of 2).
+
+ARGUMENT:: fftSize
+	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will default to windowSize.
+
+ARGUMENT:: maxFFTSize
+	How large can the FFT be, by allocating memory at instantiation time. This is not modulatable.
+
+RETURNS::
+	A control stream with the seven spectral shape descriptors. The latency is winSize.
