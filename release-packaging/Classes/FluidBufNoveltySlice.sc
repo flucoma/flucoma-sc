@@ -3,6 +3,9 @@ FluidBufNoveltySlice{
 
 		//var maxFFTSize = if (fftSize == -1) {winSize.nextPowerOfTwo} {fftSize}; //ready for when we need it from the RT wrapper
 
+		srcBufNum = srcBufNum.asUGenInput;
+		indBufNum = indBufNum.asUGenInput;
+
 		if(srcBufNum.isNil) { Error("Invalid buffer").format(thisMethod.name, this.class.name).throw};
 		if(indBufNum.isNil) { Error("Invalid buffer").format(thisMethod.name, this.class.name).throw};
 

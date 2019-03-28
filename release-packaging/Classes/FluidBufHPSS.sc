@@ -3,6 +3,11 @@ FluidBufHPSS{
 
 		var maxFFTSize = if (fftSize == -1) {winSize.nextPowerOfTwo} {fftSize};
 
+		srcBufNum = srcBufNum.asUGenInput;
+		harmBufNum = harmBufNum.asUGenInput;
+		percBufNum = percBufNum.asUGenInput;
+		resBufNum = resBufNum.asUGenInput;
+
 		if(srcBufNum.isNil) { Error("Invalid buffer").format(thisMethod.name, this.class.name).throw};
 
 		server = server ? Server.default;

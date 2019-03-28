@@ -3,6 +3,10 @@ FluidBufSines{
 
 		var maxFFTSize = if (fftSize == -1) {winSize.nextPowerOfTwo} {fftSize};
 
+		srcBufNum = srcBufNum.asUGenInput;
+		sineBufNum = sineBufNum.asUGenInput;
+		resBufNum = resBufNum.asUGenInput;
+
 		if(srcBufNum.isNil) {Error("Invalid Buffer").format(thisMethod.name, this.class.name).throw};
 
 		server = server ? Server.default;
