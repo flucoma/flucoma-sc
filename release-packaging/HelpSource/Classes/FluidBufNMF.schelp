@@ -105,6 +105,9 @@ ARGUMENT:: winType
 ARGUMENT:: randSeed
 	The NMF process needs to seed its starting point. If specified, the same values will be used. The default of -1 will randomly assign them. (not implemented yet)
 
+ARGUMENT:: action
+	A Function to be evaluated once the offline process has finished and all Buffer's instance variables have been updated on the client side. The function will be passed [dstBufNum, dictBufNum, actBufNum] as an argument.
+
 RETURNS::
 	Nothing, as the various destination buffers are declared in the function call.
 

@@ -54,6 +54,9 @@ ARGUMENT:: hopSize
 ARGUMENT:: fftSize
 	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision.
 
+ARGUMENT:: action
+		A Function to be evaluated once the offline process has finished and indBufNum instance variables have been updated on the client side. The function will be passed indBufNum as an argument.
+
 RETURNS::
 	Nothing, as the various destination buffers are declared in the function call.
 

@@ -63,6 +63,9 @@ ARGUMENT:: debounce
 ARGUMENT:: minSlice
 	The minimum duration of a slice in samples.
 
+ARGUMENT:: action
+		A Function to be evaluated once the offline process has finished and indBufNum instance variables have been updated on the client side. The function will be passed indBufNum as an argument.
+
 RETURNS::
 	Nothing, as the destination buffer is declared in the function call.
 

@@ -53,6 +53,9 @@ ARGUMENT:: dstStartChan
 ARGUMENT:: dstGain
 	The gain applied to the samples in the region of the destination buffer over which the source is to be copied. The default value of 0. would overwrite completely, and a value of 1.0 would sum the source to the material that was present.
 
+ARGUMENT:: action
+		A Function to be evaluated once the offline process has finished and dstBufNum instance variables have been updated on the client side. The function will be passed dstBufNum as an argument.
+
 RETURNS::
 	Nothing, as the various destination buffers are declared in the function call.
 

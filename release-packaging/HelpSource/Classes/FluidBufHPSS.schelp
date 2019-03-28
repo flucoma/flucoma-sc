@@ -103,9 +103,11 @@ ARGUMENT:: hopSize
 ARGUMENT:: fftSize
 	The inner FFT/IFFT size. It should be at least 4 samples long; at least the size of the window; and a power of 2. Making it larger than the window size provides interpolation in frequency.
 
+ARGUMENT:: action
+	A Function to be evaluated once the offline process has finished and all Buffer's instance variables have been updated on the client side. The function will be passed [harmBufNum, percBufNum, resBufNum] as an argument.
+
 RETURNS::
 	Nothing, as the various destination buffers are declared in the function call.
-
 
 Discussion::
 	HPSS works by using median filters on the spectral magnitudes of a sound. It hinges on a simple modelling assumption that tonal components will tend to yield concentrations of energy across time, spread out in frequency, and percussive components will manifest as concentrations of energy across frequency, spread out in time. By using median filters across time and frequency respectively, we get initial esitmates of the tonal-ness / transient-ness of a point in time and frequency. These are then combined into 'masks' that are applied to the orginal spectral data in order to produce a separation.
