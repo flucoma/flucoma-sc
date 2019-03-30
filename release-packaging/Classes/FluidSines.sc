@@ -10,5 +10,10 @@ FluidSines : MultiOutUGen {
 		];
 		^channels
 	}
-	checkInputs { ^this.checkNInputs(1) }
+	checkInputs {
+		if(inputs.at(9).rate != 'scalar') {
+			^(": maxFFTSize cannot be modulated.");
+			};
+		^this.checkNInputs(1)
+	}
 }

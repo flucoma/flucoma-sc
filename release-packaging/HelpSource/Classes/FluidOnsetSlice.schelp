@@ -53,7 +53,7 @@ ARGUMENT:: fftSize
 	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will default to windowSize.
 
 ARGUMENT:: maxFFTSize
-	How large can the FFT be, by allocating memory at instantiation time. This is not modulatable.
+	How large can the FFT be, by allocating memory at instantiation time. This cannot be modulated.
 
 RETURNS::
 	An audio stream with impulses at detected transients. The latency between the input and the output is winSize.

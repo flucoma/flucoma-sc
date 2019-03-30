@@ -11,5 +11,16 @@ FluidHPSS : MultiOutUGen {
 		];
 		^channels
 	}
-	checkInputs { ^this.checkNInputs(1) }
+		checkInputs {
+		if(inputs.at(15).rate != 'scalar') {
+			^(": maxFFTSize cannot be modulated.");
+			};
+		if(inputs.at(16).rate != 'scalar') {
+			^(": maxHFlitSize cannot be modulated.");
+			};
+		if(inputs.at(17).rate != 'scalar') {
+			^(": maxPFiltSize cannot be modulated.");
+			};
+		^this.checkValidInputs;
+	}
 }

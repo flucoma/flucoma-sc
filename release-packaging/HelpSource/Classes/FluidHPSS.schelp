@@ -76,13 +76,13 @@ ARGUMENT:: fftSize
 	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will default to windowSize.
 
 ARGUMENT:: maxFFTSize
-	How large can the FFT be, by allocating memory at instantiation time. This is not modulatable.
+	How large can the FFT be, by allocating memory at instantiation time. This cannot be modulated.
 
 ARGUMENT::maxHFlitSize
-	How large can the harmonic filter be modulated to (hFiltSize), by allocating memory at instantiation time. This is not modulatable.
+	How large can the harmonic filter be modulated to (hFiltSize), by allocating memory at instantiation time. This cannot be modulated.
 
 ARGUMENT:: maxPFiltSize
-	How large can the percussive filter be modulated to (pFiltSize), by allocating memory at instantiation time. This is not modulatable.
+	How large can the percussive filter be modulated to (pFiltSize), by allocating memory at instantiation time. This cannot be modulated.
 
 
 RETURNS::
@@ -102,7 +102,7 @@ CODE::
 b = Buffer.read(s,File.realpath(FluidHPSS.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
 
 // run with basic parameters (left is harmonic, right is percussive)
-{FluidHPSS.ar(PlayBuf.ar(1,b.bufnum,loop:1))}.play
+{FluidHPSS.ar(PlayBuf.ar(1,b.bufnum,loop:1),maxFFTSize:LFNoise0.kr())}.play
 
 // run in mode 1
 {FluidHPSS.ar(PlayBuf.ar(1,b.bufnum,loop:1),17,51,1,0.05,40,0.1,-40)}.play

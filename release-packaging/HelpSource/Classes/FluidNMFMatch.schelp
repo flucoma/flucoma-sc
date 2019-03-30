@@ -29,7 +29,7 @@ ARGUMENT:: dictBufNum
 	The server index of the buffer containing the different dictionaries that the input signal will be matched against. Dictionaries must be STRONG::(fft size / 2) + 1:: frames. If the buffer has more than STRONG::maxRank:: channels, the excess will be ignored.
 
 ARGUMENT::maxRank
-	The maximum number of elements the NMF algorithm will try to divide the spectrogram of the source in. This dictates the number of output channelsfor the ugen. This is not modulatable.
+	The maximum number of elements the NMF algorithm will try to divide the spectrogram of the source in. This dictates the number of output channelsfor the ugen. This cannot be modulated.
 
 ARGUMENT:: nIter
 	The NMF process is iterative, trying to converge to the smallest error in its factorisation. The number of iterations will decide how many times it tries to adjust its estimates. Higher numbers here will be more CPU intensive, lower numbers will be more unpredictable in quality.
@@ -44,7 +44,7 @@ ARGUMENT:: fftSize
 	The FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will default to windowSize.
 
 ARGUMENT:: maxFFTSize
-	How large can the FFT be, by allocating memory at instantiation time. This is not modulatable.
+	How large can the FFT be, by allocating memory at instantiation time. This cannot be modulated.
 
 RETURNS::
 	A multichannel kr output, giving for each dictionary component the activation amount.
