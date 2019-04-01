@@ -5,12 +5,10 @@ RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/Buffer
 
 
 DESCRIPTION::
-A FluidBufCompose object provides a flexible utility for combining the contents of buffers on the server. It can be used for thing like mixing down multichannel buffers, or converting from left-right stereo to mid-side. We use it extensively in our example code.
+A FluidBufCompose object provides a flexible utility for combining the contents of buffers on the server. It can be used for thing like mixing down multichannel buffers, or converting from left-right stereo to mid-side. It is used extensively in all the example code of LINK::Guides/FluidDecomposition:: as part of the FluCoMa project. footnote::
+This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
 
 At its most simple, the object copies the content of a source buffer into a destination buffer. The flexibility comes from the various flags controlling which portions and channels of the sources to use, and by applying gains (which can be positive or negative) to the source data and the portion of the destination that would be overwritten.
-
-It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
-This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
 
 The algorithm takes a srcBuf, and writes the information at the provided dstBuf. These buffer arguments can all point to the same buffer, which gives great flexibility in transforming and reshaping.
 
@@ -30,13 +28,13 @@ ARGUMENT:: startAt
 	The starting point (in samples) from which to copy in the source buffer.
 
 ARGUMENT:: nFrames
-	The duration (in samples) to copy from the source buffer.
+	The duration (in samples) to copy from the source buffer. The default (-1) copies the full lenght of the buffer.
 
 ARGUMENT:: startChan
 	The first channel from which to copy in the source buffer.
 
 ARGUMENT:: nChans
-	The number of channels from which to copy in the source buffer. This parameter will wrap around the number of channels in the source buffer.
+	The number of channels from which to copy in the source buffer. This parameter will wrap around the number of channels in the source buffer. The default (-1) copies all of the buffer's channel.
 
 ARGUMENT:: srcGain
 	The gain applied to the samples to be copied from the source buffer.
@@ -51,13 +49,13 @@ ARGUMENT:: dstStartChan
 	The channel offest in the destination buffer to start writing the source at. The destination buffer will be resized if the number of channels to copy is overflowing.
 
 ARGUMENT:: dstGain
-	The gain applied to the samples in the region of the destination buffer over which the source is to be copied. The default value of 0. would overwrite completely, and a value of 1.0 would sum the source to the material that was present.
+	The gain applied to the samples in the region of the destination buffer over which the source is to be copied. The default value (0) will overwrite that section of the destination buffer, and a value of 1.0 would sum the source to the material that was present.
 
 ARGUMENT:: action
 		A Function to be evaluated once the offline process has finished and dstBufNum instance variables have been updated on the client side. The function will be passed dstBufNum as an argument.
 
 RETURNS::
-	Nothing, as the various destination buffers are declared in the function call.
+	Nothing, as the destination buffer is declared in the function call.
 
 DISCUSSION::
 	It is important to understand the rules used for determining the final desintinaiton buffer dimensions to get the most out of this object. If needs be, the destination buffer will be resized to the maxima of the requsted source numFrames and numChannels. Frames will be written up to the limit of actually available samples (meaning you can create zero padding); channels  will be written modulo the available channels, taking into account the channel offsets, meaning you can have channels repeat or loop into the source buffer's channels. See the examples below.
