@@ -18,31 +18,31 @@ This is the method that calls for the slicing to be calculated on a given source
 ARGUMENT:: server
 	The server on which the buffers to be processed are allocated.
 
-ARGUMENT:: srcBufNum
+ARGUMENT:: source
 	The index of the buffer to use as the source material to be sliced through novelty identification. The different channels of multichannel buffers will be summed.
 
-ARGUMENT:: startAt
+ARGUMENT:: startFrame
 	Where in the srcBuf should the slicing process start, in sample.
 
-ARGUMENT:: nFrames
+ARGUMENT:: numFrames
 	How many frames should be processed.
 
 ARGUMENT:: startChan
 	For multichannel srcBuf, which channel should be processed.
 
-ARGUMENT:: nChans
+ARGUMENT:: numChans
 	For multichannel srcBuf, how many channel should be summed.
 
-ARGUMENT:: indBufNum
+ARGUMENT:: indices
 	The index of the buffer where the indices (in sample) of the estimated starting points of slices will be written. The first and last points are always the boundary points of the analysis.
 
 ARGUMENT:: kernSize
 	The granularity of the window in which the algorithm looks for change, in samples. A small number will be sensitive to short term changes, and a large number should look for long term changes.
 
-ARGUMENT:: thresh
+ARGUMENT:: threshold
 	The normalised threshold, between 0 an 1, on the novelty curve to consider it a segmentation point.
 
-ARGUMENT:: filtSize
+ARGUMENT:: filterSize
 	The size of a smoothing filter that is applied on the novelty curve. A larger filter filter size allows for cleaner cuts on very sharp changes.
 
 ARGUMENT:: winSize
@@ -55,7 +55,7 @@ ARGUMENT:: fftSize
 	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision.
 
 ARGUMENT:: action
-		A Function to be evaluated once the offline process has finished and indBufNum instance variables have been updated on the client side. The function will be passed indBufNum as an argument.
+		A Function to be evaluated once the offline process has finished and indices instance variables have been updated on the client side. The function will be passed indices as an argument.
 
 RETURNS::
 	Nothing, as the various destination buffers are declared in the function call.
@@ -74,7 +74,7 @@ c = Buffer.new(s);
 // with basic params
 Routine{
 	t = Main.elapsedTime;
-	FluidBufNoveltySlice.process(s,b.bufnum, indBufNum: c.bufnum, thresh:0.6);
+	FluidBufNoveltySlice.process(s,b.bufnum, indices: c.bufnum, threshold:0.6);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play
@@ -108,7 +108,7 @@ c = Buffer.new(s);
 )
 
 // process with a given filterSize
-FluidBufNoveltySlice.process(s,b.bufnum, indBufNum: c.bufnum, kernSize:31, thresh:0.3, filtSize:0)
+FluidBufNoveltySlice.process(s,b.bufnum, indices: c.bufnum, kernSize:31, threshold:0.3, filterSize:0)
 
 //check the number of slices: it is the number of frames in the transBuf minus the boundary index.
 c.query;

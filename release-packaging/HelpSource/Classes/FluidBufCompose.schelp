@@ -8,7 +8,7 @@ DESCRIPTION::
 A FluidBufCompose object provides a flexible utility for combining the contents of buffers on the server. It can be used for thing like mixing down multichannel buffers, or converting from left-right stereo to mid-side. It is used extensively in all the example code of LINK::Guides/FluidDecomposition:: as part of the FluCoMa project. footnote::
 This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
 
-At its most simple, the object copies the content of a source buffer into a destination buffer. The flexibility comes from the various flags controlling which portions and channels of the sources to use, and by applying gains (which can be positive or negative) to the source data and the portion of the destination that would be overwritten.
+At its most simple, the object copies the content of a source buffer into a destination buffer. The flexibility comes from the various flags controlling which portions and channels of the source to use, and by applying gains (which can be positive or negative) to the source data and the portion of the destination that would be overwritten.
 
 The algorithm takes a srcBuf, and writes the information at the provided dstBuf. These buffer arguments can all point to the same buffer, which gives great flexibility in transforming and reshaping.
 
@@ -21,38 +21,38 @@ METHOD:: process
 ARGUMENT:: server
 	The server on which the buffers to be processed are allocated.
 
-ARGUMENT:: srcBufNum
+ARGUMENT:: source
 	The bufNum of the source buffer.
 
-ARGUMENT:: startAt
+ARGUMENT:: startFrame
 	The starting point (in samples) from which to copy in the source buffer.
 
-ARGUMENT:: nFrames
+ARGUMENT:: numFrames
 	The duration (in samples) to copy from the source buffer. The default (-1) copies the full lenght of the buffer.
 
 ARGUMENT:: startChan
 	The first channel from which to copy in the source buffer.
 
-ARGUMENT:: nChans
+ARGUMENT:: numChans
 	The number of channels from which to copy in the source buffer. This parameter will wrap around the number of channels in the source buffer. The default (-1) copies all of the buffer's channel.
 
-ARGUMENT:: srcGain
+ARGUMENT:: gain
 	The gain applied to the samples to be copied from the source buffer.
 
-ARGUMENT:: dstBufNum
+ARGUMENT:: destination
 	The bufNum of the destination buffer.
 
-ARGUMENT:: dstStartAt
+ARGUMENT:: destStartFrame
 	The time offset (in samples) in the destination buffer to start writing the source at. The destination buffer will be resized if the portion to copy is overflowing.
 
-ARGUMENT:: dstStartChan
+ARGUMENT:: destStartChan
 	The channel offest in the destination buffer to start writing the source at. The destination buffer will be resized if the number of channels to copy is overflowing.
 
-ARGUMENT:: dstGain
+ARGUMENT:: destGain
 	The gain applied to the samples in the region of the destination buffer over which the source is to be copied. The default value (0) will overwrite that section of the destination buffer, and a value of 1.0 would sum the source to the material that was present.
 
 ARGUMENT:: action
-		A Function to be evaluated once the offline process has finished and dstBufNum instance variables have been updated on the client side. The function will be passed dstBufNum as an argument.
+		A Function to be evaluated once the offline process has finished and destination instance variables have been updated on the client side. The function will be passed destination as an argument.
 
 RETURNS::
 	Nothing, as the destination buffer is declared in the function call.
@@ -71,29 +71,29 @@ d = Buffer.new(s);
 )
 
 // with basic params (basic summing of each full buffer in all dimensions)
-FluidBufCompose.process(s, srcBufNum: b.bufnum,  dstBufNum: d.bufnum);
-FluidBufCompose.process(s, srcBufNum: c.bufnum,  dstBufNum: d.bufnum, dstGain: 1.0);
+FluidBufCompose.process(s, source: b.bufnum,  destination: d.bufnum);
+FluidBufCompose.process(s, source: c.bufnum,  destination: d.bufnum, destGain: 1.0);
 d.query;
 d.play;
 
 //constructing a mono buffer, with a quiet punch from the synth, with a choked piano resonance from the left channel
 d.free; d = Buffer.new(s);
-FluidBufCompose.process(s, srcBufNum: b.bufnum, nFrames: 9000, srcGain: 0.5, dstBufNum: d.bufnum);
-FluidBufCompose.process(s, srcBufNum: c.bufnum, startAt:30000, nFrames:44100, nChans:1, srcGain:0.9, dstBufNum: d.bufnum, dstGain: 1.0);
+FluidBufCompose.process(s, source: b.bufnum, numFrames: 9000, gain: 0.5, destination: d.bufnum);
+FluidBufCompose.process(s, source: c.bufnum, startFrame:30000, numFrames:44100, numChans:1, gain:0.9, destination: d.bufnum, destGain: 1.0);
 d.query;
 d.play;
 
 //constructing a stereo buffer, with the end of the mono synth in both channels, with a piano resonance in swapped stereo
 d.free; d = Buffer.new(s);
-FluidBufCompose.process(s, srcBufNum: b.bufnum, startAt: 441000, nChans: 2, srcGain: 0.6, dstBufNum: d.bufnum);
-FluidBufCompose.process(s, srcBufNum: c.bufnum, nFrames: 78000, startChan: 1, nChans: 2, srcGain: 0.5, dstStartAt: 22050, dstBufNum: d.bufnum,  dstGain: 1.0);
+FluidBufCompose.process(s, source: b.bufnum, startFrame: 441000, numChans: 2, gain: 0.6, destination: d.bufnum);
+FluidBufCompose.process(s, source: c.bufnum, numFrames: 78000, startChan: 1, numChans: 2, gain: 0.5, destStartFrame: 22050, destination: d.bufnum,  destGain: 1.0);
 d.query;
 d.play;
 
 //constructing a one second buffer: the first second of each buffer, the mono synth on the right, the piano on the left
 d.free; d = Buffer.new(s);
-FluidBufCompose.process(s, srcBufNum: b.bufnum, nFrames: 44100, nChans: 1, dstStartChan: 1, dstBufNum: d.bufnum);
-FluidBufCompose.process(s, srcBufNum: c.bufnum, nFrames:44100, nChans:1, dstBufNum: d.bufnum,  dstGain: 1.0);
+FluidBufCompose.process(s, source: b.bufnum, numFrames: 44100, numChans: 1, destStartChan: 1, destination: d.bufnum);
+FluidBufCompose.process(s, source: c.bufnum, numFrames:44100, numChans:1, destination: d.bufnum,  destGain: 1.0);
 d.query;
 d.play;
 ::
@@ -112,10 +112,10 @@ f = Buffer.new(s);
 
 // encode the mid (in c) and the side (in d)
 (
-FluidBufCompose.process(s,b.bufnum, nChans: 1, srcGain: -3.0.dbamp, dstBufNum: c.bufnum);
-FluidBufCompose.process(s,b.bufnum, nChans: 1, srcGain: -3.0.dbamp, dstBufNum: d.bufnum);
-FluidBufCompose.process(s,b.bufnum, nChans: 1, srcGain: -3.0.dbamp, startChan: 1, dstBufNum: c.bufnum,  dstGain: 1.0);
-FluidBufCompose.process(s,b.bufnum, nChans: 1, srcGain: -3.0.dbamp * -1.0, startChan: 1, dstBufNum: d.bufnum,  dstGain: 1.0);
+FluidBufCompose.process(s,b.bufnum, numChans: 1, gain: -3.0.dbamp, destination: c.bufnum);
+FluidBufCompose.process(s,b.bufnum, numChans: 1, gain: -3.0.dbamp, destination: d.bufnum);
+FluidBufCompose.process(s,b.bufnum, numChans: 1, gain: -3.0.dbamp, startChan: 1, destination: c.bufnum,  destGain: 1.0);
+FluidBufCompose.process(s,b.bufnum, numChans: 1, gain: -3.0.dbamp * -1.0, startChan: 1, destination: d.bufnum,  destGain: 1.0);
 )
 
 // (optional) compare auraly the stereo with the MS
@@ -131,7 +131,7 @@ b.play;
 e.free; e = Buffer.new(s);
 (
 [1.0, -1.0].do({ arg x,y;
-	FluidBufCompose.process(s, d.bufnum, srcGain: x, dstStartAt: y, dstBufNum: e.bufnum, dstGain: 1.0);
+	FluidBufCompose.process(s, d.bufnum, gain: x, destStartFrame: y, destination: e.bufnum, destGain: 1.0);
 });
 )
 
@@ -139,7 +139,7 @@ e.free; e = Buffer.new(s);
 e.free; e = Buffer.new(s);
 (
 [0.8, -0.32, -0.24, -0.16, -0.08].do({ arg x,y;
-	FluidBufCompose.process(s, d.bufnum, srcGain: x, dstStartAt: y, dstBufNum: e.bufnum, dstGain: 1.0);
+	FluidBufCompose.process(s, d.bufnum, gain: x, destStartFrame: y, destination: e.bufnum, destGain: 1.0);
 });
 )
 
@@ -147,7 +147,7 @@ e.free; e = Buffer.new(s);
 e.free; e = Buffer.new(s);
 (
 [0.982494, -0.066859, -0.064358, -0.061897, -0.059477, -0.057098, -0.054761, -0.052466, -0.050215, -0.048007, -0.045843, -0.043724, -0.041649, -0.03962, -0.037636, -0.035697, -0.033805, -0.031959, -0.030159, -0.028406, -0.026699, -0.025038, -0.023425, -0.021857, -0.020337].do({ arg x,y;
-	FluidBufCompose.process(s, d.bufnum, srcGain: x, dstStartAt: y, dstBufNum: e.bufnum, dstGain: 1.0);
+	FluidBufCompose.process(s, d.bufnum, gain: x, destStartFrame: y, destination: e.bufnum, destGain: 1.0);
 });
 )
 
@@ -158,9 +158,9 @@ e.play;
 
 // decode the MS back to stereo
 (
-FluidBufCompose.process(s,c.bufnum, nChans: 2, srcGain: -3.0.dbamp, dstBufNum: f.bufnum);
-FluidBufCompose.process(s,e.bufnum, srcGain: -3.0.dbamp, dstBufNum: f.bufnum,  dstGain: 1.0);
-FluidBufCompose.process(s,e.bufnum, srcGain: -3.0.dbamp * -1.0, dstBufNum: f.bufnum, dstStartChan: 1, dstGain: 1.0);
+FluidBufCompose.process(s,c.bufnum, numChans: 2, gain: -3.0.dbamp, destination: f.bufnum);
+FluidBufCompose.process(s,e.bufnum, gain: -3.0.dbamp, destination: f.bufnum,  destGain: 1.0);
+FluidBufCompose.process(s,e.bufnum, gain: -3.0.dbamp * -1.0, destination: f.bufnum, destStartChan: 1, destGain: 1.0);
 )
 
 // query and play

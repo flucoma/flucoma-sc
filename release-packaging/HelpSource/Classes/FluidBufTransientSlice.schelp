@@ -18,22 +18,22 @@ METHOD:: process
 ARGUMENT:: server
 	The server on which the buffers to be processed are allocated.
 
-ARGUMENT:: srcBufNum
+ARGUMENT:: source
 	The index of the buffer to use as the source material to be sliced through transient identification. The different channels of multichannel buffers will be summed.
 
-ARGUMENT:: startAt
+ARGUMENT:: startFrame
 	Where in the srcBuf should the slicing process start, in sample.
 
-ARGUMENT:: nFrames
+ARGUMENT:: numFrames
 	How many frames should be processed.
 
 ARGUMENT:: startChan
 	For multichannel srcBuf, which channel should be processed.
 
-ARGUMENT:: nChans
+ARGUMENT:: numChans
 	For multichannel srcBuf, how many channel should be summed.
 
-ARGUMENT:: indBufNum
+ARGUMENT:: indices
 	The index of the buffer where the indices (in sample) of the estimated starting points of slices will be written. The first and last points are always the boundary points of the analysis.
 
 ARGUMENT:: order
@@ -64,7 +64,7 @@ ARGUMENT:: minSlice
 	The minimum duration of a slice in samples.
 
 ARGUMENT:: action
-		A Function to be evaluated once the offline process has finished and indBufNum instance variables have been updated on the client side. The function will be passed indBufNum as an argument.
+		A Function to be evaluated once the offline process has finished and indices instance variables have been updated on the client side. The function will be passed indices as an argument.
 
 RETURNS::
 	Nothing, as the destination buffer is declared in the function call.
@@ -83,7 +83,7 @@ c = Buffer.new(s);
 (
 	Routine{
 	t = Main.elapsedTime;
-	FluidBufTransientSlice.process(s,b.bufnum, transBufNum:c.bufnum);
+	FluidBufTransientSlice.process(s,b, indices:c);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play
@@ -106,12 +106,11 @@ c.query;
         }.play;
 )
 
-
 // with everything changed to make it much better, at the cost of computation time (only 10 seconds are processed here)
 (
 Routine{
 	t = Main.elapsedTime;
-	FluidBufTransientSlice.process(s,b.bufnum, 0, 220500, 0, 1, c.bufnum, 200, 2048, 1024, 1, 3, 1, 15, 30, 4410);
+	FluidBufTransientSlice.process(s,b, 0, 220500, 0, 1, c, 200, 2048, 1024, 1, 3, 1, 15, 30, 4410);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play

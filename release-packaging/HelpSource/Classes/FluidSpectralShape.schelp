@@ -216,7 +216,7 @@ x = {
 
 s.freqscope
 
-// at first it seems quite centred, but then flipped the argument FrqScl to lin(ear) and observe how high the spectrum goes. If we set it to a brickwall spectral filter tuned on the same frequencies:
+// at first it seems quite centred, but then flip the argument FrqScl to lin(ear) and observe how high the spectrum goes. If we set it to a brickwall spectral filter tuned on the same frequencies:
 
 x.set(\type, 1)
 
@@ -235,7 +235,7 @@ x = {
 }.play;
 )
 
-// this example shows a similar result to the brickwall bspectral bandpass above. If we move the central frequency nearer the half-Nyquist:
+// this example shows a similar result to the brickwall spectral bandpass above. If we move the central frequency nearer the half-Nyquist:
 
 x.set(\freq, 8800)
 

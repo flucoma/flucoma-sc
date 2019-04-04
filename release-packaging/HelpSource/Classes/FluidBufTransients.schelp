@@ -23,25 +23,25 @@ This is the method that calls for the transient extraction to be performed on a 
 ARGUMENT:: server
 	The server on which the buffers to be processed are allocated.
 
-ARGUMENT:: srcBufNum
+ARGUMENT:: source
 	The index of the buffer to use as the source material to be decomposed through the NMF process. The different channels of multichannel buffers will be processing sequentially.
 
-ARGUMENT:: startAt
+ARGUMENT:: startFrame
 	Where in the srcBuf should the NMF process start, in sample.
 
-ARGUMENT:: nFrames
+ARGUMENT:: numFrames
 	How many frames should be processed.
 
 ARGUMENT:: startChan
 	For multichannel srcBuf, which channel should be processed first.
 
-ARGUMENT:: nChans
+ARGUMENT:: numChans
 	For multichannel srcBuf, how many channel should be processed.
 
-ARGUMENT:: transBufNum
+ARGUMENT:: transients
 	The index of the buffer where the extracted transient component will be reconstructed.
 
-ARGUMENT:: resBufNum
+ARGUMENT:: residual
 	The index of the buffer where the estimated continuous component will be reconstructed.
 
 ARGUMENT:: order
@@ -69,7 +69,7 @@ ARGUMENT:: debounce
 	The window size in sample within which positive detections will be clumped together to avoid overdetecting in time.
 
 ARGUMENT:: action
-	A Function to be evaluated once the offline process has finished and all Buffer's instance variables have been updated on the client side. The function will be passed [transBufNum, resBufNum] as an argument.
+	A Function to be evaluated once the offline process has finished and all Buffer's instance variables have been updated on the client side. The function will be passed [transients, residual] as an argument.
 
 RETURNS::
 	Nothing, as the various destination buffers are declared in the function call.
@@ -88,7 +88,7 @@ d = Buffer.new(s);
 (
 Routine{
 	t = Main.elapsedTime;
-	FluidBufTransients.process(s,b.bufnum, transBufNum:c.bufnum, resBufNum:d.bufnum);
+	FluidBufTransients.process(s,b.bufnum, transients:c.bufnum, residual:d.bufnum);
 	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play

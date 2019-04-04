@@ -1,5 +1,5 @@
 TITLE:: FluidNMFMatch
-SUMMARY:: Real-Time Non-Negative Matrix Factorisation with Fixed Dictionaries
+SUMMARY:: Real-Time Non-Negative Matrix Factorisation with Fixed Bases
 CATEGORIES:: Libraries>FluidDecomposition
 RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/FluidBufNMF
 
@@ -20,18 +20,18 @@ FluidBufNMF is part of the Fluid Decomposition Toolkit of the FluCoMa project. f
 CLASSMETHODS::
 
 METHOD:: kr
-The real-time processing method. It takes an audio or control input, and will yield a control stream in the form of a multichannel array of size STRONG::maxRank:: . If the dictionary buffer has fewer than maxRank channels, the remaining outputs will be zeroed.
+The real-time processing method. It takes an audio or control input, and will yield a control stream in the form of a multichannel array of size STRONG::maxRank:: . If the bases buffer has fewer than maxRank channels, the remaining outputs will be zeroed.
 
 ARGUMENT:: in
 The signal input to the factorisation process.
 
-ARGUMENT:: dictBufNum
-	The server index of the buffer containing the different dictionaries that the input signal will be matched against. Dictionaries must be STRONG::(fft size / 2) + 1:: frames. If the buffer has more than STRONG::maxRank:: channels, the excess will be ignored.
+ARGUMENT:: bases
+	The server index of the buffer containing the different bases that the input signal will be matched against. Bases must be STRONG::(fft size / 2) + 1:: frames. If the buffer has more than STRONG::maxRank:: channels, the excess will be ignored.
 
 ARGUMENT::maxRank
 	The maximum number of elements the NMF algorithm will try to divide the spectrogram of the source in. This dictates the number of output channelsfor the ugen. This cannot be modulated.
 
-ARGUMENT:: nIter
+ARGUMENT:: numIter
 	The NMF process is iterative, trying to converge to the smallest error in its factorisation. The number of iterations will decide how many times it tries to adjust its estimates. Higher numbers here will be more CPU intensive, lower numbers will be more unpredictable in quality.
 
 ARGUMENT:: winSize
@@ -47,7 +47,7 @@ ARGUMENT:: maxFFTSize
 	How large can the FFT be, by allocating memory at instantiation time. This cannot be modulated.
 
 RETURNS::
-	A multichannel kr output, giving for each dictionary component the activation amount.
+	A multichannel kr output, giving for each basis component the activation amount.
 
 
 EXAMPLES::
@@ -67,8 +67,8 @@ Routine {
 	b.sine2([500],[1], false, false);
 	c.sine2([5000],[1],false, false);
 	s.sync;
-	FluidBufCompose.process(s,b.bufnum, dstBufNum:d.bufnum);
-	FluidBufCompose.process(s,c.bufnum, dstStartAt:44100, dstBufNum:d.bufnum, dstGain:1);
+	FluidBufCompose.process(s,b.bufnum, destination:d.bufnum);
+	FluidBufCompose.process(s,c.bufnum, destStartFrame:44100, destination:d.bufnum, destGain:1);
 	s.sync;
 	d.query;
 }.play;
@@ -81,7 +81,7 @@ d.play //////(beware !!!! loud!!!)
 (
 // separate them in 2 ranks
 Routine {
-	FluidBufNMF.process(s, d.bufnum, dictBufNum: e.bufnum, rank:2);
+	FluidBufNMF.process(s, d.bufnum, bases: e.bufnum, rank:2);
 	s.sync;
 	e.query;
 }.play
@@ -125,15 +125,15 @@ Routine {
     {PlayBuf.ar(10,c.bufnum)[~element]}.play
 )
 
-// copy all the other ranks on itself and the picking dictionnary as the sole component of the 1st channel
+// copy all the other ranks on itself and the picking basis as the sole component of the 1st channel
 (
 Routine{
 	z = (0..9);
-	FluidBufCompose.process(s, x.bufnum, startChan: z.removeAt(~element), nChans: 1, dstBufNum: e.bufnum);
+	FluidBufCompose.process(s, x.bufnum, startChan: z.removeAt(~element), numChans: 1, destination: e.bufnum);
     s.sync;
     e.query;
     s.sync;
-	z.do({|chan| FluidBufCompose.process(s, x.bufnum, startChan:chan, nChans: 1, dstStartChan: 1, dstBufNum: e.bufnum, dstGain:1)});
+	z.do({|chan| FluidBufCompose.process(s, x.bufnum, startChan:chan, numChans: 1, destStartChan: 1, destination: e.bufnum, destGain:1)});
     s.sync;
     e.query;
 }.play;
@@ -141,7 +141,7 @@ Routine{
 
 e.plot;
 
-//using this trained dictionary we can see the envelop (activations) of each rank
+//using this trained basis we can see the envelop (activations) of each rank
 {FluidNMFMatch.kr(PlayBuf.ar(1,b.bufnum),e.bufnum,2,fftSize:2048)}.plot(1);
 // the left/top activations are before, the pick before the sustain.
 
@@ -160,7 +160,7 @@ e.plot;
 
 	// compress the signal to send to the delays
 	todelay = DelayN.ar(source,0.1, 800/44100, //delaying it to compensate for FluidNMFMatch's latency
-		LagUD.ar(K2A.ar(FluidNMFMatch.kr(source,e.bufnum,2,fftSize:2048)[0]), //reading the channel of the activations on the pick dictionary
+		LagUD.ar(K2A.ar(FluidNMFMatch.kr(source,e.bufnum,2,fftSize:2048)[0]), //reading the channel of the activations on the pick basis
 			80/44100, // lag uptime (compressor's attack)
 			1000/44100, // lag downtime (compressor's decay)
 			(1/(2.dbamp) // compressor's threshold inverted
@@ -215,17 +215,17 @@ Routine {
 // copy at least one other rank to a third rank, a sort of left-over channel
 (
 Routine{
-	FluidBufCompose.process(s, x.bufnum, startChan:~dog, nChans: 1, dstBufNum: e.bufnum);
-	FluidBufCompose.process(s, x.bufnum, startChan:~bird, nChans: 1, dstStartChan: 1, dstBufNum: e.bufnum, dstGain:1);
+	FluidBufCompose.process(s, x.bufnum, startChan:~dog, numChans: 1, destination: e.bufnum);
+	FluidBufCompose.process(s, x.bufnum, startChan:~bird, numChans: 1, destStartChan: 1, destination: e.bufnum, destGain:1);
     s.sync;
-	(0..9).removeAll([~dog,~bird]).do({|chan|FluidBufCompose.process(s,x.bufnum, startChan:chan, nChans: 1, dstStartChan: 2, dstBufNum: e.bufnum, dstGain:1)});
+	(0..9).removeAll([~dog,~bird]).do({|chan|FluidBufCompose.process(s,x.bufnum, startChan:chan, numChans: 1, destStartChan: 2, destination: e.bufnum, destGain:1)});
     s.sync;
     e.query;
 }.play;
 )
 e.plot;
 
-//using this trained dictionary we can then see the activation...
+//using this trained basis we can then see the activation...
 (
 {
 	var source, blips;
@@ -260,7 +260,7 @@ e.plot;
 ::
 	STRONG::Pretrained piano::
 	CODE::
-//load in the sound in and a pretrained dictionary
+//load in the sound in and a pretrained basis
 (
 	b = Buffer.read(s,File.realpath(FluidNMFMatch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-SA-UprightPianoPedalWide.wav");
 	c = Buffer.read(s,File.realpath(FluidNMFMatch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/filters/piano-dicts.wav");
@@ -268,7 +268,7 @@ e.plot;
 b.play
 c.query
 
-//use the pretrained dictionary to compute activations of each notes to drive the amplitude of a resynth
+//use the pretrained bases to compute activations of each notes to drive the amplitude of a resynth
 (
 {
 	var source, resynth;

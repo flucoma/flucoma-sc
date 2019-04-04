@@ -21,10 +21,10 @@ METHOD:: ar
 ARGUMENT:: in
 	The input to be processed
 
-ARGUMENT:: bw
+ARGUMENT:: bandwidth
 	The width in bins of the fragment of the fft window that is considered a normal deviation for a potential continuous sinusoidal track. It has an effect on CPU cost: the widest is more accurate but more computationally expensive.
 
-ARGUMENT:: thresh
+ARGUMENT:: threshold
 	The normalised threshold, between 0 an 1, to consider a peak as a sinusoidal component from the normalized cross-correlation.
 
 ARGUMENT:: minTrackLen
@@ -59,7 +59,7 @@ CODE::
 b = Buffer.read(s,File.realpath(FluidSines.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
 
 // run with large parameters - left is sinusoidal model, right is residual
-{FluidSines.ar(PlayBuf.ar(1,b.bufnum,loop:1),thresh: 0.2, minTrackLen: 2, winSize: 2048, fftSize: 8192)}.play
+{FluidSines.ar(PlayBuf.ar(1,b.bufnum,loop:1),threshold: 0.2, minTrackLen: 2, winSize: 2048, fftSize: 8192)}.play
 
 // interactive parameters with a narrower bandwidth
 {FluidSines.ar(PlayBuf.ar(1,b.bufnum,loop:1),30,MouseX.kr(), 5, winSize: 1000, hopSize: 200, fftSize: 4096)}.play
