@@ -114,3 +114,35 @@ Routine{
 }.play
 )
 ::
+
+STRONG::A stereo buffer example.::
+CODE::
+
+// load two very different files
+(
+b = Buffer.read(s,File.realpath(FluidBufTransients.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
+c = Buffer.read(s,File.realpath(FluidBufTransients.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-AcousticStrums-M.wav");
+)
+
+// composite one on left one on right as test signals
+FluidBufCompose.process(s, c, numFrames:b.numFrames, startFrame:555000, destStartChan:1, destination:b)
+b.play
+
+// create 2 new buffers as destinations
+d = Buffer.new(s);
+e = Buffer.new(s);
+
+//run the process on them
+(
+Routine{
+    t = Main.elapsedTime;
+    FluidBufTransients.process(s, b, transients: d, residual:e, threshFwd:1.2, debounce:40);
+    s.sync;
+    (Main.elapsedTime - t).postln;
+}.play
+)
+
+//listen: stereo preserved!
+d.play
+e.play
+::

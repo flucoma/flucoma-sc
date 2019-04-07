@@ -133,3 +133,31 @@ c.query;
 
 // If we smooth too much, like the third settings (filterSize = 8), we start to loose precision. Have fun with different values of theshold then will allow you to find the perfect segment for your signal.
 ::
+
+STRONG::A stereo buffer example.::
+CODE::
+
+// make a stereo buffer
+b = Buffer.alloc(s,88200,2);
+
+// add some stereo clicks and listen to them
+((0..3)*22050+11025).do({|item,index| b.set(item+(index%2), 1.0)});
+b.play
+
+// create a new buffer as destinations
+c = Buffer.new(s);
+
+//run the process on them
+(
+// with basic params
+Routine{
+    t = Main.elapsedTime;
+    FluidBufNoveltySlice.process(s,b.bufnum, indices: c.bufnum, threshold:0.6);
+    s.sync;
+    (Main.elapsedTime - t).postln;
+}.play
+)
+
+// list the indicies of detected attacks - the two input channels have been summed
+c.getn(0,c.numFrames,{|item|item.postln;})
+::

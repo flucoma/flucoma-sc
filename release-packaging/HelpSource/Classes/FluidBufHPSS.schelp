@@ -163,3 +163,35 @@ e.play;
 //still nullsumming
 {PlayBuf.ar(1,c.bufnum) + PlayBuf.ar(1,d.bufnum) + PlayBuf.ar(1,e.bufnum) - PlayBuf.ar(1,b.bufnum,doneAction:2)}.play;
 ::
+
+STRONG::A stereo buffer example.::
+CODE::
+
+// load two very different files
+(
+b = Buffer.read(s,File.realpath(FluidBufHPSS.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-SA-UprightPianoPedalWide.wav");
+c = Buffer.read(s,File.realpath(FluidBufHPSS.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-AcousticStrums-M.wav");
+)
+
+// composite one on left one on right as test signals
+FluidBufCompose.process(s, c, numFrames:b.numFrames, startFrame:555000,destStartChan:1, destination:b)
+b.play
+
+// create 2 new buffers as destinations
+d = Buffer.new(s);
+e = Buffer.new(s);
+
+//run the process on them
+(
+Routine{
+    t = Main.elapsedTime;
+    FluidBufHPSS.process(s, b, harmonic: d, percussive:e);
+    s.sync;
+    (Main.elapsedTime - t).postln;
+}.play
+)
+
+//listen: stereo preserved!
+d.play
+e.play
+::
