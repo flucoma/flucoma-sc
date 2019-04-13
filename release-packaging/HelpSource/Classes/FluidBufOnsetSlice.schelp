@@ -89,8 +89,7 @@ c = Buffer.new(s);
 // with basic params
 Routine{
 	t = Main.elapsedTime;
-	FluidBufOnsetSlice.process(s,b.bufnum, indices: c.bufnum, threshold:0.5);
-	s.sync;
+	FluidBufOnsetSlice.process(s,b, indices: c, threshold:0.5);
 	(Main.elapsedTime - t).postln;
 }.play
 )
@@ -101,14 +100,14 @@ c.query;
 //loops over a splice with the MouseX
 (
 {
-	BufRd.ar(1, b.bufnum,
+	BufRd.ar(1, b,
 		Phasor.ar(0,1,
-			BufRd.kr(1, c.bufnum,
-				MouseX.kr(0, BufFrames.kr(c.bufnum) - 1), 0, 1),
-			BufRd.kr(1, c.bufnum,
-				MouseX.kr(1, BufFrames.kr(c.bufnum)), 0, 1),
-			BufRd.kr(1,c.bufnum,
-				MouseX.kr(0, BufFrames.kr(c.bufnum) - 1), 0, 1)), 0, 1);
+			BufRd.kr(1, c,
+				MouseX.kr(0, BufFrames.kr(c) - 1), 0, 1),
+			BufRd.kr(1, c,
+				MouseX.kr(1, BufFrames.kr(c)), 0, 1),
+			BufRd.kr(1,c,
+				MouseX.kr(0, BufFrames.kr(c) - 1), 0, 1)), 0, 1);
 		}.play;
 )
 ::
@@ -132,7 +131,6 @@ c = Buffer.new(s);
 Routine{
     t = Main.elapsedTime;
     FluidBufOnsetSlice.process(s,b, indices: c, threshold:0.1);
-    s.sync;
     (Main.elapsedTime - t).postln;
 }.play
 )

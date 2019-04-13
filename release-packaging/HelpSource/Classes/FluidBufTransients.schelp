@@ -88,31 +88,31 @@ d = Buffer.new(s);
 (
 Routine{
 	t = Main.elapsedTime;
-	FluidBufTransients.process(s,b.bufnum, transients:c.bufnum, residual:d.bufnum);
-	s.sync;
+	FluidBufTransients.process(s,b, transients:c, residual:d);
 	(Main.elapsedTime - t).postln;
 }.play
 );
 
 // wait for the duration to appear in the post window as a cue that the computation is finished
-c.query;
 c.play;
-d.query;
 d.play;
 
 //nullsumming tests
-{(PlayBuf.ar(1,c.bufnum))+(PlayBuf.ar(1,d.bufnum))+(-1*PlayBuf.ar(1,b.bufnum,doneAction:2))}.play
+{(PlayBuf.ar(1,c))+(PlayBuf.ar(1,d))+(-1*PlayBuf.ar(1,b,doneAction:2))}.play
 
 
 // with everything changed to make it much better, at the cost of computation time (only 5 seconds are processed here)
 (
 Routine{
 	t = Main.elapsedTime;
-	FluidBufTransients.process(s,b.bufnum, 0, 220500, 0, 1, c.bufnum, d.bufnum, 200, 2048, 1024, 1, 3, 1, 15, 30);
-	s.sync;
+	FluidBufTransients.process(s,b, 0, 220500, 0, 1, c, d, 200, 2048, 1024, 1, 3, 1, 15, 30);
 	(Main.elapsedTime - t).postln;
 }.play
 )
+
+// wait for the duration to appear in the post window as a cue that the computation is finished
+c.play;
+d.play;
 ::
 
 STRONG::A stereo buffer example.::
@@ -129,15 +129,13 @@ FluidBufCompose.process(s, c, numFrames:b.numFrames, startFrame:555000, destStar
 b.play
 
 // create 2 new buffers as destinations
-d = Buffer.new(s);
-e = Buffer.new(s);
+d = Buffer.new(s); e = Buffer.new(s);
 
 //run the process on them
 (
 Routine{
     t = Main.elapsedTime;
     FluidBufTransients.process(s, b, transients: d, residual:e, threshFwd:1.2, debounce:40);
-    s.sync;
     (Main.elapsedTime - t).postln;
 }.play
 )

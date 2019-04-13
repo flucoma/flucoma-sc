@@ -129,8 +129,7 @@ code::
 (
 	Routine{
 		t = Main.elapsedTime;
-		FluidBufHPSS.process(s, b.bufnum, harmonic: c.bufnum, percussive: d.bufnum);
-		s.sync;
+		FluidBufHPSS.process(s, b, harmonic: c, percussive: d);
 		(Main.elapsedTime - t).postln;
 	}.play
 )
@@ -141,14 +140,13 @@ c.play;
 d.play;
 
 //nullsumming tests
-{(PlayBuf.ar(1,c.bufnum))+(PlayBuf.ar(1,d.bufnum))+(-1*PlayBuf.ar(1,b.bufnum,doneAction:2))}.play
+{(PlayBuf.ar(1,c))+(PlayBuf.ar(1,d))+(-1*PlayBuf.ar(1,b,doneAction:2))}.play
 
 //more daring parameters, in mode 2
 (
 	Routine{
 		t = Main.elapsedTime;
           FluidBufHPSS.process(s, b, harmonic: c, percussive: d, residual:e, harmFilterSize:31, maskingMode:2, harmThreshFreq1: 0.005, harmThreshAmp1: 7.5, harmThreshFreq2: 0.168, harmThreshAmp2: 7.5, percThreshFreq1: 0.004, percThreshAmp1: 26.5, percThreshFreq2: 0.152, percThreshAmp2: 26.5,winSize:4096,hopSize:512);
-			s.sync;
 		(Main.elapsedTime - t).postln;
 	}.play
 )
@@ -161,7 +159,7 @@ d.play;
 e.play;
 
 //still nullsumming
-{PlayBuf.ar(1,c.bufnum) + PlayBuf.ar(1,d.bufnum) + PlayBuf.ar(1,e.bufnum) - PlayBuf.ar(1,b.bufnum,doneAction:2)}.play;
+{PlayBuf.ar(1,c) + PlayBuf.ar(1,d) + PlayBuf.ar(1,e) - PlayBuf.ar(1,b,doneAction:2)}.play;
 ::
 
 STRONG::A stereo buffer example.::
@@ -178,15 +176,13 @@ FluidBufCompose.process(s, c, numFrames:b.numFrames, startFrame:555000,destStart
 b.play
 
 // create 2 new buffers as destinations
-d = Buffer.new(s);
-e = Buffer.new(s);
+d = Buffer.new(s); e = Buffer.new(s);
 
 //run the process on them
 (
 Routine{
     t = Main.elapsedTime;
     FluidBufHPSS.process(s, b, harmonic: d, percussive:e);
-    s.sync;
     (Main.elapsedTime - t).postln;
 }.play
 )

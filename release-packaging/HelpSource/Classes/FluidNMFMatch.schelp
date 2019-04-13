@@ -52,7 +52,7 @@ RETURNS::
 
 EXAMPLES::
 STRONG::A didactic example::
-	CODE::
+CODE::
 (
 // create buffers
 b= Buffer.alloc(s,44100);
@@ -67,8 +67,8 @@ Routine {
 	b.sine2([500],[1], false, false);
 	c.sine2([5000],[1],false, false);
 	s.sync;
-	FluidBufCompose.process(s,b.bufnum, destination:d.bufnum);
-	FluidBufCompose.process(s,c.bufnum, destStartFrame:44100, destination:d.bufnum, destGain:1);
+	FluidBufCompose.process(s,b, destination:d);
+	FluidBufCompose.process(s,c, destStartFrame:44100, destination:d, destGain:1);
 	s.sync;
 	d.query;
 }.play;
@@ -81,39 +81,37 @@ d.play //////(beware !!!! loud!!!)
 (
 // separate them in 2 ranks
 Routine {
-	FluidBufNMF.process(s, d.bufnum, bases: e.bufnum, rank:2);
+	FluidBufNMF.process(s, d, bases: e, rank:2);
 	s.sync;
 	e.query;
 }.play
 )
 
 // check for 2 spikes in the spectra
-e.query
 e.plot
 
 // test the activations values with test one, another, or both ideal material
-{FluidNMFMatch.kr(SinOsc.ar(500),e.bufnum,2)}.plot(1)
+{FluidNMFMatch.kr(SinOsc.ar(500),e,2)}.plot(1)
 
-{FluidNMFMatch.kr(SinOsc.ar(5000),e.bufnum,2)}.plot(1)
+{FluidNMFMatch.kr(SinOsc.ar(5000),e,2)}.plot(1)
 
-{FluidNMFMatch.kr(SinOsc.ar([500,5000]).sum,e.bufnum,2)}.plot(1)
+{FluidNMFMatch.kr(SinOsc.ar([500,5000]).sum,e,2)}.plot(1)
 ::
 
 STRONG::A pick compressor::
-	CODE::
+CODE::
 //set some buffers
 (
 b = Buffer.read(s,File.realpath(FluidNMFMatch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-AcousticStrums-M.wav");
 c = Buffer.new(s);
 x = Buffer.new(s);
-e = Buffer.alloc(s,1,1);
+e = Buffer.new(s);
 )
 
 // train only 2 seconds
 (
 Routine {
-    FluidBufNMF.process(s,b.bufnum,0,88200,0,1, c.bufnum, x.bufnum, rank:10,fftSize:2048);
-    s.sync;
+    FluidBufNMF.process(s,b,0,88200,0,1, c, x, rank:10,fftSize:2048);
     c.query;
 }.play;
 )
@@ -121,20 +119,16 @@ Routine {
 // wait for the query to print
 // then find the rank that has the picking sound by changing which channel to listen to
 (
-    ~element = 3;
-    {PlayBuf.ar(10,c.bufnum)[~element]}.play
+    ~element = 6;
+    {PlayBuf.ar(10,c)[~element]}.play;
 )
 
 // copy all the other ranks on itself and the picking basis as the sole component of the 1st channel
 (
 Routine{
 	z = (0..9);
-	FluidBufCompose.process(s, x.bufnum, startChan: z.removeAt(~element), numChans: 1, destination: e.bufnum);
-    s.sync;
-    e.query;
-    s.sync;
-	z.do({|chan| FluidBufCompose.process(s, x.bufnum, startChan:chan, numChans: 1, destStartChan: 1, destination: e.bufnum, destGain:1)});
-    s.sync;
+	FluidBufCompose.process(s, x, startChan: z.removeAt(~element), numChans: 1, destination: e);
+	z.do({|chan| FluidBufCompose.process(s, x, startChan:chan, numChans: 1, destStartChan: 1, destination: e, destGain:1)});
     e.query;
 }.play;
 )
@@ -142,7 +136,7 @@ Routine{
 e.plot;
 
 //using this trained basis we can see the envelop (activations) of each rank
-{FluidNMFMatch.kr(PlayBuf.ar(1,b.bufnum),e.bufnum,2,fftSize:2048)}.plot(1);
+{FluidNMFMatch.kr(PlayBuf.ar(1,b),e,2,fftSize:2048)}.plot(1);
 // the left/top activations are before, the pick before the sustain.
 
 //we can then use the activation value to sidechain a compression patch that is sent in a delay
@@ -150,7 +144,7 @@ e.plot;
 {
 	var source, todelay, delay1, delay2, delay3, feedback, mod1, mod2, mod3, mod4;
 	//read the source
-	source = PlayBuf.ar(1, b.bufnum);
+	source = PlayBuf.ar(1, b);
 
 	// generate modulators that are coprime in frequency
 	mod1 = SinOsc.ar(1, 0, 0.001);
@@ -160,7 +154,7 @@ e.plot;
 
 	// compress the signal to send to the delays
 	todelay = DelayN.ar(source,0.1, 800/44100, //delaying it to compensate for FluidNMFMatch's latency
-		LagUD.ar(K2A.ar(FluidNMFMatch.kr(source,e.bufnum,2,fftSize:2048)[0]), //reading the channel of the activations on the pick basis
+		LagUD.ar(K2A.ar(FluidNMFMatch.kr(source,e,2,fftSize:2048)[0]), //reading the channel of the activations on the pick basis
 			80/44100, // lag uptime (compressor's attack)
 			1000/44100, // lag downtime (compressor's decay)
 			(1/(2.dbamp) // compressor's threshold inverted
@@ -193,8 +187,7 @@ e = Buffer.new(s);
 // train where all objects are present
 (
 Routine {
-    FluidBufNMF.process(s,b.bufnum,130000,150000,0,1, c.bufnum, x.bufnum, rank:10);
-    s.sync;
+    FluidBufNMF.process(s,b,130000,150000,0,1, c, x, rank:10);
     c.query;
 }.play;
 )
@@ -203,36 +196,34 @@ Routine {
 // then find a rank for each item you want to find. You could also sum them. Try to find a rank with a good object-to-rest ratio
 (
     ~dog =2;
-    {PlayBuf.ar(10,c.bufnum)[~dog]}.play
+    {PlayBuf.ar(10,c)[~dog]}.play
 )
 
 (
-    ~bird = 5;
-    {PlayBuf.ar(10,c.bufnum)[~bird]}.play
+    ~bird = 3;
+    {PlayBuf.ar(10,c)[~bird]}.play
 )
 
 
 // copy at least one other rank to a third rank, a sort of left-over channel
 (
 Routine{
-	FluidBufCompose.process(s, x.bufnum, startChan:~dog, numChans: 1, destination: e.bufnum);
-	FluidBufCompose.process(s, x.bufnum, startChan:~bird, numChans: 1, destStartChan: 1, destination: e.bufnum, destGain:1);
-    s.sync;
-	(0..9).removeAll([~dog,~bird]).do({|chan|FluidBufCompose.process(s,x.bufnum, startChan:chan, numChans: 1, destStartChan: 2, destination: e.bufnum, destGain:1)});
-    s.sync;
+	FluidBufCompose.process(s, x, startChan:~dog, numChans: 1, destination: e);
+	FluidBufCompose.process(s, x, startChan:~bird, numChans: 1, destStartChan: 1, destination: e, destGain:1);
+	(0..9).removeAll([~dog,~bird]).do({|chan|FluidBufCompose.process(s,x, startChan:chan, numChans: 1, destStartChan: 2, destination: e, destGain:1)});
     e.query;
 }.play;
 )
 e.plot;
 
-//using this trained basis we can then see the activation...
+//using this trained basis we can then see the activation... (wait for 5 seconds before it prints!)
 (
 {
 	var source, blips;
 	//read the source
-	source = PlayBuf.ar(2, b.bufnum);
-	blips = FluidNMFMatch.kr(source.sum,e.bufnum,3);
-	}.plot(10);
+	source = PlayBuf.ar(2, b);
+	blips = FluidNMFMatch.kr(source.sum,e,3);
+	}.plot(5);
 )
 
 // ...and use some threshold to 'find' objects...
@@ -240,9 +231,9 @@ e.plot;
 {
 	var source, blips;
 	//read the source
-	source = PlayBuf.ar(2, b.bufnum);
-	blips = Schmidt.kr(FluidNMFMatch.kr(source.sum,e.bufnum,3),0.5,[10,1,1000]);
-	}.plot(10);
+	source = PlayBuf.ar(2, b);
+	blips = Schmidt.kr(FluidNMFMatch.kr(source.sum,e,3),0.5,[10,1,1000]);
+	}.plot(5);
 )
 
 // ...and use these to sonify them
@@ -250,8 +241,8 @@ e.plot;
 {
 	var source, blips, dogs, birds;
 	//read the source
-	source = PlayBuf.ar(2, b.bufnum);
-	blips = Schmidt.kr(FluidNMFMatch.kr(source.sum,e.bufnum,3),0.5,[10,1,1000]);
+	source = PlayBuf.ar(2, b);
+	blips = Schmidt.kr(FluidNMFMatch.kr(source.sum,e,3),0.5,[10,1,1000]);
 	dogs = SinOsc.ar(100,0,Lag.kr(blips[0],0.05,0.15));
 	birds = SinOsc.ar(1000,0,Lag.kr(blips[1],0.05,0.05));
 	[dogs, birds] + source;
@@ -272,8 +263,8 @@ c.query
 (
 {
 	var source, resynth;
-	source = PlayBuf.ar(2, b.bufnum,loop:1).sum;
-	resynth = SinOsc.ar((21..108).midicps, 0, FluidNMFMatch.kr(source,c.bufnum,88,10,4096).madd(0.002)).sum;
+	source = PlayBuf.ar(2, b,loop:1).sum;
+	resynth = SinOsc.ar((21..108).midicps, 0, FluidNMFMatch.kr(source,c,88,10,4096).madd(0.002)).sum;
 	[source, resynth]
 }.play
 )
@@ -283,14 +274,14 @@ c.query
 (
 {
 	var source, resynth, chain, trig, acts;
-	source = PlayBuf.ar(2,b.bufnum,loop:1).sum;
+	source = PlayBuf.ar(2,b,loop:1).sum;
 
 	// built in attack detection, delayed until the stable part of the sound
 	chain = FFT(LocalBuf(256), source);
 	trig = TDelay.kr(Onsets.kr(chain, 0.5),0.1);
 
 	// samples and holds activation values that are scaled and capped, in effect thresholding them
-	acts = Latch.kr(FluidNMFMatch.kr(source,c.bufnum,88,10,4096).linlin(15,20,0,0.1),trig);
+	acts = Latch.kr(FluidNMFMatch.kr(source,c,88,10,4096).linlin(15,20,0,0.1),trig);
 
 	// resynths as in the previous example, with the values sent back to the language
 	resynth = SinOsc.ar((21..108).midicps, 0, acts).sum;

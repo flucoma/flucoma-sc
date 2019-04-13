@@ -86,20 +86,17 @@ d = Buffer.new(s);
 (
 Routine{
 	t = Main.elapsedTime;
-	FluidBufSines.process(s, b.bufnum, sines: c.bufnum, residual:d.bufnum);
-	s.sync;
+	FluidBufSines.process(s, b, sines: c, residual:d);
 	(Main.elapsedTime - t).postln;
 }.play
 )
 
 // listen to each component
-c.query;
 c.play;
-d.query;
 d.play;
 
 //nullsumming tests
-{(PlayBuf.ar(1, c.bufnum)) + (PlayBuf.ar(1,d.bufnum)) - (PlayBuf.ar(1,b.bufnum,doneAction:2))}.play
+{(PlayBuf.ar(1, c)) + (PlayBuf.ar(1,d)) - (PlayBuf.ar(1,b,doneAction:2))}.play
 ::
 
 STRONG::A stereo buffer example.::
@@ -116,15 +113,13 @@ FluidBufCompose.process(s, c, numFrames:b.numFrames, startFrame:555000,destStart
 b.play
 
 // create 2 new buffers as destinations
-d = Buffer.new(s);
-e = Buffer.new(s);
+d = Buffer.new(s); e = Buffer.new(s);
 
 //run the process on them
 (
 Routine{
     t = Main.elapsedTime;
     FluidBufSines.process(s, b, sines: d, residual:e, threshold:0.3);
-    s.sync;
     (Main.elapsedTime - t).postln;
 }.play
 )

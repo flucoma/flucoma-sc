@@ -74,8 +74,7 @@ c = Buffer.new(s);
 // with basic params
 Routine{
 	t = Main.elapsedTime;
-	FluidBufNoveltySlice.process(s,b.bufnum, indices: c.bufnum, threshold:0.6);
-	s.sync;
+	FluidBufNoveltySlice.process(s,b, indices: c, threshold:0.6);
 	(Main.elapsedTime - t).postln;
 }.play
 )
@@ -86,14 +85,14 @@ c.query;
 //loops over a splice with the MouseX
 (
 {
-	BufRd.ar(1, b.bufnum,
+	BufRd.ar(1, b,
 		Phasor.ar(0,1,
-			BufRd.kr(1, c.bufnum,
-				MouseX.kr(0, BufFrames.kr(c.bufnum) - 1), 0, 1),
-			BufRd.kr(1, c.bufnum,
-				MouseX.kr(1, BufFrames.kr(c.bufnum)), 0, 1),
-			BufRd.kr(1,c.bufnum,
-				MouseX.kr(0, BufFrames.kr(c.bufnum) - 1), 0, 1)), 0, 1);
+			BufRd.kr(1, c,
+				MouseX.kr(0, BufFrames.kr(c) - 1), 0, 1),
+			BufRd.kr(1, c,
+				MouseX.kr(1, BufFrames.kr(c)), 0, 1),
+			BufRd.kr(1,c,
+				MouseX.kr(0, BufFrames.kr(c) - 1), 0, 1)), 0, 1);
 		}.play;
 )
 	::
@@ -108,7 +107,7 @@ c = Buffer.new(s);
 )
 
 // process with a given filterSize
-FluidBufNoveltySlice.process(s,b.bufnum, indices: c.bufnum, kernSize:31, threshold:0.3, filterSize:0)
+FluidBufNoveltySlice.process(s,b, indices: c, kernSize:31, threshold:0.3, filterSize:0)
 
 //check the number of slices: it is the number of frames in the transBuf minus the boundary index.
 c.query;
@@ -116,11 +115,11 @@ c.query;
 //play slice number 2
 (
 {
-	BufRd.ar(1, b.bufnum,
+	BufRd.ar(1, b,
 		Line.ar(
-			BufRd.kr(1, c.bufnum, DC.kr(2), 0, 1),
-			BufRd.kr(1, c.bufnum, DC.kr(3), 0, 1),
-			(BufRd.kr(1, c.bufnum, DC.kr(3)) - BufRd.kr(1, c.bufnum, DC.kr(2), 0, 1) + 1) / s.sampleRate),
+			BufRd.kr(1, c, DC.kr(2), 0, 1),
+			BufRd.kr(1, c, DC.kr(3), 0, 1),
+			(BufRd.kr(1, c, DC.kr(3)) - BufRd.kr(1, c, DC.kr(2), 0, 1) + 1) / s.sampleRate),
 		0,1);
 }.play;
 )
@@ -152,8 +151,7 @@ c = Buffer.new(s);
 // with basic params
 Routine{
     t = Main.elapsedTime;
-    FluidBufNoveltySlice.process(s,b.bufnum, indices: c.bufnum, threshold:0.6);
-    s.sync;
+    FluidBufNoveltySlice.process(s,b, indices: c, threshold:0.6);
     (Main.elapsedTime - t).postln;
 }.play
 )

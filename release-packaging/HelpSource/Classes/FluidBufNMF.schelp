@@ -128,8 +128,8 @@ Routine {
 	b.sine2([500],[1], false, false);
 	c.sine2([5000],[1],false, false);
 	s.sync;
-	FluidBufCompose.process(s,b.bufnum, destination:d.bufnum);
-	FluidBufCompose.process(s,c.bufnum, destStartFrame:44100, destination:d.bufnum, destGain:1);
+	FluidBufCompose.process(s,b, destination:d);
+	FluidBufCompose.process(s,c, destStartFrame:44100, destination:d, destGain:1);
 	s.sync;
 	d.query;
 }.play;
@@ -142,8 +142,7 @@ d.play //////(beware !!!! loud!!!)
 (
 // separate them in 2 ranks
 Routine {
-	FluidBufNMF.process(s, d.bufnum, destination:e.bufnum, bases: f.bufnum, activations:g.bufnum, rank:2);
-	s.sync;
+	FluidBufNMF.process(s, d, destination:e, bases: f, activations:g, rank:2);
 	e.query;
 	f.query;
 	g.query;
@@ -174,29 +173,28 @@ y = Buffer.new(s);
 ~fft_size = 1024;
 ~frame_size = 512;
 ~hop_size = 256;
-~which_rank = 1;
+~which_rank = 3;
 )
 
-// matrix factorisation, requesting everything
+// matrix factorisation, requesting everything - wait for the computation time to appear.
 (
 Routine{
 	t = Main.elapsedTime;
 	FluidBufNMF.process(s,b, 0,-1,0,-1,c,x,0,y,0,5,100,~frame_size,~hop_size,~fft_size);
-	s.sync;
 	(Main.elapsedTime - t).postln;
 }.play
 )
 
 //look at the resynthesised ranks, the bases and the activations
-c.plot;x.plot; y.plot;
+c.plot; x.plot; y.plot;
 //null test of the sum of sources
-{(PlayBuf.ar(5,c.bufnum,doneAction:2).sum)+(-1*PlayBuf.ar(1,b.bufnum,doneAction:2))}.play
+{(PlayBuf.ar(5,c,doneAction:2).sum)+(-1*PlayBuf.ar(1,b,doneAction:2))}.play
 
 // play the ranks spread in the stereo field
-{Splay.ar(PlayBuf.ar(5,c.bufnum,doneAction:2))}.play
+{Splay.ar(PlayBuf.ar(5,c,doneAction:2))}.play
 
 //play a single source
-{PlayBuf.ar(5,c.bufnum,doneAction:2)[~which_rank].dup}.play
+{PlayBuf.ar(5,c,doneAction:2)[~which_rank].dup}.play
 
 //play noise using one of the bases as filter.
 (
@@ -205,7 +203,7 @@ c.plot;x.plot; y.plot;
 	chain = FFT(LocalBuf(~fft_size), WhiteNoise.ar());
 
 	chain = chain.pvcollect(~fft_size, {|mag, phase, index|
-		[mag * BufRd.kr(5,x.bufnum,DC.kr(index),0,1)[~which_rank]];
+		[mag * BufRd.kr(5,x,DC.kr(index),0,1)[~which_rank]];
 	});
 
 	IFFT(chain);
@@ -213,16 +211,16 @@ c.plot;x.plot; y.plot;
 )
 
 //play noise using one of the activations as envelope.
-{WhiteNoise.ar(BufRd.kr(5,y.bufnum,Phasor.ar(1,1/~hop_size,0,(b.numFrames / ~hop_size + 1)),0,1)[~which_rank])*0.5}.play
+{WhiteNoise.ar(BufRd.kr(5,y,Phasor.ar(1,1/~hop_size,0,(b.numFrames / ~hop_size + 1)),0,1)[~which_rank])*0.5}.play
 
 //play noise through both matching activation and filter
 (
 {
 	var chain;
-	chain = FFT(LocalBuf(~fft_size), WhiteNoise.ar(BufRd.kr(5,y.bufnum,Phasor.ar(1,1/~hop_size,0,(b.numFrames / ~hop_size + 1)),0,1)[~which_rank]*12),0.5,1);
+	chain = FFT(LocalBuf(~fft_size), WhiteNoise.ar(BufRd.kr(5,y,Phasor.ar(1,1/~hop_size,0,(b.numFrames / ~hop_size + 1)),0,1)[~which_rank]*12),0.5,1);
 
 	chain = chain.pvcollect(~fft_size, {|mag, phase, index|
-		[mag * BufRd.kr(5,x.bufnum,DC.kr(index),0,1)[~which_rank]];
+		[mag * BufRd.kr(5,x,DC.kr(index),0,1)[~which_rank]];
 	});
 
 	[0,IFFT(chain)];
@@ -246,28 +244,23 @@ y = Buffer.new(s);
 // train only 2 seconds
 (
 Routine {
-	FluidBufNMF.process(s,b.bufnum,0,88200,0,1, c.bufnum, x.bufnum, rank:10);
-	s.sync;
+	FluidBufNMF.process(s,b,0,88200,0,1, c, x, rank:10);
 	c.query;
 }.play;
 )
 
 // find the rank that has the picking sound by changing which channel to listen to
 (
-	~element = 1;
-	{PlayBuf.ar(10,c.bufnum)[~element]}.play
+	~element = 4;
+	{PlayBuf.ar(10,c)[~element]}.play
 )
 
 // copy all the other ranks on itself and the picking basis as the sole component of the 1st channel
 (
 Routine{
 	z = (0..9);
-	FluidBufCompose.process(s, x.bufnum, startChan: z.removeAt(~element), numChans: 1, destination: e.bufnum);
-    s.sync;
-    e.query;
-    s.sync;
-	z.do({|chan| FluidBufCompose.process(s, x.bufnum, startChan:chan, numChans: 1, destStartChan: 1, destination: e.bufnum, destGain:1)});
-    s.sync;
+	FluidBufCompose.process(s, x, startChan: z.removeAt(~element), numChans: 1, destination: e);
+	z.do({|chan| FluidBufCompose.process(s, x, startChan:chan, numChans: 1, destStartChan: 1, destination: e, destGain:1)});
     e.query;
 }.play;
 )
@@ -276,7 +269,6 @@ Routine{
 (
 Routine{
 	FluidBufNMF.process(s, b, destination: c, bases: e, basesMode: 2, activations: y, rank:2);
-	s.sync;
 	c.query;
 }.play;
 )
@@ -285,7 +277,7 @@ Routine{
 c.play
 
 // it even null-sums
-{(PlayBuf.ar(2,c.bufnum,doneAction:2).sum)-(PlayBuf.ar(1,b.bufnum,doneAction:2))}.play
+{(PlayBuf.ar(2,c,doneAction:2).sum)-(PlayBuf.ar(1,b,doneAction:2))}.play
 ::
 
 STRONG::Updating Bases: The process can update bases provided as seed.::
@@ -307,8 +299,8 @@ Routine {
 	b.sine2([500],[1], false, false);
 	c.sine2([5000],[1],false, false);
 	s.sync;
-	FluidBufCompose.process(s,b.bufnum, destination:d.bufnum);
-	FluidBufCompose.process(s,c.bufnum, destStartFrame:44100, destination:d.bufnum, destGain:1);
+	FluidBufCompose.process(s,b, destination:d);
+	FluidBufCompose.process(s,c, destStartFrame:44100, destination:d, destGain:1);
 	s.sync;
 	d.query;
 }.play;
@@ -335,7 +327,6 @@ e.query
 // use the seeding basis, without updating
 Routine {
 	FluidBufNMF.process(s, d, destination:f, bases: e, basesMode: 2, activations:g, rank:3);
-	s.sync;
 	e.query;
 	f.query;
 	g.query;
@@ -355,7 +346,6 @@ g.plot;
 // use the seeding bases, with updating this time
 Routine {
 	FluidBufNMF.process(s, d, destination:f, bases: e, basesMode: 1, activations:g, rank:3);
-	s.sync;
 	e.query;
 	f.query;
 	g.query;

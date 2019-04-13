@@ -59,12 +59,11 @@ CODE::
 b = Buffer.read(s,File.realpath(FluidSines.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
 
 // run with large parameters - left is sinusoidal model, right is residual
-{FluidSines.ar(PlayBuf.ar(1,b.bufnum,loop:1),threshold: 0.2, minTrackLen: 2, winSize: 2048, fftSize: 8192)}.play
+{FluidSines.ar(PlayBuf.ar(1,b,loop:1),threshold: 0.2, minTrackLen: 2, winSize: 2048, fftSize: 8192)}.play
 
 // interactive parameters with a narrower bandwidth
-{FluidSines.ar(PlayBuf.ar(1,b.bufnum,loop:1),30,MouseX.kr(), 5, winSize: 1000, hopSize: 200, fftSize: 4096)}.play
+{FluidSines.ar(PlayBuf.ar(1,b,loop:1),30,MouseX.kr(), 5, winSize: 1000, hopSize: 200, fftSize: 4096)}.play
 
 // null test (the process add a latency of (( hopSize * minTrackLen) + winSize) samples
-{var sig = PlayBuf.ar(1,b.bufnum,loop:1); [FluidSines.ar(sig).sum - DelayN.ar(sig, 1, ((( 512 * 15) + 1024)/ s.sampleRate))]}.play
-
+{var sig = PlayBuf.ar(1,b,loop:1); [FluidSines.ar(sig).sum - DelayN.ar(sig, 1, ((( 512 * 15) + 1024)/ s.sampleRate))]}.play
 ::

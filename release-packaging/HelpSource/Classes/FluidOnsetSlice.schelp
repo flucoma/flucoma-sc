@@ -66,16 +66,16 @@ code::
 b = Buffer.read(s,File.realpath(FluidOnsetSlice.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
 
 // basic param (the process add a latency of winSize samples
-{var sig = PlayBuf.ar(1,b.bufnum,loop:1); [FluidOnsetSlice.ar(sig) * 0.5, DelayN.ar(sig, 1, 1024/ s.sampleRate)]}.play
+{var sig = PlayBuf.ar(1,b,loop:1); [FluidOnsetSlice.ar(sig) * 0.5, DelayN.ar(sig, 1, 1024/ s.sampleRate)]}.play
 
 // other parameters
-{var sig = PlayBuf.ar(1,b.bufnum,loop:1); [FluidOnsetSlice.ar(sig, 2, 0.06, 55, 7, 0, 128, 64) * 0.5, DelayN.ar(sig, 1, (128)/ s.sampleRate)]}.play
+{var sig = PlayBuf.ar(1,b,loop:1); [FluidOnsetSlice.ar(sig, 2, 0.06, 55, 7, 0, 128, 64) * 0.5, DelayN.ar(sig, 1, (128)/ s.sampleRate)]}.play
 
 // more musical trans-trigged autopan
 (
 {
     var sig, trig, syncd, pan;
-    sig = PlayBuf.ar(1,b.bufnum,loop:1);
+    sig = PlayBuf.ar(1,b,loop:1);
     trig = FluidOnsetSlice.ar(sig, 1, 1.8, 100, 8, 0, 128);
     syncd = DelayN.ar(sig, 1, ( 128 / s.sampleRate));
     pan = TRand.ar(-1,1,trig);
