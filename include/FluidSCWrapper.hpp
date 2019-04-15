@@ -118,6 +118,9 @@ public:
 
     set_calc_function<RealTime, &RealTime::next>();
     Wrapper::getInterfaceTable()->fClearUnitOutputs(this, 1);
+    
+    mClient.sampleRate(fullSampleRate());
+    
   }
 
   void next(int n)
