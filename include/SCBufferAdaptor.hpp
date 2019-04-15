@@ -140,13 +140,14 @@ public:
 
   size_t rank() const override { return valid() ? mRank : 0; }
 
-  void resize(size_t frames, size_t channels, size_t rank) override
+  double sampleRate() const override { return valid() ? mBuffer->samplerate : 0; }
+
+  void resize(size_t frames, size_t channels, size_t rank, double sampleRate) override
   {
     SndBuf *thisThing = mBuffer;
     mOldData          = thisThing->data;
     mRank             = rank;
-    mWorld->ft->fBufAlloc(mBuffer, channels * rank, frames,
-                          thisThing->samplerate);
+    mWorld->ft->fBufAlloc(mBuffer, channels * rank, frames, sampleRate);
   }
 
   int bufnum() { return mBufnum; }
