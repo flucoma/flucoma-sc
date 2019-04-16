@@ -78,7 +78,7 @@ public:
   RealTime()
     : mControlsIterator{mInBuf + mSpecialIndex + 1,mNumInputs - mSpecialIndex - 1}
     , mParams{Wrapper::Client::getParameterDescriptors()}
-    , mClient{Wrapper::setParams(mParams,mWorld->mVerbosity > 0, mWorld, mControlsIterator)}
+    , mClient{Wrapper::setParams(mParams,mWorld->mVerbosity > 0, mWorld, mControlsIterator,true)}
   {}
 
   void init()
@@ -390,11 +390,14 @@ public:
     impl::FluidSCWrapperBase<Client>::setup(ft, name);
   }
 
-  static auto& setParams(ParameterSetType& p, bool verbose, World* world, FloatControlsIter& inputs)
+  static auto& setParams(ParameterSetType& p, bool verbose, World* world, FloatControlsIter& inputs, bool constrain = false)
   {
     //We won't even try and set params if the arguments don't match 
     if(inputs.size() == C::getParameterDescriptors().count())
+    {
         p.template setParameterValues<ControlSetter>(verbose, world, inputs);
+        if (constrain)p.template constrainParameterValues();
+    }
     return p;
   }
 
