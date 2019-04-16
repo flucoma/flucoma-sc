@@ -78,7 +78,7 @@ public:
   RealTime()
     : mControlsIterator{mInBuf + mSpecialIndex + 1,mNumInputs - mSpecialIndex - 1}
     , mParams{Wrapper::Client::getParameterDescriptors()}
-    , mClient{Wrapper::setParams(mParams,mWorld->mVerbosity > 0, mWorld, mControlsIterator,true)}
+    , mClient{Wrapper::setParams(mParams,mWorld->mVerbosity > 0, mWorld, mControlsIterator)}
   {}
 
   void init()
@@ -126,7 +126,7 @@ public:
   void next(int n)
   {
     mControlsIterator.reset(mInBuf + 1); //mClient.audioChannelsIn());
-    Wrapper::setParams(mParams, mWorld->mVerbosity > 0, mWorld, mControlsIterator,false); // forward on inputs N + audio inputs as params
+    Wrapper::setParams(mParams, mWorld->mVerbosity > 0, mWorld, mControlsIterator); // forward on inputs N + audio inputs as params
     mParams.template constrainParameterValues(); 
     const Unit *unit = this;
     for (int i = 0; i < mClient.audioChannelsIn(); ++i)
@@ -186,7 +186,7 @@ public:
     Wrapper *w = new Wrapper(
         world, args); // this has to be on the heap, because it doesn't get destroyed until the async command is done
 
-    Wrapper::setParams(w->mParams, false, world, args,true);
+    Wrapper::setParams(w->mParams, false, world, args);
 
     Result result = validateParameters(w);
     if (!result.ok())
@@ -390,22 +390,18 @@ public:
     impl::FluidSCWrapperBase<Client>::setup(ft, name);
   }
 
-  static auto& setParams(ParameterSetType& p, bool verbose, World* world, FloatControlsIter& inputs, bool includeFixed)
+  static auto& setParams(ParameterSetType& p, bool verbose, World* world, FloatControlsIter& inputs)
   {
     //We won't even try and set params if the arguments don't match 
     if(inputs.size() == C::getParameterDescriptors().count())
-    {
-        if(includeFixed) p.template setFixedParameterValues<ControlSetter>(verbose,world,inputs);
-        p.template setMutableParameterValues<ControlSetter>(verbose, world, inputs);
-    }
+        p.template setParameterValues<ControlSetter>(verbose, world, inputs);
     return p;
   }
 
-  static auto& setParams(ParameterSetType& p, bool verbose, World* world, sc_msg_iter *args,bool includeFixed)
+  static auto& setParams(ParameterSetType& p, bool verbose, World* world, sc_msg_iter *args)
   {
-      if(includeFixed) p.template setFixedParameterValues<ArgumentSetter>(verbose,world,args);
-      p.template setMutableParameterValues<ArgumentSetter>(verbose,world, args);
-      return p;
+      p.template setParameterValues<ArgumentSetter>(verbose,world, args);
+     return p;
   }
 };
 
