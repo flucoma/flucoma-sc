@@ -57,8 +57,8 @@ class SCBufferAdaptor : public NRTBuf, public client::BufferAdaptor
 {
 public:
 //  SCBufferAdaptor()               = delete;
-  SCBufferAdaptor(SCBufferAdaptor &) = delete;
-  SCBufferAdaptor operator=(SCBufferAdaptor &) = delete;
+  SCBufferAdaptor(const SCBufferAdaptor &) = delete;
+  SCBufferAdaptor& operator=(const SCBufferAdaptor &) = delete;
 
   SCBufferAdaptor(SCBufferAdaptor&&) = default;
   SCBufferAdaptor& operator=(SCBufferAdaptor&&) = default;
