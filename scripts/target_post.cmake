@@ -38,7 +38,7 @@ if (SUPERNOVA)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
-    target_compile_definitions(${PLUGIN} -fvisibility=hidden)
+    target_compile_definitions(${PLUGIN} PRIVATE -fvisibility=hidden)
 
     include (CheckCXXCompilerFlag)
 
