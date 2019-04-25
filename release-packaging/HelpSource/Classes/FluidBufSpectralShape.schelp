@@ -86,7 +86,7 @@ Routine{
 
 // listen to the source and look at the buffer
 b.play;
-			c.plot(minval:-10, maxval:0)
+c.plot(minval:-25, maxval:150)
 ::
 
 STRONG::A stereo buffer example.::
@@ -102,19 +102,18 @@ c = Buffer.read(s,File.realpath(FluidBufSpectralShape.class.filenameSymbol).dirn
 FluidBufCompose.process(s, c, numFrames:b.numFrames, startFrame:555000,destStartChan:1, destination:b)
 b.play
 
-// create 2 new buffers as destinations
-d = Buffer.new(s); e = Buffer.new(s);
+// create a buffer as destinations
+c = Buffer.new(s);
 
 //run the process on them
 (
 Routine{
     t = Main.elapsedTime;
-    FluidBufSines.process(s, b, features: c);
+    FluidBufSpectralShape.process(s, b, features: c);
     (Main.elapsedTime - t).postln;
 }.play
 )
 
-//listen: stereo preserved!
-d.play
-e.play
+// look at the buffer: 7shapes for left, then 7 shapes for right
+c.plot(minval:-25, maxval:150)
 ::
