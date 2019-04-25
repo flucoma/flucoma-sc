@@ -76,7 +76,7 @@ public:
   }
     
   RealTime()
-    : mControlsIterator{mInBuf + mSpecialIndex + 1,mNumInputs - mSpecialIndex - 1}
+    : mControlsIterator{mInBuf + mSpecialIndex + 1,static_cast<size_t>(static_cast<ptrdiff_t>(mNumInputs) - mSpecialIndex - 1)}
     , mParams{Wrapper::Client::getParameterDescriptors()}
     , mClient{Wrapper::setParams(mParams,mWorld->mVerbosity > 0, mWorld, mControlsIterator,true)}
   {}
@@ -102,19 +102,19 @@ public:
     mAudioInputs.reserve(mClient.audioChannelsIn());
     mOutputs.reserve(std::max(mClient.audioChannelsOut(), mClient.controlChannelsOut()));
 
-    for (size_t i = 0; i < mClient.audioChannelsIn(); ++i)
+    for (int i = 0; i < static_cast<int>(mClient.audioChannelsIn()); ++i)
     {
       mInputConnections.emplace_back(isAudioRateIn(i));
       mAudioInputs.emplace_back(nullptr, 0, 0);
     }
 
-    for (size_t i = 0; i < mClient.audioChannelsOut(); ++i)
+    for (int i = 0; i < static_cast<int>(mClient.audioChannelsOut()); ++i)
     {
       mOutputConnections.emplace_back(true);
       mOutputs.emplace_back(nullptr, 0, 0);
     }
 
-    for (size_t i = 0; i < mClient.controlChannelsOut(); ++i) { mOutputs.emplace_back(nullptr, 0, 0); }
+    for (int i = 0; i < static_cast<int>(mClient.controlChannelsOut()); ++i) { mOutputs.emplace_back(nullptr, 0, 0); }
 
     set_calc_function<RealTime, &RealTime::next>();
     Wrapper::getInterfaceTable()->fClearUnitOutputs(this, 1);
@@ -135,9 +135,9 @@ public:
     }
     for (size_t i = 0; i < mClient.audioChannelsOut(); ++i)
     {
-      if (mOutputConnections[i]) mOutputs[i].reset(out(i), 0, fullBufferSize());
+      if (mOutputConnections[i]) mOutputs[i].reset(out(static_cast<int>(i)), 0, fullBufferSize());
     }
-    for (size_t i = 0; i < mClient.controlChannelsOut(); ++i) { mOutputs[i].reset(out(i), 0, 1); }
+    for (size_t i = 0; i < mClient.controlChannelsOut(); ++i) { mOutputs[i].reset(out(static_cast<int>(i)), 0, 1); }
     mClient.process(mAudioInputs, mOutputs);
   }
 
@@ -202,7 +202,7 @@ public:
     if (msgSize) { args->getb(completionMessage.data(), msgSize); }
 
     world->ft->fDoAsynchronousCommand(world, replyAddr, Wrapper::getName(), w, process, exchangeBuffers, tidyUp, destroy,
-                                      msgSize, completionMessage.data());
+                                      static_cast<int>(msgSize), completionMessage.data());
   }
 
   static bool process(World *world, void *data) { return static_cast<Wrapper *>(data)->process(world); }
@@ -336,16 +336,17 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
 
     auto fromArgs(World *w, ArgType args, BufferT::type, int)
     {
-      typename LongT::type bufnum = fromArgs(w, args, LongT::type(), -1);
+      typename LongT::type bufnum = static_cast<LongT::type>(fromArgs(w, args, LongT::type(), -1));
       return BufferT::type(bufnum >= 0 ? new SCBufferAdaptor(bufnum, w) : nullptr);
     }
     
     typename T::type operator()(World *w, ArgType args)
     {
       ParamLiteralConvertor<T, argSize> a;
+      using LiteralType = typename ParamLiteralConvertor<T, argSize>::LiteralType;
       
       for (size_t i = 0; i < argSize; i++)
-        a[i] = fromArgs(w, args, a[0], 0);
+        a[i] = static_cast<LiteralType>(fromArgs(w, args, a[0], 0));
       
       return a.value();
     }
