@@ -1,0 +1,108 @@
+TITLE:: FluidPitch
+SUMMARY:: A Selection of Pitch Descriptors in Real-Time
+CATEGORIES:: Libraries>FluidDecomposition
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/Pitch
+
+DESCRIPTION::
+This class implements three popular pitch descriptors, computed as frequency and the confidence in its value. It is part of the Fluid Decomposition Toolkit of the FluCoMa project.FOOTNOTE:: This was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+
+	The process will return a multichannel control steam with [pitch, confidence] values, which will be repeated if no change happens within the algorythm, i.e. when the hopSize is larger than the server's kr period.
+
+CLASSMETHODS::
+
+METHOD:: kr
+	The audio rate in, control rate out version of the object.
+
+ARGUMENT:: in
+	The audio to be processed.
+
+ARGUMENT:: algorithm
+	The algorithm to estimate the pitch. The options  are:
+	TABLE::
+	## 0 || Cepstrum: TODO.
+	## 1 || Harmonic Product Spectrum: TODO.
+	## 2 || YinFFT: TODO.
+	::
+
+
+ARGUMENT:: winSize
+	The window size. As sinusoidal estimation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
+
+ARGUMENT:: hopSize
+	The window hope size. As sinusoidal estimation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of winSize (overlap of 2).
+
+ARGUMENT:: fftSize
+	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will default to windowSize.
+
+ARGUMENT:: maxFFTSize
+	How large can the FFT be, by allocating memory at instantiation time. This cannot be modulated.
+
+RETURNS::
+	A 2-channel KR signal with the [pitch, confidence] descriptors. The latency is winSize.
+
+
+EXAMPLES::
+
+
+code::
+//create a monitoring bus for the descriptors
+b = Bus.new(\control,0,4);
+
+//create a monitoring window for the values
+(
+w = Window("Frequency Monitor", Rect(10, 10, 220, 115)).front;
+
+c = Array.fill(4, {arg i; StaticText(w, Rect(10, i * 25 + 10, 135, 20)).background_(Color.grey(0.7)).align_(\right)});
+c[0].string = ("FluidPitch: ");
+c[1].string = ("confidence: ");
+c[2].string = ("SC Pitch: ");
+c[3].string = ("Confidence: ");
+
+a = Array.fill(4, {arg i;
+	StaticText(w, Rect(150, i * 25 + 10, 60, 20)).background_(Color.grey(0.7)).align_(\center);
+});
+)
+
+//routine to update the parameters
+(
+r = Routine {
+	{
+
+		b.get({ arg val;
+			{
+				if(w.isClosed.not) {
+					val.do({arg item,index;
+						a[index].string = item.round(0.01)})
+				}
+			}.defer
+		});
+
+		0.1.wait;
+	}.loop
+
+}.play
+)
+
+//test signals
+(
+x = {
+	arg freq=220, type = 0;
+	var source = Select.ar(type,[SinOsc.ar(freq,mul:0.1), VarSaw.ar(freq,mul:0.1), Saw.ar(freq,0.1), Pulse.ar(freq,mul:0.1)]);
+	Out.kr(b, FluidPitch.kr(source) ++ Pitch.kr(source));
+	source.dup;
+}.play;
+)
+
+// comments on digital test signals being better in time domain and how real ones will collapse
+x.set(\freq, 220)
+x.set(\freq, 440)
+
+x.set(\freq, 11000)
+
+x.set(\type, 0)
+::
+
+STRONG::a more musical example::
+CODE::
+// to be translated from max (and compare to the vanilla one)
+::

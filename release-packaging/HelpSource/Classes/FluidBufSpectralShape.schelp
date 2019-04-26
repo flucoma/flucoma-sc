@@ -71,7 +71,7 @@ EXAMPLES::
 code::
 // create some buffers
 (
-b = Buffer.read(s,File.realpath(FluidBufSpectralShape.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
+b = Buffer.read(s,File.realpath(FluidBufSpectralShape.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
 c = Buffer.new(s);
 )
 
@@ -86,7 +86,7 @@ Routine{
 
 // listen to the source and look at the buffer
 b.play;
-c.plot(minval:-25, maxval:150)
+c.plot(minval:-5, maxval:250)
 ::
 
 STRONG::A stereo buffer example.::
