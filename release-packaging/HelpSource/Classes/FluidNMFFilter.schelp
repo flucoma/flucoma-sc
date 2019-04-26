@@ -1,12 +1,12 @@
-TITLE:: FluidNMFMatch
+TITLE:: FluidNMFFilter
 SUMMARY:: Real-Time Non-Negative Matrix Factorisation with Fixed Bases
 CATEGORIES:: Libraries>FluidDecomposition
-RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/FluidBufNMF, Classes/FluidNMFFilter
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/FluidBufNMF, Classes/FluidNMFMatch
 
 DESCRIPTION::
-The FluidNMFMatch object matches an incoming audio signal against a set of spectral templates using an slimmed-down version of Nonnegative Matrix Factorisation (NMF) footnote:: Lee, Daniel D., and H. Sebastian Seung. 1999. ‘Learning the Parts of Objects by Non-Negative Matrix Factorization’. Nature 401 (6755): 788–91. https://doi.org/10.1038/44565. ::
+The FluidNMFFilter object matches an incoming audio signal against a set of spectral templates using an slimmed-down version of Nonnegative Matrix Factorisation (NMF) footnote:: Lee, Daniel D., and H. Sebastian Seung. 1999. ‘Learning the Parts of Objects by Non-Negative Matrix Factorization’. Nature 401 (6755): 788–91. https://doi.org/10.1038/44565. ::
 
-It outputs at kr the degree of detected match for each template (the activation amount, in NMF-terms). The spectral templates are presumed to have been produced by the offline NMF process (link::Classes/FluidBufNMF::), and must be the correct size with respect to the FFT settings being used (FFT size / 2 + 1 frames long). The rank of the decomposition is determined by the number of channels in the supplied buffer of templates, up to a maximum set by the STRONG::maxRank:: parameter.
+It outputs at AR the resynthesis of the best factorisation. The spectral templates are presumed to have been produced by the offline NMF process (link::Classes/FluidBufNMF::), and must be the correct size with respect to the FFT settings being used (FFT size / 2 + 1 frames long). The rank of the decomposition is determined by the number of channels in the supplied buffer of templates, up to a maximum set by the STRONG::maxRank:: parameter.
 
 NMF has been a popular technique in signal processing research for things like source separation and transcription footnote:: Smaragdis and Brown, Non-Negative Matrix Factorization for Polyphonic Music Transcription.::, although its creative potential is so far relatively unexplored. It works iteratively, by trying to find a combination of amplitudes ('activations') that yield the original magnitude spectrogram of the audio input when added together. By and large, there is no unique answer to this question (i.e. there are different ways of accounting for an evolving spectrum in terms of some set of templates and envelopes). In its basic form, NMF is a form of unsupervised learning: it starts with some random data and then converges towards something that minimizes the distance between its generated data and the original:it tends to converge very quickly at first and then level out. Fewer iterations mean less processing, but also less predictable results.
 
@@ -19,8 +19,8 @@ FluidBufNMF is part of the Fluid Decomposition Toolkit of the FluCoMa project. f
 
 CLASSMETHODS::
 
-METHOD:: kr
-The real-time processing method. It takes an audio or control input, and will yield a control stream in the form of a multichannel array of size STRONG::maxRank:: . If the bases buffer has fewer than maxRank channels, the remaining outputs will be zeroed.
+METHOD:: ar
+The real-time processing method. It takes an audio input, and will yield a audio stream in the form of a multichannel array of size STRONG::maxRank:: . If the bases buffer has fewer than maxRank channels, the remaining outputs will be zeroed.
 
 ARGUMENT:: in
 The signal input to the factorisation process.
@@ -90,12 +90,12 @@ Routine {
 // check for 2 spikes in the spectra
 e.plot
 
-// test the activations values with test one, another, or both ideal material
-{FluidNMFMatch.kr(SinOsc.ar(500),e,2)}.plot(1)
+//
+{FluidNMFFilter.ar(SinOsc.ar(500),e,2)}.play
 
-{FluidNMFMatch.kr(SinOsc.ar(5000),e,2)}.plot(1)
+{FluidNMFFilter.ar(SinOsc.ar(5000),e,2)}.play
 
-{FluidNMFMatch.kr(SinOsc.ar([500,5000]).sum,e,2)}.plot(1)
+{FluidNMFFilter.ar(SinOsc.ar([500,5000]).sum,e,2)}.play
 ::
 
 STRONG::A pick compressor::
