@@ -4,7 +4,7 @@ CATEGORIES:: Libraries>FluidDecomposition
 RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/FluidBufNMF, Classes/FluidNMFMatch
 
 DESCRIPTION::
-The FluidNMFFilter object matches an incoming audio signal against a set of spectral templates using an slimmed-down version of Nonnegative Matrix Factorisation (NMF) footnote:: Lee, Daniel D., and H. Sebastian Seung. 1999. ‘Learning the Parts of Objects by Non-Negative Matrix Factorization’. Nature 401 (6755): 788–91. https://doi.org/10.1038/44565. ::
+The FluidNMFFilter object decomposes and resynthesises an incoming audio signal against a set of spectral templates using an slimmed-down version of Nonnegative Matrix Factorisation (NMF) footnote:: Lee, Daniel D., and H. Sebastian Seung. 1999. ‘Learning the Parts of Objects by Non-Negative Matrix Factorization’. Nature 401 (6755): 788–91. https://doi.org/10.1038/44565. ::
 
 It outputs at AR the resynthesis of the best factorisation. The spectral templates are presumed to have been produced by the offline NMF process (link::Classes/FluidBufNMF::), and must be the correct size with respect to the FFT settings being used (FFT size / 2 + 1 frames long). The rank of the decomposition is determined by the number of channels in the supplied buffer of templates, up to a maximum set by the STRONG::maxRank:: parameter.
 
@@ -29,7 +29,7 @@ ARGUMENT:: bases
 	The server index of the buffer containing the different bases that the input signal will be matched against. Bases must be STRONG::(fft size / 2) + 1:: frames. If the buffer has more than STRONG::maxRank:: channels, the excess will be ignored.
 
 ARGUMENT::maxRank
-	The maximum number of elements the NMF algorithm will try to divide the spectrogram of the source in. This dictates the number of output channelsfor the ugen. This cannot be modulated.
+	The maximum number of elements the NMF algorithm will try to divide the spectrogram of the source in. This dictates the number of output channels for the ugen. This cannot be modulated.
 
 ARGUMENT:: numIter
 	The NMF process is iterative, trying to converge to the smallest error in its factorisation. The number of iterations will decide how many times it tries to adjust its estimates. Higher numbers here will be more CPU intensive, lower numbers will be more unpredictable in quality.
@@ -90,7 +90,7 @@ Routine {
 // check for 2 spikes in the spectra
 e.plot
 
-//
+//listen how the filter isolates each component and places them in each channel separately.
 {FluidNMFFilter.ar(SinOsc.ar(500),e,2)}.play
 
 {FluidNMFFilter.ar(SinOsc.ar(5000),e,2)}.play
@@ -98,7 +98,7 @@ e.plot
 {FluidNMFFilter.ar(SinOsc.ar([500,5000]).sum,e,2)}.play
 ::
 
-STRONG::A pick compressor::
+STRONG::A guitar processor::
 CODE::
 //set some buffers
 (
@@ -117,9 +117,9 @@ Routine {
 )
 
 // wait for the query to print
-// then find the rank that has the picking sound by changing which channel to listen to
+// then find the rank that has more sustain pitch than pick (TODO: use descriptors with stats)
 (
-    ~element = 6;
+    ~element = 1;
     {PlayBuf.ar(10,c)[~element]}.play;
 )
 
@@ -135,11 +135,7 @@ Routine{
 
 e.plot;
 
-//using this trained basis we can see the envelop (activations) of each rank
-{FluidNMFMatch.kr(PlayBuf.ar(1,b),e,2,fftSize:2048)}.plot(1);
-// the left/top activations are before, the pick before the sustain.
-
-//we can then use the activation value to sidechain a compression patch that is sent in a delay
+//we can then use the resynthesised signal to sent in a delay
 (
 {
 	var source, todelay, delay1, delay2, delay3, feedback, mod1, mod2, mod3, mod4;
@@ -153,12 +149,7 @@ e.plot;
 	mod4 = SinOsc.ar(((613 * 191) / (463 * 601)), 0, 0.001);
 
 	// compress the signal to send to the delays
-	todelay = DelayN.ar(source,0.1, 800/44100, //delaying it to compensate for FluidNMFMatch's latency
-		LagUD.ar(K2A.ar(FluidNMFMatch.kr(source,e,2,fftSize:2048)[0]), //reading the channel of the activations on the pick basis
-			80/44100, // lag uptime (compressor's attack)
-			1000/44100, // lag downtime (compressor's decay)
-			(1/(2.dbamp) // compressor's threshold inverted
-	)).clip(1,1000).pow((8.reciprocal)-1)); //clipping it so we only affect above threshold, then ratio(8) becomes the exponent of that base
+	todelay = FluidNMFFilter.ar(source,e,2,fftSize:2048)[0]; //reading the channel of the activations on the pick basis
 
 	// delay network
 	feedback = LocalIn.ar(3);// take the feedback in for the delays
@@ -167,143 +158,66 @@ e.plot;
 	delay3 = DelayC.ar(BPF.ar(todelay+feedback[1], 1456, 6.7,0.8),0.567,0.566+(mod1*mod3),0.6);
 	LocalOut.ar([delay1,delay2, delay3]); // write the feedback for the delays
 
-	source.dup + ([delay1+delay3,delay2+delay3]*(-3.dbamp))
+			source.dup + ([delay1+delay3,delay2+delay3]*(3.dbamp))
 	//listen to the delays in solo by uncommenting the following line
 	// [delay1+delay3,delay2+delay3]
+			// [source, todelay]
 }.play;
 )
 
 ::
-STRONG::Object finder::
+STRONG::Strange Processor::
 	CODE::
 //set some buffers
 (
-b = Buffer.read(s,File.realpath(FluidNMFMatch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-BaB-SoundscapeGolcarWithDog.wav");
-c = Buffer.new(s);
-x = Buffer.new(s);
-e = Buffer.new(s);
+b = Buffer.read(s,File.realpath(FluidNMFMatch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
+c = Buffer.alloc(s,1025,3);
+d = Buffer.alloc(s,44100);
 )
 
-// train where all objects are present
+// play a source and circular record the last second, continuously
+(
+e = { var source = PlayBuf.ar(1,b,loop:1);
+	BufWr.ar(source, d, Phasor.ar(1, end:44100));
+	source.dup;
+}.play;
+)
+
+// after at least 1 second, trigger a first factorisation
 (
 Routine {
-    FluidBufNMF.process(s,b,130000,150000,0,1, c, x, rank:10);
+    FluidBufNMF.process(s, d, bases:c, winSize:2048, rank:3);
     c.query;
 }.play;
 )
+c.plot
 
 // wait for the query to print
-// then find a rank for each item you want to find. You could also sum them. Try to find a rank with a good object-to-rest ratio
+// then start the splitting effect
 (
-    ~dog =2;
-    {PlayBuf.ar(10,c)[~dog]}.play
+f = {var source = In.ar(0,2);
+	ReplaceOut.ar(0, Splay.ar(FluidNMFFilter.ar(source.sum, c, 3, winSize:2048)));
+}.play(addAction:\addToTail);
 )
 
+// kill this boring splitter
+f.free;
+
+// more fun: processing the 3 rank independently
 (
-    ~bird = 3;
-    {PlayBuf.ar(10,c)[~bird]}.play
+f = {var source, x,y,z, rev, dist, bases = c.bufnum;
+	source = In.ar(0,2);
+			#x,y,z = FluidNMFFilter.ar(source.sum, bases, 3, winSize:2048);
+			rev = FreeVerb.ar(x);
+			dist = (z * 10).atan * 0.1;
+			ReplaceOut.ar(0, Splay.ar([rev,y,dist]));
+}.play(addAction:\addToTail);
 )
 
-
-// copy at least one other rank to a third rank, a sort of left-over channel
-(
-Routine{
-	FluidBufCompose.process(s, x, startChan:~dog, numChans: 1, destination: e);
-	FluidBufCompose.process(s, x, startChan:~bird, numChans: 1, destStartChan: 1, destination: e, destGain:1);
-	(0..9).removeAll([~dog,~bird]).do({|chan|FluidBufCompose.process(s,x, startChan:chan, numChans: 1, destStartChan: 2, destination: e, destGain:1)});
-    e.query;
-}.play;
-)
-e.plot;
-
-//using this trained basis we can then see the activation... (wait for 5 seconds before it prints!)
-(
-{
-	var source, blips;
-	//read the source
-	source = PlayBuf.ar(2, b);
-	blips = FluidNMFMatch.kr(source.sum,e,3);
-	}.plot(5);
-)
-
-// ...and use some threshold to 'find' objects...
-(
-{
-	var source, blips;
-	//read the source
-	source = PlayBuf.ar(2, b);
-	blips = Schmidt.kr(FluidNMFMatch.kr(source.sum,e,3),0.5,[10,1,1000]);
-	}.plot(5);
-)
-
-// ...and use these to sonify them
-(
-{
-	var source, blips, dogs, birds;
-	//read the source
-	source = PlayBuf.ar(2, b);
-	blips = Schmidt.kr(FluidNMFMatch.kr(source.sum,e,3),0.5,[10,1,1000]);
-	dogs = SinOsc.ar(100,0,Lag.kr(blips[0],0.05,0.15));
-	birds = SinOsc.ar(1000,0,Lag.kr(blips[1],0.05,0.05));
-	[dogs, birds] + source;
-	}.play;
-)
+// here you can retrigger the factorisation
+g = Buffer.alloc(s,1025,3);
+FluidBufNMF.process(s, d, bases:g, winSize:2048, rank:3);
+f.set(\bases, g.bufnum)
+//free
+f.free; e.free;
 ::
-	STRONG::Pretrained piano::
-	CODE::
-//load in the sound in and a pretrained basis
-(
-	b = Buffer.read(s,File.realpath(FluidNMFMatch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-SA-UprightPianoPedalWide.wav");
-	c = Buffer.read(s,File.realpath(FluidNMFMatch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/filters/piano-dicts.wav");
-)
-b.play
-c.query
-
-//use the pretrained bases to compute activations of each notes to drive the amplitude of a resynth
-(
-{
-	var source, resynth;
-	source = PlayBuf.ar(2, b,loop:1).sum;
-	resynth = SinOsc.ar((21..108).midicps, 0, FluidNMFMatch.kr(source,c,88,10,4096).madd(0.002)).sum;
-	[source, resynth]
-}.play
-)
-
-
-//now sample and hold the same stream to get notes identified, played and sent back via osc
-(
-{
-	var source, resynth, chain, trig, acts;
-	source = PlayBuf.ar(2,b,loop:1).sum;
-
-	// built in attack detection, delayed until the stable part of the sound
-	chain = FFT(LocalBuf(256), source);
-	trig = TDelay.kr(Onsets.kr(chain, 0.5),0.1);
-
-	// samples and holds activation values that are scaled and capped, in effect thresholding them
-	acts = Latch.kr(FluidNMFMatch.kr(source,c,88,10,4096).linlin(15,20,0,0.1),trig);
-
-	// resynths as in the previous example, with the values sent back to the language
-	resynth = SinOsc.ar((21..108).midicps, 0, acts).sum;
-	SendReply.kr(trig, '/activations', acts);
-	[source, resynth]
-	// [source, T2A.ar(trig)]
-	// resynth
-}.play
-)
-
-// define a receiver for the activations
-(
-	OSCdef(\listener, {|msg|
-		var data = msg[3..];
-		// removes the silent and spits out the indicies as midinote number
-		data.collect({arg item, i; if (item > 0.01, {i + 21})}).reject({arg item; item.isNil}).postln;
-	}, '/activations');
-)
-
-::
-	STRONG::Strange Resonators::
-	CODE::
-	//to be completed
-::
-	
