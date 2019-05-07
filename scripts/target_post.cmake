@@ -61,7 +61,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
     # CHECK_CXX_COMPILER_FLAG(-mavx HAS_AVX)
     # CHECK_CXX_COMPILER_FLAG(-mavx2 HAS_AVX2)
 
-    target_compile_features(
+    target_compile_options(
         ${PLUGIN}
         PUBLIC
         "$<$<NOT:$<CONFIG:DEBUG>>: -mavx -msse -msse2 -msse3 -msse4>"

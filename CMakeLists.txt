@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.3)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 14)
-
+set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -mavx -msse -msse2 -msse3 -msse4")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++")
 SET(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
@@ -68,9 +68,9 @@ add_library(FFTLIB STATIC ${FFT_SOURCES})
 target_link_libraries(
   FFTLIB PRIVATE ${FFT_LINK}
 )
-# target_compile_features(
-#   FFTLIB PRIVATE "$<$<NOT:$<CONFIG:DEBUG>>: -mavx -msse -msse2 -msse3 -msse4>"
-# )
+ target_compile_options(
+   FFTLIB PRIVATE $<$<NOT:$<CONFIG:DEBUG>>:-mavx -msse -msse2 -msse3 -msse4>
+ )
 
 add_library(FLUID_SC_WRAPPER INTERFACE)
 target_sources(FLUID_SC_WRAPPER
