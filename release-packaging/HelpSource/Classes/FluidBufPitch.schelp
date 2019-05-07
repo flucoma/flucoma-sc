@@ -1,0 +1,115 @@
+TITLE:: FluidBufPitch
+SUMMARY:: A Selection of Pitch Descriptors on a Buffer
+CATEGORIES:: Libraries>FluidDecomposition
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/SpecCentroid, Classes/SpecFlatness, Classes/SpecCentroid, Classes/SpecPcile
+
+
+DESCRIPTION::
+This class implements three popular pitch descriptors, computed as frequency and the confidence in its value. It is part of the Fluid Decomposition Toolkit of the FluCoMa project.FOOTNOTE:: This was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+
+The process will return a multichannel buffer with two channels per input channel, one for pitch and one for the pitch tracking confidence. Each sample represents a value, which is every hopSize.
+
+CLASSMETHODS::
+
+METHOD:: process
+	This is the method that calls for the pitch descriptor to be calculated on a given source buffer.
+
+ARGUMENT:: server
+	The server on which the buffers to be processed are allocated.
+
+ARGUMENT:: source
+	The index of the buffer to use as the source material to be pitch-tracked. The different channels of multichannel buffers will be processing sequentially.
+
+ARGUMENT:: startFrame
+	Where in the srcBuf should the process start, in sample.
+
+ARGUMENT:: numFrames
+	How many frames should be processed.
+
+ARGUMENT:: startChan
+	For multichannel srcBuf, which channel should be processed first.
+
+ARGUMENT:: numChans
+	For multichannel srcBuf, how many channel should be processed.
+
+ARGUMENT:: features
+	The destination buffer for the pitch descriptor.
+
+ARGUMENT:: algorithm
+	The algorithm to estimate the pitch. The options  are:
+	TABLE::
+	## 0 || Cepstrum: TODO.
+	## 1 || Harmonic Product Spectrum: TODO.
+	## 2 || YinFFT: TODO.
+	::
+
+ARGUMENT:: winSize
+	The window size. As sinusoidal estimation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
+
+ARGUMENT:: hopSize
+	The window hope size. As sinusoidal estimation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts.
+
+ARGUMENT:: fftSize
+	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision.
+
+ARGUMENT:: action
+	A Function to be evaluated once the offline process has finished and all Buffer's instance variables have been updated on the client side. The function will be passed [features] as an argument.
+
+RETURNS::
+	Nothing, as the destination buffer is declared in the function call.
+
+EXAMPLES::
+
+code::
+// create some buffers
+(
+b = Buffer.read(s,File.realpath(FluidBufPitch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-ASWINE-ScratchySynth-M.wav");
+c = Buffer.new(s);
+)
+
+// run the process with basic parameters
+(
+Routine{
+	t = Main.elapsedTime;
+	FluidBufPitch.process(s, b, features: c);
+	(Main.elapsedTime - t).postln;
+}.play
+)
+
+// listen to the source and look at the buffer
+b.play;
+c.plot(minval:0, maxval:20000)
+// plot with a different range to appreciate the confidence:
+c.plot(minval:0, maxval:1)
+// interleaved [pitch,confidence] values in the buffer
+c.getn(0,100,{|x|x.postln})
+::
+
+STRONG::A stereo buffer example.::
+CODE::
+
+// load two very different files
+(
+b = Buffer.read(s,File.realpath(FluidBufPitch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-SA-UprightPianoPedalWide.wav");
+c = Buffer.read(s,File.realpath(FluidBufPitch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-AcousticStrums-M.wav");
+)
+
+// composite one on left one on right as test signals
+FluidBufCompose.process(s, c, numFrames:b.numFrames, startFrame:555000,destStartChan:1, destination:b)
+b.play
+
+// create a buffer as destinations
+c = Buffer.new(s);
+
+//run the process on them
+(
+Routine{
+    t = Main.elapsedTime;
+    FluidBufPitch.process(s, b, features: c);
+    (Main.elapsedTime - t).postln;
+}.play
+)
+
+// look at the buffer: [pitch,confidence] for left then [pitch,confidence] for right
+c.plot(minval:0, maxval:1500)
+::
