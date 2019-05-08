@@ -205,7 +205,8 @@ f.free;
 
 // more fun: processing the 3 rank independently
 (
-f = {var source, x,y,z, rev, dist, bases = c.bufnum;
+f = {arg bases = c.bufnum;
+			var source, x,y,z, rev, dist;
 	source = In.ar(0,2);
 			#x,y,z = FluidNMFFilter.ar(source.sum, bases, 3, winSize:2048);
 			rev = FreeVerb.ar(x);

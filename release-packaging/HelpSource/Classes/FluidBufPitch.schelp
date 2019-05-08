@@ -7,7 +7,7 @@ RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/SpecCentroid, Class
 DESCRIPTION::
 This class implements three popular pitch descriptors, computed as frequency and the confidence in its value. It is part of the Fluid Decomposition Toolkit of the FluCoMa project.FOOTNOTE:: This was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
 
-The process will return a multichannel buffer with two channels per input channel, one for pitch and one for the pitch tracking confidence. Each sample represents a value, which is every hopSize.
+The process will return a multichannel buffer with two channels per input channel, one for pitch and one for the pitch tracking confidence. Each sample represents a value, which is every hopSize. Its sampling rate is sourceSR / hopSize.
 
 CLASSMETHODS::
 
@@ -33,14 +33,14 @@ ARGUMENT:: numChans
 	For multichannel srcBuf, how many channel should be processed.
 
 ARGUMENT:: features
-	The destination buffer for the pitch descriptor.
+	The destination buffer for the pitch descriptors.
 
 ARGUMENT:: algorithm
-	The algorithm to estimate the pitch. The options  are:
+	The algorithm to estimate the pitch. The options are:
 	TABLE::
-	## 0 || Cepstrum: TODO.
-	## 1 || Harmonic Product Spectrum: TODO.
-	## 2 || YinFFT: TODO.
+	## 0 || Cepstrum: Returns a pitch estimate as the location of the second highest peak in the Cepstrum of the signal (after DC).
+	## 1 || Harmonic Product Spectrum: Implements the Harmonic Product Spectrum algorithm for pitch detection . See e.g. FOOTNOTE:: A. Lerch, "An Introduction to Audio Content Analysis: Applications in Signal Processing and Music Informatics." John Wiley & Sons, 2012.https://onlinelibrary.wiley.com/doi/book/10.1002/9781118393550 ::
+	## 2 || YinFFT: Implements the frequency domain version of the YIN algorithm, as described in FOOTNOTE::P. M. Brossier, "Automatic Annotation of Musical Audio for Interactive Applications.” QMUL, London, UK, 2007. :: See also https://essentia.upf.edu/documentation/reference/streaming_PitchYinFFT.html
 	::
 
 ARGUMENT:: winSize
@@ -61,11 +61,14 @@ RETURNS::
 EXAMPLES::
 
 code::
-// create some buffers
+// create a buffer with a short clicking sinusoidal burst (220Hz) starting at frame 8192 for 1024 frames
 (
-b = Buffer.read(s,File.realpath(FluidBufPitch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-ASWINE-ScratchySynth-M.wav");
+b = Buffer.sendCollection(s, (Array.fill(8192,{0}) ++ (Signal.sineFill(1203,[0,0,0,0,0,1],[0,0,0,0,0,0.5pi]).takeThese({|x,i|i>1023})) ++ Array.fill(8192,{0})));
 c = Buffer.new(s);
 )
+
+// listen to the source and look at the buffer
+b.play; b.plot;
 
 // run the process with basic parameters
 (
@@ -76,13 +79,16 @@ Routine{
 }.play
 )
 
-// listen to the source and look at the buffer
-b.play;
-c.plot(minval:0, maxval:20000)
+// look at the analysis
+c.plot(minval:0, maxval:400)
 // plot with a different range to appreciate the confidence:
 c.plot(minval:0, maxval:1)
-// interleaved [pitch,confidence] values in the buffer
-c.getn(0,100,{|x|x.postln})
+
+// The values are interleaved [pitch,confidence] in the buffer as they are on 2 channels: to get to the right frame, divide the SR of the input by the hopesize, then multiply by 2 because of the channel interleaving
+// here we are querying from one frame before (the signal starts at 8192, which is frame 16 (8192/512), therefore starting the query at frame 15, which is index 30.
+c.getn(30,10,{|x|x.postln})
+
+// observe that the first frame is silent, as expected. The next frame's confidence is low-ish, because the window is half full (window of 1024, overlap of 512). Then a full window is analysed, with strong confidence. Then another half full window, then silence, as expected.
 ::
 
 STRONG::A stereo buffer example.::
@@ -112,4 +118,60 @@ Routine{
 
 // look at the buffer: [pitch,confidence] for left then [pitch,confidence] for right
 c.plot(minval:0, maxval:1500)
+::
+
+STRONG::A musical example.::
+code::
+// create some buffers
+(
+b = Buffer.read(s,File.realpath(FluidBufPitch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-ASWINE-ScratchySynth-M.wav");
+c = Buffer.new(s);
+)
+
+// run the process with basic parameters and retrieve the array in the langage side
+(
+Routine{
+	t = Main.elapsedTime;
+	FluidBufPitch.process(s, b, features: c,action:{c.loadToFloatArray(action: {|x| d = x.reshape((x.size()/2).asInt, 2)})});
+	(Main.elapsedTime - t).postln;
+}.play
+)
+
+//look at the retrieved formatted array of [pitch,confidence] values
+d.postln
+
+//iterate and make an array of the indices which are fitting the conditions
+(
+e = Array.new;
+d.do({
+	arg val, i;
+	if ((val[0] > 500) && (val[1] > 0.666)) {e = e.add(i)}; // if pitch is greater than 500Hz and confidence higher than 0.666, keep the index
+});
+)
+e.postln;
+
+//granulate only the frames that are in our buffer
+// We need to convert our indices to frame start. Their position was (index * hopSize) - (winSize) in FluidBufPitch
+f = e.collect({arg i; (i * 512) - 1024});
+
+// define a basic grain synth
+(
+SynthDef(\grain,
+    { arg out=0, buf =0 , ind = 0, pan = 0;
+        var env;
+		env = EnvGen.kr(Env.new([0,1,0],[512/s.sampleRate].dup,\sine), doneAction: Done.freeSelf);
+		Out.ar(out, Pan2.ar(PlayBuf.ar(1,buf,startPos:ind),pan));
+    }).add;
+)
+
+// start the sequence
+(
+a = Pxrand(f, inf).asStream;
+Routine({
+    loop({
+        Synth(\grain, [\buf, b, \ind, a.next, \pan, (2.0.rand - 1)]);
+		(256/s.sampleRate).wait;
+    })
+}).play;
+)
 ::
