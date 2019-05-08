@@ -7,7 +7,7 @@ FluidBufNMF {
 		bases = bases.asUGenInput;
 		activations = activations.asUGenInput;
 
-		if(source.isNil) { Error("Invalid buffer").format(thisMethod.name, this.class.name).throw};
+		source.isNil.if {"FluidBufNMF:  Invalid source buffer".throw};
 
 		server = server ? Server.default;
 

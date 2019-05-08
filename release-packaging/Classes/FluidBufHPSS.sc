@@ -8,7 +8,7 @@ FluidBufHPSS{
 		percussive = percussive.asUGenInput;
 		residual = residual.asUGenInput;
 
-		if(source.isNil) { Error("Invalid buffer").format(thisMethod.name, this.class.name).throw};
+		source.isNil.if {"FluidBufHPSS:  Invalid source buffer".throw};
 
 		server = server ? Server.default;
 		harmonic = harmonic ? -1;

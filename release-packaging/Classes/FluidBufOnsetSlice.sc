@@ -6,8 +6,8 @@ FluidBufOnsetSlice{
 		source = source.asUGenInput;
 		indices = indices.asUGenInput;
 
-		if(source.isNil) { Error("Invalid buffer").format(thisMethod.name, this.class.name).throw};
-		if(indices.isNil) { Error("Invalid buffer").format(thisMethod.name, this.class.name).throw};
+		source.isNil.if {"FluidBufOnsetSlice:  Invalid source buffer".throw};
+		indices.isNil.if {"FluidBufOnsetSlice:  Invalid features buffer".throw};
 
 		server = server ? Server.default;
 

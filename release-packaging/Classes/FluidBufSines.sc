@@ -7,7 +7,7 @@ FluidBufSines{
 		sines = sines.asUGenInput;
 		residual = residual.asUGenInput;
 
-		if(source.isNil) {Error("Invalid Buffer").format(thisMethod.name, this.class.name).throw};
+		source.isNil.if {"FluidBufSines:  Invalid source buffer".throw};
 
 		server = server ? Server.default;
 		sines = sines ? -1;

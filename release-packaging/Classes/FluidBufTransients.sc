@@ -5,7 +5,7 @@ FluidBufTransients {
 		transients = transients.asUGenInput;
 		residual = residual.asUGenInput;
 
-		if(source.isNil) { Error("Invalid buffer").format(thisMethod.name, this.class.name).throw};
+		source.isNil.if {"FluidBufTransients:  Invalid source buffer".throw};
 
 		server = server ? Server.default;
 		transients = transients ? -1;

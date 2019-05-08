@@ -6,8 +6,8 @@ FluidBufPitch{
 		source = source.asUGenInput;
 		features = features.asUGenInput;
 
-		source.isNil.if {"FluidBufSpectralShape:  Invalid source buffer".throw};
-		features.isNil.if {"FluidBufSpectralShape:  Invalid features buffer".throw};
+		source.isNil.if {"FluidBufPitch:  Invalid source buffer".throw};
+		features.isNil.if {"FluidBufPitch:  Invalid features buffer".throw};
 
 		server = server ? Server.default;
 

@@ -4,8 +4,8 @@ FluidBufCompose{
 		source = source.asUGenInput;
 		destination = destination.asUGenInput;
 
-		if(source.isNil) {Error("Invalid Buffer").format(thisMethod.name, this.class.name).throw};
-		if(destination.isNil) {Error("Invalid Buffer").format(thisMethod.name, this.class.name).throw};
+		source.isNil.if {"FluidBufCompose:  Invalid source buffer".throw};
+		destination.isNil.if {"FluidBufCompose:  Invalid destination buffer".throw};
 
 		server = server ? Server.default;
 
