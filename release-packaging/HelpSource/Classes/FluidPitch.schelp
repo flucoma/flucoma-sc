@@ -92,8 +92,7 @@ x = {
 }.play;
 )
 
-// the built-in is slightly worse on pure sinewaves
-x.set(\freq, 220)
+// the built-in is slightly better on pure sinewaves
 x.set(\freq, 440)
 
 // adding harmonics, by changing to triangle (1), saw (2) or square (3) shows that spectral algo are more resilient when signal are richer
@@ -103,6 +102,8 @@ x.set(\type, 3)
 
 // adding noise shows the comparative sturdiness of the spectral pitch tracker
 x.set(\noise, 0.05)
+
+//if latency is no issue, getting a higher winSize will stabilise the algorithm even more
 ::
 
 STRONG::a more musical example::
@@ -149,5 +150,4 @@ f = {
 			ReplaceOut.ar(0, source + [delay1+delay3,delay2+delay3]);
 }.play(addAction:\addToTail);
 )
-
 ::

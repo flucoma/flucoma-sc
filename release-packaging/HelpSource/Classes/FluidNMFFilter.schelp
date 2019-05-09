@@ -119,7 +119,7 @@ Routine {
 // wait for the query to print
 // then find the rank that has more sustain pitch than pick (TODO: use descriptors with stats)
 (
-    ~element = 1;
+    ~element = 4;
     {PlayBuf.ar(10,c)[~element]}.play;
 )
 
@@ -215,10 +215,14 @@ f = {arg bases = c.bufnum;
 }.play(addAction:\addToTail);
 )
 
+// set the bases
+f.set(\bases, c.bufnum)
+
 // here you can retrigger the factorisation
 g = Buffer.alloc(s,1025,3);
 FluidBufNMF.process(s, d, bases:g, winSize:2048, rank:3);
 f.set(\bases, g.bufnum)
+
 //free
 f.free; e.free;
 ::
