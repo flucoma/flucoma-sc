@@ -1,0 +1,70 @@
+TITLE:: FluidBufStats
+SUMMARY:: Buffer-Based Novelty-Based Slicer
+CATEGORIES:: Libraries>FluidDecomposition, UGens>Buffer
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
+
+
+DESCRIPTION::
+This class implements a non-real-time slicer using an algorithm assessing novelty in the signal to estimate the slicing points. A novelty curve is being derived from running a kernel across the diagonal of the similarity matrix, and looking for peak of changes. It implements the seminal results published in  'Automatic Audio Segmentation Using a Measure of Audio Novelty' by J Foote.  It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+
+	The process will return a buffer which contains indices (in sample) of estimated starting points of different slices.
+
+
+CLASSMETHODS::
+
+METHOD:: process
+This is the method that calls for the slicing to be calculated on a given source buffer.
+
+ARGUMENT:: server
+	The server on which the buffers to be processed are allocated.
+
+ARGUMENT:: source
+	The index of the buffer to use as the source material to be processed. The different channels of multichannel buffers will be considered independently as time series.
+
+ARGUMENT:: stats
+(describe argument here)
+
+ARGUMENT:: numDerivatves
+(describe argument here)
+
+ARGUMENT:: low
+(describe argument here)
+
+ARGUMENT:: middle
+(describe argument here)
+
+ARGUMENT:: high
+(describe argument here)
+
+ARGUMENT:: action
+		A Function to be evaluated once the offline process has finished and indices instance variables have been updated on the client side. The function will be passed indices as an argument.
+
+RETURNS::
+	Nothing, as the destination buffer is declared in the function call.
+
+EXAMPLES::
+
+CODE::
+
+// make a buffer of known lenght
+b = Buffer.alloc(s,7);
+
+// add known values
+	b.setn(0, Array.fill(7,{|i|i / 6}));
+
+// create a new buffer as destinations
+c = Buffer.new(s);
+
+//run the process on them
+(
+// with basic params
+Routine{
+    t = Main.elapsedTime;
+    FluidBufStats.process(s,b, stats: c);
+    (Main.elapsedTime - t).postln;
+}.play
+)
+
+// list the indicies of detected attacks - the two input channels have been summed
+c.getn(0,c.numFrames,{|item|item.postln;})
+::
