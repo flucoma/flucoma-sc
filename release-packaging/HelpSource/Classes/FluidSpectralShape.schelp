@@ -58,7 +58,7 @@ b = Bus.new(\control,0,7);
 //create a monitoring window for the values
 
 (
-w = Window("Frequency Monitor", Rect(10, 10, 220, 190)).front;
+w = Window("spectral Shape Monitor", Rect(10, 10, 220, 190)).front;
 
 c = Array.fill(7, {arg i; StaticText(w, Rect(10, i * 25 + 10, 135, 20)).background_(Color.grey(0.7)).align_(\right)});
 c[0].string = ("Centroid: ");
@@ -113,7 +113,7 @@ b = Bus.new(\control,0,7);
 
 //again, create a monitoring window for the values
 (
-w = Window("Frequency Monitor", Rect(10, 10, 220, 190)).front;
+w = Window("Spectral Shape Monitor", Rect(10, 10, 220, 190)).front;
 
 c = Array.fill(7, {arg i; StaticText(w, Rect(10, i * 25 + 10, 135, 20)).background_(Color.grey(0.7)).align_(\right)});
 c[0].string = ("Centroid: ");

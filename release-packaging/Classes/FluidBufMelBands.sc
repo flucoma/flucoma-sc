@@ -6,8 +6,8 @@ FluidBufMelBands{
 		source = source.asUGenInput;
 		features = features.asUGenInput;
 
-		source.isNil.if {"FluidBufMFCC:  Invalid source buffer".throw};
-		features.isNil.if {"FluidBufMFCC:  Invalid features buffer".throw};
+		source.isNil.if {"FluidBufMelBands:  Invalid source buffer".throw};
+		features.isNil.if {"FluidBufMelBands:  Invalid features buffer".throw};
 
 		server = server ? Server.default;
 

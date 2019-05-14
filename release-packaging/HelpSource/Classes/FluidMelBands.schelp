@@ -42,7 +42,7 @@ ARGUMENT:: maxFreq
 (describe argument here)
 
 ARGUMENT:: maxNumBands
-(describe argument here)
+		The maximum number of Mel bands that can be modelled. This sets the number of channels of the output, and therefore cannot be modulated.
 
 ARGUMENT:: winSize
 	The window size. As sinusoidal estimation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
@@ -65,25 +65,14 @@ EXAMPLES::
 
 code::
 //create a monitoring bus for the descriptors
-b = Bus.new(\control,0,7);
+b = Bus.new(\control,0,40);
 
 //create a monitoring window for the values
 
 (
-w = Window("Frequency Monitor", Rect(10, 10, 220, 190)).front;
-
-c = Array.fill(7, {arg i; StaticText(w, Rect(10, i * 25 + 10, 135, 20)).background_(Color.grey(0.7)).align_(\right)});
-c[0].string = ("Centroid: ");
-c[1].string = ("Spread: ");
-c[2].string = ("Skewness: ");
-c[3].string = ("Kurtosis: ");
-c[4].string = ("Rolloff: ");
-c[5].string = ("Flatness: ");
-c[6].string = ("Crest: ");
-
-a = Array.fill(7, {arg i;
-	StaticText(w, Rect(150, i * 25 + 10, 60, 20)).background_(Color.grey(0.7)).align_(\center);
-});
+w = Window("MelBands Monitor", Rect(10, 10, 620, 320)).front;
+				a = MultiSliderView(w,Rect(10, 10, 600, 300));
+				a.valueThumbSize(1);
 )
 
 //run the wondow updating routine.
@@ -94,13 +83,12 @@ r = Routine {
 		b.get({ arg val;
 			{
 				if(w.isClosed.not) {
-					val.do({arg item,index;
-						a[index].string = item.round(0.01)})
+					a.value = val;
+					val.postln;
 				}
 			}.defer
 		});
-
-		0.01.wait;
+		0.1.wait;
 	}.loop
 
 }.play
@@ -110,146 +98,11 @@ r = Routine {
 (
 	{
 		var source;
-		source = BPF.ar(WhiteNoise.ar(), 330, 55/330);
-		Out.kr(b,FluidSpectralShape.kr(source));
+					source = SinOsc.ar(220,0,0.1);//BPF.ar(WhiteNoise.ar(), 330, 55/330);
+		Out.kr(b,FluidMelBands.kr(source,maxNumBands:40) * 100);
 		source.dup;
 	}.play;
 )
-::
 
-STRONG::A commented tutorial on how each descriptor behaves with test signals: ::
-
-CODE::
-// as above, create a monitoring bus for the descriptors
-b = Bus.new(\control,0,7);
-
-//again, create a monitoring window for the values
-(
-w = Window("Frequency Monitor", Rect(10, 10, 220, 190)).front;
-
-c = Array.fill(7, {arg i; StaticText(w, Rect(10, i * 25 + 10, 135, 20)).background_(Color.grey(0.7)).align_(\right)});
-c[0].string = ("Centroid: ");
-c[1].string = ("Spread: ");
-c[2].string = ("Skewness: ");
-c[3].string = ("Kurtosis: ");
-c[4].string = ("Rolloff: ");
-c[5].string = ("Flatness: ");
-c[6].string = ("Crest: ");
-
-a = Array.fill(7, {arg i;
-	StaticText(w, Rect(150, i * 25 + 10, 60, 20)).background_(Color.grey(0.7)).align_(\center);
-});
-)
-
-// this time, update a little more slowly, and convert in Hz the 3 descriptors published in bins by the algorythm.
-(
-r = Routine {
-	{
-
-		b.get({ arg val;
-			{
-				if(w.isClosed.not) {
-					val.do({arg item,index;
-						if ((index < 2) || (index == 4))
-						{
-							a[index].string = (item * s.sampleRate / 1024).round(0.01);
-						} {
-							a[index].string = item.round(0.01);
-						};
-					})
-				}
-			}.defer
-		});
-
-		0.2.wait;
-	}.loop
-
-}.play
-)
-
-// first, a sine wave
-(
-x = {
-	arg freq=220;
-	var source;
-	source = SinOsc.ar(freq,mul:0.1);
-	Out.kr(b, VarLag.kr(FluidSpectralShape.kr(source),1024/s.sampleRate));
-	source.dup;
-}.play;
-)
-
-// at 220, the centroid is on the frequency, the spread is narrow, but as wide as the FFT Hann window ripples, the skewness is high as we are low and therefore far left of the middle bin (aka half-Nyquist), the Kurtosis is incredibly high as we have a very peaky spectrum. The rolloff is slightly higher than the frequency, taking into account the FFT windowing ripples, the flatness is incredibly low, as we have one peak and not much else, and the crest is quite high, because most of the energy is in a few peaky bins.
-
-x.set(\freq, 440)
-
-// at 440, the skewness has changed (we are nearer the middle of the spectrogram) and the Kurtosis too, although it is still so high it is quite in the same order of magnitude. The rest is stable, as expected.
-
-x.set(\freq, 11000)
-
-// at 11kHz, kurtosis is still in the thousand, but skewness is almost null, as expected.
-
-x.free
-
-// second, broadband noise
-(
-x = {
-	arg type = 0;
-	var source;
-	source = Select.ar(type,[WhiteNoise.ar(0.1),PinkNoise.ar(0.1)]);
-	Out.kr(b, VarLag.kr(FluidSpectralShape.kr(source),1024/s.sampleRate));
-	source.dup;
-}.play;
-)
-
-// white noise has a linear repartition of energy, so we would expect a centroid in the middle bin (aka half-Nyquist) with a spread covering the full range (+/- a quarter-Nyquist), with a skewness almost null since we are centered, and a very low Kurtosis since we are flat. The rolloff should be almost at Nyquist, the flatness as high as it gets, and the crest quite low.
-
-x.set(\type, 1)
-
-// pink noise has a drop of 3dB per octave across the spectrum, so we would, by comparison, expect a lower centroid, a slighly higher skewness and kurtosis, a lower rolloff, a slighly lower flatness and a higher crest for the larger low-end energy.
-
-x.free
-
-// third, bands of noise
-(
-x = {
-	arg type = 0;
-	var source, chain;
-	chain = FFT(LocalBuf(1024), WhiteNoise.ar(0.5));
-	chain = chain.pvcollect(1024, {arg mag,phase;[mag,phase]},5,11,1);
-	source = Select.ar(type,[
-		BPF.ar(BPF.ar(WhiteNoise.ar(0.5),330,0.666),330,0.666),
-		IFFT(chain)]);
-	Out.kr(b, VarLag.kr(FluidSpectralShape.kr(source),1024/s.sampleRate));
-	source.dup;
-}.play;
-)
-
-// a second-order bandpass filter on whitenoise, centred on 330Hz with one octave bandwidth, gives us a centroid quite high. This is due to the exponential behaviour of the filter, with a gentle slope. Observe the spectral analyser:
-
-s.freqscope
-
-// at first it seems quite centred, but then flip the argument FrqScl to lin(ear) and observe how high the spectrum goes. If we set it to a brickwall spectral filter tuned on the same frequencies:
-
-x.set(\type, 1)
-
-// we have a much narrower register, and our centroid and spread, as well as the kurtosis and flatness, agrees with this reading.
-
-x.free
-
-//fourth, equally spaced sines
-(
-x = {
-	arg freq = 220;
-	var source;
-	source = 	Mix.fill(7, {arg ind; SinOsc.ar(freq + (ind * (220 / 6)), 0, 0.02)});
-	Out.kr(b,FluidSpectralShape.kr(source));
-	source.dup;
-}.play;
-)
-
-// this example shows a similar result to the brickwall spectral bandpass above. If we move the central frequency nearer the half-Nyquist:
-
-x.set(\freq, 8800)
-
-// we can observe that the linear spread is kept the same, since there is the same linear distance in Hz between our frequencies. Skewness is a good indication here of where we are in the spectrum with the shape.
+			{FluidMelBands.kr(SinOsc.ar(220),maxNumBands:10) * 100}.plot;
 ::
