@@ -97,6 +97,7 @@ public:
       return;
     }
 
+    mClient.sampleRate(fullSampleRate());
     mInputConnections.reserve(mClient.audioChannelsIn());
     mOutputConnections.reserve(mClient.audioChannelsOut());
     mAudioInputs.reserve(mClient.audioChannelsIn());
@@ -115,11 +116,12 @@ public:
     }
 
     for (int i = 0; i < static_cast<int>(mClient.controlChannelsOut()); ++i) { mOutputs.emplace_back(nullptr, 0, 0); }
-
+  
+  
     set_calc_function<RealTime, &RealTime::next>();
     Wrapper::getInterfaceTable()->fClearUnitOutputs(this, 1);
     
-    mClient.sampleRate(fullSampleRate());
+    
     
   }
 
@@ -137,7 +139,7 @@ public:
     {
       if (mOutputConnections[i]) mOutputs[i].reset(out(static_cast<int>(i)), 0, fullBufferSize());
     }
-    for (size_t i = 0; i < mClient.controlChannelsOut(); ++i) { mOutputs[i].reset(out(static_cast<int>(i)), 0, 1); }
+    for (size_t i = 0; i < mClient.controlChannelsOut(); ++i) { mOutputs[i].reset(out(i), 0, 1); }
     mClient.process(mAudioInputs, mOutputs);
   }
 
@@ -177,7 +179,7 @@ public:
 
     if (args->tags && ((std::string{args->tags}.size() - 1) != Client::getParameterDescriptors().count()))
     {
-      std::cout << "ERROR: " << Wrapper::getName() << " wrong number of arguments. Expected "
+          std::cout << "ERROR: " << Wrapper::getName() << " wrong number of arguments. Expected "
                 << Client::getParameterDescriptors().count() << ", got " << (std::string{args->tags}.size() - 1)
                 << ". Your .sc file and binary plugin might be different versions." << std::endl;
       return;
