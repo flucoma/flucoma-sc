@@ -88,14 +88,14 @@ c = Buffer.new(s);
 (
 Routine{
 	t = Main.elapsedTime;
-	FluidBufSpectralShape.process(s, b, features: c);
+	FluidBufMelBands.process(s, b, features: c,numBands:10);
 	(Main.elapsedTime - t).postln;
 }.play
 )
 
 // listen to the source and look at the buffer
 b.play;
-c.plot(minval:-5, maxval:250)
+c.plot
 ::
 
 STRONG::A stereo buffer example.::

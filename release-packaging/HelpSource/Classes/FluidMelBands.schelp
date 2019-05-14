@@ -70,9 +70,8 @@ b = Bus.new(\control,0,40);
 //create a monitoring window for the values
 
 (
-w = Window("MelBands Monitor", Rect(10, 10, 620, 320)).front;
-				a = MultiSliderView(w,Rect(10, 10, 600, 300));
-				a.valueThumbSize(1);
+w = Window("Mel Bands Monitor", Rect(10, 10, 620, 320)).front;
+a = MultiSliderView(w,Rect(10, 10, 600, 300)).elasticMode_(1).isFilled_(1);
 )
 
 //run the wondow updating routine.
@@ -84,11 +83,10 @@ r = Routine {
 			{
 				if(w.isClosed.not) {
 					a.value = val;
-					val.postln;
 				}
 			}.defer
 		});
-		0.1.wait;
+		0.01.wait;
 	}.loop
 
 }.play
@@ -98,11 +96,10 @@ r = Routine {
 (
 	{
 		var source;
-					source = SinOsc.ar(220,0,0.1);//BPF.ar(WhiteNoise.ar(), 330, 55/330);
-		Out.kr(b,FluidMelBands.kr(source,maxNumBands:40) * 100);
+					// source = SinOsc.ar(220,0,0.1);
+					source = BPF.ar(WhiteNoise.ar(), 330, 55/330);
+		Out.kr(b,FluidMelBands.kr(source,maxNumBands:40));
 		source.dup;
 	}.play;
 )
-
-			{FluidMelBands.kr(SinOsc.ar(220),maxNumBands:10) * 100}.plot;
 ::
