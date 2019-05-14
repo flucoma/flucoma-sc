@@ -167,9 +167,9 @@ class NonRealTime
 public:
   static void setup(InterfaceTable *ft, const char *name) { DefinePlugInCmd(name, launch, nullptr); }
 
-  NonRealTime(World*, sc_msg_iter*)
+  NonRealTime(World* w, sc_msg_iter* args)
       : mParams{Client::getParameterDescriptors()}
-      , mClient{mParams}
+      , mClient{Wrapper::setParams(mParams, false, w, args)}
   {}
 
   void init(){};
@@ -187,8 +187,6 @@ public:
 
     Wrapper *w = new Wrapper(
         world, args); // this has to be on the heap, because it doesn't get destroyed until the async command is done
-
-    Wrapper::setParams(w->mParams, false, world, args);
 
     Result result = validateParameters(w);
     if (!result.ok())
