@@ -1,0 +1,100 @@
+TITLE:: FluidLoudness
+SUMMARY:: A Selection of Pitch Descriptors in Real-Time
+CATEGORIES:: Libraries>FluidDecomposition
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/Pitch
+
+DESCRIPTION::
+This class implements three popular pitch descriptors, computed as frequency and the confidence in its value. It is part of the Fluid Decomposition Toolkit of the FluCoMa project.FOOTNOTE:: This was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+
+	The process will return a multichannel control steam with [pitch, confidence] values, which will be repeated if no change happens within the algorithm, i.e. when the hopSize is larger than the server's kr period.
+
+CLASSMETHODS::
+
+METHOD:: kr
+	The audio rate in, control rate out version of the object.
+
+ARGUMENT:: in
+	The audio to be processed.
+
+ARGUMENT:: kWeighting
+(describe argument here)
+
+ARGUMENT:: truePeak
+(describe argument here)
+
+ARGUMENT:: winSize
+(describe argument here)
+
+ARGUMENT:: hopSize
+(describe argument here)
+
+ARGUMENT:: maxWinSize
+(describe argument here)
+
+RETURNS::
+	A 2-channel KR signal with the [pitch, confidence] descriptors. The latency is winSize.
+
+
+EXAMPLES::
+
+
+code::
+//create a monitoring bus for the descriptors
+b = Bus.new(\control,0,2);
+
+//create a monitoring window for the values
+(
+w = Window("Loudness Monitor", Rect(10, 10, 220, 65)).front;
+
+c = Array.fill(2, {arg i; StaticText(w, Rect(10, i * 25 + 10, 135, 20)).background_(Color.grey(0.7)).align_(\right)});
+c[0].string = ("Loudness: ");
+c[1].string = ("Peak: ");
+
+a = Array.fill(2, {arg i;
+	StaticText(w, Rect(150, i * 25 + 10, 60, 20)).background_(Color.grey(0.7)).align_(\center);
+});
+)
+
+//routine to update the parameters
+(
+r = Routine {
+	{
+
+		b.get({ arg val;
+			{
+				if(w.isClosed.not) {
+					val.do({arg item,index;
+						a[index].string = item.round(0.01)})
+				}
+			}.defer
+		});
+
+		0.1.wait;
+	}.loop
+
+}.play
+)
+
+//test signals, all in one synth
+(
+x = {
+	arg freq=220, type = 0, noise = 0;
+			var source = PinkNoise.ar(noise) + Select.ar(type,[SinOsc.ar(freq,mul:0.1), VarSaw.ar(freq,mul:0.1), Saw.ar(freq,0.1), Pulse.ar(freq,mul:0.1), Mix.new(Array.fill(8, {arg i; SinOsc.ar(LFNoise1.kr(0.1.rand,10,220*(i+1)),mul:(i+1).reciprocal * 0.1)}))]);
+	Out.kr(b, FluidLoudness.kr(source,winSize:17640,hopSize:4410,maxWinSize:17640));
+	source.dup;
+}.play;
+)
+
+// the built-in is slightly better on pure sinewaves
+x.set(\freq, 440)
+
+// adding harmonics, by changing to triangle (1), saw (2) or square (3) shows that spectral algo are more resilient when signal are richer
+x.set(\type, 1)
+x.set(\type, 2)
+x.set(\type, 3)
+
+// adding noise shows the comparative sturdiness of the spectral pitch tracker
+x.set(\noise, 0.05)
+
+//if latency is no issue, getting a higher winSize will stabilise the algorithm even more
+::
