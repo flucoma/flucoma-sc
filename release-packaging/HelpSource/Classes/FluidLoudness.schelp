@@ -69,7 +69,7 @@ r = Routine {
 			}.defer
 		});
 
-		0.1.wait;
+		0.01.wait;
 	}.loop
 
 }.play
@@ -80,7 +80,8 @@ r = Routine {
 x = {
 	arg freq=220, type = 0, noise = 0;
 			var source = PinkNoise.ar(noise) + Select.ar(type,[SinOsc.ar(freq,mul:0.1), VarSaw.ar(freq,mul:0.1), Saw.ar(freq,0.1), Pulse.ar(freq,mul:0.1), Mix.new(Array.fill(8, {arg i; SinOsc.ar(LFNoise1.kr(0.1.rand,10,220*(i+1)),mul:(i+1).reciprocal * 0.1)}))]);
-	Out.kr(b, FluidLoudness.kr(source,winSize:17640,hopSize:4410,maxWinSize:17640));
+			// Out.kr(b, FluidLoudness.kr(source,winSize:17640,hopSize:4410,maxWinSize:17640));
+	Out.kr(b, FluidLoudness.kr(source));
 	source.dup;
 }.play;
 )
