@@ -40,17 +40,19 @@ EXAMPLES::
 
 code::
 //create a monitoring bus for the descriptors
-b = Bus.new(\control,0,2);
+b = Bus.new(\control,0,4);
 
 //create a monitoring window for the values
 (
-w = Window("Loudness Monitor", Rect(10, 10, 220, 65)).front;
+w = Window("Loudness Monitor", Rect(10, 10, 220, 115)).front;
 
-c = Array.fill(2, {arg i; StaticText(w, Rect(10, i * 25 + 10, 135, 20)).background_(Color.grey(0.7)).align_(\right)});
+c = Array.fill(4, {arg i; StaticText(w, Rect(10, i * 25 + 10, 135, 20)).background_(Color.grey(0.7)).align_(\right)});
 c[0].string = ("Loudness: ");
 c[1].string = ("Peak: ");
+c[2].string = ("Loudness: ");
+c[3].string = ("Peak: ");
 
-a = Array.fill(2, {arg i;
+a = Array.fill(4, {arg i;
 	StaticText(w, Rect(150, i * 25 + 10, 60, 20)).background_(Color.grey(0.7)).align_(\center);
 });
 )
@@ -78,10 +80,10 @@ r = Routine {
 //test signals, all in one synth
 (
 x = {
-	arg freq=220, type = 0, noise = 0;
-			var source = PinkNoise.ar(noise) + Select.ar(type,[SinOsc.ar(freq,mul:0.1), VarSaw.ar(freq,mul:0.1), Saw.ar(freq,0.1), Pulse.ar(freq,mul:0.1), Mix.new(Array.fill(8, {arg i; SinOsc.ar(LFNoise1.kr(0.1.rand,10,220*(i+1)),mul:(i+1).reciprocal * 0.1)}))]);
-			// Out.kr(b, FluidLoudness.kr(source,winSize:17640,hopSize:4410,maxWinSize:17640));
-	Out.kr(b, FluidLoudness.kr(source));
+	arg freq=220, type = 1, noise = 0;
+			var source = PinkNoise.ar(noise) + Select.ar(type,[DC.ar(),SinOsc.ar(freq,mul:0.1), VarSaw.ar(freq,mul:0.1), Saw.ar(freq,0.1), Pulse.ar(freq,mul:0.1), Mix.new(Array.fill(8, {arg i; SinOsc.ar(LFNoise1.kr(0.1.rand,10,220*(i+1)),mul:(i+1).reciprocal * 0.1)}))]);
+	Out.kr(b, FluidLoudness.kr(source,winSize:17640,hopSize:4410,maxWinSize:17640) ++ FluidLoudness.kr(source,winSize:132300,hopSize:4410,maxWinSize:132300));
+			// Out.kr(b, FluidLoudness.kr(source));
 	source.dup;
 }.play;
 )
