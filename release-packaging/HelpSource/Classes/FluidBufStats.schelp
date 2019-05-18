@@ -72,7 +72,7 @@ c = Buffer.new(s);
 (
 Routine{
     t = Main.elapsedTime;
-    FluidBufStats.process(s, b, stats:c, numDerivatives:1);
+    FluidBufStats.process(s, b, stats:c, numDerivs:1);
     (Main.elapsedTime - t).postln;
 }.play
 )
@@ -84,26 +84,56 @@ c.getn(0,c.numFrames,{|item|item.postln;})
 b.setn(0, Array.fill(101,{|i| 1 - (i / 100)}));
 
 // run the process and read the values
-FluidBufStats.process(s, b, stats:c, numDerivatives:1, action:{c.getn(0,c.numFrames,{|item|item.postln;})});
+FluidBufStats.process(s, b, stats:c, numDerivs:1, action:{c.getn(0,c.numFrames,{|item|item.postln;})});
 
 // replace the source values by halfsine
 b.setn(0, Array.fill(101,{|i| (i * pi/ 100).sin}));
 b.plot
 
 // run the process and read the values
-FluidBufStats.process(s, b, stats:c, numDerivatives:1, action:{c.getn(0,c.numFrames,{|item|item.postln;})});
+FluidBufStats.process(s, b, stats:c, numDerivs:1, action:{c.getn(0,c.numFrames,{|item|item.postln;})});
 
 // replace the source values by partial halfsine
 b.setn(0, Array.fill(101,{|i| (i * pi/ 50).sin.max(0)}));
 b.plot
 
 // run the process and read the values
-FluidBufStats.process(s, b, stats:c, numDerivatives:1, action:{c.getn(0,c.numFrames,{|item|item.postln;})});
+FluidBufStats.process(s, b, stats:c, numDerivs:1, action:{c.getn(0,c.numFrames,{|item|item.postln;})});
 
 // replace the source values by positive white noise
 b.setn(0, Array.fill(101,{1.0.rand}));
 b.plot
 
 // run the process and read the values
-FluidBufStats.process(s, b, stats:c, numDerivatives:1, action:{c.getn(0,c.numFrames,{|item|item.postln;})});
+FluidBufStats.process(s, b, stats:c, numDerivs:1, action:{c.getn(0,c.numFrames,{|item|item.postln;})});
+::
+
+STRONG::A musical example::
+
+CODE::
+// todo: port the Max one
+::
+
+
+STRONG::Stereo Input Behaviour::
+
+CODE::
+// make a buffer of known lenght
+b = Buffer.alloc(s,101,2);
+
+// add known values - here, a ramp up on the left and negative random values on the right
+b.setn(0, Array.fill(101,{|i|[i / 100,-1.0.rand]}).flat);
+
+// plot to confirm
+b.plot
+
+// create a new buffer as destinations
+c = Buffer.new(s);
+
+// run the stats and send back the values
+FluidBufStats.process(s, b, stats:c, numDerivs:1, action:{c.getn(0,c.numFrames * c.numChannels,{|item|d = item; d.postln})});
+
+//looking at the result is not easy to grasp, since it is interleaved: first number is mean of L, second is mean of R, third is stddev of L, fourth is stddev or R
+//this will make it tidier - the first value of each line is Left, the second is Right
+d.reshape(14,2).do({|x,i|["mean\t\t","stddev\t\t","skew\t\t\t", "kurtosis\t", "min\t\t\t", "median\t\t", "max\t\t\t","d-mean\t","d-stddev\t","d-skew\t\t", "d-kurtosis", "d-min\t\t", "d-median\t", "d-max\t\t"].at(i).post;x.round(0.01).postln})
 ::
