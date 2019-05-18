@@ -7,7 +7,7 @@ RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
 DESCRIPTION::
 This class implements non-real-time statistical analysis on buffer channels. Typically, a buffer would hold various time series (i.e. descriptors over time), and link::Classes/FluidBufStats:: allows this series to be described statistically. It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
 
-The process returns a buffer where each channel of the STRONG::source:: buffer has been reduced to 7 statistics: mean, standard deviation, skewness, kurtosis, followed by 3 percentiles, by default the minimum value, the median, and the maximum value. Moreover, it is possible to request the same 7 stats to be applied to derivative of the input. These are useful to describe statistically the rate of change of the time series. The STRONG::stats:: buffer will grow accordingly, yielding the seven same statistical description of the n requested derivative. Therefore, the STRONG::stats:: buffer will have as many channel as the input buffer, and as many frames as 7 times the requested STRONG::numDerivatives::.
+The process returns a buffer where each channel of the STRONG::source:: buffer has been reduced to 7 statistics: mean, standard deviation, skewness, kurtosis, followed by 3 percentiles, by default the minimum value, the median, and the maximum value. Moreover, it is possible to request the same 7 stats to be applied to derivative of the input. These are useful to describe statistically the rate of change of the time series. The STRONG::stats:: buffer will grow accordingly, yielding the seven same statistical description of the n requested derivatives. Therefore, the STRONG::stats:: buffer will have as many channel as the input buffer, and as many frames as 7 times the requested STRONG::numDerivs::.
 
 CLASSMETHODS::
 
@@ -20,10 +20,22 @@ ARGUMENT:: server
 ARGUMENT:: source
 	The index of the buffer to use as the source material to be processed. The different channels of multichannel buffers will be considered independently as time series.
 
+ARGUMENT:: startFrame
+	The starting point (in samples) from which to copy in the source buffer.
+
+ARGUMENT:: numFrames
+	The duration (in samples) to copy from the source buffer. The default (-1) copies the full lenght of the buffer.
+
+ARGUMENT:: startChan
+	The first channel from which to copy in the source buffer.
+
+ARGUMENT:: numChans
+	The number of channels from which to copy in the source buffer. This parameter will wrap around the number of channels in the source buffer. The default (-1) copies all of the buffer's channel.
+
 ARGUMENT:: stats
 	The index of the buffer to write the statistics to. Each channel is the fruit of the statistical computations on the same channel number of the source buffer.
 
-ARGUMENT:: numDerivatives
+ARGUMENT:: numDerivs
 	The number of derivatives of the original time series for the statistic to be computed on. By default, none are computed. This will influence the number of frames the stats buffer will have.
 
 ARGUMENT:: low
@@ -60,7 +72,7 @@ c = Buffer.new(s);
 (
 Routine{
     t = Main.elapsedTime;
-    FluidBufStats.process(s,b, c, 1);
+    FluidBufStats.process(s, b, stats:c, numDerivatives:1);
     (Main.elapsedTime - t).postln;
 }.play
 )
@@ -72,26 +84,26 @@ c.getn(0,c.numFrames,{|item|item.postln;})
 b.setn(0, Array.fill(101,{|i| 1 - (i / 100)}));
 
 // run the process and read the values
-FluidBufStats.process(s,b, c, 1, action:{c.getn(0,c.numFrames,{|item|item.postln;})});
+FluidBufStats.process(s, b, stats:c, numDerivatives:1, action:{c.getn(0,c.numFrames,{|item|item.postln;})});
 
 // replace the source values by halfsine
 b.setn(0, Array.fill(101,{|i| (i * pi/ 100).sin}));
 b.plot
 
 // run the process and read the values
-FluidBufStats.process(s,b, c, 1, action:{c.getn(0,c.numFrames,{|item|item.postln;})});
+FluidBufStats.process(s, b, stats:c, numDerivatives:1, action:{c.getn(0,c.numFrames,{|item|item.postln;})});
 
 // replace the source values by partial halfsine
 b.setn(0, Array.fill(101,{|i| (i * pi/ 50).sin.max(0)}));
 b.plot
 
 // run the process and read the values
-FluidBufStats.process(s,b, c, 1, action:{c.getn(0,c.numFrames,{|item|item.postln;})});
+FluidBufStats.process(s, b, stats:c, numDerivatives:1, action:{c.getn(0,c.numFrames,{|item|item.postln;})});
 
 // replace the source values by positive white noise
 b.setn(0, Array.fill(101,{1.0.rand}));
 b.plot
 
 // run the process and read the values
-FluidBufStats.process(s,b, c, 1, action:{c.getn(0,c.numFrames,{|item|item.postln;})});
+FluidBufStats.process(s, b, stats:c, numDerivatives:1, action:{c.getn(0,c.numFrames,{|item|item.postln;})});
 ::

@@ -1,5 +1,5 @@
 FluidBufStats{
-		*process { arg server, source, stats, numDerivatives = 0, low = 0, middle = 50, high = 100, action;
+		*process { arg server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, stats, numDerivs = 0, low = 0, middle = 50, high = 100, action;
 
 		source = source.asUGenInput;
 		stats = stats.asUGenInput;
@@ -10,7 +10,7 @@ FluidBufStats{
 		server = server ? Server.default;
 
 		forkIfNeeded{
-			server.sendMsg(\cmd, \BufStats, source, stats, numDerivatives, low, middle, high);
+			server.sendMsg(\cmd, \BufStats, source, startFrame, numFrames, startChan, numChans, stats, numDerivs, low, middle, high);
 			server.sync;
 			stats = server.cachedBufferAt(stats); stats.updateInfo; server.sync;
 			action.value(stats);
