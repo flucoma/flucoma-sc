@@ -33,7 +33,7 @@ ARGUMENT:: numChans
 	For multichannel srcBuf, how many channel should be processed.
 
 ARGUMENT:: features
-	The destination buffer for the 7 spectral features describing the spectral shape.
+	The destination buffer for the STRONG::numBands:: amplitudes describing the spectral shape.
 
 ARGUMENT:: numBands
 	The number of bands that will be perceptually equally distributed between STRONG::minFreq:: and STRONG::maxFreq::. It will decide how many channels are produce per channel of the source.
