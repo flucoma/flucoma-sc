@@ -77,10 +77,10 @@ EXAMPLES::
 code::
 //basic tests: highPass sanity
 (
-	{var env, source = SinOsc.ar(320,0,0.5);
-		env = FluidAmpSlice.ar(source,highPassFreq:2000, outputType:1);
-		[source, env]
-	}.plot(0.03);
+{var env, source = SinOsc.ar(320,0,0.5);
+	env = FluidAmpSlice.ar(source,highPassFreq:2000, outputType:1);
+	[source, env]
+}.plot(0.03);
 )
 //basic tests: absRampUp-Down sanity
 (
@@ -91,7 +91,7 @@ code::
 )
 //basic tests: absThresh sanity
 (
-			{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
+	{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 		env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:1000, outputType:0, relThreshOn:-144, relThreshOff: -200);
 		[source, env]
 	}.plot(0.05);
