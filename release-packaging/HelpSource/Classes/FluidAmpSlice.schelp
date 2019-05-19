@@ -1,0 +1,99 @@
+TITLE:: FluidAmpSlice
+SUMMARY:: Amplitude-based Slicer
+CATEGORIES:: Libraries>FluidDecomposition
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
+
+DESCRIPTION::
+This class implements an amplitude-based slicer, with various customisable options and conditions to detect absolute and relative amplitude changes as onsets and offsets. It is part of the Fluid Decomposition Toolkit of the FluCoMa project.footnote::This was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+
+FluidAmpSlice is based on two envelop followers on a highpassed version of the signal: one absolute, and one relative. Each have features that will interact, including independent Schmidt triggers and state-aware time contraints. The example code below is unfolding the various possibilites in order of complexity.
+
+The process will return an audio steam with square envelopes around detected slices the different slices, where 1s means in slice and 0s mean in silence.
+
+CLASSMETHODS::
+
+METHOD:: ar
+	The audio rate version of the object.
+
+ARGUMENT:: in
+	The audio to be processed.
+
+ARGUMENT:: absRampUp
+	The number of samples the absolute envelope follower will take to reach the next value when raising.
+
+ARGUMENT:: absRampDown
+	The number of samples the absolute envelope follower will take to reach the next value when falling.
+
+ARGUMENT:: absThreshOn
+	The threshold in dB of the absolute envelope follower to trigger an onset, aka to go ON when in OFF state.
+
+ARGUMENT:: absThreshOff
+	The threshold in dB of the absolute envelope follower to trigger an offset, , aka to go ON when in OFF state.
+
+ARGUMENT:: minSliceLength
+	The length in samples that the Slice will stay ON. Changes of states during that period will be ignored.
+
+ARGUMENT:: minSilenceLength
+	The length in samples that the Slice will stay OFF. Changes of states during that period will be ignored.
+
+ARGUMENT:: minLengthAbove
+	The length in samples that the absolute envelope have to be above the threshold to consider it a valid transition to ON. The Slice will start at the first sample when the condition is met. Therefore, this affects the latency.
+
+ARGUMENT:: minLengthBelow
+	The length in samples that the absolute envelope have to be below the threshold to consider it a valid transition to OFF. The Slice will end at the first sample when the condition is met. Therefore, this affects the latency.
+
+ARGUMENT:: lookBack
+	The length of the buffer kept before an onset to allow the algorithm, once a new Slice is detected, to go back in time (up to that many samples) to find the minimum amplitude as the Slice onset point. This affects the latency of the algorithm.
+
+ARGUMENT:: lookAhead
+	The length of the buffer kept after an offset to allow the algorithm, once the Slice is considered finished, to wait further in time (up to that many samples) to find a minimum amplitude as the Slice offset point. This affects the latency of the algorithm.
+
+ARGUMENT:: relRampUp
+	The number of samples the relative envelope follower will take to reach the next value when raising. Typically, this will be faster than absRampUp.
+
+ARGUMENT:: relRampDown
+	The number of samples the relative envelope follower will take to reach the next value when falling. Typically, this will be faster than absRampDown.
+
+ARGUMENT:: relThreshOn
+	The threshold in dB of the relative envelope follower to trigger an onset, aka to go ON when in OFF state. It is computed on the difference between the two envelope followers.
+
+ARGUMENT:: relThreshOff
+	The threshold in dB of the relative envelope follower to reset, aka to allow the differential envelop to trigger again.
+
+ARGUMENT:: highPassFreq
+	The frequency of the fourth-order Linkwitz–Riley high-pass filter (https://en.wikipedia.org/wiki/Linkwitz%E2%80%93Riley_filter). This is done first on the signal to minimise low frequency intermodulation with very fast ramp lengths.
+
+ARGUMENT:: maxSize
+	How large can the buffer be for time-critical conditions, by allocating memory at instantiation time. This cannot be modulated.
+
+ARGUMENT:: outputType
+(describe argument here)
+
+RETURNS::
+	An audio stream with square envelopes around the slices. The latency between the input and the output is STRONG::max(minLengthAbove + lookBack, max(minLengthBelow,lookAhead))::.
+
+EXAMPLES::
+
+code::
+//basic tests: highPass sanity
+(
+	{var env, source = SinOsc.ar(320,0,0.5);
+		env = FluidAmpSlice.ar(source,highPassFreq:2000, outputType:1);
+		[source, env]
+	}.plot(0.03);
+)
+//basic tests: absRampUp-Down sanity
+(
+	{var env, source = SinOsc.ar(320,0,0.5);
+		env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:1000, outputType:2);
+		[source.abs, env]
+	}.plot(0.03);
+)
+//basic tests: absThresh sanity
+(
+			{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
+		env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:1000, outputType:0, relThreshOn:-144, relThreshOff: -200);
+		[source, env]
+	}.plot(0.05);
+)
+::
