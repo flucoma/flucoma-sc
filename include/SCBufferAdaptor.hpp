@@ -108,13 +108,13 @@ public:
     return true; 
   }
 
-  FluidTensorView<float, 1> samps(size_t channel, size_t rankIdx = 0) override
+  FluidTensorView<float, 1> samps(size_t channel) override
   {
     FluidTensorView<float, 2> v{mBuffer->data, 0,
                                 static_cast<size_t>(mBuffer->frames),
                                 static_cast<size_t>(mBuffer->channels)};
 
-    return v.col(rankIdx + channel * mRank);
+    return v.col(channel);
   }
 
   // Return a 2D chunk
@@ -135,19 +135,16 @@ public:
 
   size_t numChans() const override
   {
-    return valid() ? static_cast<size_t>(this->mBuffer->channels) / mRank : 0u;
+    return valid() ? static_cast<size_t>(this->mBuffer->channels) : 0u;
   }
-
-  size_t rank() const override { return valid() ? mRank : 0u; }
 
   double sampleRate() const override { return valid() ? mBuffer->samplerate : 0; }
 
-  void resize(size_t frames, size_t channels, size_t rank, double sampleRate) override
+  void resize(size_t frames, size_t channels, double sampleRate) override
   {
     SndBuf *thisThing = mBuffer;
     mOldData          = thisThing->data;
-    mRank             = rank;
-    mWorld->ft->fBufAlloc(mBuffer, static_cast<int>(channels * rank), static_cast<int>(frames), sampleRate);
+    mWorld->ft->fBufAlloc(mBuffer, static_cast<int>(channels), static_cast<int>(frames), sampleRate);
   }
 
   intptr_t bufnum() { return mBufnum; }
@@ -159,7 +156,6 @@ protected:
   float *mOldData{0};
   intptr_t   mBufnum;
   World *mWorld;
-  size_t mRank{1};
 };
 
 std::ostream& operator <<(std::ostream& os, SCBufferAdaptor& b)
