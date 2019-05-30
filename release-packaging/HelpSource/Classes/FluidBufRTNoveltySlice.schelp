@@ -1,4 +1,4 @@
-TITLE:: FluidBufNoveltySlice
+TITLE:: FluidBufRTNoveltySlice
 SUMMARY:: Buffer-Based Novelty-Based Slicer
 CATEGORIES:: Libraries>FluidDecomposition, UGens>Buffer
 RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
@@ -36,6 +36,14 @@ ARGUMENT:: numChans
 ARGUMENT:: indices
 	The index of the buffer where the indices (in sample) of the estimated starting points of slices will be written. The first and last points are always the boundary points of the analysis.
 
+ARGUMENT:: feature
+	The feature on which novelty is computed.
+		table::
+	##0 || Spectrum || todo
+	##1 || MFCC || todo
+	##2 || Pitch || todo
+	##3 || Loudness || todo
+::
 ARGUMENT:: kernelSize
 	The granularity of the window in which the algorithm looks for change, in samples. A small number will be sensitive to short term changes, and a large number should look for long term changes.
 
@@ -66,7 +74,7 @@ EXAMPLES::
 code::
 // load some buffers
 (
-b = Buffer.read(s,File.realpath(FluidBufNoveltySlice.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-AcousticStrums-M.wav");
+b = Buffer.read(s,File.realpath(FluidBufRTNoveltySlice.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-AcousticStrums-M.wav");
 c = Buffer.new(s);
 )
 
@@ -74,7 +82,7 @@ c = Buffer.new(s);
 // with basic params
 Routine{
 	t = Main.elapsedTime;
-	FluidBufNoveltySlice.process(s,b, indices: c, threshold:0.6);
+	FluidBufRTNoveltySlice.process(s,b, indices: c, threshold:0.6);
 	(Main.elapsedTime - t).postln;
 }.play
 )
@@ -102,12 +110,12 @@ STRONG::Examples of the impact of the filterSize::
 	CODE::
 // load some buffers
 (
-b = Buffer.read(s,File.realpath(FluidBufNoveltySlice.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-AcousticStrums-M.wav");
+b = Buffer.read(s,File.realpath(FluidBufRTNoveltySlice.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-AcousticStrums-M.wav");
 c = Buffer.new(s);
 )
 
 // process with a given filterSize
-FluidBufNoveltySlice.process(s,b, indices: c, kernSize:31, threshold:0.3, filterSize:0)
+FluidBufRTNoveltySlice.process(s,b, indices: c, kernSize:31, threshold:0.3, filterSize:0)
 
 //check the number of slices: it is the number of frames in the transBuf minus the boundary index.
 c.query;
@@ -151,7 +159,7 @@ c = Buffer.new(s);
 // with basic params
 Routine{
     t = Main.elapsedTime;
-    FluidBufNoveltySlice.process(s,b, indices: c, threshold:0.6);
+    FluidBufRTNoveltySlice.process(s,b, indices: c, threshold:0.6);
     (Main.elapsedTime - t).postln;
 }.play
 )

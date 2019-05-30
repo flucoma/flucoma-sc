@@ -1,0 +1,81 @@
+TITLE:: FluidRTNoveltySlice
+SUMMARY:: Spectral Difference-Based Real-Time Audio Slicer
+CATEGORIES:: Libraries>FluidDecomposition
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
+
+DESCRIPTION::
+This class implements many spectral based onset detection functions, most of them taken from the literature. (http://www.dafx.ca/proceedings/papers/p_133.pdf) Some are already available in SuperCollider's LINK::Classes/Onsets:: object. It is part of the Fluid Decomposition Toolkit of the FluCoMa project.footnote::This was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+
+The process will return an audio steam with sample-long impulses at estimated starting points of the different slices.
+
+
+CLASSMETHODS::
+
+METHOD:: ar
+	The audio rate version of the object.
+
+ARGUMENT:: in
+	The audio to be processed.
+
+ARGUMENT:: feature
+	The feature on which novelty is computed.
+		table::
+	##0 || Spectrum || todo
+	##1 || MFCC || todo
+	##2 || Pitch || todo
+	##3 || Loudness || todo
+::
+ARGUMENT:: kernelSize
+	The granularity of the window in which the algorithm looks for change, in samples. A small number will be sensitive to short term changes, and a large number should look for long term changes.
+
+ARGUMENT:: threshold
+	The normalised threshold, between 0 an 1, on the novelty curve to consider it a segmentation point.
+
+ARGUMENT:: filterSize
+	The size of a smoothing filter that is applied on the novelty curve. A larger filter filter size allows for cleaner cuts on very sharp changes.
+
+ARGUMENT:: winSize
+	The window size. As sinusoidal estimation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
+
+ARGUMENT:: hopSize
+	The window hop size. As sinusoidal estimation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of winSize (overlap of 2).
+
+ARGUMENT:: fftSize
+	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will default to windowSize.
+
+ARGUMENT:: maxFFTSize
+	How large can the FFT be, by allocating memory at instantiation time. This cannot be modulated.
+
+ARGUMENT:: maxKernelSize
+	This cannot be modulated.
+
+ARGUMENT:: maxFilterSize
+	This cannot be modulated.
+
+RETURNS::
+	An audio stream with impulses at detected transients. The latency between the input and the output is winSize at maximum.
+
+EXAMPLES::
+
+code::
+//load some sounds
+b = Buffer.read(s,File.realpath(FluidRTNoveltySlice.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
+
+// basic param (the process add a latency of winSize samples
+{var sig = PlayBuf.ar(1,b,loop:1); [FluidRTNoveltySlice.ar(sig,0,3,0.2) * 0.5, DelayN.ar(sig, 1, 1024/ s.sampleRate)]}.play
+
+// other parameters
+{var sig = PlayBuf.ar(1,b,loop:1); [FluidRTNoveltySlice.ar(sig, 0, 31, 0.05, 4, 128, 64) * 0.5, DelayN.ar(sig, 1, (128)/ s.sampleRate)]}.play
+
+// more musical trans-trigged autopan
+(
+{
+    var sig, trig, syncd, pan;
+    sig = PlayBuf.ar(1,b,loop:1);
+    trig = FluidRTNoveltySlice.ar(sig, 0, 0.2, 100, 8, 0, 128);
+    syncd = DelayN.ar(sig, 1, ( 128 / s.sampleRate));
+    pan = TRand.ar(-1,1,trig);
+    Pan2.ar(syncd,pan);
+}.play
+)
+::
