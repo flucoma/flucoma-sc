@@ -4,9 +4,9 @@ CATEGORIES:: Libraries>FluidDecomposition
 RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/FluidBufMelBands
 
 DESCRIPTION::
-This class implements a classic spectral descriptor, the Mel-Frequency Cepstral Coefficients (https://en.wikipedia.org/wiki/Mel-frequency_cepstrum). The input is first filtered in to STRONG::numBands:: perceptually-spaced bands, as in LINK::Classes/FluidMelBands::. It is then analysed into STRONG::numCoefs:: number of cepstral coefficients. It has the avantage of being amplitude invarient, except for the first coefficient. It is part of the Fluid Decomposition Toolkit of the FluCoMa project.FOOTNOTE:: This was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+This class implements a classic spectral descriptor, the Mel-Frequency Cepstral Coefficients (https://en.wikipedia.org/wiki/Mel-frequency_cepstrum). The input is first filtered in to STRONG::numBands:: perceptually-spaced bands, as in LINK::Classes/FluidMelBands::. It is then analysed into STRONG::numCoeffs:: number of cepstral coefficients. It has the avantage of being amplitude invarient, except for the first coefficient. It is part of the Fluid Decomposition Toolkit of the FluCoMa project.FOOTNOTE:: This was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
 
-The process will return a single multichannel buffer of STRONG::numCoefs:: per input channel. Each frame represents a value, which is every hopSize.
+The process will return a single multichannel buffer of STRONG::numCoeffs:: per input channel. Each frame represents a value, which is every hopSize.
 
 CLASSMETHODS::
 
@@ -32,9 +32,9 @@ ARGUMENT:: numChans
 	For multichannel srcBuf, how many channel should be processed.
 
 ARGUMENT:: features
-	The destination buffer for the numCoefs coefficients describing the spectral shape.
+	The destination buffer for the numCoeffs coefficients describing the spectral shape.
 
-ARGUMENT:: numCoefs
+ARGUMENT:: numCoeffs
 	The number of cepstral coefficients to be outputed. It will decide how many channels are produce per channel of the source.
 
 ARGUMENT:: numBands
@@ -104,7 +104,7 @@ c = Buffer.new(s);
 (
 Routine{
     t = Main.elapsedTime;
-    FluidBufMFCC.process(s, b, numCoefs:5, features: c);
+    FluidBufMFCC.process(s, b, numCoeffs:5, features: c);
     (Main.elapsedTime - t).postln;
 }.play
 )
