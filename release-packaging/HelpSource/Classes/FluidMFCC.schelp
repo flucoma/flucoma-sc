@@ -31,11 +31,11 @@ ARGUMENT:: maxFreq
 ARGUMENT:: maxNumCoefs
 	The maximum number of cepstral coefficients that can be computed. This sets the number of channels of the output, and therefore cannot be modulated.
 
-ARGUMENT:: winSize
+ARGUMENT:: windowSize
 	The window size. As MFCC computation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
 ARGUMENT:: hopSize
-	The window hop size. As MFCC computation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of winSize (overlap of 2).
+	The window hop size. As MFCC computation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of windowSize (overlap of 2).
 
 ARGUMENT:: fftSize
 	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will default to windowSize.
@@ -44,7 +44,7 @@ ARGUMENT:: maxFFTSize
 	How large can the FFT be, by allocating memory at instantiation time. This cannot be modulated.
 
 RETURNS::
-	A  KR signal of STRONG::maxNumCoefs:: channels. The latency is winSize.
+	A  KR signal of STRONG::maxNumCoefs:: channels. The latency is windowSize.
 
 
 EXAMPLES::

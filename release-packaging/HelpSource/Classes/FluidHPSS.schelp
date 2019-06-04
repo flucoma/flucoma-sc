@@ -66,11 +66,11 @@ ARGUMENT:: percThreshFreq2
 ARGUMENT:: percThreshAmp2
 	In mode 2, the threshold of the high part for the percussive filter. That threshold applies to all frequencies above percThreshFreq2. The threshold between percThreshFreq1 and percThreshFreq2 is interpolated between percThreshAmp1 and percThreshAmp2. How much more powerful (in dB) the percussive median filter needs to be than the harmonic median filter for this bin to be counted as percussive.
 
-ARGUMENT:: winSize
+ARGUMENT:: windowSize
 	The window size. As sinusoidal estimation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
 ARGUMENT:: hopSize
-	The window hop size. As sinusoidal estimation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of winSize (overlap of 2).
+	The window hop size. As sinusoidal estimation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of windowSize (overlap of 2).
 
 ARGUMENT:: fftSize
 	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will default to windowSize.
@@ -85,7 +85,7 @@ ARGUMENT:: maxPercFilterSize
 	How large can the percussive filter be modulated to (percFilterSize), by allocating memory at instantiation time. This cannot be modulated.
 
 RETURNS::
-	An array of three audio streams: [0] is the harmonic part extracted, [1] is the percussive part extracted, [2] is the rest. The latency between the input and the output is ((harmFilterSize - 1) * hopSize) + winSize) samples.
+	An array of three audio streams: [0] is the harmonic part extracted, [1] is the percussive part extracted, [2] is the rest. The latency between the input and the output is ((harmFilterSize - 1) * hopSize) + windowSize) samples.
 
 Discussion::
 	HPSS works by using median filters on the spectral magnitudes of a sound. It hinges on a simple modelling assumption that tonal components will tend to yield concentrations of energy across time, spread out in frequency, and percussive components will manifest as concentrations of energy across frequency, spread out in time. By using median filters across time and frequency respectively, we get initial esitmates of the tonal-ness / transient-ness of a point in time and frequency. These are then combined into 'masks' that are applied to the orginal spectral data in order to produce a separation.
@@ -112,6 +112,6 @@ b = Buffer.read(s,File.realpath(FluidHPSS.class.filenameSymbol).dirname.withTrai
 // the residual stream
 {FluidHPSS.ar(PlayBuf.ar(1,b,loop:1),15,31,2,0.05,40,0.1,-40, 0.1, -10, 0.2, 10)[2].dup}.play
 
-// null test (the process add a latency of ((harmFilterSize - 1) * hopSize) + winSize) samples
+// null test (the process add a latency of ((harmFilterSize - 1) * hopSize) + windowSize) samples
 	{var sig = PlayBuf.ar(1,b,loop:1); [FluidHPSS.ar(sig, 17, 31).sum - DelayN.ar(sig, 1, ((((17 - 1) *  512) + 1024) / s.sampleRate))]}.play
 ::

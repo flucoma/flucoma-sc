@@ -1,5 +1,5 @@
 FluidBufNMF {
-	*process { arg server,  source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, destination, bases, basesMode = 0, activations, actMode = 0, rank = 1, numIter = 100, winSize = 1024, hopSize = -1, fftSize = -1, winType = 0, randSeed = -1, action;
+	*process { arg server,  source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, destination, bases, basesMode = 0, activations, actMode = 0, components = 1, iterations = 100, windowSize = 1024, hopSize = -1, fftSize = -1, windowType = 0, randomSeed = -1, action;
 
 
 		source = source.asUGenInput;
@@ -16,7 +16,7 @@ FluidBufNMF {
 		activations = activations ? -1;
 
 		forkIfNeeded{
-			server.sendMsg(\cmd, \BufNMF, source, startFrame, numFrames, startChan, numChans, destination, bases, basesMode, activations, actMode, rank, numIter, winSize, hopSize, fftSize);
+			server.sendMsg(\cmd, \BufNMF, source, startFrame, numFrames, startChan, numChans, destination, bases, basesMode, activations, actMode, components, iterations, windowSize, hopSize, fftSize);
 			server.sync;
 			if (destination != -1) {destination = server.cachedBufferAt(destination); destination.updateInfo; server.sync;} {destination = nil};
 			if (bases != -1) {bases = server.cachedBufferAt(bases); bases.updateInfo; server.sync;} {bases = nil};

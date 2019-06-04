@@ -45,7 +45,7 @@ ARGUMENT:: threshold
 ARGUMENT:: filterSize
 	The size of a smoothing filter that is applied on the novelty curve. A larger filter filter size allows for cleaner cuts on very sharp changes.
 
-ARGUMENT:: winSize
+ARGUMENT:: windowSize
 	The window size. As novelty estimation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
 ARGUMENT:: hopSize
@@ -107,7 +107,7 @@ c = Buffer.new(s);
 )
 
 // process with a given filterSize
-FluidBufNoveltySlice.process(s,b, indices: c, kernSize:31, threshold:0.3, filterSize:0)
+FluidBufNoveltySlice.process(s,b, indices: c, kernelSize:31, threshold:0.3, filterSize:0)
 
 //check the number of slices: it is the number of frames in the transBuf minus the boundary index.
 c.query;

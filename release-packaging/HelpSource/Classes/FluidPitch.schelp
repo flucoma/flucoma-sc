@@ -24,11 +24,11 @@ ARGUMENT:: algorithm
 	## 2 || YinFFT: Implements the frequency domain version of the YIN algorithm, as described in FOOTNOTE::P. M. Brossier, "Automatic Annotation of Musical Audio for Interactive Applications.” QMUL, London, UK, 2007. :: See also https://essentia.upf.edu/documentation/reference/streaming_PitchYinFFT.html
 	::
 
-ARGUMENT:: winSize
+ARGUMENT:: windowSize
 	The window size. As sinusoidal estimation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
 ARGUMENT:: hopSize
-	The window hop size. As sinusoidal estimation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of winSize (overlap of 2).
+	The window hop size. As sinusoidal estimation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of windowSize (overlap of 2).
 
 ARGUMENT:: fftSize
 	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will default to windowSize.
@@ -37,7 +37,7 @@ ARGUMENT:: maxFFTSize
 	How large can the FFT be, by allocating memory at instantiation time. This cannot be modulated.
 
 RETURNS::
-	A 2-channel KR signal with the [pitch, confidence] descriptors. The latency is winSize.
+	A 2-channel KR signal with the [pitch, confidence] descriptors. The latency is windowSize.
 
 
 EXAMPLES::
@@ -103,7 +103,7 @@ x.set(\type, 3)
 // adding noise shows the comparative sturdiness of the spectral pitch tracker
 x.set(\noise, 0.05)
 
-//if latency is no issue, getting a higher winSize will stabilise the algorithm even more
+//if latency is no issue, getting a higher windowSize will stabilise the algorithm even more
 ::
 
 STRONG::a more musical example::

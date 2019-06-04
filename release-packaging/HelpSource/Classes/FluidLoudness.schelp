@@ -22,17 +22,17 @@ ARGUMENT:: kWeighting
 ARGUMENT:: truePeak
 	A flag to switch the computation of TruePeak. On by default, removing it makes the algorithm more CPU efficient by reverting to a simple absolute peak of the frame.
 
-ARGUMENT:: winSize
+ARGUMENT:: windowSize
 	The size of the window on which the computation is done. By default 1024 to be similar with all other FluCoMa objects, the EBU specifies other values as per the examples below.
 
 ARGUMENT:: hopSize
 	How much the buffered window moves forward, in samples. By default 512 to be similar with all other FluCoMa objects, the EBU specifies other values as per the examples below.
 
-ARGUMENT:: maxWinSize
-	How large can the winSize be, by allocating memory at instantiation time. This cannot be modulated.
+ARGUMENT:: maxwindowSize
+	How large can the windowSize be, by allocating memory at instantiation time. This cannot be modulated.
 
 RETURNS::
-	A 2-channel KR signal with the [pitch, confidence] descriptors. The latency is winSize.
+	A 2-channel KR signal with the [pitch, confidence] descriptors. The latency is windowSize.
 
 
 EXAMPLES::
@@ -88,7 +88,7 @@ x.free
 x = {
 	arg freq=220, type = 1, noise = 0;
 	var source = PinkNoise.ar(noise) + Select.ar(type,[DC.ar(),SinOsc.ar(freq,mul:0.1), VarSaw.ar(freq,mul:0.1), Saw.ar(freq,0.1), Pulse.ar(freq,mul:0.1)]);
-	Out.kr(b, FluidLoudness.kr(source,winSize:17640,hopSize:4410,maxWinSize:17640));
+	Out.kr(b, FluidLoudness.kr(source,windowSize:17640,hopSize:4410,maxwindowSize:17640));
 	source.dup;
 }.play;
 )

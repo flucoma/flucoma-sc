@@ -94,7 +94,7 @@ ARGUMENT:: percThreshFreq2
 ARGUMENT:: percThreshAmp2
 	In mode 2, the threshold of the high part for the percussive filter. That threshold applies to all frequencies above percThreshFreq2. The threshold between percThreshFreq1 and percThreshFreq2 is interpolated between percThreshAmp1 and percThreshAmp2. How much more powerful (in dB) the percussive median filter needs to be than the harmonic median filter for this bin to be counted as percussive.
 
-ARGUMENT:: winSize
+ARGUMENT:: windowSize
 	The window size in samples. As HPSS relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
 ARGUMENT:: hopSize
@@ -146,7 +146,7 @@ d.play;
 (
 	Routine{
 		t = Main.elapsedTime;
-          FluidBufHPSS.process(s, b, harmonic: c, percussive: d, residual:e, harmFilterSize:31, maskingMode:2, harmThreshFreq1: 0.005, harmThreshAmp1: 7.5, harmThreshFreq2: 0.168, harmThreshAmp2: 7.5, percThreshFreq1: 0.004, percThreshAmp1: 26.5, percThreshFreq2: 0.152, percThreshAmp2: 26.5,winSize:4096,hopSize:512);
+          FluidBufHPSS.process(s, b, harmonic: c, percussive: d, residual:e, harmFilterSize:31, maskingMode:2, harmThreshFreq1: 0.005, harmThreshAmp1: 7.5, harmThreshFreq2: 0.168, harmThreshAmp2: 7.5, percThreshFreq1: 0.004, percThreshAmp1: 26.5, percThreshFreq2: 0.152, percThreshAmp2: 26.5,windowSize:4096,hopSize:512);
 		(Main.elapsedTime - t).postln;
 	}.play
 )

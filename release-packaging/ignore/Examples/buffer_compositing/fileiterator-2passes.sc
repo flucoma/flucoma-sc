@@ -1,7 +1,7 @@
 //this patch requests a folder and will iterate through all accepted audiofiles and concatenate them in the destination buffer. It will also yield an array with the numFrame where files start in the new buffer.
 
 (
-var tempbuf,dest=0, fileNames;
+var fileNames;
 c = [0];
 
 FileDialog.new({|selection|
@@ -21,13 +21,16 @@ FileDialog.new({|selection|
 			maxchans = maxchans.max(file.numChannels);
 		});
 	});
+	c.postln;
+	totaldur.postln;
+	maxchans.postln;
 	Routine{
 		b = Buffer.alloc(s,totaldur,maxchans);
 		s.sync;
 		fileNames.do{|f, i|
 			f.postln;
 			("Loading"+(i+1)+"of"+total).postln;
-			tempbuf = Buffer.read(s, f.asAbsolutePath,action:{FluidBufCompose.process(s,tempbuf,destStartFrame:c[i],destination:b);});
+			Buffer.read(s, f.asAbsolutePath,action:{arg tempbuf; FluidBufCompose.process(s,tempbuf,destination:b,destStartFrame:c[i],action:{tempbuf.free});});
 			s.sync;
 		};
 		("loading buffers done in" + (Main.elapsedTime - t).round(0.1) + "seconds.").postln;

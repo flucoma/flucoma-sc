@@ -1,7 +1,7 @@
 FluidMelBands : MultiOutUGen {
 
-	*kr { arg in = 0, numBands = 40, minFreq = 20, maxFreq = 20000,  maxNumBands = 120, winSize = 1024, hopSize = -1, fftSize = -1, maxFFTSize = 16384;
-		^this.multiNew('control', in.asAudioRateInput(this), numBands, minFreq, maxFreq,  maxNumBands, winSize, hopSize, fftSize, maxFFTSize);
+	*kr { arg in = 0, numBands = 40, minFreq = 20, maxFreq = 20000,  maxNumBands = 120, windowSize = 1024, hopSize = -1, fftSize = -1, maxFFTSize = 16384;
+		^this.multiNew('control', in.asAudioRateInput(this), numBands, minFreq, maxFreq,  maxNumBands, windowSize, hopSize, fftSize, maxFFTSize);
 	}
 
 	init {arg ...theInputs;

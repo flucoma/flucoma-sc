@@ -43,7 +43,7 @@ ARGUMENT:: algorithm
 	## 2 || YinFFT: Implements the frequency domain version of the YIN algorithm, as described in FOOTNOTE::P. M. Brossier, "Automatic Annotation of Musical Audio for Interactive Applications.” QMUL, London, UK, 2007. :: See also https://essentia.upf.edu/documentation/reference/streaming_PitchYinFFT.html
 	::
 
-ARGUMENT:: winSize
+ARGUMENT:: windowSize
 	The window size. As sinusoidal estimation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
 ARGUMENT:: hopSize
@@ -80,9 +80,7 @@ Routine{
 )
 
 // look at the analysis
-c.plot(minval:0, maxval:400)
-// plot with a different range to appreciate the confidence:
-c.plot(minval:0, maxval:1)
+c.plot(separately:true)
 
 // The values are interleaved [pitch,confidence] in the buffer as they are on 2 channels: to get to the right frame, divide the SR of the input by the hopSize, then multiply by 2 because of the channel interleaving
 // here we are querying from one frame before (the signal starts at 8192, which is frame 16 (8192/512), therefore starting the query at frame 15, which is index 30.
@@ -117,7 +115,7 @@ Routine{
 )
 
 // look at the buffer: [pitch,confidence] for left then [pitch,confidence] for right
-c.plot(minval:0, maxval:1500)
+c.plot(separately:true)
 ::
 
 STRONG::A musical example.::
@@ -151,7 +149,7 @@ d.do({
 e.postln;
 
 //granulate only the frames that are in our buffer
-// We need to convert our indices to frame start. Their position was (index * hopSize) - (winSize) in FluidBufPitch
+// We need to convert our indices to frame start. Their position was (index * hopSize) - (windowSize) in FluidBufPitch
 f = e.collect({arg i; (i * 512) - 1024});
 
 // define a basic grain synth

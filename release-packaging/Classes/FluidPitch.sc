@@ -1,7 +1,7 @@
 FluidPitch : MultiOutUGen {
 
-	*kr { arg in = 0, algorithm = 2, winSize = 1024, hopSize = -1, fftSize = -1, maxFFTSize = 16384;
-		^this.multiNew('control', in.asAudioRateInput(this), algorithm, winSize, hopSize, fftSize, maxFFTSize);
+	*kr { arg in = 0, algorithm = 2, windowSize = 1024, hopSize = -1, fftSize = -1, maxFFTSize = 16384;
+		^this.multiNew('control', in.asAudioRateInput(this), algorithm, windowSize, hopSize, fftSize, maxFFTSize);
 	}
 
 	init {arg ...theInputs;

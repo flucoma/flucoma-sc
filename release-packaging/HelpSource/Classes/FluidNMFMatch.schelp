@@ -6,7 +6,7 @@ RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/FluidBufNMF, Classe
 DESCRIPTION::
 The FluidNMFMatch object matches an incoming audio signal against a set of spectral templates using an slimmed-down version of Nonnegative Matrix Factorisation (NMF) footnote:: Lee, Daniel D., and H. Sebastian Seung. 1999. ‘Learning the Parts of Objects by Non-Negative Matrix Factorization’. Nature 401 (6755): 788–91. https://doi.org/10.1038/44565. ::
 
-It outputs at kr the degree of detected match for each template (the activation amount, in NMF-terms). The spectral templates are presumed to have been produced by the offline NMF process (link::Classes/FluidBufNMF::), and must be the correct size with respect to the FFT settings being used (FFT size / 2 + 1 frames long). The rank of the decomposition is determined by the number of channels in the supplied buffer of templates, up to a maximum set by the STRONG::maxRank:: parameter.
+It outputs at kr the degree of detected match for each template (the activation amount, in NMF-terms). The spectral templates are presumed to have been produced by the offline NMF process (link::Classes/FluidBufNMF::), and must be the correct size with respect to the FFT settings being used (FFT size / 2 + 1 frames long). The rank of the decomposition (number of components) is determined by the number of channels in the supplied buffer of templates, up to a maximum set by the STRONG::maxComponents:: parameter.
 
 NMF has been a popular technique in signal processing research for things like source separation and transcription footnote:: Smaragdis and Brown, Non-Negative Matrix Factorization for Polyphonic Music Transcription.::, although its creative potential is so far relatively unexplored. It works iteratively, by trying to find a combination of amplitudes ('activations') that yield the original magnitude spectrogram of the audio input when added together. By and large, there is no unique answer to this question (i.e. there are different ways of accounting for an evolving spectrum in terms of some set of templates and envelopes). In its basic form, NMF is a form of unsupervised learning: it starts with some random data and then converges towards something that minimizes the distance between its generated data and the original:it tends to converge very quickly at first and then level out. Fewer iterations mean less processing, but also less predictable results.
 
@@ -20,25 +20,25 @@ FluidBufNMF is part of the Fluid Decomposition Toolkit of the FluCoMa project. f
 CLASSMETHODS::
 
 METHOD:: kr
-The real-time processing method. It takes an audio or control input, and will yield a control stream in the form of a multichannel array of size STRONG::maxRank:: . If the bases buffer has fewer than maxRank channels, the remaining outputs will be zeroed.
+The real-time processing method. It takes an audio or control input, and will yield a control stream in the form of a multichannel array of size STRONG::maxComponents:: . If the bases buffer has fewer than maxComponents channels, the remaining outputs will be zeroed.
 
 ARGUMENT:: in
 The signal input to the factorisation process.
 
 ARGUMENT:: bases
-	The server index of the buffer containing the different bases that the input signal will be matched against. Bases must be STRONG::(fft size / 2) + 1:: frames. If the buffer has more than STRONG::maxRank:: channels, the excess will be ignored.
+	The server index of the buffer containing the different bases that the input signal will be matched against. Bases must be STRONG::(fft size / 2) + 1:: frames. If the buffer has more than STRONG::maxComponents:: channels, the excess will be ignored.
 
-ARGUMENT::maxRank
+ARGUMENT::maxComponents
 	The maximum number of elements the NMF algorithm will try to divide the spectrogram of the source in. This dictates the number of output channelsfor the ugen. This cannot be modulated.
 
-ARGUMENT:: numIter
+ARGUMENT:: iterations
 	The NMF process is iterative, trying to converge to the smallest error in its factorisation. The number of iterations will decide how many times it tries to adjust its estimates. Higher numbers here will be more CPU intensive, lower numbers will be more unpredictable in quality.
 
-ARGUMENT:: winSize
+ARGUMENT:: windowSize
 	The number of samples that are analysed at a time. A lower number yields greater temporal resolution, at the expense of spectral resoultion, and vice-versa.
 
 ARGUMENT:: hopSize
-	The window hop size. As NMF relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of winSize (overlap of 2).
+	The window hop size. As NMF relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of windowSize (overlap of 2).
 
 ARGUMENT:: fftSize
 	The FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will default to windowSize.
@@ -79,9 +79,9 @@ d.plot
 d.play //////(beware !!!! loud!!!)
 
 (
-// separate them in 2 ranks
+// separate them in 2 components
 Routine {
-	FluidBufNMF.process(s, d, bases: e, rank:2);
+	FluidBufNMF.process(s, d, bases: e, components:2);
 	s.sync;
 	e.query;
 }.play
@@ -111,19 +111,19 @@ e = Buffer.new(s);
 // train only 2 seconds
 (
 Routine {
-    FluidBufNMF.process(s,b,0,88200,0,1, c, x, rank:10,fftSize:2048);
+    FluidBufNMF.process(s,b,0,88200,0,1, c, x, components:10,fftSize:2048);
     c.query;
 }.play;
 )
 
 // wait for the query to print
-// then find the rank that has the picking sound by changing which channel to listen to
+// then find the component that has the picking sound by changing which channel to listen to
 (
     ~element = 6;
     {PlayBuf.ar(10,c)[~element]}.play;
 )
 
-// copy all the other ranks on itself and the picking basis as the sole component of the 1st channel
+// copy all the other components on itself and the picking basis as the sole component of the 1st channel
 (
 Routine{
 	z = (0..9);
@@ -135,7 +135,7 @@ Routine{
 
 e.plot;
 
-//using this trained basis we can see the envelop (activations) of each rank
+//using this trained basis we can see the envelop (activations) of each component
 {FluidNMFMatch.kr(PlayBuf.ar(1,b),e,2,fftSize:2048)}.plot(1);
 // the left/top activations are before, the pick before the sustain.
 
@@ -187,13 +187,13 @@ e = Buffer.new(s);
 // train where all objects are present
 (
 Routine {
-    FluidBufNMF.process(s,b,130000,150000,0,1, c, x, rank:10);
+    FluidBufNMF.process(s,b,130000,150000,0,1, c, x, components:10);
     c.query;
 }.play;
 )
 
 // wait for the query to print
-// then find a rank for each item you want to find. You could also sum them. Try to find a rank with a good object-to-rest ratio
+// then find a component for each item you want to find. You could also sum them. Try to find a component with a good object-to-rest ratio
 (
     ~dog =2;
     {PlayBuf.ar(10,c)[~dog]}.play
@@ -205,7 +205,7 @@ Routine {
 )
 
 
-// copy at least one other rank to a third rank, a sort of left-over channel
+// copy at least one other component to a third filter, a sort of left-over channel
 (
 Routine{
 	FluidBufCompose.process(s, x, startChan:~dog, numChans: 1, destination: e);
@@ -306,4 +306,3 @@ c.query
 	CODE::
 	//to be completed
 ::
-	

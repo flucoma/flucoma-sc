@@ -57,7 +57,7 @@ ARGUMENT:: magWeight
 ARGUMENT:: freqWeight
 	The weight of the frequency proximity of a peak when trying to associate it to an existing track (relative to magWeight - suggested between 0 to 1)
 
-ARGUMENT:: winSize
+ARGUMENT:: windowSize
 	The window size. As sinusoidal estimation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
 ARGUMENT:: hopSize
