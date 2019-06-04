@@ -53,7 +53,7 @@ ARGUMENT:: threshold
 ARGUMENT:: filterSize
 	The size of a smoothing filter that is applied on the novelty curve. A larger filter filter size allows for cleaner cuts on very sharp changes.
 
-ARGUMENT:: winSize
+ARGUMENT:: windowSize
 	The window size. As novelty estimation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
 ARGUMENT:: hopSize

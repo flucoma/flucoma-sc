@@ -34,11 +34,11 @@ ARGUMENT:: threshold
 ARGUMENT:: filterSize
 	The size of a smoothing filter that is applied on the novelty curve. A larger filter filter size allows for cleaner cuts on very sharp changes.
 
-ARGUMENT:: winSize
+ARGUMENT:: windowSize
 	The window size. As sinusoidal estimation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
 ARGUMENT:: hopSize
-	The window hop size. As sinusoidal estimation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of winSize (overlap of 2).
+	The window hop size. As sinusoidal estimation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of windowSize (overlap of 2).
 
 ARGUMENT:: fftSize
 	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will default to windowSize.
@@ -53,7 +53,7 @@ ARGUMENT:: maxFilterSize
 	This cannot be modulated.
 
 RETURNS::
-	An audio stream with impulses at detected transients. The latency between the input and the output is winSize at maximum.
+	An audio stream with impulses at detected transients. The latency between the input and the output is windowSize at maximum.
 
 EXAMPLES::
 
@@ -61,7 +61,7 @@ code::
 //load some sounds
 b = Buffer.read(s,File.realpath(FluidRTNoveltySlice.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
 
-// basic param (the process add a latency of winSize samples
+// basic param (the process add a latency of windowSize samples
 {var sig = PlayBuf.ar(1,b,loop:1); [FluidRTNoveltySlice.ar(sig,0,3,0.2) * 0.5, DelayN.ar(sig, 1, 1024/ s.sampleRate)]}.play
 
 // other parameters
