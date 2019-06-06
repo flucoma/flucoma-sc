@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.3)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 14)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx -msse -msse2 -msse3 -msse4")
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx -msse -msse2 -msse3 -msse4")
 set(CMAKE_CXX_EXTENSIONS OFF)
 if(APPLE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
@@ -71,9 +71,14 @@ add_library(FFTLIB STATIC ${FFT_SOURCES})
 target_link_libraries(
   FFTLIB PRIVATE ${FFT_LINK}
 )
- target_compile_options(
+target_compile_options(
    FFTLIB PRIVATE $<$<NOT:$<CONFIG:DEBUG>>:-mavx -msse -msse2 -msse3 -msse4>
- )
+)
+#needed for complaint-free static linking with GCC
+if(CMAKE_COMPILER_IS_GNUCXX)
+   target_compile_options( FFTLIB PUBLIC -fPIC )
+ENDIF(CMAKE_COMPILER_IS_GNUCXX)
+
 
 add_library(FLUID_SC_WRAPPER INTERFACE)
 target_sources(FLUID_SC_WRAPPER
