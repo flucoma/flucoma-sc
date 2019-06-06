@@ -4,3 +4,4 @@ build
 release-packaging/Plugins
 release-packaging/AudioFiles
 *.scx
+.vs/
