@@ -1,9 +1,9 @@
 
-if(MSVC)
-  target_compile_options(${PLUGIN} PRIVATE /W4 /WX)
-else()
-  target_compile_options(${PLUGIN} PRIVATE -Wall -Wextra -Wpedantic -Wreturn-type -Wconversion)
-endif()
+# if(MSVC)
+#   target_compile_options(${PLUGIN} PRIVATE /W4 /WX)
+# else()
+#   target_compile_options(${PLUGIN} PRIVATE -Wall -Wextra -Wpedantic -Wreturn-type -Wconversion)
+# endif()
 
 target_link_libraries(
   ${PLUGIN}
@@ -38,7 +38,7 @@ if (SUPERNOVA)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
-    target_compile_definitions(${PLUGIN} PRIVATE -fvisibility=hidden)
+    target_compile_options(${PLUGIN} PRIVATE -fvisibility=hidden)
 
     include (CheckCXXCompilerFlag)
 
