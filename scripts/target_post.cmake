@@ -1,6 +1,8 @@
 
+target_compile_features(${PLUGIN} PUBLIC cxx_std_14)
+
 if(MSVC)
-  target_compile_options(${PLUGIN} PRIVATE /W4 /WX)
+  target_compile_options(${PLUGIN} PRIVATE /W4)
 else()
   target_compile_options(${PLUGIN} PRIVATE -Wall -Wextra -Wpedantic -Wreturn-type -Wconversion)
 endif()
@@ -74,7 +76,11 @@ endif()
 
 if(MSVC)
   target_compile_options(${PLUGIN} PRIVATE /arch:AVX -D_USE_MATH_DEFINES)
-endif()
+else(MSVC)
+target_compile_options(
+   ${PLUGIN} PRIVATE $<$<NOT:$<CONFIG:DEBUG>>: -mavx -msse -msse2 -msse3 -msse4>
+)
+endif(MSVC)
 
 ####### added the fluid_decomposition
 

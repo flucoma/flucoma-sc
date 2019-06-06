@@ -68,9 +68,15 @@ add_library(FFTLIB STATIC ${FFT_SOURCES})
 target_link_libraries(
   FFTLIB PRIVATE ${FFT_LINK}
 )
+if(WIN32)
  target_compile_options(
-   FFTLIB PRIVATE $<$<NOT:$<CONFIG:DEBUG>>:-mavx -msse -msse2 -msse3 -msse4>
+   FFTLIB PRIVATE $<$<NOT:$<CONFIG:DEBUG>>: /arch:AVX>
  )
+else(WIN32)
+target_compile_options(
+   FFTLIB PRIVATE $<$<NOT:$<CONFIG:DEBUG>>: -mavx -msse -msse2 -msse3 -msse4>
+)
+endif(WIN32)
 
 add_library(FLUID_SC_WRAPPER INTERFACE)
 target_sources(FLUID_SC_WRAPPER
