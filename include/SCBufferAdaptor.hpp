@@ -3,7 +3,6 @@
 #include <SC_PlugIn.h>
 #include <boost/align/aligned_alloc.hpp>
 #include <cctype>
-//#include <clients/common/FluidParams.hpp>
 #include <data/FluidTensor.hpp>
 #include <clients/common/BufferAdaptor.hpp>
 #include <fstream>
@@ -12,7 +11,6 @@
 #include <string>
 #include <vector>
 
-// static InterfaceTable *ft;
 
 namespace fluid
 {
@@ -27,11 +25,11 @@ struct NRTBuf {
       : mBuffer(b)
   {
   }
-  NRTBuf(World *world, long bufnum, bool rt = false)
+  NRTBuf(World *world, uint32 bufnum, bool rt = false)
       : NRTBuf(rt ? World_GetBuf(world, bufnum)
                   : World_GetNRTBuf(world, bufnum))
   {
-    if (mBuffer && !mBuffer->samplerate)
+    if (mBuffer && !static_cast<bool>(mBuffer->samplerate))
       mBuffer->samplerate = world->mFullRate.mSampleRate;
   }
 
@@ -59,15 +57,15 @@ class SCBufferAdaptor : public NRTBuf, public client::BufferAdaptor
 {
 public:
 //  SCBufferAdaptor()               = delete;
-  SCBufferAdaptor(SCBufferAdaptor &) = delete;
-  SCBufferAdaptor operator=(SCBufferAdaptor &) = delete;
+  SCBufferAdaptor(const SCBufferAdaptor &) = delete;
+  SCBufferAdaptor& operator=(const SCBufferAdaptor &) = delete;
 
   SCBufferAdaptor(SCBufferAdaptor&&) = default;
   SCBufferAdaptor& operator=(SCBufferAdaptor&&) = default;
 
 
-  SCBufferAdaptor(long bufnum,World *world, bool rt = false)
-      : NRTBuf(world, bufnum, rt)
+  SCBufferAdaptor(intptr_t bufnum,World *world, bool rt = false)
+      : NRTBuf(world, static_cast<uint32>(bufnum), rt)
       , mBufnum(bufnum)
       , mWorld(world)
   {
@@ -80,7 +78,7 @@ public:
 
   void assignToRT(World *rtWorld)
   {
-    SndBuf *rtBuf = World_GetBuf(rtWorld, mBufnum);
+    SndBuf *rtBuf = World_GetBuf(rtWorld, static_cast<uint32>(mBufnum));
     *rtBuf        = *mBuffer;
     rtWorld->mSndBufUpdates[mBufnum].writes++;
   }
@@ -95,7 +93,7 @@ public:
   }
 
   // No locks in (vanilla) SC, so no-ops for these
-  void acquire() override {}
+  bool acquire() override { return true; }
   void release() override {}
 
   // Validity is based on whether this buffer is within the range the server
@@ -110,13 +108,13 @@ public:
     return true; 
   }
 
-  FluidTensorView<float, 1> samps(size_t channel, size_t rankIdx = 0) override
+  FluidTensorView<float, 1> samps(size_t channel) override
   {
     FluidTensorView<float, 2> v{mBuffer->data, 0,
                                 static_cast<size_t>(mBuffer->frames),
                                 static_cast<size_t>(mBuffer->channels)};
 
-    return v.col(rankIdx + channel * mRank);
+    return v.col(channel);
   }
 
   // Return a 2D chunk
@@ -132,112 +130,32 @@ public:
 
   size_t numFrames() const override
   {
-    return valid() ? this->mBuffer->frames : 0;
+    return valid() ? static_cast<size_t>(this->mBuffer->frames) : 0u;
   }
 
   size_t numChans() const override
   {
-    return valid() ? this->mBuffer->channels / mRank : 0;
+    return valid() ? static_cast<size_t>(this->mBuffer->channels) : 0u;
   }
 
-  size_t rank() const override { return valid() ? mRank : 0; }
+  double sampleRate() const override { return valid() ? mBuffer->samplerate : 0; }
 
-  void resize(size_t frames, size_t channels, size_t rank) override
+  void resize(size_t frames, size_t channels, double sampleRate) override
   {
     SndBuf *thisThing = mBuffer;
     mOldData          = thisThing->data;
-    mRank             = rank;
-    mWorld->ft->fBufAlloc(mBuffer, channels * rank, frames,
-                          thisThing->samplerate);
+    mWorld->ft->fBufAlloc(mBuffer, static_cast<int>(channels), static_cast<int>(frames), sampleRate);
   }
 
-  int bufnum() { return mBufnum; }
+  intptr_t bufnum() { return mBufnum; }
   void realTime(bool rt) { mRealTime = rt;  }
 
 protected:
-  bool equal(BufferAdaptor *rhs) const override
-  {
-    SCBufferAdaptor *x = dynamic_cast<SCBufferAdaptor *>(rhs);
-    if (x) { return mBufnum == x->mBufnum; }
-    return false;
-  }
 
   bool  mRealTime{false};
   float *mOldData{0};
-  long   mBufnum;
+  intptr_t   mBufnum;
   World *mWorld;
-  size_t mRank{1};
-};
-
-class RTBufferView : public client::BufferAdaptor
-{
-public:
-  RTBufferView(World *world, int bufnum)
-      : mWorld(world)
-      , mBufnum(bufnum)
-  {
-  }
-
-  void acquire() override { mBuffer = World_GetBuf(mWorld, mBufnum); }
-  void release() override {}
-
-  // Validity is based on whether this buffer is within the range the server
-  // knows about
-  bool valid() const override
-  {
-    return (mBuffer && mBufnum >= 0 && mBufnum < mWorld->mNumSndBufs);
-  }
-
-  FluidTensorView<float, 1> samps(size_t channel, size_t rankIdx = 0) override
-  {
-    FluidTensorView<float, 2> v{mBuffer->data, 0,
-                                static_cast<size_t>(mBuffer->frames),
-                                static_cast<size_t>(mBuffer->channels)};
-
-    return v.col(rankIdx + channel * mRank);
-  }
-
-  FluidTensorView<float, 1> samps(size_t offset, size_t nframes,
-                                  size_t chanoffset) override
-  {
-    FluidTensorView<float, 2> v{mBuffer->data, 0,
-                                static_cast<size_t>(mBuffer->frames),
-                                static_cast<size_t>(mBuffer->channels)};
-
-    return v(fluid::Slice(offset, nframes), fluid::Slice(chanoffset, 1)).col(0);
-  }
-
-  size_t numFrames() const override
-  {
-    return valid() ? this->mBuffer->frames : 0;
-  }
-
-  size_t numChans() const override
-  {
-    return valid() ? this->mBuffer->channels / mRank : 0;
-  }
-
-  size_t rank() const override { return valid() ? mRank : 0; }
-
-  void resize(size_t frames, size_t channels, size_t rank) override
-  {
-    assert(false && "Don't try and resize real-time buffers");
-  }
-
-  int bufnum() { return mBufnum; }
-
-private:
-  bool equal(BufferAdaptor *rhs) const override
-  {
-    RTBufferView *x = dynamic_cast<RTBufferView *>(rhs);
-    if (x) { return mBufnum == x->mBufnum; }
-    return false;
-  }
-
-  size_t  mRank = 1;
-  World * mWorld;
-  int     mBufnum = -1;
-  SndBuf *mBuffer = nullptr;
 };
 
 std::ostream& operator <<(std::ostream& os, SCBufferAdaptor& b)

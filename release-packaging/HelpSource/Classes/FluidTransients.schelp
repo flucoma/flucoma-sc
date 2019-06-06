@@ -39,10 +39,10 @@ ARGUMENT:: threshFwd
 ARGUMENT:: threshBack
 	The threshold of the offset of the smoothed error function. As it proceeds backwards in time, it allows tight ending of the identification of the anomaly.
 
-ARGUMENT:: winSize
+ARGUMENT:: windowSize
 	The averaging window of the error detection function. It needs smoothing as it is very jittery. The longer the window, the less precise, but the less false positive.
 
-ARGUMENT:: debounce
+ARGUMENT:: clumpLength
 	The window size in sample within which positive detections will be clumped together to avoid overdetecting in time.
 
 RETURNS::
@@ -56,11 +56,11 @@ CODE::
 b = Buffer.read(s,File.realpath(FluidTransients.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
 
 // basic parameters
-{FluidTransients.ar(PlayBuf.ar(1, b.bufnum, loop:1))}.play
+{FluidTransients.ar(PlayBuf.ar(1, b, loop:1))}.play
 
 // tweaked parameterss
-{FluidTransients.ar(PlayBuf.ar(1, b.bufnum, loop:1), 80, threshFwd:MouseX.kr(0,5), threshBack:MouseY.kr(0,2))}.play
+{FluidTransients.ar(PlayBuf.ar(1, b, loop:1), 80, threshFwd:MouseX.kr(0,5), threshBack:MouseY.kr(0,2))}.play
 
 // null test (the process add a latency of (blockSize + padding - order) samples
-{var sig = PlayBuf.ar(1, b.bufnum, loop:1); [FluidTransients.ar(sig).sum - DelayN.ar(sig, 1, ((256 + 128 - 20)/ s.sampleRate))]}.play
+{var sig = PlayBuf.ar(1, b, loop:1); [FluidTransients.ar(sig).sum - DelayN.ar(sig, 1, ((256 + 128 - 20)/ s.sampleRate))]}.play
 ::

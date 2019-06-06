@@ -24,7 +24,7 @@ RETURNS::
 
 
 EXAMPLES::
-	Summing with the inverse (gain of -1) with a delay of the latency gives us CPU-expensive silence.
+	Summing with the inverse (gain of -1) gives us CPU-expensive silence.
 CODE::
 { var source = PinkNoise.ar(0.1); source + FluidGain.ar(source,-1); }.play
 ::

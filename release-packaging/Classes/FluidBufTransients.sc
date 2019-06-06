@@ -1,15 +1,22 @@
 FluidBufTransients {
-	 *process { arg server, srcBufNum, startAt = 0, nFrames = -1, startChan = 0, nChans = -1, transBufNum, resBufNum, order = 20, blockSize = 256, padSize = 128, skew = 0, threshFwd = 2, threshBack = 1.1, winSize = 14, debounce = 25;
+	 *process { arg server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, transients, residual, order = 20, blockSize = 256, padSize = 128, skew = 0, threshFwd = 2, threshBack = 1.1, windowSize = 14, clumpLength = 25, action;
 
-		if(srcBufNum.isNil) { Error("Invalid buffer").format(thisMethod.name, this.class.name).throw};
+		source = source.asUGenInput;
+		transients = transients.asUGenInput;
+		residual = residual.asUGenInput;
+
+		source.isNil.if {"FluidBufTransients:  Invalid source buffer".throw};
 
 		server = server ? Server.default;
-		transBufNum = transBufNum ? -1;
-		resBufNum = resBufNum ? -1;
+		transients = transients ? -1;
+		residual = residual ? -1;
 
-		("Source" + srcBufNum).postln;
-		("Trans" + transBufNum).postln;
-		("Res" + resBufNum).postln;
-		server.sendMsg(\cmd, \BufTransients, srcBufNum, startAt, nFrames, startChan, nChans, transBufNum, resBufNum, order, blockSize, padSize, skew, threshFwd, threshBack, winSize, debounce);
+		forkIfNeeded{
+			server.sendMsg(\cmd, \BufTransients, source, startFrame, numFrames, startChan, numChans, transients, residual, order, blockSize, padSize, skew, threshFwd, threshBack, windowSize, clumpLength);
+			server.sync;
+			if (transients != -1) {transients = server.cachedBufferAt(transients); transients.updateInfo; server.sync;} {transients = nil};
+			if (residual != -1) {residual = server.cachedBufferAt(residual); residual.updateInfo; server.sync;} {residual = nil};
+			action.value(transients, residual);
+		};
 	}
 }

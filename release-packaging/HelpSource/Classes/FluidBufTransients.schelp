@@ -23,25 +23,25 @@ This is the method that calls for the transient extraction to be performed on a 
 ARGUMENT:: server
 	The server on which the buffers to be processed are allocated.
 
-ARGUMENT:: srcBufNum
+ARGUMENT:: source
 	The index of the buffer to use as the source material to be decomposed through the NMF process. The different channels of multichannel buffers will be processing sequentially.
 
-ARGUMENT:: startAt
+ARGUMENT:: startFrame
 	Where in the srcBuf should the NMF process start, in sample.
 
-ARGUMENT:: nFrames
+ARGUMENT:: numFrames
 	How many frames should be processed.
 
 ARGUMENT:: startChan
 	For multichannel srcBuf, which channel should be processed first.
 
-ARGUMENT:: nChans
+ARGUMENT:: numChans
 	For multichannel srcBuf, how many channel should be processed.
 
-ARGUMENT:: transBufNum
+ARGUMENT:: transients
 	The index of the buffer where the extracted transient component will be reconstructed.
 
-ARGUMENT:: resBufNum
+ARGUMENT:: residual
 	The index of the buffer where the estimated continuous component will be reconstructed.
 
 ARGUMENT:: order
@@ -62,11 +62,14 @@ ARGUMENT:: threshFwd
 ARGUMENT:: threshBack
 	The threshold of the offset of the smoothed error function. As it proceeds backwards in time, it allows tight ending of the identification of the anomaly.
 
-ARGUMENT:: winSize
+ARGUMENT:: windowSize
 	The averaging window of the error detection function. It needs smoothing as it is very jittery. The longer the window, the less precise, but the less false positive.
 
-ARGUMENT:: debounce
+ARGUMENT:: clumpLength
 	The window size in sample within which positive detections will be clumped together to avoid overdetecting in time.
+
+ARGUMENT:: action
+	A Function to be evaluated once the offline process has finished and all Buffer's instance variables have been updated on the client side. The function will be passed [transients, residual] as an argument.
 
 RETURNS::
 	Nothing, as the various destination buffers are declared in the function call.
@@ -85,29 +88,59 @@ d = Buffer.new(s);
 (
 Routine{
 	t = Main.elapsedTime;
-	FluidBufTransients.process(s,b.bufnum, transBufNum:c.bufnum, resBufNum:d.bufnum);
-	s.sync;
+	FluidBufTransients.process(s,b, transients:c, residual:d);
 	(Main.elapsedTime - t).postln;
 }.play
 );
 
 // wait for the duration to appear in the post window as a cue that the computation is finished
-c.query;
 c.play;
-d.query;
 d.play;
 
 //nullsumming tests
-{(PlayBuf.ar(1,c.bufnum))+(PlayBuf.ar(1,d.bufnum))+(-1*PlayBuf.ar(1,b.bufnum,doneAction:2))}.play
+{(PlayBuf.ar(1,c))+(PlayBuf.ar(1,d))+(-1*PlayBuf.ar(1,b,doneAction:2))}.play
 
 
 // with everything changed to make it much better, at the cost of computation time (only 5 seconds are processed here)
 (
 Routine{
 	t = Main.elapsedTime;
-	FluidBufTransients.process(s,b.bufnum, 0, 220500, 0, 1, c.bufnum, d.bufnum, 200, 2048, 1024, 1, 3, 1, 15, 30);
-	s.sync;
+	FluidBufTransients.process(s,b, 0, 220500, 0, 1, c, d, 200, 2048, 1024, 1, 3, 1, 15, 30);
 	(Main.elapsedTime - t).postln;
 }.play
 )
+
+// wait for the duration to appear in the post window as a cue that the computation is finished
+c.play;
+d.play;
+::
+
+STRONG::A stereo buffer example.::
+CODE::
+
+// load two very different files
+(
+b = Buffer.read(s,File.realpath(FluidBufTransients.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
+c = Buffer.read(s,File.realpath(FluidBufTransients.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-AcousticStrums-M.wav");
+)
+
+// composite one on left one on right as test signals
+FluidBufCompose.process(s, c, numFrames:b.numFrames, startFrame:555000, destStartChan:1, destination:b)
+b.play
+
+// create 2 new buffers as destinations
+d = Buffer.new(s); e = Buffer.new(s);
+
+//run the process on them
+(
+Routine{
+    t = Main.elapsedTime;
+    FluidBufTransients.process(s, b, transients: d, residual:e, threshFwd:1.2, clumpLength:40);
+    (Main.elapsedTime - t).postln;
+}.play
+)
+
+//listen: stereo preserved!
+d.play
+e.play
 ::

@@ -34,13 +34,13 @@ ARGUMENT:: threshFwd
 ARGUMENT:: threshBack
 	The threshold of the offset of the smoothed error function. As it proceeds backwards in time, it allows tight ending of the identification of the anomaly.
 
-ARGUMENT:: winSize
+ARGUMENT:: windowSize
 	The averaging window of the error detection function. It needs smoothing as it is very jittery. The longer the window, the less precise, but the less false positives.
 
-ARGUMENT:: debounce
+ARGUMENT:: clumpLength
 	The window size in sample within with positive detections will be clumped together to avoid overdetecting in time.
 
-ARGUMENT:: minSlice
+ARGUMENT:: minSliceLength
 	The minimum duration of a slice in samples.
 
 RETURNS::
@@ -54,18 +54,18 @@ CODE::
 b = Buffer.read(s,File.realpath(FluidTransientSlice.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
 
 // basic param (the process add a latency of (blockSize + padSize - order) samples
-{var sig = PlayBuf.ar(1,b.bufnum,loop:1); [FluidTransientSlice.ar(sig) * 0.5, DelayN.ar(sig, 1, ((256 + 128 - 20)/ s.sampleRate))]}.play
+{var sig = PlayBuf.ar(1,b,loop:1); [FluidTransientSlice.ar(sig) * 0.5, DelayN.ar(sig, 1, ((256 + 128 - 20)/ s.sampleRate))]}.play
 
 // other parameters
-{var sig = PlayBuf.ar(1,b.bufnum,loop:1); [FluidTransientSlice.ar(sig,order:80,minSlice:2205) * 0.5, DelayN.ar(sig, 1, ((256 + 128 - 80)/ s.sampleRate))]}.play
+{var sig = PlayBuf.ar(1,b,loop:1); [FluidTransientSlice.ar(sig,order:80,minSliceLength:2205) * 0.5, DelayN.ar(sig, 1, ((256 + 128 - 80)/ s.sampleRate))]}.play
 
 // more musical trans-trigged autopan
 (
 {
 	var sig, trig, syncd, pan;
-	sig = PlayBuf.ar(1,b.bufnum,loop:1);
-	trig = FluidTransientSlice.ar(sig,order:10,minSlice:4410);
-	syncd = DelayN.ar(sig, 1, ((256 + 128 - 10)/ s.sampleRate));
+	sig = PlayBuf.ar(1,b,loop:1);
+	trig = FluidTransientSlice.ar(sig,order:10,minSliceLength:4410);
+	syncd = DelayN.ar(sig, 1, ((256 + 128 - 20)/ s.sampleRate));
 	pan = TRand.ar(-1,1,trig);
 	Pan2.ar(syncd,pan);
 }.play

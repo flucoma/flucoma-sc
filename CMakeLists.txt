@@ -40,7 +40,7 @@ message("${FLUID_ABS_PATH}")
 # endif()
 
 if (NOT (EXISTS "${FLUID_ABS_PATH}/build/fluid_decomposition-exports.cmake"))
-	message(FATAL_ERROR "Can't find the fluid_decomposition CMake targets file at ${FLUID_ABS_PATH}/build/fluid_decomposition-expors.cmake. Please go to ${FLUID_ABS_PATH}/build and run CMake")
+	message(FATAL_ERROR "Can't find the fluid_decomposition CMake targets file at ${FLUID_ABS_PATH}/build/fluid_decomposition-exports.cmake. Please go to ${FLUID_ABS_PATH}/build and run CMake")
 endif()
 
 if (NOT (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/release-packaging/AudioFiles/"))
@@ -60,6 +60,17 @@ set(CMAKE_SHARED_MODULE_PREFIX "")
 if(APPLE OR WIN32)
 set(CMAKE_SHARED_MODULE_SUFFIX ".scx")
 endif()
+
+get_property(FFT_SOURCES TARGET HISSTools_FFT  PROPERTY INTERFACE_SOURCES)
+get_property(FFT_LINK TARGET HISSTools_FFT  PROPERTY INTERFACE_LINK_LIBRARIES)
+
+add_library(FFTLIB STATIC ${FFT_SOURCES})
+target_link_libraries(
+  FFTLIB PRIVATE ${FFT_LINK}
+)
+ target_compile_options(
+   FFTLIB PRIVATE $<$<NOT:$<CONFIG:DEBUG>>:-mavx -msse -msse2 -msse3 -msse4>
+ )
 
 add_library(FLUID_SC_WRAPPER INTERFACE)
 target_sources(FLUID_SC_WRAPPER

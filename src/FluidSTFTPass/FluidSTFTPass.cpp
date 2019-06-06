@@ -6,8 +6,9 @@
 
 static InterfaceTable *ft;
 
-PluginLoad(FluidSTFTUGen) {
-    ft = inTable;
+PluginLoad(FluidSTFTUGen)
+{
+  ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<BaseSTFTClient,double,float>("FluidSTFTPass",STFTParams,ft);
+  makeSCWrapper<BaseSTFTClient>("FluidSTFTPass", ft);
 }

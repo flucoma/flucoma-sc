@@ -1,12 +1,12 @@
 TITLE:: FluidNMFMatch
-SUMMARY:: Real-Time Non-Negative Matrix Factorisation with Fixed Dictionaries
+SUMMARY:: Real-Time Non-Negative Matrix Factorisation with Fixed Bases
 CATEGORIES:: Libraries>FluidDecomposition
-RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/FluidBufNMF
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/FluidBufNMF, Classes/FluidNMFFilter
 
 DESCRIPTION::
 The FluidNMFMatch object matches an incoming audio signal against a set of spectral templates using an slimmed-down version of Nonnegative Matrix Factorisation (NMF) footnote:: Lee, Daniel D., and H. Sebastian Seung. 1999. ‘Learning the Parts of Objects by Non-Negative Matrix Factorization’. Nature 401 (6755): 788–91. https://doi.org/10.1038/44565. ::
 
-It outputs at kr the degree of detected match for each template (the activation amount, in NMF-terms). The spectral templates are presumed to have been produced by the offline NMF process (link::Classes/FluidBufNMF::), and must be the correct size with respect to the FFT settings being used (FFT size / 2 + 1 frames long). The rank of the decomposition is determined by the number of channels in the supplied buffer of templates, up to a maximum set by the STRONG::maxRank:: parameter.
+It outputs at kr the degree of detected match for each template (the activation amount, in NMF-terms). The spectral templates are presumed to have been produced by the offline NMF process (link::Classes/FluidBufNMF::), and must be the correct size with respect to the FFT settings being used (FFT size / 2 + 1 frames long). The rank of the decomposition (number of components) is determined by the number of channels in the supplied buffer of templates, up to a maximum set by the STRONG::maxComponents:: parameter.
 
 NMF has been a popular technique in signal processing research for things like source separation and transcription footnote:: Smaragdis and Brown, Non-Negative Matrix Factorization for Polyphonic Music Transcription.::, although its creative potential is so far relatively unexplored. It works iteratively, by trying to find a combination of amplitudes ('activations') that yield the original magnitude spectrogram of the audio input when added together. By and large, there is no unique answer to this question (i.e. there are different ways of accounting for an evolving spectrum in terms of some set of templates and envelopes). In its basic form, NMF is a form of unsupervised learning: it starts with some random data and then converges towards something that minimizes the distance between its generated data and the original:it tends to converge very quickly at first and then level out. Fewer iterations mean less processing, but also less predictable results.
 
@@ -20,39 +20,39 @@ FluidBufNMF is part of the Fluid Decomposition Toolkit of the FluCoMa project. f
 CLASSMETHODS::
 
 METHOD:: kr
-The real-time processing method. It takes an audio or control input, and will yield a control stream in the form of a multichannel array of size STRONG::maxRank:: . If the dictionary buffer has fewer than maxRank channels, the remaining outputs will be zeroed.
+The real-time processing method. It takes an audio or control input, and will yield a control stream in the form of a multichannel array of size STRONG::maxComponents:: . If the bases buffer has fewer than maxComponents channels, the remaining outputs will be zeroed.
 
 ARGUMENT:: in
 The signal input to the factorisation process.
 
-ARGUMENT:: dictBufNum
-	The server index of the buffer containing the different dictionaries that the input signal will be matched against. Dictionaries must be STRONG::(fft size / 2) + 1:: frames. If the buffer has more than STRONG::maxRank:: channels, the excess will be ignored.
+ARGUMENT:: bases
+	The server index of the buffer containing the different bases that the input signal will be matched against. Bases must be STRONG::(fft size / 2) + 1:: frames. If the buffer has more than STRONG::maxComponents:: channels, the excess will be ignored.
 
-ARGUMENT::maxRank
-	The maximum number of elements the NMF algorithm will try to divide the spectrogram of the source in. This dictates the number of output channelsfor the ugen. This is not modulatable.
+ARGUMENT::maxComponents
+	The maximum number of elements the NMF algorithm will try to divide the spectrogram of the source in. This dictates the number of output channelsfor the ugen. This cannot be modulated.
 
-ARGUMENT:: nIter
+ARGUMENT:: iterations
 	The NMF process is iterative, trying to converge to the smallest error in its factorisation. The number of iterations will decide how many times it tries to adjust its estimates. Higher numbers here will be more CPU intensive, lower numbers will be more unpredictable in quality.
 
-ARGUMENT:: winSize
+ARGUMENT:: windowSize
 	The number of samples that are analysed at a time. A lower number yields greater temporal resolution, at the expense of spectral resoultion, and vice-versa.
 
 ARGUMENT:: hopSize
-	The window hope size. As NMF relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of winSize (overlap of 2).
+	The window hop size. As NMF relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of windowSize (overlap of 2).
 
 ARGUMENT:: fftSize
 	The FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will default to windowSize.
 
 ARGUMENT:: maxFFTSize
-	How large can the FFT be, by allocating memory at instantiation time. This is not modulatable.
+	How large can the FFT be, by allocating memory at instantiation time. This cannot be modulated.
 
 RETURNS::
-	A multichannel kr output, giving for each dictionary component the activation amount.
+	A multichannel kr output, giving for each basis component the activation amount.
 
 
 EXAMPLES::
 STRONG::A didactic example::
-	CODE::
+CODE::
 (
 // create buffers
 b= Buffer.alloc(s,44100);
@@ -67,8 +67,8 @@ Routine {
 	b.sine2([500],[1], false, false);
 	c.sine2([5000],[1],false, false);
 	s.sync;
-	FluidBufCompose.process(s,b.bufnum, dstBufNum:d.bufnum);
-	FluidBufCompose.process(s,c.bufnum, dstStartAt:44100, dstBufNum:d.bufnum, dstGain:1);
+	FluidBufCompose.process(s,b, destination:d);
+	FluidBufCompose.process(s,c, destStartFrame:44100, destination:d, destGain:1);
 	s.sync;
 	d.query;
 }.play;
@@ -79,70 +79,64 @@ d.plot
 d.play //////(beware !!!! loud!!!)
 
 (
-// separate them in 2 ranks
+// separate them in 2 components
 Routine {
-	FluidBufNMF.process(s, d.bufnum, dictBufNum: e.bufnum, rank:2);
+	FluidBufNMF.process(s, d, bases: e, components:2);
 	s.sync;
 	e.query;
 }.play
 )
 
 // check for 2 spikes in the spectra
-e.query
 e.plot
 
 // test the activations values with test one, another, or both ideal material
-{FluidNMFMatch.kr(SinOsc.ar(500),e.bufnum,2)}.plot(1)
+{FluidNMFMatch.kr(SinOsc.ar(500),e,2)}.plot(1)
 
-{FluidNMFMatch.kr(SinOsc.ar(5000),e.bufnum,2)}.plot(1)
+{FluidNMFMatch.kr(SinOsc.ar(5000),e,2)}.plot(1)
 
-{FluidNMFMatch.kr(SinOsc.ar([500,5000]).sum,e.bufnum,2)}.plot(1)
+{FluidNMFMatch.kr(SinOsc.ar([500,5000]).sum,e,2)}.plot(1)
 ::
 
 STRONG::A pick compressor::
-	CODE::
+CODE::
 //set some buffers
 (
 b = Buffer.read(s,File.realpath(FluidNMFMatch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-AcousticStrums-M.wav");
 c = Buffer.new(s);
 x = Buffer.new(s);
-e = Buffer.alloc(s,1,1);
+e = Buffer.new(s);
 )
 
 // train only 2 seconds
 (
 Routine {
-    FluidBufNMF.process(s,b.bufnum,0,88200,0,1, c.bufnum, x.bufnum, rank:10,fftSize:2048);
-    s.sync;
+    FluidBufNMF.process(s,b,0,88200,0,1, c, x, components:10,fftSize:2048);
     c.query;
 }.play;
 )
 
 // wait for the query to print
-// then find the rank that has the picking sound by changing which channel to listen to
+// then find the component that has the picking sound by changing which channel to listen to
 (
-    ~element = 3;
-    {PlayBuf.ar(10,c.bufnum)[~element]}.play
+    ~element = 6;
+    {PlayBuf.ar(10,c)[~element]}.play;
 )
 
-// copy all the other ranks on itself and the picking dictionnary as the sole component of the 1st channel
+// copy all the other components on itself and the picking basis as the sole component of the 1st channel
 (
 Routine{
 	z = (0..9);
-	FluidBufCompose.process(s, x.bufnum, startChan: z.removeAt(~element), nChans: 1, dstBufNum: e.bufnum);
-    s.sync;
-    e.query;
-    s.sync;
-	z.do({|chan| FluidBufCompose.process(s, x.bufnum, startChan:chan, nChans: 1, dstStartChan: 1, dstBufNum: e.bufnum, dstGain:1)});
-    s.sync;
+	FluidBufCompose.process(s, x, startChan: z.removeAt(~element), numChans: 1, destination: e);
+	z.do({|chan| FluidBufCompose.process(s, x, startChan:chan, numChans: 1, destStartChan: 1, destination: e, destGain:1)});
     e.query;
 }.play;
 )
 
 e.plot;
 
-//using this trained dictionary we can see the envelop (activations) of each rank
-{FluidNMFMatch.kr(PlayBuf.ar(1,b.bufnum),e.bufnum,2,fftSize:2048)}.plot(1);
+//using this trained basis we can see the envelop (activations) of each component
+{FluidNMFMatch.kr(PlayBuf.ar(1,b),e,2,fftSize:2048)}.plot(1);
 // the left/top activations are before, the pick before the sustain.
 
 //we can then use the activation value to sidechain a compression patch that is sent in a delay
@@ -150,7 +144,7 @@ e.plot;
 {
 	var source, todelay, delay1, delay2, delay3, feedback, mod1, mod2, mod3, mod4;
 	//read the source
-	source = PlayBuf.ar(1, b.bufnum);
+	source = PlayBuf.ar(1, b);
 
 	// generate modulators that are coprime in frequency
 	mod1 = SinOsc.ar(1, 0, 0.001);
@@ -160,7 +154,7 @@ e.plot;
 
 	// compress the signal to send to the delays
 	todelay = DelayN.ar(source,0.1, 800/44100, //delaying it to compensate for FluidNMFMatch's latency
-		LagUD.ar(K2A.ar(FluidNMFMatch.kr(source,e.bufnum,2,fftSize:2048)[0]), //reading the channel of the activations on the pick dictionary
+		LagUD.ar(K2A.ar(FluidNMFMatch.kr(source,e,2,fftSize:2048)[0]), //reading the channel of the activations on the pick basis
 			80/44100, // lag uptime (compressor's attack)
 			1000/44100, // lag downtime (compressor's decay)
 			(1/(2.dbamp) // compressor's threshold inverted
@@ -193,46 +187,43 @@ e = Buffer.new(s);
 // train where all objects are present
 (
 Routine {
-    FluidBufNMF.process(s,b.bufnum,130000,150000,0,1, c.bufnum, x.bufnum, rank:10);
-    s.sync;
+    FluidBufNMF.process(s,b,130000,150000,0,1, c, x, components:10);
     c.query;
 }.play;
 )
 
 // wait for the query to print
-// then find a rank for each item you want to find. You could also sum them. Try to find a rank with a good object-to-rest ratio
+// then find a component for each item you want to find. You could also sum them. Try to find a component with a good object-to-rest ratio
 (
     ~dog =2;
-    {PlayBuf.ar(10,c.bufnum)[~dog]}.play
+    {PlayBuf.ar(10,c)[~dog]}.play
 )
 
 (
-    ~bird = 5;
-    {PlayBuf.ar(10,c.bufnum)[~bird]}.play
+    ~bird = 3;
+    {PlayBuf.ar(10,c)[~bird]}.play
 )
 
 
-// copy at least one other rank to a third rank, a sort of left-over channel
+// copy at least one other component to a third filter, a sort of left-over channel
 (
 Routine{
-	FluidBufCompose.process(s, x.bufnum, startChan:~dog, nChans: 1, dstBufNum: e.bufnum);
-	FluidBufCompose.process(s, x.bufnum, startChan:~bird, nChans: 1, dstStartChan: 1, dstBufNum: e.bufnum, dstGain:1);
-    s.sync;
-	(0..9).removeAll([~dog,~bird]).do({|chan|FluidBufCompose.process(s,x.bufnum, startChan:chan, nChans: 1, dstStartChan: 2, dstBufNum: e.bufnum, dstGain:1)});
-    s.sync;
+	FluidBufCompose.process(s, x, startChan:~dog, numChans: 1, destination: e);
+	FluidBufCompose.process(s, x, startChan:~bird, numChans: 1, destStartChan: 1, destination: e, destGain:1);
+	(0..9).removeAll([~dog,~bird]).do({|chan|FluidBufCompose.process(s,x, startChan:chan, numChans: 1, destStartChan: 2, destination: e, destGain:1)});
     e.query;
 }.play;
 )
 e.plot;
 
-//using this trained dictionary we can then see the activation...
+//using this trained basis we can then see the activation... (wait for 5 seconds before it prints!)
 (
 {
 	var source, blips;
 	//read the source
-	source = PlayBuf.ar(2, b.bufnum);
-	blips = FluidNMFMatch.kr(source.sum,e.bufnum,3);
-	}.plot(10);
+	source = PlayBuf.ar(2, b);
+	blips = FluidNMFMatch.kr(source.sum,e,3);
+	}.plot(5);
 )
 
 // ...and use some threshold to 'find' objects...
@@ -240,9 +231,9 @@ e.plot;
 {
 	var source, blips;
 	//read the source
-	source = PlayBuf.ar(2, b.bufnum);
-	blips = Schmidt.kr(FluidNMFMatch.kr(source.sum,e.bufnum,3),0.5,[10,1,1000]);
-	}.plot(10);
+	source = PlayBuf.ar(2, b);
+	blips = Schmidt.kr(FluidNMFMatch.kr(source.sum,e,3),0.5,[10,1,1000]);
+	}.plot(5);
 )
 
 // ...and use these to sonify them
@@ -250,8 +241,8 @@ e.plot;
 {
 	var source, blips, dogs, birds;
 	//read the source
-	source = PlayBuf.ar(2, b.bufnum);
-	blips = Schmidt.kr(FluidNMFMatch.kr(source.sum,e.bufnum,3),0.5,[10,1,1000]);
+	source = PlayBuf.ar(2, b);
+	blips = Schmidt.kr(FluidNMFMatch.kr(source.sum,e,3),0.5,[10,1,1000]);
 	dogs = SinOsc.ar(100,0,Lag.kr(blips[0],0.05,0.15));
 	birds = SinOsc.ar(1000,0,Lag.kr(blips[1],0.05,0.05));
 	[dogs, birds] + source;
@@ -260,7 +251,7 @@ e.plot;
 ::
 	STRONG::Pretrained piano::
 	CODE::
-//load in the sound in and a pretrained dictionary
+//load in the sound in and a pretrained basis
 (
 	b = Buffer.read(s,File.realpath(FluidNMFMatch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-SA-UprightPianoPedalWide.wav");
 	c = Buffer.read(s,File.realpath(FluidNMFMatch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/filters/piano-dicts.wav");
@@ -268,12 +259,12 @@ e.plot;
 b.play
 c.query
 
-//use the pretrained dictionary to compute activations of each notes to drive the amplitude of a resynth
+//use the pretrained bases to compute activations of each notes to drive the amplitude of a resynth
 (
 {
 	var source, resynth;
-	source = PlayBuf.ar(2, b.bufnum,loop:1).sum;
-	resynth = SinOsc.ar((21..108).midicps, 0, FluidNMFMatch.kr(source,c.bufnum,88,10,4096).madd(0.002)).sum;
+	source = PlayBuf.ar(2, b,loop:1).sum;
+	resynth = SinOsc.ar((21..108).midicps, 0, FluidNMFMatch.kr(source,c,88,10,4096).madd(0.002)).sum;
 	[source, resynth]
 }.play
 )
@@ -283,14 +274,14 @@ c.query
 (
 {
 	var source, resynth, chain, trig, acts;
-	source = PlayBuf.ar(2,b.bufnum,loop:1).sum;
+	source = PlayBuf.ar(2,b,loop:1).sum;
 
 	// built in attack detection, delayed until the stable part of the sound
 	chain = FFT(LocalBuf(256), source);
 	trig = TDelay.kr(Onsets.kr(chain, 0.5),0.1);
 
 	// samples and holds activation values that are scaled and capped, in effect thresholding them
-	acts = Latch.kr(FluidNMFMatch.kr(source,c.bufnum,88,10,4096).linlin(15,20,0,0.1),trig);
+	acts = Latch.kr(FluidNMFMatch.kr(source,c,88,10,4096).linlin(15,20,0,0.1),trig);
 
 	// resynths as in the previous example, with the values sent back to the language
 	resynth = SinOsc.ar((21..108).midicps, 0, acts).sum;
@@ -315,4 +306,3 @@ c.query
 	CODE::
 	//to be completed
 ::
-	

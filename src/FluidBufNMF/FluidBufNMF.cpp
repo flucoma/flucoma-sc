@@ -1,10 +1,12 @@
+
 #include <clients/nrt/NMFClient.hpp>
 #include <FluidSCWrapper.hpp>
 
 static InterfaceTable *ft;
 
-PluginLoad(OfflineFluidDecompositionUGens) {
+PluginLoad(OfflineFluidDecompositionUGens)
+{
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<NMFClient,double,float>("BufNMF",NMFParams, ft);
+  makeSCWrapper<NMFClient>("BufNMF", ft);
 }

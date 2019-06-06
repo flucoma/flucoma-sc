@@ -1,0 +1,130 @@
+TITLE:: FluidMFCC
+SUMMARY:: Mel-Frequency Cepstral Coefficients as Spectral Descriptors in Real-Time
+CATEGORIES:: Libraries>FluidDecomposition
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/FluidMelBands
+
+DESCRIPTION::
+This class implements a classic spectral descriptor, the Mel-Frequency Cepstral Coefficients (https://en.wikipedia.org/wiki/Mel-frequency_cepstrum). The input is first filtered in to STRONG::numBands:: perceptually-spaced bands, as in LINK::Classes/FluidMelBands::. It is then analysed into STRONG::numCoeffs:: number of cepstral coefficients. It has the avantage of being amplitude invarient, except for the first coefficient. It is part of the Fluid Decomposition Toolkit of the FluCoMa project.FOOTNOTE:: This was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+
+The process will return a multichannel control steam of STRONG::maxNumCoeffs::, which will be repeated if no change happens within the algorythm, i.e. when the hopSize is larger than the server's kr period.
+
+CLASSMETHODS::
+
+METHOD:: kr
+	The audio rate in, control rate out version of the object.
+
+ARGUMENT:: in
+	The audio to be processed.
+
+ARGUMENT:: numCoeffs
+	The number of cepstral coefficients to be outputed. It is limited by the maxNumCoeffs parameter. When the number is smaller than the maximum, the output is zero-padded.
+
+ARGUMENT:: numBands
+	The number of bands that will be perceptually equally distributed between minFreq and maxFreq to describe the spectral shape before it is converted to cepstral coefficients.
+
+ARGUMENT:: minFreq
+	The lower boundary of the lowest band of the model, in Hz.
+
+ARGUMENT:: maxFreq
+	The highest boundary of the highest band of the model, in Hz.
+
+ARGUMENT:: maxNumCoeffs
+	The maximum number of cepstral coefficients that can be computed. This sets the number of channels of the output, and therefore cannot be modulated.
+
+ARGUMENT:: windowSize
+	The window size. As MFCC computation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
+
+ARGUMENT:: hopSize
+	The window hop size. As MFCC computation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of windowSize (overlap of 2).
+
+ARGUMENT:: fftSize
+	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will default to windowSize.
+
+ARGUMENT:: maxFFTSize
+	How large can the FFT be, by allocating memory at instantiation time. This cannot be modulated.
+
+RETURNS::
+	A  KR signal of STRONG::maxNumCoeffs:: channels. The latency is windowSize.
+
+
+EXAMPLES::
+
+code::
+//create a monitoring bus for the descriptors
+b = Bus.new(\control,0,13);
+
+//create a monitoring window for the values
+
+(
+w = Window("MFCCs Monitor", Rect(10, 10, 420, 320)).front;
+a = MultiSliderView(w,Rect(10, 10, 400, 300)).elasticMode_(1).isFilled_(1);
+)
+
+//run the window updating routine.
+(
+r = Routine {
+	{
+		b.get({ arg val;
+			{
+				if(w.isClosed.not) {
+					a.value = val;
+				}
+			}.defer
+		});
+		0.01.wait;
+	}.loop
+}.play
+)
+
+//play a simple sound to observe the values
+(
+x = 	{arg type = 0;
+			var source = Select.ar(type,[SinOsc.ar(220),Saw.ar(220),Pulse.ar(220)]) * LFTri.kr(0.1).exprange(0.01,0.1);
+	Out.kr(b,FluidMFCC.kr(source,maxNumCoeffs:13));
+	source.dup;
+}.play;
+)
+
+// change the wave types, observe the amplitude invariance of the descriptors, apart from the leftmost coefficient
+x.set(\type, 1)
+x.set(\type, 2)
+x.set(\type, 0)
+// free this source
+x.free
+
+// load a more exciting one
+c = Buffer.read(s,File.realpath(FluidMelBands.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
+
+// analyse with parameters to be changed
+(
+x = 	{arg bands = 40, low = 20, high = 20000;
+	var source = PlayBuf.ar(1,c,loop:1);
+	Out.kr(b,FluidMelBands.kr(source, bands, low, high, 40) / 10);
+	source.dup;
+}.play;
+)
+
+// observe the number of bands. The unused ones at the top are not updated
+x.set(\bands,20)
+
+// back to the full range
+x.set(\bands,40)
+
+// focus all the bands on a mid range
+x.set(\low,320, \high, 8000)
+
+// focusing on the low end shows the fft resolution issue. One could restart the analysis with a larger fft to show more precision
+x.set(\low,20, \high, 160)
+
+// back to full range
+x.set(\low,20, \high, 20000)
+
+// free everything
+x.free;b.free;c.free;r.stop;
+::
+
+STRONG::A musical example::
+
+CODE::
+// todo: port the Max one
+::

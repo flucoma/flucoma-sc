@@ -21,10 +21,10 @@ METHOD:: ar
 ARGUMENT:: in
 	The input to be processed
 
-ARGUMENT:: bw
+ARGUMENT:: bandwidth
 	The width in bins of the fragment of the fft window that is considered a normal deviation for a potential continuous sinusoidal track. It has an effect on CPU cost: the widest is more accurate but more computationally expensive.
 
-ARGUMENT:: thresh
+ARGUMENT:: threshold
 	The normalised threshold, between 0 an 1, to consider a peak as a sinusoidal component from the normalized cross-correlation.
 
 ARGUMENT:: minTrackLen
@@ -36,20 +36,20 @@ ARGUMENT:: magWeight
 ARGUMENT:: freqWeight
 	The weight of the frequency proximity of a peak when trying to associate it to an existing track (relative to magWeight - suggested between 0 to 1)
 
-ARGUMENT:: winSize
+ARGUMENT:: windowSize
 	The window size. As sinusoidal estimation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
 ARGUMENT:: hopSize
-	The window hope size. As sinusoidal estimation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of winSize (overlap of 2).
+	The window hop size. As sinusoidal estimation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of windowSize (overlap of 2).
 
 ARGUMENT:: fftSize
 	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will default to windowSize.
 
 ARGUMENT:: maxFFTSize
-	How large can the FFT be, by allocating memory at instantiation time. This is not modulatable.
+	How large can the FFT be, by allocating memory at instantiation time. This cannot be modulated.
 
 RETURNS::
-	An array of two audio streams: [0] is the harmonic part extracted, [1] is the rest. The latency between the input and the output is (( hopSize * minTrackLen) + winSize) samples.
+	An array of two audio streams: [0] is the harmonic part extracted, [1] is the rest. The latency between the input and the output is (( hopSize * minTrackLen) + windowSize) samples.
 
 
 EXAMPLES::
@@ -59,12 +59,11 @@ CODE::
 b = Buffer.read(s,File.realpath(FluidSines.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
 
 // run with large parameters - left is sinusoidal model, right is residual
-{FluidSines.ar(PlayBuf.ar(1,b.bufnum,loop:1),thresh: 0.2, minTrackLen: 2, winSize: 2048, fftSize: 8192)}.play
+{FluidSines.ar(PlayBuf.ar(1,b,loop:1),threshold: 0.2, minTrackLen: 2, windowSize: 2048, fftSize: 8192)}.play
 
 // interactive parameters with a narrower bandwidth
-{FluidSines.ar(PlayBuf.ar(1,b.bufnum,loop:1),30,MouseX.kr(), 5, winSize: 1000, hopSize: 200, fftSize: 4096)}.play
+{FluidSines.ar(PlayBuf.ar(1,b,loop:1),30,MouseX.kr(), 5, windowSize: 1000, hopSize: 200, fftSize: 4096)}.play
 
-// null test (the process add a latency of (( hopSize * minTrackLen) + winSize) samples
-{var sig = PlayBuf.ar(1,b.bufnum,loop:1); [FluidSines.ar(sig).sum - DelayN.ar(sig, 1, ((( 512 * 15) + 1024)/ s.sampleRate))]}.play
-
+// null test (the process add a latency of (( hopSize * minTrackLen) + windowSize) samples
+{var sig = PlayBuf.ar(1,b,loop:1); [FluidSines.ar(sig).sum - DelayN.ar(sig, 1, ((( 512 * 15) + 1024)/ s.sampleRate))]}.play
 ::

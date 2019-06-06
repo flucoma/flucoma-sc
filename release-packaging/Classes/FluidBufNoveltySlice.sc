@@ -1,13 +1,21 @@
 FluidBufNoveltySlice{
-		*process { arg server, srcBufNum, startAt = 0, nFrames = -1, startChan = 0, nChans = -1, indBufNum, kernSize = 3, thresh = 0.8, filtSize = 1, winSize = 1024, hopSize = -1, fftSize = -1;
+		*process { arg server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, kernelSize = 3, threshold = 0.8, filterSize = 1, windowSize = 1024, hopSize = -1, fftSize = -1, action;
 
-		var maxFFTSize = if (fftSize == -1) {winSize.nextPowerOfTwo} {fftSize};
+		//var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize}; //ready for when we need it from the RT wrapper
 
-		if(srcBufNum.isNil) { Error("Invalid buffer").format(thisMethod.name, this.class.name).throw};
-		if(indBufNum.isNil) { Error("Invalid buffer").format(thisMethod.name, this.class.name).throw};
+		source = source.asUGenInput;
+		indices = indices.asUGenInput;
+
+		source.isNil.if {"FluidBufNoveltySlice:  Invalid source buffer".throw};
+		indices.isNil.if {"FluidBufNoveltySlice:  Invalid features buffer".throw};
 
 		server = server ? Server.default;
 
-		server.sendMsg(\cmd, \BufNoveltySlice, srcBufNum, startAt, nFrames, startChan, nChans, indBufNum, kernSize, thresh, filtSize, winSize, hopSize, maxFFTSize);
+		forkIfNeeded{
+			server.sendMsg(\cmd, \BufNoveltySlice, source, startFrame, numFrames, startChan, numChans, indices, kernelSize, threshold, filterSize, windowSize, hopSize, fftSize);
+			server.sync;
+			indices = server.cachedBufferAt(indices); indices.updateInfo; server.sync;
+			action.value(indices);
+		};
 	}
 }

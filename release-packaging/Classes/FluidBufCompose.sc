@@ -1,10 +1,19 @@
 FluidBufCompose{
-		*process { arg server, srcBufNum, startAt = 0, nFrames = -1, startChan = 0, nChans = -1, srcGain = 1, dstBufNum, dstStartAt = 0, dstStartChan = 0, dstGain = 0;
+		*process { arg server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, gain = 1, destination, destStartFrame = 0, destStartChan = 0, destGain = 0, action;
 
-		if(srcBufNum.isNil) {Error("Invalid Buffer").format(thisMethod.name, this.class.name).throw};
-		if(dstBufNum.isNil) {Error("Invalid Buffer").format(thisMethod.name, this.class.name).throw};
+		source = source.asUGenInput;
+		destination = destination.asUGenInput;
+
+		source.isNil.if {"FluidBufCompose:  Invalid source buffer".throw};
+		destination.isNil.if {"FluidBufCompose:  Invalid destination buffer".throw};
 
 		server = server ? Server.default;
-		server.sendMsg(\cmd, \BufCompose, srcBufNum, startAt, nFrames, startChan, nChans, srcGain, dstBufNum, dstStartAt, dstStartChan, dstGain);
+
+		forkIfNeeded{
+			server.sendMsg(\cmd, \BufCompose, source, startFrame, numFrames, startChan, numChans, gain, destination, destStartFrame, destStartChan, destGain);
+			server.sync;
+			destination = server.cachedBufferAt(destination); destination.updateInfo; server.sync;
+			action.value(destination);
+		};
 	}
 }

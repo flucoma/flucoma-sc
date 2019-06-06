@@ -21,31 +21,31 @@ METHOD:: process
 ARGUMENT:: server
 	The server on which the buffers to be processed are allocated.
 
-ARGUMENT:: srcBufNum
-	The index of the buffer to use as the source material to be decomposed through the NMF process. The different channels of multichannel buffers will be processing sequentially.
+ARGUMENT:: source
+	The index of the buffer to use as the source material to be decomposed through the sinusoidal modelling process. The different channels of multichannel buffers will be processing sequentially.
 
-ARGUMENT:: startAt
+ARGUMENT:: startFrame
 	Where in the srcBuf should the process start, in sample.
 
-ARGUMENT:: nFrames
+ARGUMENT:: numFrames
 	How many frames should be processed.
 
 ARGUMENT:: startChan
 	For multichannel srcBuf, which channel should be processed first.
 
-ARGUMENT:: nChans
+ARGUMENT:: numChans
 	For multichannel srcBuf, how many channel should be processed.
 
-ARGUMENT:: sineBufNum
+ARGUMENT:: sines
 	The index of the buffer where the extracted sinusoidal component will be reconstructed.
 
-ARGUMENT:: resBufNum
+ARGUMENT:: residual
 	The index of the buffer where the residual of the sinusoidal component will be reconstructed.
 
 ARGUMENT:: bandwidth
 	The width in bins of the fragment of the fft window that is considered a normal deviation for a potential continuous sinusoidal track. It has an effect on CPU cost: the widest is more accurate but more computationally expensive.
 
-ARGUMENT:: thresh
+ARGUMENT:: threshold
 	The normalised threshold, between 0 an 1, to consider a peak as a sinusoidal component from the normalized cross-correlation.
 
 ARGUMENT:: minTrackLen
@@ -57,14 +57,17 @@ ARGUMENT:: magWeight
 ARGUMENT:: freqWeight
 	The weight of the frequency proximity of a peak when trying to associate it to an existing track (relative to magWeight - suggested between 0 to 1)
 
-ARGUMENT:: winSize
+ARGUMENT:: windowSize
 	The window size. As sinusoidal estimation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
 ARGUMENT:: hopSize
-	The window hope size. As sinusoidal estimation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts.
+	The window hop size. As sinusoidal estimation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts.
 
 ARGUMENT:: fftSize
 	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision.
+
+ARGUMENT:: action
+	A Function to be evaluated once the offline process has finished and all Buffer's instance variables have been updated on the client side. The function will be passed [sines, residual] as an argument.
 
 RETURNS::
 	Nothing, as the various destination buffers are declared in the function call.
@@ -83,19 +86,45 @@ d = Buffer.new(s);
 (
 Routine{
 	t = Main.elapsedTime;
-	FluidBufSines.process(s, b.bufnum, sineBufNum: c.bufnum, resBufNum:d.bufnum);
-	s.sync;
+	FluidBufSines.process(s, b, sines: c, residual:d);
 	(Main.elapsedTime - t).postln;
 }.play
 )
 
 // listen to each component
-c.query;
 c.play;
-d.query;
 d.play;
 
 //nullsumming tests
-{(PlayBuf.ar(1, c.bufnum)) + (PlayBuf.ar(1,d.bufnum)) - (PlayBuf.ar(1,b.bufnum,doneAction:2))}.play
+{(PlayBuf.ar(1, c)) + (PlayBuf.ar(1,d)) - (PlayBuf.ar(1,b,doneAction:2))}.play
 ::
-	
+
+STRONG::A stereo buffer example.::
+CODE::
+
+// load two very different files
+(
+b = Buffer.read(s,File.realpath(FluidBufSines.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-SA-UprightPianoPedalWide.wav");
+c = Buffer.read(s,File.realpath(FluidBufSines.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-AcousticStrums-M.wav");
+)
+
+// composite one on left one on right as test signals
+FluidBufCompose.process(s, c, numFrames:b.numFrames, startFrame:555000,destStartChan:1, destination:b)
+b.play
+
+// create 2 new buffers as destinations
+d = Buffer.new(s); e = Buffer.new(s);
+
+//run the process on them
+(
+Routine{
+    t = Main.elapsedTime;
+    FluidBufSines.process(s, b, sines: d, residual:e, threshold:0.3);
+    (Main.elapsedTime - t).postln;
+}.play
+)
+
+//listen: stereo preserved!
+d.play
+e.play
+::

@@ -1,27 +1,27 @@
 TITLE:: FluidBufNMF
 SUMMARY:: Buffer-Based Non-Negative Matrix Factorisation on Spectral Frames
 CATEGORIES:: Libraries>FluidDecomposition, UGens>Buffer
-RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/FluidNMFMatch
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/FluidNMFMatch, Classes/FluidNMFFilter
 
 
 DESCRIPTION::
 The FluidBufNMF object decomposes the spectrum of a sound into a number of components using Non-Negative Matrix Factorisation (NMF) footnote:: Lee, Daniel D., and H. Sebastian Seung. 1999. ‘Learning the Parts of Objects by Non-Negative Matrix Factorization’. Nature 401 (6755): 788–91. https://doi.org/10.1038/44565.
 ::. NMF has been a popular technique in signal processing research for things like source separation and transcription footnote:: Smaragdis and Brown, Non-Negative Matrix Factorization for Polyphonic Music Transcription.::, although its creative potential is so far relatively  unexplored.
 
-The algorithm takes a buffer in and divides it into a number of components, determined by the rank argument. It works iteratively, by trying to find a combination of spectral templates ('dictionaries') and envelopes ('activations') that yield the original magnitude spectrogram when added together. By and large, there is no unique answer to this question (i.e. there are different ways of accounting for an evolving spectrum in terms of some set of templates and envelopes). In its basic form, NMF is a form of unsupervised learning: it starts with some random data and then converges towards something that minimizes the distance between its generated data and the original:it tends to converge very quickly at first and then level out. Fewer iterations mean less processing, but also less predictable results.
+The algorithm takes a buffer in and divides it into a number of components, determined by the STRONG::Components:: argument. It works iteratively, by trying to find a combination of spectral templates ('bases') and envelopes ('activations') that yield the original magnitude spectrogram when added together. By and large, there is no unique answer to this question (i.e. there are different ways of accounting for an evolving spectrum in terms of some set of templates and envelopes). In its basic form, NMF is a form of unsupervised learning: it starts with some random data and then converges towards something that minimizes the distance between its generated data and the original:it tends to converge very quickly at first and then level out. Fewer iterations mean less processing, but also less predictable results.
 
 The object can return either or all of the following: LIST::
-	## a spectral contour of each component in the form of a magnitude spectrogram (called a dictionary in NMF lingo);
+	## a spectral contour of each component in the form of a magnitude spectrogram (called a basis in NMF lingo);
 	## an amplitude envelope of each component in the form of gains for each consecutive frame of the underlying spectrogram (called an activation in NMF lingo);
 	## an audio reconstruction of each components in the time domain. ::
 
-The dictionaries and activations can be used to make a kind of vocoder based on what NMF has 'learned' from the original data. Alternatively, taking the matrix product of a dictionary and an activation will yield a synthetic magnitude spectrogram of a component (which could be reconsructed, given some phase informaiton from somewhere).
+The bases and activations can be used to make a kind of vocoder based on what NMF has 'learned' from the original data. Alternatively, taking the matrix product of a basis and an activation will yield a synthetic magnitude spectrogram of a component (which could be reconsructed, given some phase informaiton from somewhere).
 
-Some additional options and flexibility can be found through combinations of the dictFlag and actFlag arguments. If these flags are set to 1, the object expects to be supplied with pre-formed spectra (or envelopes) that will be used as seeds for the decomposition, providing more guided results. When set to 2, the supplied buffers won't be updated, so become templates to match against instead. Note that having both dictionaries and activations set to 2 doesn't make sense, so the object will complain.
+Some additional options and flexibility can be found through combinations of the basesMode and actMode arguments. If these flags are set to 1, the object expects to be supplied with pre-formed spectra (or envelopes) that will be used as seeds for the decomposition, providing more guided results. When set to 2, the supplied buffers won't be updated, so become templates to match against instead. Note that having both bases and activations set to 2 doesn't make sense, so the object will complain.
 
 If supplying pre-formed data, it's up to the user to make sure that the supplied buffers are the right size: LIST::
-## dictionaries must be STRONG::(fft size / 2) + 1:: frames and STRONG::(rank * input channels):: channels
-## activations  must be STRONG::(input frames / hopSize) + 1:: frames and STRONG::(rank * input channels):: channels
+## bases must be STRONG::(fft size / 2) + 1:: frames and STRONG::(components * input channels):: channels
+## activations  must be STRONG::(input frames / hopSize) + 1:: frames and STRONG::(components * input channels):: channels
 ::
 
 In this implementation, the components are reconstructed by masking the original spectrum, such that they will sum to yield the original sound.
@@ -41,69 +41,69 @@ This is the method that calls for the factorisation to be calculated on a given 
 ARGUMENT:: server
 	The server on which the buffers to be processed are allocated.
 
-ARGUMENT:: srcBufNum
+ARGUMENT:: source
 	The index of the buffer to use as the source material to be decomposed through the NMF process. The different channels of multichannel buffers will be processing sequentially.
 
-ARGUMENT:: startAt
+ARGUMENT:: startFrame
 	Where in the srcBuf should the NMF process start, in sample.
 
-ARGUMENT:: nFrames
+ARGUMENT:: numFrames
 	How many frames should be processed.
 
 ARGUMENT:: startChan
 	For multichannel srcBuf, which channel should be processed first.
 
-ARGUMENT:: nChans
+ARGUMENT:: numChans
 	For multichannel srcBuf, how many channel should be processed.
 
-ARGUMENT:: dstBufNum
-	The index of the buffer where the different reconstructed ranks will be reconstructed. The buffer will be resized to STRONG::rank * numChannelsProcessed:: channels and STRONG::sourceDuration:: lenght. If STRONG::nil:: is provided, the reconstruction will not happen.
+ARGUMENT:: destination
+	The index of the buffer where the different reconstructed components will be reconstructed. The buffer will be resized to STRONG::components * numChannelsProcessed:: channels and STRONG::sourceDuration:: lenght. If STRONG::nil:: is provided, the reconstruction will not happen.
 
-ARGUMENT:: dictBufNum
-	The index of the buffer where the different dictionaries will be written to and/or read from: the behaviour is set in the following argument. If STRONG::nil:: is provided, no dictionary will be returned.
+ARGUMENT:: bases
+	The index of the buffer where the different bases will be written to and/or read from: the behaviour is set in the following argument. If STRONG::nil:: is provided, no bases will be returned.
 
-ARGUMENT:: dictFlag
-	This flag decides of how the dictionnary buffer passed as the previous argument is treated.
+ARGUMENT:: basesMode
+	This flag decides of how the basis buffer passed as the previous argument is treated.
 	table::
-	## 0 || The dictionaries are seeded randomly, and the resulting ones will be written after the process in the passed buffer. The buffer is resized to STRONG::rank * numChannelsProcessed:: channels and STRONG::(fftSize / 2 + 1):: lenght.
-	## 1 || The passed buffer is considered as seed for the dictionaries. Its dimensions should match the values above. The resulting dictionaries will replace the seed ones.
-	## 2 || The passed buffer is considered as a template for the dictionaries, and will therefore not change. Its dictionaries should match the values above.
+	## 0 || The bases are seeded randomly, and the resulting ones will be written after the process in the passed buffer. The buffer is resized to STRONG::components * numChannelsProcessed:: channels and STRONG::(fftSize / 2 + 1):: lenght.
+	## 1 || The passed buffer is considered as seed for the bases. Its dimensions should match the values above. The resulting bases will replace the seed ones.
+	## 2 || The passed buffer is considered as a template for the bases, and will therefore not change. Its bases should match the values above.
 	::
 
-ARGUMENT:: actBufNum
+ARGUMENT:: activations
 	The index of the buffer where the different activations will be written to and/or read from: the behaviour is set in the following argument. If STRONG::nil:: is provided, no activation will be returned.
 
-ARGUMENT:: actFlag
+ARGUMENT:: actMode
 	This flag decides of how the activation buffer passed as the previous argument is treated.
 	table::
-	## 0 || The activations are seeded randomly, and the resulting ones will be written after the process in the passed buffer. The buffer is resized to STRONG::rank * numChannelsProcessed:: channels and STRONG::(sourceDuration / hopsize + 1):: lenght.
+	## 0 || The activations are seeded randomly, and the resulting ones will be written after the process in the passed buffer. The buffer is resized to STRONG::components * numChannelsProcessed:: channels and STRONG::(sourceDuration / hopsize + 1):: lenght.
 	## 1 || The passed buffer is considered as seed for the activations. Its dimensions should match the values above. The resulting activations will replace the seed ones.
 	## 2 || The passed buffer is considered as a template for the activations, and will therefore not change. Its dimensions should match the values above.
 	::
 
-ARGUMENT:: rank
+ARGUMENT:: components
 	The number of elements the NMF algorithm will try to divide the spectrogram of the source in.
 
-ARGUMENT:: nIter
+ARGUMENT:: iterations
 	The NMF process is iterative, trying to converge to the smallest error in its factorisation. The number of iterations will decide how many times it tries to adjust its estimates. Higher numbers here will be more CPU expensive, lower numbers will be more unpredictable in quality.
 
-ARGUMENT:: sortFlag
-	This allows to choose between the different methods of sorting the ranks in order to get similar sonic qualities on a given rank (not implemented yet)
-
-ARGUMENT:: winSize
+ARGUMENT:: windowSize
 	The window size. As NMF relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
 ARGUMENT:: hopSize
-	The window hope size. As NMF relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts.
+	The window hop size. As NMF relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts.
 
 ARGUMENT:: fftSize
 	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision.
 
-ARGUMENT:: winType
+ARGUMENT:: windowType
 	The inner FFT/IFFT windowing type (not implemented yet)
 
-ARGUMENT:: randSeed
+ARGUMENT:: randomSeed
 	The NMF process needs to seed its starting point. If specified, the same values will be used. The default of -1 will randomly assign them. (not implemented yet)
+
+ARGUMENT:: action
+	A Function to be evaluated once the offline process has finished and all Buffer's instance variables have been updated on the client side. The function will be passed [destination, bases, activations] as an argument.
 
 RETURNS::
 	Nothing, as the various destination buffers are declared in the function call.
@@ -128,8 +128,8 @@ Routine {
 	b.sine2([500],[1], false, false);
 	c.sine2([5000],[1],false, false);
 	s.sync;
-	FluidBufCompose.process(s,b.bufnum, dstBufNum:d.bufnum);
-	FluidBufCompose.process(s,c.bufnum, dstStartAt:44100, dstBufNum:d.bufnum, dstGain:1);
+	FluidBufCompose.process(s,b, destination:d);
+	FluidBufCompose.process(s,c, destStartFrame:44100, destination:d, destGain:1);
 	s.sync;
 	d.query;
 }.play;
@@ -140,20 +140,19 @@ d.plot
 d.play //////(beware !!!! loud!!!)
 
 (
-// separate them in 2 ranks
+// separate them in 2 components
 Routine {
-	FluidBufNMF.process(s, d.bufnum, dstBufNum:e.bufnum, dictBufNum: f.bufnum, actBufNum:g.bufnum, rank:2);
-	s.sync;
+	FluidBufNMF.process(s, d, destination:e, bases: f, activations:g, components:2);
 	e.query;
 	f.query;
 	g.query;
 }.play
 )
 
-// look at the resynthesised separated signal
+// look at the resynthesised separated components as audio
 e.plot;
 
-// look at the dictionaries signal for 2 spikes
+// look at the bases signal for 2 spikes
 f.plot;
 
 // look at the activations
@@ -174,44 +173,37 @@ y = Buffer.new(s);
 ~fft_size = 1024;
 ~frame_size = 512;
 ~hop_size = 256;
-~which_rank = 3;
+~which_component = 3;
 )
 
-// matrix factorisation, requesting everything
+// matrix factorisation, requesting everything - wait for the computation time to appear.
 (
 Routine{
 	t = Main.elapsedTime;
-	FluidBufNMF.process(s,b.bufnum, 0,-1,0,-1,c.bufnum,x.bufnum,0,y.bufnum,0,5,100,0,~frame_size,~hop_size,~fft_size);
-	s.sync;
+	FluidBufNMF.process(s,b, 0,-1,0,-1,c,x,0,y,0,5,100,~frame_size,~hop_size,~fft_size);
 	(Main.elapsedTime - t).postln;
-	s.sync;
-	c.query;
-	s.sync;
-	x.query;
-	s.sync;
-	y.query;
 }.play
 )
 
-//look at the resynthesised ranks, the dictionaries and the activations
-c.plot;x.plot; y.plot;
+//look at the resynthesised components, the bases and the activations
+c.plot; x.plot; y.plot;
 //null test of the sum of sources
-{(PlayBuf.ar(5,c.bufnum,doneAction:2).sum)+(-1*PlayBuf.ar(1,b.bufnum,doneAction:2))}.play
+{(PlayBuf.ar(5,c,doneAction:2).sum)+(-1*PlayBuf.ar(1,b,doneAction:2))}.play
 
-// play the ranks spread in the stereo field
-{Splay.ar(PlayBuf.ar(5,c.bufnum,doneAction:2))}.play
+// play the components spread in the stereo field
+{Splay.ar(PlayBuf.ar(5,c,doneAction:2))}.play
 
 //play a single source
-{PlayBuf.ar(5,c.bufnum,doneAction:2)[~which_rank].dup}.play
+{PlayBuf.ar(5,c,doneAction:2)[~which_component].dup}.play
 
-//play noise using one of the dictionaries as filter.
+//play noise using one of the bases as filter.
 (
 {
 	var chain;
 	chain = FFT(LocalBuf(~fft_size), WhiteNoise.ar());
 
 	chain = chain.pvcollect(~fft_size, {|mag, phase, index|
-		[mag * BufRd.kr(5,x.bufnum,DC.kr(index),0,1)[~which_rank]];
+		[mag * BufRd.kr(5,x,DC.kr(index),0,1)[~which_component]];
 	});
 
 	IFFT(chain);
@@ -219,16 +211,16 @@ c.plot;x.plot; y.plot;
 )
 
 //play noise using one of the activations as envelope.
-{WhiteNoise.ar(BufRd.kr(5,y.bufnum,Phasor.ar(1,1/~hop_size,0,(b.numFrames / ~hop_size + 1)),0,1)[~which_rank])*0.5}.play
+{WhiteNoise.ar(BufRd.kr(5,y,Phasor.ar(1,1/~hop_size,0,(b.numFrames / ~hop_size + 1)),0,1)[~which_component])*0.5}.play
 
 //play noise through both matching activation and filter
 (
 {
 	var chain;
-	chain = FFT(LocalBuf(~fft_size), WhiteNoise.ar(BufRd.kr(5,y.bufnum,Phasor.ar(1,1/~hop_size,0,(b.numFrames / ~hop_size + 1)),0,1)[~which_rank]*12),0.5,1);
+	chain = FFT(LocalBuf(~fft_size), WhiteNoise.ar(BufRd.kr(5,y,Phasor.ar(1,1/~hop_size,0,(b.numFrames / ~hop_size + 1)),0,1)[~which_component]*12),0.5,1);
 
 	chain = chain.pvcollect(~fft_size, {|mag, phase, index|
-		[mag * BufRd.kr(5,x.bufnum,DC.kr(index),0,1)[~which_rank]];
+		[mag * BufRd.kr(5,x,DC.kr(index),0,1)[~which_component]];
 	});
 
 	[0,IFFT(chain)];
@@ -236,7 +228,7 @@ c.plot;x.plot; y.plot;
 )
 
 ::
-STRONG::Fixed Dictionnaries:: The process can be trained, and the learnt dictionaries or activations can be used as templates.
+STRONG::Fixed Bases: The process can be trained, and the learnt bases or activations can be used as templates.::
 
 CODE::
 
@@ -252,37 +244,31 @@ y = Buffer.new(s);
 // train only 2 seconds
 (
 Routine {
-	FluidBufNMF.process(s,b.bufnum,0,88200,0,1, c.bufnum, x.bufnum, rank:10);
-	s.sync;
+	FluidBufNMF.process(s,b,0,88200,0,1, c, x, components:10);
 	c.query;
 }.play;
 )
 
-// find the rank that has the picking sound by changing which channel to listen to
+// find the component that has the picking sound by changing which channel to listen to
 (
 	~element = 4;
-	{PlayBuf.ar(10,c.bufnum)[~element]}.play
+	{PlayBuf.ar(10,c)[~element]}.play
 )
 
-// copy all the other ranks on itself and the picking dictionnary as the sole component of the 1st channel
+// copy all the other components on itself and the picking basis as the sole component of the 1st channel
 (
 Routine{
 	z = (0..9);
-	FluidBufCompose.process(s, x.bufnum, startChan: z.removeAt(~element), nChans: 1, dstBufNum: e.bufnum);
-    s.sync;
-    e.query;
-    s.sync;
-	z.do({|chan| FluidBufCompose.process(s, x.bufnum, startChan:chan, nChans: 1, dstStartChan: 1, dstBufNum: e.bufnum, dstGain:1)});
-    s.sync;
+	FluidBufCompose.process(s, x, startChan: z.removeAt(~element), numChans: 1, destination: e);
+	z.do({|chan| FluidBufCompose.process(s, x, startChan:chan, numChans: 1, destStartChan: 1, destination: e, destGain:1)});
     e.query;
 }.play;
 )
 
-//process the whole file, splitting it with the 2 trained dictionnaries
+//process the whole file, splitting it with the 2 trained bases
 (
 Routine{
-	FluidBufNMF.process(s, b.bufnum, dstBufNum: c.bufnum, dictBufNum: e.bufnum, dictFlag: 2, actBufNum: y.bufnum, rank:2);
-	s.sync;
+	FluidBufNMF.process(s, b, destination: c, bases: e, basesMode: 2, activations: y, components:2);
 	c.query;
 }.play;
 )
@@ -291,10 +277,10 @@ Routine{
 c.play
 
 // it even null-sums
-{(PlayBuf.ar(2,c.bufnum,doneAction:2).sum)-(PlayBuf.ar(1,b.bufnum,doneAction:2))}.play
+{(PlayBuf.ar(2,c,doneAction:2).sum)-(PlayBuf.ar(1,b,doneAction:2))}.play
 ::
 
-STRONG::Updating Dictionnaries:: The process can update dictionaries provided as seed.
+STRONG::Updating Bases: The process can update bases provided as seed.::
 
 CODE::
 (
@@ -313,8 +299,8 @@ Routine {
 	b.sine2([500],[1], false, false);
 	c.sine2([5000],[1],false, false);
 	s.sync;
-	FluidBufCompose.process(s,b.bufnum, dstBufNum:d.bufnum);
-	FluidBufCompose.process(s,c.bufnum, dstStartAt:44100, dstBufNum:d.bufnum, dstGain:1);
+	FluidBufCompose.process(s,b, destination:d);
+	FluidBufCompose.process(s,c, destStartFrame:44100, destination:d, destGain:1);
 	s.sync;
 	d.query;
 }.play;
@@ -325,7 +311,7 @@ d.plot
 d.play //////(beware !!!! loud!!!)
 
 (
-//make a seeding dictionary of 3 ranks:
+//make a seeding basis of 3 components:
 var highpass, lowpass, direct;
 highpass = Array.fill(513,{|i| (i < 50).asInteger});
 lowpass = 1 - highpass;
@@ -333,15 +319,14 @@ direct = Array.fill(513,0.1);
 e.setn(0,[highpass, lowpass, direct].flop.flat);
 )
 
-//check the dictionary: a steep lowpass, a steep highpass, and a small DC
+//check the basis: a steep lowpass, a steep highpass, and a small DC
 e.plot
 e.query
 
 (
-// use the seeding dictionary, without updating
+// use the seeding basis, without updating
 Routine {
-	FluidBufNMF.process(s, d.bufnum, dstBufNum:f.bufnum, dictBufNum: e.bufnum, dictFlag: 2, actBufNum:g.bufnum, rank:3);
-	s.sync;
+	FluidBufNMF.process(s, d, destination:f, bases: e, basesMode: 2, activations:g, components:3);
 	e.query;
 	f.query;
 	g.query;
@@ -351,17 +336,16 @@ Routine {
 // look at the resynthesised separated signal
 f.plot;
 
-// look at the dictionaries that have not changed
+// look at the bases that have not changed
 e.plot;
 
 // look at the activations
 g.plot;
 
 (
-// use the seeding dictionary, with updating this time
+// use the seeding bases, with updating this time
 Routine {
-	FluidBufNMF.process(s, d.bufnum, dstBufNum:f.bufnum, dictBufNum: e.bufnum, dictFlag: 1, actBufNum:g.bufnum, rank:3);
-	s.sync;
+	FluidBufNMF.process(s, d, destination:f, bases: e, basesMode: 1, activations:g, components:3);
 	e.query;
 	f.query;
 	g.query;
@@ -371,9 +355,9 @@ Routine {
 // look at the resynthesised separated signal
 f.plot;
 
-// look at the dictionaries that have now updated in place (with the 3rd channel being more focused
+// look at the bases that have now updated in place (with the 3rd channel being more focused
 e.plot;
 
-// look at the activations (sharper 3rd rank at transitions)
+// look at the activations (sharper 3rd component at transitions)
 g.plot;
 ::

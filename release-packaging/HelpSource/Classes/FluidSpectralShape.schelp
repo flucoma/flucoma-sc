@@ -1,0 +1,237 @@
+TITLE:: FluidSpectralShape
+SUMMARY:: Seven Spectral Shape Descriptors in Real-Time
+CATEGORIES:: Libraries>FluidDecomposition
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/SpecCentroid, Classes/SpecFlatness, Classes/SpecCentroid, Classes/SpecPcile
+
+DESCRIPTION::
+This class implements seven of the most popular spectral shape descriptors, computed on a linear scale for both amplitude and frequency. It is part of the Fluid Decomposition Toolkit of the FluCoMa project.FOOTNOTE:: This was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+
+The descriptors are:
+LIST::
+##the four first statistical moments (https://en.wikipedia.org/wiki/Moment_(mathematics) ), more commonly known as:
+	LIST::
+	## the spectral centroid (1) in Hz. This is the point that splits the spectrum in 2 halves of equal energy. It is the weighted average of the magnitude spectrum.
+	## the spectral spread (2) in Hz. This is the standard deviation of the spectrum envelop, or the average of the distance to the centroid.
+	## the normalised skewness (3) as ratio. This indicates how tilted is the spectral curve in relation to the middle of the spectral frame, i.e. half of the Nyquist frequency. If it is below that frequency, i.e. the central bin of the magnitude spectrum, it is positive.
+	## the normalised kurtosis (4) as ratio. This indicates how focused is the spectral curve. If it is peaky, it is high.
+	::
+	## the rolloff (5) in Hz. This indicates the frequency under which 95% of the energy is included.
+	## the flatness (6) in dB. This is the ratio of geometric mean of the magnitude, over the arithmetic mean of the magnitudes. It yields a very approximate measure on how noisy a signal is.
+	## the crest (7) in dB. This is the ratio of the loudest magnitude over the RMS of the whole frame. A high number is an indication of a loud peak poking out from the overal spectral curve.
+
+	The drawings in Peeters 2003 (http://recherche.ircam.fr/anasyn/peeters/ARTICLES/Peeters_2003_cuidadoaudiofeatures.pdf) are useful, as are the commented examples below. For the mathematically-inclined reader, the tutorials and code offered here (https://www.audiocontentanalysis.org/) are interesting to further the understanding.
+::
+
+	The process will return a multichannel control steam with the seven values, which will be repeated if no change happens within the algorythm, i.e. when the hopSize is larger than the server's kr period.
+
+CLASSMETHODS::
+
+METHOD:: kr
+	The audio rate in, control rate out version of the object.
+
+ARGUMENT:: in
+	The audio to be processed.
+
+ARGUMENT:: windowSize
+	The window size. As spectral shape estimation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
+
+ARGUMENT:: hopSize
+	The window hop size. As spectral shape estimation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of windowSize (overlap of 2).
+
+ARGUMENT:: fftSize
+	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will default to windowSize.
+
+ARGUMENT:: maxFFTSize
+	How large can the FFT be, by allocating memory at instantiation time. This cannot be modulated.
+
+RETURNS::
+	A 7-channel KR signal with the seven spectral shape descriptors. The latency is windowSize.
+
+
+EXAMPLES::
+
+
+code::
+//create a monitoring bus for the descriptors
+b = Bus.new(\control,0,7);
+
+//create a monitoring window for the values
+
+(
+w = Window("spectral Shape Monitor", Rect(10, 10, 220, 190)).front;
+
+c = Array.fill(7, {arg i; StaticText(w, Rect(10, i * 25 + 10, 135, 20)).background_(Color.grey(0.7)).align_(\right)});
+c[0].string = ("Centroid: ");
+c[1].string = ("Spread: ");
+c[2].string = ("Skewness: ");
+c[3].string = ("Kurtosis: ");
+c[4].string = ("Rolloff: ");
+c[5].string = ("Flatness: ");
+c[6].string = ("Crest: ");
+
+a = Array.fill(7, {arg i;
+	StaticText(w, Rect(150, i * 25 + 10, 60, 20)).background_(Color.grey(0.7)).align_(\center);
+});
+)
+
+//run the window updating routine.
+(
+r = Routine {
+	{
+
+		b.get({ arg val;
+			{
+				if(w.isClosed.not) {
+					val.do({arg item,index;
+						a[index].string = item.round(0.01)})
+				}
+			}.defer
+		});
+
+		0.01.wait;
+	}.loop
+
+}.play
+)
+
+//play a simple sound to observe the values
+(
+	{
+		var source;
+		source = BPF.ar(WhiteNoise.ar(), 330, 55/330);
+		Out.kr(b,FluidSpectralShape.kr(source));
+		source.dup;
+	}.play;
+)
+::
+
+STRONG::A commented tutorial on how each descriptor behaves with test signals: ::
+
+CODE::
+// as above, create a monitoring bus for the descriptors
+b = Bus.new(\control,0,7);
+
+//again, create a monitoring window for the values
+(
+w = Window("Spectral Shape Monitor", Rect(10, 10, 220, 190)).front;
+
+c = Array.fill(7, {arg i; StaticText(w, Rect(10, i * 25 + 10, 135, 20)).background_(Color.grey(0.7)).align_(\right)});
+c[0].string = ("Centroid: ");
+c[1].string = ("Spread: ");
+c[2].string = ("Skewness: ");
+c[3].string = ("Kurtosis: ");
+c[4].string = ("Rolloff: ");
+c[5].string = ("Flatness: ");
+c[6].string = ("Crest: ");
+
+a = Array.fill(7, {arg i;
+	StaticText(w, Rect(150, i * 25 + 10, 60, 20)).background_(Color.grey(0.7)).align_(\center);
+});
+)
+
+// this time, update a little more slowly.
+(
+r = Routine {
+	{
+
+		b.get({ arg val;
+			{
+				if(w.isClosed.not) {
+					val.do({arg item,index;
+						a[index].string = item.round(0.01)})
+				}
+			}.defer
+		});
+
+		0.2.wait;
+	}.loop
+
+}.play
+)
+
+// first, a sine wave
+(
+x = {
+	arg freq=220;
+	var source;
+	source = SinOsc.ar(freq,mul:0.1);
+	Out.kr(b, VarLag.kr(FluidSpectralShape.kr(source),1024/s.sampleRate));
+	source.dup;
+}.play;
+)
+
+// at 220, the centroid is on the frequency, the spread is narrow, but as wide as the FFT Hann window ripples, the skewness is high as we are low and therefore far left of the middle bin (aka half-Nyquist), the Kurtosis is incredibly high as we have a very peaky spectrum. The rolloff is slightly higher than the frequency, taking into account the FFT windowing ripples, the flatness is incredibly low, as we have one peak and not much else, and the crest is quite high, because most of the energy is in a few peaky bins.
+
+x.set(\freq, 440)
+
+// at 440, the skewness has changed (we are nearer the middle of the spectrogram) and the Kurtosis too, although it is still so high it is quite in the same order of magnitude. The rest is stable, as expected.
+
+x.set(\freq, 11000)
+
+// at 11kHz, kurtosis is still in the thousand, but skewness is almost null, as expected.
+
+x.free
+
+// second, broadband noise
+(
+x = {
+	arg type = 0;
+	var source;
+	source = Select.ar(type,[WhiteNoise.ar(0.1),PinkNoise.ar(0.1)]);
+	Out.kr(b, VarLag.kr(FluidSpectralShape.kr(source),1024/s.sampleRate));
+	source.dup;
+}.play;
+)
+
+// white noise has a linear repartition of energy, so we would expect a centroid in the middle bin (aka half-Nyquist) with a spread covering the full range (+/- a quarter-Nyquist), with a skewness almost null since we are centered, and a very low Kurtosis since we are flat. The rolloff should be almost at Nyquist, the flatness as high as it gets, and the crest quite low.
+
+x.set(\type, 1)
+
+// pink noise has a drop of 3dB per octave across the spectrum, so we would, by comparison, expect a lower centroid, a slighly higher skewness and kurtosis, a lower rolloff, a slighly lower flatness and a higher crest for the larger low-end energy.
+
+x.free
+
+// third, bands of noise
+(
+x = {
+	arg type = 0;
+	var source, chain;
+	chain = FFT(LocalBuf(1024), WhiteNoise.ar(0.5));
+	chain = chain.pvcollect(1024, {arg mag,phase;[mag,phase]},5,11,1);
+	source = Select.ar(type,[
+		BPF.ar(BPF.ar(WhiteNoise.ar(0.5),330,0.666),330,0.666),
+		IFFT(chain)]);
+	Out.kr(b, VarLag.kr(FluidSpectralShape.kr(source),1024/s.sampleRate));
+	source.dup;
+}.play;
+)
+
+// a second-order bandpass filter on whitenoise, centred on 330Hz with one octave bandwidth, gives us a centroid quite high. This is due to the exponential behaviour of the filter, with a gentle slope. Observe the spectral analyser:
+
+s.freqscope
+
+// at first it seems quite centred, but then flip the argument FrqScl to lin(ear) and observe how high the spectrum goes. If we set it to a brickwall spectral filter tuned on the same frequencies:
+
+x.set(\type, 1)
+
+// we have a much narrower register, and our centroid and spread, as well as the kurtosis and flatness, agrees with this reading.
+
+x.free
+
+//fourth, equally spaced sines
+(
+x = {
+	arg freq = 220;
+	var source;
+	source = 	Mix.fill(7, {arg ind; SinOsc.ar(freq + (ind * (220 / 6)), 0, 0.02)});
+	Out.kr(b,FluidSpectralShape.kr(source));
+	source.dup;
+}.play;
+)
+
+// this example shows a similar result to the brickwall spectral bandpass above. If we move the central frequency nearer the half-Nyquist:
+
+x.set(\freq, 8800)
+
+// we can observe that the linear spread is kept the same, since there is the same linear distance in Hz between our frequencies. Skewness is a good indication here of where we are in the spectrum with the shape.
+::

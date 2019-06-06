@@ -6,8 +6,9 @@
 
 static InterfaceTable *ft;
 
-PluginLoad(FluidSTFTUGen) {
+PluginLoad(FluidSTFTUGen)
+{
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<TransientsSlice,double,float>("FluidTransientSlice",TransientParams,ft);
+  makeSCWrapper<TransientsSlice>("FluidTransientSlice", ft);
 }
