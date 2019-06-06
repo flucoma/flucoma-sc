@@ -16,11 +16,11 @@ METHOD:: ar
 ARGUMENT:: in
 	The input to be passed-through
 
-ARGUMENT:: winSize
+ARGUMENT:: windowSize
 	The size of the buffered window to be analysed, in samples. It will add that much latency to the signal.
 
 ARGUMENT:: hopSize
-	How much the buffered window moves forward, in samples. The -1 default value will default to half of winSize (overlap of 2).
+	How much the buffered window moves forward, in samples. The -1 default value will default to half of windowSize (overlap of 2).
 
 ARGUMENT:: fftSize
 	How large will the FFT be, zero-padding the buffer to the right size, which should be bigger than the windowSize argument, bigger than 4 samples, and should be a power of 2. This is a way to oversample the FFT for extra precision. The -1 default value will default to windowSize.
@@ -30,7 +30,7 @@ ARGUMENT:: maxFFTSize
 
 
 RETURNS::
-	Same as input, delayed by the winSize.
+	Same as input, delayed by the windowSize.
 
 
 EXAMPLES::

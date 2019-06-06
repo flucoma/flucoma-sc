@@ -62,10 +62,10 @@ ARGUMENT:: threshFwd
 ARGUMENT:: threshBack
 	The threshold of the offset of the smoothed error function. As it proceeds backwards in time, it allows tight ending of the identification of the anomaly.
 
-ARGUMENT:: winSize
+ARGUMENT:: windowSize
 	The averaging window of the error detection function. It needs smoothing as it is very jittery. The longer the window, the less precise, but the less false positive.
 
-ARGUMENT:: debounce
+ARGUMENT:: clumpLength
 	The window size in sample within which positive detections will be clumped together to avoid overdetecting in time.
 
 ARGUMENT:: action
@@ -135,7 +135,7 @@ d = Buffer.new(s); e = Buffer.new(s);
 (
 Routine{
     t = Main.elapsedTime;
-    FluidBufTransients.process(s, b, transients: d, residual:e, threshFwd:1.2, debounce:40);
+    FluidBufTransients.process(s, b, transients: d, residual:e, threshFwd:1.2, clumpLength:40);
     (Main.elapsedTime - t).postln;
 }.play
 )

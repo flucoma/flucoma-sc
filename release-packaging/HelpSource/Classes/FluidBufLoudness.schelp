@@ -1,0 +1,115 @@
+TITLE:: FluidBufLoudness
+SUMMARY:: A Loudness and True-Peak Descriptor on a Buffer
+CATEGORIES:: Libraries>FluidDecomposition
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
+
+
+DESCRIPTION::
+This class implements two loudness descriptors, computing the true peak of the signal as well as applying the filters proposed by broadcasting standards to emulate the perception of amplitude. It is part of the Fluid Decomposition Toolkit of the FluCoMa project.FOOTNOTE::This was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+
+The process will return a multichannel buffer with two channels per input channel, one for loudness and one for the true peak value of the frame, both in dBfs. More information on broadcasting standardisation of loudness measurement is available at the reference page FOOTNOTE::https://tech.ebu.ch/docs/tech/tech3341.pdf:: and in more musician-friendly explantions here FOOTNOTE::http://designingsound.org/2013/02/06/loudness-and-metering-part-1/::. Each sample represents a value, which is every hopSize. Its sampling rate is STRONG::sourceSR / hopSize::.
+
+CLASSMETHODS::
+
+METHOD:: process
+	This is the method that calls for the loudness descriptor to be calculated on a given source buffer.
+
+ARGUMENT:: server
+	The server on which the buffers to be processed are allocated.
+
+ARGUMENT:: source
+	The index of the buffer to use as the source material to be described. The different channels of multichannel buffers will be processing sequentially.
+
+ARGUMENT:: startFrame
+	Where in the srcBuf should the process start, in sample.
+
+ARGUMENT:: numFrames
+	How many frames should be processed.
+
+ARGUMENT:: startChan
+	For multichannel srcBuf, which channel should be processed first.
+
+ARGUMENT:: numChans
+	For multichannel srcBuf, how many channel should be processed.
+
+ARGUMENT:: features
+	The destination buffer for the loudness descriptors.
+
+ARGUMENT:: kWeighting
+	A flag to switch the perceptual model of loudness. On by default, removing it makes the algorithm more CPU efficient by reverting to a simple RMS of the frame.
+
+ARGUMENT:: truePeak
+	A flag to switch the computation of TruePeak. On by default, removing it makes the algorithm more CPU efficient by reverting to a simple absolute peak of the frame.
+
+ARGUMENT:: windowSize
+	The size of the window on which the computation is done. By default 1024 to be similar with all other FluCoMa objects, the EBU specifies other values as per the examples below.
+
+ARGUMENT:: hopSize
+	How much the buffered window moves forward, in samples. By default 512 to be similar with all other FluCoMa objects, the EBU specifies other values as per the examples below.
+
+ARGUMENT:: action
+	A Function to be evaluated once the offline process has finished and all Buffer's instance variables have been updated on the client side. The function will be passed [features] as an argument.
+
+RETURNS::
+	Nothing, as the destination buffer is declared in the function call.
+
+EXAMPLES::
+
+code::
+// create a buffer with a short clicking sinusoidal burst (220Hz) starting at frame 8192 for 1024 frames
+(
+b = Buffer.sendCollection(s, (Array.fill(8192,{0}) ++ (Signal.sineFill(1203,[0,0,0,0,0,1],[0,0,0,0,0,0.5pi]).takeThese({|x,i|i>1023})) ++ Array.fill(8192,{0})));
+c = Buffer.new(s);
+)
+
+// listen to the source and look at the buffer
+b.play; b.plot;
+
+// run the process with basic parameters
+(
+Routine{
+	t = Main.elapsedTime;
+	FluidBufLoudness.process(s, source:b, features: c);
+	(Main.elapsedTime - t).postln;
+}.play
+)
+
+// look at the analysis
+c.plot(minval:-130, maxval:6)
+
+// The values are interleaved [loudness,truepeak] in the buffer as they are on 2 channels: to get to the right frame, divide the SR of the input by the hopSize, then multiply by 2 because of the channel interleaving
+// here we are querying from one frame before (the signal starts at 8192, which is frame 16 (8192/512), therefore starting the query at frame 15, which is index 30.
+
+c.getn(30,10,{|x|x.postln})
+
+// observe that the first frame is silent, as expected. We can appreciate the overshoot of TruePeak of a full range sinewave starting on the second sample (fourth item in the list).
+::
+
+STRONG::A stereo buffer example.::
+CODE::
+
+// load two very different files
+(
+b = Buffer.read(s,File.realpath(FluidBufLoudness.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-SA-UprightPianoPedalWide.wav");
+c = Buffer.read(s,File.realpath(FluidBufLoudness.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-AcousticStrums-M.wav");
+)
+
+// composite one on left one on right as test signals
+FluidBufCompose.process(s, c, numFrames:b.numFrames, startFrame:555000,destStartChan:1, destination:b)
+b.play
+
+// create a buffer as destinations
+c = Buffer.new(s);
+
+//run the process on them with EBU standard Instant Loudness of
+(
+Routine{
+    t = Main.elapsedTime;
+    FluidBufLoudness.process(s, b, features: c, windowSize: 17640, hopSize:4410);
+    (Main.elapsedTime - t).postln;
+}.play
+)
+
+// look at the buffer: [loudness,truepeak] for left then [loudness,truepeak] for right
+c.plot(minval:-40, maxval:0)
+::

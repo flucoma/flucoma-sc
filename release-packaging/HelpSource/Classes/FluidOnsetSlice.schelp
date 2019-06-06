@@ -35,7 +35,7 @@ ARGUMENT:: function
 ARGUMENT:: threshold
 The thresholding of a new slice. Value ranges are different for each function, from 0 upwards.
 
-ARGUMENT:: debounce
+ARGUMENT:: minSliceLength
 	The minimum duration of a slice in number of hopSize.
 
 ARGUMENT:: filterSize
@@ -44,11 +44,11 @@ ARGUMENT:: filterSize
 ARGUMENT:: frameDelta
 		For certain functions (HFC, SpectralFlux, MKL, Cosine), the distance does not have to be computed between consecutive frames. By default (0) it is, otherwise this sets the distane between the comparison window in samples.
 
-ARGUMENT:: winSize
+ARGUMENT:: windowSize
 	The window size. As sinusoidal estimation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
 ARGUMENT:: hopSize
-	The window hope size. As sinusoidal estimation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of winSize (overlap of 2).
+	The window hop size. As sinusoidal estimation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of windowSize (overlap of 2).
 
 ARGUMENT:: fftSize
 	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will default to windowSize.
@@ -57,7 +57,7 @@ ARGUMENT:: maxFFTSize
 	How large can the FFT be, by allocating memory at instantiation time. This cannot be modulated.
 
 RETURNS::
-	An audio stream with impulses at detected transients. The latency between the input and the output is winSize at maximum.
+	An audio stream with impulses at detected transients. The latency between the input and the output is windowSize at maximum.
 
 EXAMPLES::
 
@@ -65,7 +65,7 @@ code::
 //load some sounds
 b = Buffer.read(s,File.realpath(FluidOnsetSlice.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
 
-// basic param (the process add a latency of winSize samples
+// basic param (the process add a latency of windowSize samples
 {var sig = PlayBuf.ar(1,b,loop:1); [FluidOnsetSlice.ar(sig) * 0.5, DelayN.ar(sig, 1, 1024/ s.sampleRate)]}.play
 
 // other parameters

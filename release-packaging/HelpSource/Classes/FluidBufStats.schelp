@@ -1,0 +1,139 @@
+TITLE:: FluidBufStats
+SUMMARY:: Computing Statistics on Buffers as Series.
+CATEGORIES:: Libraries>FluidDecomposition, UGens>Buffer
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
+
+
+DESCRIPTION::
+This class implements non-real-time statistical analysis on buffer channels. Typically, a buffer would hold various time series (i.e. descriptors over time), and link::Classes/FluidBufStats:: allows this series to be described statistically. It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+
+The process returns a buffer where each channel of the STRONG::source:: buffer has been reduced to 7 statistics: mean, standard deviation, skewness, kurtosis, followed by 3 percentiles, by default the minimum value, the median, and the maximum value. Moreover, it is possible to request the same 7 stats to be applied to derivative of the input. These are useful to describe statistically the rate of change of the time series. The STRONG::stats:: buffer will grow accordingly, yielding the seven same statistical description of the n requested derivatives. Therefore, the STRONG::stats:: buffer will have as many channel as the input buffer, and as many frames as 7 times the requested STRONG::numDerivs::.
+
+CLASSMETHODS::
+
+METHOD:: process
+This is the method that calls for the slicing to be calculated on a given source buffer.
+
+ARGUMENT:: server
+	The server on which the buffers to be processed are allocated.
+
+ARGUMENT:: source
+	The index of the buffer to use as the source material to be processed. The different channels of multichannel buffers will be considered independently as time series.
+
+ARGUMENT:: startFrame
+	The starting point (in samples) from which to copy in the source buffer.
+
+ARGUMENT:: numFrames
+	The duration (in samples) to copy from the source buffer. The default (-1) copies the full lenght of the buffer.
+
+ARGUMENT:: startChan
+	The first channel from which to copy in the source buffer.
+
+ARGUMENT:: numChans
+	The number of channels from which to copy in the source buffer. This parameter will wrap around the number of channels in the source buffer. The default (-1) copies all of the buffer's channel.
+
+ARGUMENT:: stats
+	The index of the buffer to write the statistics to. Each channel is the fruit of the statistical computations on the same channel number of the source buffer.
+
+ARGUMENT:: numDerivs
+	The number of derivatives of the original time series for the statistic to be computed on. By default, none are computed. This will influence the number of frames the stats buffer will have.
+
+ARGUMENT:: low
+	The rank requested for the first percentile value. By default, it is percentile 0.0, which is the minimum of the given channel of the source buffer.
+
+ARGUMENT:: middle
+	The rank requested for the second percentile value. By default, it is percentile 50.0, which is the median of the given channel of the source buffer.
+
+ARGUMENT:: high
+	The rank requested for the third percentile value. By default, it is percentile 100.0, which is the maximum of the given channel of the source buffer.
+
+ARGUMENT:: action
+		A Function to be evaluated once the offline process has finished and indices instance variables have been updated on the client side. The function will be passed stats as an argument.
+
+RETURNS::
+	Nothing, as the destination buffer is declared in the function call.
+
+EXAMPLES::
+
+STRONG::A didactic example::
+
+CODE::
+
+// make a buffer of known lenght
+b = Buffer.alloc(s,101);
+
+// add known values - here, a ramp up
+b.setn(0, Array.fill(101,{|i|i / 100}));
+
+// create a new buffer as destinations
+c = Buffer.new(s);
+
+//run the process on them
+(
+Routine{
+    t = Main.elapsedTime;
+    FluidBufStats.process(s, b, stats:c, numDerivs:1);
+    (Main.elapsedTime - t).postln;
+}.play
+)
+
+// list the statistics. The first seven are for the source buffer values themselves, the last seven for the first derivative of the source buffer.
+c.getn(0,c.numFrames,{|item|item.postln;})
+
+// replace the source values by a ramp down
+b.setn(0, Array.fill(101,{|i| 1 - (i / 100)}));
+
+// run the process and read the values
+FluidBufStats.process(s, b, stats:c, numDerivs:1, action:{c.getn(0,c.numFrames,{|item|item.postln;})});
+
+// replace the source values by halfsine
+b.setn(0, Array.fill(101,{|i| (i * pi/ 100).sin}));
+b.plot
+
+// run the process and read the values
+FluidBufStats.process(s, b, stats:c, numDerivs:1, action:{c.getn(0,c.numFrames,{|item|item.postln;})});
+
+// replace the source values by partial halfsine
+b.setn(0, Array.fill(101,{|i| (i * pi/ 50).sin.max(0)}));
+b.plot
+
+// run the process and read the values
+FluidBufStats.process(s, b, stats:c, numDerivs:1, action:{c.getn(0,c.numFrames,{|item|item.postln;})});
+
+// replace the source values by positive white noise
+b.setn(0, Array.fill(101,{1.0.rand}));
+b.plot
+
+// run the process and read the values
+FluidBufStats.process(s, b, stats:c, numDerivs:1, action:{c.getn(0,c.numFrames,{|item|item.postln;})});
+::
+
+STRONG::A musical example::
+
+CODE::
+// todo: port the Max one
+::
+
+
+STRONG::Stereo Input Behaviour::
+
+CODE::
+// make a buffer of known lenght
+b = Buffer.alloc(s,101,2);
+
+// add known values - here, a ramp up on the left and negative random values on the right
+b.setn(0, Array.fill(101,{|i|[i / 100,-1.0.rand]}).flat);
+
+// plot to confirm
+b.plot
+
+// create a new buffer as destinations
+c = Buffer.new(s);
+
+// run the stats and send back the values
+FluidBufStats.process(s, b, stats:c, numDerivs:1, action:{c.getn(0,c.numFrames * c.numChannels,{|item|d = item; d.postln})});
+
+//looking at the result is not easy to grasp, since it is interleaved: first number is mean of L, second is mean of R, third is stddev of L, fourth is stddev or R
+//this will make it tidier - the first value of each line is Left, the second is Right
+d.reshape(14,2).do({|x,i|["mean\t\t","stddev\t\t","skew\t\t\t", "kurtosis\t", "min\t\t\t", "median\t\t", "max\t\t\t","d-mean\t","d-stddev\t","d-skew\t\t", "d-kurtosis", "d-min\t\t", "d-median\t", "d-max\t\t"].at(i).post;x.round(0.01).postln})
+::

@@ -25,11 +25,11 @@ struct NRTBuf {
       : mBuffer(b)
   {
   }
-  NRTBuf(World *world, long bufnum, bool rt = false)
+  NRTBuf(World *world, uint32 bufnum, bool rt = false)
       : NRTBuf(rt ? World_GetBuf(world, bufnum)
                   : World_GetNRTBuf(world, bufnum))
   {
-    if (mBuffer && !mBuffer->samplerate)
+    if (mBuffer && !static_cast<bool>(mBuffer->samplerate))
       mBuffer->samplerate = world->mFullRate.mSampleRate;
   }
 
@@ -64,8 +64,8 @@ public:
   SCBufferAdaptor& operator=(SCBufferAdaptor&&) = default;
 
 
-  SCBufferAdaptor(long bufnum,World *world, bool rt = false)
-      : NRTBuf(world, bufnum, rt)
+  SCBufferAdaptor(intptr_t bufnum,World *world, bool rt = false)
+      : NRTBuf(world, static_cast<uint32>(bufnum), rt)
       , mBufnum(bufnum)
       , mWorld(world)
   {
@@ -78,7 +78,7 @@ public:
 
   void assignToRT(World *rtWorld)
   {
-    SndBuf *rtBuf = World_GetBuf(rtWorld, mBufnum);
+    SndBuf *rtBuf = World_GetBuf(rtWorld, static_cast<uint32>(mBufnum));
     *rtBuf        = *mBuffer;
     rtWorld->mSndBufUpdates[mBufnum].writes++;
   }
@@ -108,13 +108,13 @@ public:
     return true; 
   }
 
-  FluidTensorView<float, 1> samps(size_t channel, size_t rankIdx = 0) override
+  FluidTensorView<float, 1> samps(size_t channel) override
   {
     FluidTensorView<float, 2> v{mBuffer->data, 0,
                                 static_cast<size_t>(mBuffer->frames),
                                 static_cast<size_t>(mBuffer->channels)};
 
-    return v.col(rankIdx + channel * mRank);
+    return v.col(channel);
   }
 
   // Return a 2D chunk
@@ -130,36 +130,32 @@ public:
 
   size_t numFrames() const override
   {
-    return valid() ? this->mBuffer->frames : 0;
+    return valid() ? static_cast<size_t>(this->mBuffer->frames) : 0u;
   }
 
   size_t numChans() const override
   {
-    return valid() ? this->mBuffer->channels / mRank : 0;
+    return valid() ? static_cast<size_t>(this->mBuffer->channels) : 0u;
   }
-
-  size_t rank() const override { return valid() ? mRank : 0; }
 
   double sampleRate() const override { return valid() ? mBuffer->samplerate : 0; }
 
-  void resize(size_t frames, size_t channels, size_t rank, double sampleRate) override
+  void resize(size_t frames, size_t channels, double sampleRate) override
   {
     SndBuf *thisThing = mBuffer;
     mOldData          = thisThing->data;
-    mRank             = rank;
-    mWorld->ft->fBufAlloc(mBuffer, channels * rank, frames, sampleRate);
+    mWorld->ft->fBufAlloc(mBuffer, static_cast<int>(channels), static_cast<int>(frames), sampleRate);
   }
 
-  int bufnum() { return mBufnum; }
+  intptr_t bufnum() { return mBufnum; }
   void realTime(bool rt) { mRealTime = rt;  }
 
 protected:
 
   bool  mRealTime{false};
   float *mOldData{0};
-  long   mBufnum;
+  intptr_t   mBufnum;
   World *mWorld;
-  size_t mRank{1};
 };
 
 std::ostream& operator <<(std::ostream& os, SCBufferAdaptor& b)

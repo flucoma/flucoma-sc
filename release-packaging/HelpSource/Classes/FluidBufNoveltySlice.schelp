@@ -36,7 +36,7 @@ ARGUMENT:: numChans
 ARGUMENT:: indices
 	The index of the buffer where the indices (in sample) of the estimated starting points of slices will be written. The first and last points are always the boundary points of the analysis.
 
-ARGUMENT:: kernSize
+ARGUMENT:: kernelSize
 	The granularity of the window in which the algorithm looks for change, in samples. A small number will be sensitive to short term changes, and a large number should look for long term changes.
 
 ARGUMENT:: threshold
@@ -45,11 +45,11 @@ ARGUMENT:: threshold
 ARGUMENT:: filterSize
 	The size of a smoothing filter that is applied on the novelty curve. A larger filter filter size allows for cleaner cuts on very sharp changes.
 
-ARGUMENT:: winSize
+ARGUMENT:: windowSize
 	The window size. As novelty estimation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
 ARGUMENT:: hopSize
-	The window hope size. As novelty estimation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts.
+	The window hop size. As novelty estimation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts.
 
 ARGUMENT:: fftSize
 	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision.
@@ -107,7 +107,7 @@ c = Buffer.new(s);
 )
 
 // process with a given filterSize
-FluidBufNoveltySlice.process(s,b, indices: c, kernSize:31, threshold:0.3, filterSize:0)
+FluidBufNoveltySlice.process(s,b, indices: c, kernelSize:31, threshold:0.3, filterSize:0)
 
 //check the number of slices: it is the number of frames in the transBuf minus the boundary index.
 c.query;

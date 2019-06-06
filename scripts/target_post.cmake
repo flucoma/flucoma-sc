@@ -5,17 +5,30 @@
 #   target_compile_options(${PLUGIN} PRIVATE -Wall -Wextra -Wpedantic -Wreturn-type -Wconversion)
 # endif()
 
+set_target_properties(${PLUGIN} PROPERTIES
+    CXX_STANDARD 14
+    CXX_STANDARD_REQUIRED YES
+    CXX_EXTENSIONS NO
+)
+
 target_link_libraries(
   ${PLUGIN}
-  PRIVATE
+  PUBLIC
   FLUID_DECOMPOSITION
   FLUID_SC_WRAPPER
+  PRIVATE
+  FFTLIB
 )
+
 
 target_include_directories(
   ${PLUGIN}
   PRIVATE
   ${LOCAL_INCLUDES}
+)
+
+target_include_directories(
+  ${PLUGIN}
   SYSTEM PRIVATE
   ${SC_PATH}/include/plugin_interface
   ${SC_PATH}/include/common
@@ -42,45 +55,17 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
 
     include (CheckCXXCompilerFlag)
 
-    CHECK_CXX_COMPILER_FLAG(-msse HAS_CXX_SSE)
-    CHECK_CXX_COMPILER_FLAG(-msse2 HAS_CXX_SSE2)
-    CHECK_CXX_COMPILER_FLAG(-mfpmath=sse HAS_CXX_FPMATH_SSE)
-    CHECK_CXX_COMPILER_FLAG(-mavx HAS_AVX)
-    CHECK_CXX_COMPILER_FLAG(-mavx2 HAS_AVX2)
-    # target_compile_features(
-    #     ${PLUGIN}
-    #     PUBLIC
-    #     "$<$<NOT:$<CONFIG:DEBUG>>: -mavx -msse -msse2 -msse3 -msse4>"
-    #
-    # )
+    # CHECK_CXX_COMPILER_FLAG(-msse HAS_CXX_SSE)
+    # CHECK_CXX_COMPILER_FLAG(-msse2 HAS_CXX_SSE2)
+    # CHECK_CXX_COMPILER_FLAG(-mfpmath=sse HAS_CXX_FPMATH_SSE)
+    # CHECK_CXX_COMPILER_FLAG(-mavx HAS_AVX)
+    # CHECK_CXX_COMPILER_FLAG(-mavx2 HAS_AVX2)
 
-    #     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse")
-    # endif()
-    #
-    # CHECK_C_COMPILER_FLAG(-msse2 HAS_SSE2)
-    #
-    #
-    # if (HAS_SSE2)
-    #     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse2")
-    # endif()
-    # if (HAS_CXX_SSE2)
-    #     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse2")
-    # endif()
-    #
-    #
-    #
-    # if (HAS_FPMATH_SSE)
-    #     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mfpmath=sse")
-    # endif()
-    # if (HAS_CXX_FPMATH_SSE)
-    #     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mfpmath=sse")
-    # endif()
-    #
-    # if(NATIVE)
-    #     add_definitions(-march=native)
-    # endif()
-    #
-
+    target_compile_options(
+        ${PLUGIN}
+        PUBLIC
+        "$<$<NOT:$<CONFIG:DEBUG>>: -mavx -msse -msse2 -msse3 -msse4>"
+    )
 endif()
 if(MINGW)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mstackrealign")

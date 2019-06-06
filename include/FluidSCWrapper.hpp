@@ -64,7 +64,7 @@ public:
     ft->fDefineUnitCmd(name, "latency", doLatency);
   }
 
-  static void doLatency(Unit *unit, sc_msg_iter *args)
+  static void doLatency(Unit *unit, sc_msg_iter*)
   {
     float l[]{static_cast<float>(static_cast<Wrapper *>(unit)->mClient.latency())};
     auto  ft = Wrapper::getInterfaceTable();
@@ -76,7 +76,7 @@ public:
   }
     
   RealTime()
-    : mControlsIterator{mInBuf + mSpecialIndex + 1,mNumInputs - mSpecialIndex - 1}
+    : mControlsIterator{mInBuf + mSpecialIndex + 1,static_cast<size_t>(static_cast<ptrdiff_t>(mNumInputs) - mSpecialIndex - 1)}
     , mParams{Wrapper::Client::getParameterDescriptors()}
     , mClient{Wrapper::setParams(mParams,mWorld->mVerbosity > 0, mWorld, mControlsIterator,true)}
   {}
@@ -97,47 +97,49 @@ public:
       return;
     }
 
+    mClient.sampleRate(fullSampleRate());
     mInputConnections.reserve(mClient.audioChannelsIn());
     mOutputConnections.reserve(mClient.audioChannelsOut());
     mAudioInputs.reserve(mClient.audioChannelsIn());
     mOutputs.reserve(std::max(mClient.audioChannelsOut(), mClient.controlChannelsOut()));
 
-    for (int i = 0; i < mClient.audioChannelsIn(); ++i)
+    for (int i = 0; i < static_cast<int>(mClient.audioChannelsIn()); ++i)
     {
       mInputConnections.emplace_back(isAudioRateIn(i));
       mAudioInputs.emplace_back(nullptr, 0, 0);
     }
 
-    for (int i = 0; i < mClient.audioChannelsOut(); ++i)
+    for (int i = 0; i < static_cast<int>(mClient.audioChannelsOut()); ++i)
     {
       mOutputConnections.emplace_back(true);
       mOutputs.emplace_back(nullptr, 0, 0);
     }
 
-    for (int i = 0; i < mClient.controlChannelsOut(); ++i) { mOutputs.emplace_back(nullptr, 0, 0); }
-
+    for (int i = 0; i < static_cast<int>(mClient.controlChannelsOut()); ++i) { mOutputs.emplace_back(nullptr, 0, 0); }
+  
+  
     set_calc_function<RealTime, &RealTime::next>();
     Wrapper::getInterfaceTable()->fClearUnitOutputs(this, 1);
     
-    mClient.sampleRate(fullSampleRate());
+    
     
   }
 
-  void next(int n)
+  void next(int)
   {
     mControlsIterator.reset(mInBuf + 1); //mClient.audioChannelsIn());
     Wrapper::setParams(mParams, mWorld->mVerbosity > 0, mWorld, mControlsIterator); // forward on inputs N + audio inputs as params
     mParams.template constrainParameterValues(); 
     const Unit *unit = this;
-    for (int i = 0; i < mClient.audioChannelsIn(); ++i)
+    for (size_t i = 0; i < mClient.audioChannelsIn(); ++i)
     {
       if (mInputConnections[i]) mAudioInputs[i].reset(IN(i), 0, fullBufferSize());
     }
-    for (int i = 0; i < mClient.audioChannelsOut(); ++i)
+    for (size_t i = 0; i < mClient.audioChannelsOut(); ++i)
     {
-      if (mOutputConnections[i]) mOutputs[i].reset(out(i), 0, fullBufferSize());
+      if (mOutputConnections[i]) mOutputs[i].reset(out(static_cast<int>(i)), 0, fullBufferSize());
     }
-    for (int i = 0; i < mClient.controlChannelsOut(); ++i) { mOutputs[i].reset(out(i), 0, 1); }
+    for (size_t i = 0; i < mClient.controlChannelsOut(); ++i) { mOutputs[i].reset(out(static_cast<int>(i)), 0, 1); }
     mClient.process(mAudioInputs, mOutputs);
   }
 
@@ -165,19 +167,19 @@ class NonRealTime
 public:
   static void setup(InterfaceTable *ft, const char *name) { DefinePlugInCmd(name, launch, nullptr); }
 
-  NonRealTime(World *world, sc_msg_iter *args)
+  NonRealTime(World* w, sc_msg_iter* args)
       : mParams{Client::getParameterDescriptors()}
-      , mClient{mParams}
+      , mClient{Wrapper::setParams(mParams, false, w, args)}
   {}
 
   void init(){};
 
-  static void launch(World *world, void *inUserData, struct sc_msg_iter *args, void *replyAddr)
+  static void launch(World *world, void */*inUserData*/, struct sc_msg_iter *args, void *replyAddr)
   {
 
     if (args->tags && ((std::string{args->tags}.size() - 1) != Client::getParameterDescriptors().count()))
     {
-      std::cout << "ERROR: " << Wrapper::getName() << " wrong number of arguments. Expected "
+          std::cout << "ERROR: " << Wrapper::getName() << " wrong number of arguments. Expected "
                 << Client::getParameterDescriptors().count() << ", got " << (std::string{args->tags}.size() - 1)
                 << ". Your .sc file and binary plugin might be different versions." << std::endl;
       return;
@@ -185,8 +187,6 @@ public:
 
     Wrapper *w = new Wrapper(
         world, args); // this has to be on the heap, because it doesn't get destroyed until the async command is done
-
-    Wrapper::setParams(w->mParams, false, world, args);
 
     Result result = validateParameters(w);
     if (!result.ok())
@@ -202,13 +202,13 @@ public:
     if (msgSize) { args->getb(completionMessage.data(), msgSize); }
 
     world->ft->fDoAsynchronousCommand(world, replyAddr, Wrapper::getName(), w, process, exchangeBuffers, tidyUp, destroy,
-                                      msgSize, completionMessage.data());
+                                      static_cast<int>(msgSize), completionMessage.data());
   }
 
   static bool process(World *world, void *data) { return static_cast<Wrapper *>(data)->process(world); }
   static bool exchangeBuffers(World *world, void *data) { return static_cast<Wrapper *>(data)->exchangeBuffers(world); }
   static bool tidyUp(World *world, void *data) { return static_cast<Wrapper *>(data)->tidyUp(world); }
-  static void destroy(World *world, void *data) { delete static_cast<Wrapper *>(data); }
+  static void destroy(World *, void *data) { delete static_cast<Wrapper *>(data); }
 
 protected:
   ParamSetType  mParams;
@@ -226,7 +226,7 @@ private:
     return {};
   }
 
-  bool process(World *world)
+  bool process(World *)
   {
     Result r = mClient.process();
 
@@ -245,7 +245,7 @@ private:
     return true;
   }
 
-  bool tidyUp(World *world)
+  bool tidyUp(World *)
   {
     mParams.template forEachParamType<BufferT, CleanUpBuffer>();
     return true;
@@ -329,23 +329,24 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
   {
     static constexpr size_t argSize = C::getParameterDescriptors().template get<N>().fixedSize;
     
-    auto fromArgs(World *w, FloatControlsIter& args, LongT::type, int) { return args.next(); }
-    auto fromArgs(World *w, FloatControlsIter& args, FloatT::type, int) { return args.next(); }
-    auto fromArgs(World *w, sc_msg_iter* args, LongT::type, int defVal) { return args->geti(defVal); }
-    auto fromArgs(World *w, sc_msg_iter* args, FloatT::type, int) { return args->getf(); }
+    auto fromArgs(World *, FloatControlsIter& args, LongT::type, int) { return args.next(); }
+    auto fromArgs(World *, FloatControlsIter& args, FloatT::type, int) { return args.next(); }
+    auto fromArgs(World *, sc_msg_iter* args, LongT::type, int defVal) { return args->geti(defVal); }
+    auto fromArgs(World *, sc_msg_iter* args, FloatT::type, int) { return args->getf(); }
 
     auto fromArgs(World *w, ArgType args, BufferT::type, int)
     {
-      typename LongT::type bufnum = fromArgs(w, args, LongT::type(), -1);
+      typename LongT::type bufnum = static_cast<LongT::type>(fromArgs(w, args, LongT::type(), -1));
       return BufferT::type(bufnum >= 0 ? new SCBufferAdaptor(bufnum, w) : nullptr);
     }
     
     typename T::type operator()(World *w, ArgType args)
     {
       ParamLiteralConvertor<T, argSize> a;
+      using LiteralType = typename ParamLiteralConvertor<T, argSize>::LiteralType;
       
-      for (auto i = 0; i < argSize; i++)
-        a[i] = fromArgs(w, args, a[0], 0);
+      for (size_t i = 0; i < argSize; i++)
+        a[i] = static_cast<LiteralType>(fromArgs(w, args, a[0], 0));
       
       return a.value();
     }
