@@ -43,6 +43,15 @@ ARGUMENT:: algorithm
 	## 2 || YinFFT: Implements the frequency domain version of the YIN algorithm, as described in FOOTNOTE::P. M. Brossier, "Automatic Annotation of Musical Audio for Interactive Applications.” QMUL, London, UK, 2007. :: See also https://essentia.upf.edu/documentation/reference/streaming_PitchYinFFT.html
 	::
 
+ARGUMENT:: minFreq
+The minimum frequency that the algorithm will search for an estimated fundamental. This sets the lowest value that will be generated.
+
+ARGUMENT:: maxFreq
+The maximum frequency that the algorithm will search for an estimated fundamental. This sets the highest value that will be generated.
+
+ARGUMENT:: unit
+The unit of the estimated value. The default of 0 is in Hz. A value of 1 will convert to MIDI note values.
+
 ARGUMENT:: windowSize
 	The window size. As sinusoidal estimation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
@@ -105,11 +114,11 @@ b.play
 // create a buffer as destinations
 c = Buffer.new(s);
 
-//run the process on them
+//run the process on them, with limited bandwidth and units in MIDI notes
 (
 Routine{
     t = Main.elapsedTime;
-    FluidBufPitch.process(s, b, features: c);
+    FluidBufPitch.process(s, b, features: c, minFreq:200, maxFreq:2000, unit:1);
     (Main.elapsedTime - t).postln;
 }.play
 )
