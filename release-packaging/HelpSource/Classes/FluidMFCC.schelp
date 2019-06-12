@@ -50,24 +50,27 @@ RETURNS::
 EXAMPLES::
 
 code::
-//create a monitoring bus for the descriptors
-b = Bus.new(\control,0,13);
-
 //create a monitoring window for the values
 
 (
+b = Bus.new(\control,0,13);
 w = Window("MFCCs Monitor", Rect(10, 10, 420, 320)).front;
 a = MultiSliderView(w,Rect(10, 10, 400, 300)).elasticMode_(1).isFilled_(1);
+a.reference_(Array.fill(13,{0.5})); //make a center line to show 0
 )
 
 //run the window updating routine.
 (
+
+~winRange = 500;
+
 r = Routine {
 	{
 		b.get({ arg val;
 			{
 				if(w.isClosed.not) {
-					a.value = val;
+					//val.postln;
+					a.value = val.linlin(~winRange.neg,~winRange,0,1);
 				}
 			}.defer
 		});
@@ -78,8 +81,8 @@ r = Routine {
 
 //play a simple sound to observe the values
 (
-x = 	{arg type = 0;
-			var source = Select.ar(type,[SinOsc.ar(220),Saw.ar(220),Pulse.ar(220)]) * LFTri.kr(0.1).exprange(0.01,0.1);
+x = {arg type = 0;
+	var source = Select.ar(type,[SinOsc.ar(220),Saw.ar(220),Pulse.ar(220)]) * LFTri.kr(0.1).exprange(0.01,0.1);
 	Out.kr(b,FluidMFCC.kr(source,maxNumCoeffs:13));
 	source.dup;
 }.play;
@@ -87,19 +90,20 @@ x = 	{arg type = 0;
 
 // change the wave types, observe the amplitude invariance of the descriptors, apart from the leftmost coefficient
 x.set(\type, 1)
+~winRange = 100; //adjust the range above and below 0 to zoom in or out on the MFCC
 x.set(\type, 2)
 x.set(\type, 0)
 // free this source
 x.free
 
 // load a more exciting one
-c = Buffer.read(s,File.realpath(FluidMelBands.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
+c = Buffer.read(s,File.realpath(FluidMFCC.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
 
 // analyse with parameters to be changed
 (
-x = 	{arg bands = 40, low = 20, high = 20000;
+x = {arg bands = 40, low = 20, high = 20000;
 	var source = PlayBuf.ar(1,c,loop:1);
-	Out.kr(b,FluidMelBands.kr(source, bands, low, high, 40) / 10);
+	Out.kr(b,FluidMFCC.kr(source, 13, bands, low, high, 13) / 10);
 	source.dup;
 }.play;
 )
@@ -111,7 +115,7 @@ x.set(\bands,20)
 x.set(\bands,40)
 
 // focus all the bands on a mid range
-x.set(\low,320, \high, 8000)
+x.set(\low,320, \high, 800)
 
 // focusing on the low end shows the fft resolution issue. One could restart the analysis with a larger fft to show more precision
 x.set(\low,20, \high, 160)
@@ -126,5 +130,153 @@ x.free;b.free;c.free;r.stop;
 STRONG::A musical example::
 
 CODE::
-// todo: port the Max one
+//program that freezes mfcc spectra, then looks for matches between two frozen spectra
+(
+SynthDef("MFCCJamz", {arg freq=220, source = 0, buffer, mfccBus, distBus, t_freeze0=0, t_freeze1=0, onsetsOn0=0, onsetsOn1=0;
+	var sound, mfcc, mfccFreeze0, mfccFreeze1, dist0, dist1, closest, slice;
+
+	sound = SelectX.ar(source, [
+		SinOsc.ar(freq, 0, 0.1),
+		LFTri.ar(freq, 0, 0.1),
+		LFSaw.ar(freq, 0, 0.1),
+		Pulse.ar(freq, 0.5, 0.1),
+		WhiteNoise.ar(0.1),
+		PinkNoise.ar(0.1),
+		PlayBuf.ar(1, buffer, 1, loop:1)
+	]);
+
+	slice = FluidOnsetSlice.ar(sound); //onset detection for mfcc freeze on onset
+
+	mfcc = FluidMFCC.kr(sound,maxNumCoeffs:13);
+	mfccFreeze0 = Latch.kr(mfcc, t_freeze0+(slice*onsetsOn0));
+	mfccFreeze1 = Latch.kr(mfcc, t_freeze1+(slice*onsetsOn1));
+
+	Out.kr(mfccBus,mfcc.addAll(mfccFreeze0).addAll(mfccFreeze1));
+
+	//distance calculations
+
+	dist0 = Mix((mfcc.copyRange(1,12) - mfccFreeze0.copyRange(1,12)).squared).sqrt;
+	dist1 = Mix((mfcc.copyRange(1,12) - mfccFreeze1.copyRange(1,12)).squared).sqrt;
+
+	Out.kr(distBus, [dist0, dist1]);
+
+	//sends a trigger when the item with a closer euclidean distance changes
+	SendTrig.kr(Trig1.kr(dist1-dist0, 0.001)+Trig1.kr(dist0-dist1, 0.001), 0, dist1<dist0);
+
+	Out.ar(0, sound);
+}).load(s);
+)
+
+
+(
+var buffers, buffer, paths, mfccBus, freezeBus, distBus, win, sliders, updateRout, winRange, currentMFCC, synth, movingGUI, trainButtons, oscFunc, closestBus;
+
+winRange = 100;
+
+win = Window("MFCCs Monitor", Rect(10, 10, 450, 320)).front;
+sliders = List.newClear(0);
+3.do{|i|
+	sliders.add(MultiSliderView().maxWidth_(150).maxHeight_(150)
+		.elasticMode_(1).isFilled_(1)
+		.reference_(Array.fill(13,{0.5})); //make a center line to show 0
+	);
+};
+
+//look in the directory for all .wav files
+paths = PathName(File.realpath(FluidMFCC.class.filenameSymbol)
+	.dirname.withTrailingSlash ++ "../AudioFiles/")
+.files.select({arg item; item.fullPath.contains(".wav")})
+.collect({arg item; item.fullPath});
+
+
+
+s.waitForBoot({
+	Routine({
+		buffers = List.newClear(0);
+
+		paths.do{arg item;buffers.add(Buffer.read(s, item.postln));};
+
+		2.wait;
+		s.sync;
+
+		mfccBus = Bus.control(s, 39);
+		distBus = Bus.control(s, 2);
+		closestBus = Bus.control(s);
+
+		synth = Synth("MFCCJamz", [\buffer, buffers[0], \mfccBus, mfccBus, \distBus, distBus, \closestBus, closestBus]);
+
+		//the slider and PopUps under the main mfcc display
+
+		movingGUI = [
+			Slider().orientation_(\horizontal).action_{|sl| winRange = sl.value.linlin(0,1,50,500)},
+			Slider().orientation_(\horizontal).action_{|sl| synth.set(\freq, sl.value.linexp(0,1,220,660))},
+			PopUpMenu().items_(["sine", "tri", "saw", "square", "white", "pink", "buf"])
+			.action_{|menu| synth.set(\source, menu.value)}
+			.maxWidth_(150),
+			PopUpMenu().items_(paths)
+			.action_{|menu| synth.set(\buffer, buffers[menu.value])}
+			.maxWidth_(150);
+		];
+
+		//the buttons under the two frozen mfcc displays
+
+		trainButtons = List.newClear(0);
+		2.do{arg i;
+			i.postln;
+			trainButtons.add(Button().states_([["train", Color.black, Color.green]])
+				.action_{arg butt;
+					//freezeBus.setn(currentMFCC);
+					synth.set(("t_freeze"++i).asSymbol,1);
+				};
+			);
+			trainButtons.add(Button().states_([["trainOnset", Color.black, Color.red],["trainOnset", Color.black, Color.green]])
+				.action_{arg butt;
+					synth.set(("onsetsOn"++i).asSymbol,butt.value);
+				};
+			);
+			trainButtons.add(Button().states_([["", Color.black, Color.black],["", Color.black, Color.blue]]));
+			trainButtons.add(StaticText());
+		};
+
+		win.layout_(HLayout(
+			VLayout(sliders[0], movingGUI[0], movingGUI[1], movingGUI[2]),
+			VLayout(sliders[1],HLayout(trainButtons[0],trainButtons[1]), HLayout(trainButtons[2],trainButtons[3])),
+			VLayout(sliders[2],HLayout(trainButtons[4],trainButtons[5]), HLayout(trainButtons[6],trainButtons[7]))
+		));
+		win.front;
+		win.onClose_{synth.free; oscFunc.free; updateRout.stop};
+
+		//receives a trigger when the nearest element changes
+		oscFunc = OSCFunc({ arg msg, time;
+			{
+				trainButtons[2].value_(1-msg[3]);
+				trainButtons[6].value_(msg[3]);
+			}.defer
+		},'/tr', s.addr);
+
+		//update the window
+		updateRout = Routine {
+			{arg i;
+				mfccBus.get({ arg val;
+					{
+						currentMFCC = val;
+						sliders[0].value = val.copyRange(0,12).linlin(winRange.neg,winRange,0,1);
+						sliders[1].value = val.copyRange(13,25).linlin(winRange.neg,winRange,0,1);
+						sliders[2].value = val.copyRange(26,38).linlin(winRange.neg,winRange,0,1);
+					}.defer
+				});
+				distBus.get({ arg val;
+					{
+						trainButtons[3].string = val[0].round(0.001).asString;
+						trainButtons[7].string = val[1].round(0.001).asString;
+
+					}.defer
+				});
+				0.05.wait;
+			}.loop
+		}.play;
+
+	}).play(AppClock);
+})
+)
 ::
