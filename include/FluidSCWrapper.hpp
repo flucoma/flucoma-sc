@@ -117,8 +117,8 @@ public:
 
     for (int i = 0; i < static_cast<int>(mClient.controlChannelsOut()); ++i) { mOutputs.emplace_back(nullptr, 0, 0); }
   
-  
-    set_calc_function<RealTime, &RealTime::next>();
+    mCalcFunc = make_calc_function<RealTime, &RealTime::next>();
+//    set_calc_function<RealTime, &RealTime::next>();    
     Wrapper::getInterfaceTable()->fClearUnitOutputs(this, 1);
     
     
