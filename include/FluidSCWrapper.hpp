@@ -232,7 +232,7 @@ private:
 
     if (!r.ok())
     {
-      std::cout << "ERROR: " << Wrapper::getName() << ": " << r.message().c_str();
+      std::cout << "ERROR: " << Wrapper::getName() << ": " << r.message().c_str() << '\n';
       return false;
     }
 
