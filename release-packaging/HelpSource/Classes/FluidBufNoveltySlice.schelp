@@ -39,10 +39,10 @@ ARGUMENT:: indices
 ARGUMENT:: feature
 	The feature on which novelty is computed.
 		table::
-	##0 || Spectrum || todo
-	##1 || MFCC || todo
-	##2 || Pitch || todo
-	##3 || Loudness || todo
+	##0 || Spectrum || The magnitude of the full spectrum.
+	##1 || MFCC || 13 Mel-Frequency Cepstrum Coefficients.
+	##2 || Pitch || The pitch and its confidence.
+	##3 || Loudness || The TruePeak and Loudness.
 ::
 ARGUMENT:: kernelSize
 	The granularity of the window in which the algorithm looks for change, in samples. A small number will be sensitive to short term changes, and a large number should look for long term changes.
