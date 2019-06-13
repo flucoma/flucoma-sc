@@ -59,17 +59,18 @@ a = MultiSliderView(w,Rect(10, 10, 600, 300)).elasticMode_(1).isFilled_(1);
 
 //run the window updating routine.
 (
+~winRange = 100;
 r = Routine {
-	{
-		b.get({ arg val;
-			{
-				if(w.isClosed.not) {
-					a.value = val;
-				}
-			}.defer
-		});
-		0.01.wait;
-	}.loop
+    {
+        b.get({ arg val;
+            {
+                if(w.isClosed.not) {
+                    a.value = val/~winRange;
+                }
+            }.defer
+        });
+        0.01.wait;
+    }.loop
 }.play
 )
 
@@ -97,6 +98,9 @@ x = 	{arg bands = 40, low = 20, high = 20000;
 }.play;
 )
 
+//set the winRange to a more informative value
+~winRange = 400;
+
 // observe the number of bands. The unused ones at the top are not updated
 x.set(\bands,20)
 
@@ -104,7 +108,7 @@ x.set(\bands,20)
 x.set(\bands,40)
 
 // focus all the bands on a mid range
-x.set(\low,320, \high, 8000)
+x.set(\low,320, \high, 800)
 
 // focusing on the low end shows the fft resolution issue. One could restart the analysis with a larger fft to show more precision
 x.set(\low,20, \high, 160)

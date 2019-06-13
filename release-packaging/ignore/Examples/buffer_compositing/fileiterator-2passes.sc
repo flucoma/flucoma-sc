@@ -2,7 +2,7 @@
 
 (
 var fileNames;
-c = [0];
+c = [];
 
 FileDialog.new({|selection|
 	var total, totaldur = 0, maxchans = 0;
@@ -16,14 +16,11 @@ FileDialog.new({|selection|
 		SoundFile.use(fp.asAbsolutePath , {
 			arg file;
 			var dur = file.numFrames;
-			c = c.add(dur);
+			c = c.add(totaldur);
 			totaldur = totaldur + dur;
 			maxchans = maxchans.max(file.numChannels);
 		});
 	});
-	c.postln;
-	totaldur.postln;
-	maxchans.postln;
 	Routine{
 		b = Buffer.alloc(s,totaldur,maxchans);
 		s.sync;
@@ -41,5 +38,8 @@ FileDialog.new({|selection|
 b.plot
 c.postln
 b.play
+
+
+{PlayBuf.ar(1,b.bufnum,startPos:c[740])}.play
 
 Buffer.freeAll
