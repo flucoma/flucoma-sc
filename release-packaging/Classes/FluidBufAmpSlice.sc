@@ -1,5 +1,5 @@
 FluidBufAmpSlice{
-		*process { arg server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, absRampUp = 10, absRampDown = 10, absThreshOn = -40, absThreshOff = -40, minSliceLength = 1, minSilenceLength = 1, minLengthAbove = 1, minLengthBelow = 1, lookBack = 0, lookAhead = 0, relRampUp = 1, relRampDown = 1, relThreshOn = -144, relThreshOff = -144, highPassFreq = 250, outputType = 0, action;
+		*process { arg server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, absRampUp = 10, absRampDown = 10, absThreshOn = -40, absThreshOff = -40, minSliceLength = 1, minSilenceLength = 1, minLengthAbove = 1, minLengthBelow = 1, lookBack = 0, lookAhead = 0, relRampUp = 1, relRampDown = 1, relThreshOn = 144, relThreshOff = -144, highPassFreq = 250, outputType = 0, action;
 
 		var maxSize = max(minLengthAbove + lookBack, max(minLengthBelow,lookAhead));
 

@@ -1,5 +1,5 @@
-TITLE:: FluidAmpSlice
-SUMMARY:: Amplitude-based Slicer
+TITLE:: FluidBufAmpSlice
+SUMMARY:: Amplitude-based Slicer for Buffers
 CATEGORIES:: Libraries>FluidDecomposition
 RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
 
@@ -8,15 +8,33 @@ This class implements an amplitude-based slicer, with various customisable optio
 
 FluidAmpSlice is based on two envelop followers on a highpassed version of the signal: one absolute, and one relative. Each have features that will interact, including independent Schmidt triggers and state-aware time contraints. The example code below is unfolding the various possibilites in order of complexity.
 
-The process will return an audio steam with square envelopes around detected slices the different slices, where 1s means in slice and 0s mean in silence.
+The process will return a two-channel buffer with the addresses of the onset on the first channel, and the address of the offset on the second channel.
 
 CLASSMETHODS::
 
-METHOD:: ar
-	The audio rate version of the object.
+METHOD:: process
+	This is the method that calls for the slicing to be calculated on a given source buffer.
 
-ARGUMENT:: in
-	The audio to be processed.
+ARGUMENT:: server
+	The server on which the buffers to be processed are allocated.
+
+ARGUMENT:: source
+	The index of the buffer to use as the source material to be sliced through novelty identification. The different channels of multichannel buffers will be summed.
+
+ARGUMENT:: startFrame
+	Where in the srcBuf should the slicing process start, in sample.
+
+ARGUMENT:: numFrames
+	How many frames should be processed.
+
+ARGUMENT:: startChan
+	For multichannel sources, which channel should be processed.
+
+ARGUMENT:: numChans
+	For multichannel sources, how many channel should be summed.
+
+ARGUMENT:: indices
+	The index of the buffer where the indices (in sample) of the estimated starting points of slices will be written. The first and last points are always the boundary points of the analysis.
 
 ARGUMENT:: absRampUp
 	The number of samples the absolute envelope follower will take to reach the next value when raising.
@@ -63,14 +81,14 @@ ARGUMENT:: relThreshOff
 ARGUMENT:: highPassFreq
 	The frequency of the fourth-order Linkwitz–Riley high-pass filter (https://en.wikipedia.org/wiki/Linkwitz%E2%80%93Riley_filter). This is done first on the signal to minimise low frequency intermodulation with very fast ramp lengths.
 
-ARGUMENT:: maxSize
-	How large can the buffer be for time-critical conditions, by allocating memory at instantiation time. This cannot be modulated.
-
 ARGUMENT:: outputType
 (describe argument here)
 
+ARGUMENT:: action
+	A Function to be evaluated once the offline process has finished and indices instance variables have been updated on the client side. The metric will be passed indices as an argument.
+
 RETURNS::
-	An audio stream with square envelopes around the slices. The latency between the input and the output is STRONG::max(minLengthAbove + lookBack, max(minLengthBelow,lookAhead))::.
+	Nothing, as the destination buffer is declared in the function call.
 
 EXAMPLES::
 
@@ -197,4 +215,30 @@ b = Buffer.read(s,File.realpath(FluidAmpSlice.class.filenameSymbol).dirname.with
         [source, env]
 			}.play);
 )
+::
+
+STRONG::A stereo buffer example.::
+CODE::
+// make a stereo buffer
+b = Buffer.alloc(s,88200,2);
+
+// add some stereo clicks and listen to them
+((0..3)*22050+11025).do({|item,index| b.set(item+(index%2), 1.0)})
+b.play
+
+// create a new buffer as destinations
+c = Buffer.new(s);
+
+//run the process on them
+(
+// with basic params
+Routine{
+    t = Main.elapsedTime;
+    FluidBufAmpSlice.process(s,b, indices: c);
+    (Main.elapsedTime - t).postln;
+}.play
+)
+
+// list the indicies of detected attacks - the two input channels have been summed
+c.getn(0,c.numFrames,{|item|item.postln;})
 ::
