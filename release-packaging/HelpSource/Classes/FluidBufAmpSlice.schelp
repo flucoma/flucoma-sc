@@ -121,7 +121,6 @@ FluidBufAmpSlice.process(s,b,indices:c, absRampUp:10, absRampDown:100, absThresh
 c.query
 c.getn(0,c.numFrames*2,{|item|item.postln;})
 
-
 //mid tests: absThresh time hysteresis on
 FluidBufAmpSlice.process(s,b,indices:c, absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12, minLengthAbove:441)
 c.query
@@ -147,18 +146,18 @@ FluidBufAmpSlice.process(s,b,indices:c, absRampUp:10, absRampDown:100, absThresh
 c.query
 c.getn(0,c.numFrames*2,{|item|item.postln;})
 
-//advanced tests: absThresh hysteresis, long tail //STRANGE OFFSET ADDRESS
-FluidBufAmpSlice.process(s,b,indices:c, absRampUp:10, absRampDown:22050, absThreshOn:-12, absThreshOff: -16, minSliceLength:441)
+//advanced tests: absThresh hysteresis, long tail
+FluidBufAmpSlice.process(s,b,indices:c, absRampUp:2205, absRampDown:2205, absThreshOn:-60, absThreshOff: -60)
 c.query
 c.getn(0,c.numFrames*2,{|item|item.postln;})
 
-//solution: have to recut with relThresh //STRANGE OFFSET ADDRESS
-FluidBufAmpSlice.process(s,b,indices:c, absRampUp:10, absRampDown:22050, absThreshOn:-12, absThreshOff: -16, relRampUp:5, relRampDown:200, relThreshOn:-1, relThreshOff:-12)
+//solution: have to recut with relThresh
+FluidBufAmpSlice.process(s,b,indices:c, absRampUp:2205, absRampDown:2205, absThreshOn:-60, absThreshOff: -60, relRampUp:5, relRampDown:220, relThreshOn:2, relThreshOff:1)
 c.query
 c.getn(0,c.numFrames*2,{|item|item.postln;})
 
-//beware of double trig. a solution: minSliceLength //STRANGE OFFSET ADDRESS
-FluidBufAmpSlice.process(s,b,indices:c, absRampUp:10, absRampDown:22050, absThreshOn:-12, absThreshOff: -16, relRampUp:5, relRampDown:200, relThreshOn:-1, relThreshOff:-12, minSliceLength:441)
+//beware of double trig. a solution: minSliceLength
+FluidBufAmpSlice.process(s,b,indices:c, absRampUp:2205, absRampDown:2205, absThreshOn:-60, absThreshOff: -60, relRampUp:5, relRampDown:220, relThreshOn:2, relThreshOff:1, minSliceLength:4410)
 c.query
 c.getn(0,c.numFrames*2,{|item|item.postln;})
 
@@ -196,7 +195,7 @@ c = Buffer.new(s);
 // with basic params
 Routine{
     t = Main.elapsedTime;
-    FluidBufAmpSlice.process(s,b, indices: c, absRampUp:1, absRampDown:1, absThreshOn:-90, absThreshOff:-95);
+    FluidBufAmpSlice.process(s,b, indices: c, absRampUp:1, absRampDown:1, absThreshOn:-60, absThreshOff:-60);
     (Main.elapsedTime - t).postln;
 }.play
 )
