@@ -97,7 +97,7 @@ code::
         [source, env]
     }.plot(0.1);
 )
-//basic tests: absThresh histeresis
+//basic tests: absThresh hysteresis
 (
     {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -16);
@@ -118,14 +118,14 @@ code::
         [source, env]
     }.plot(0.1);
 )
-//mid tests: absThresh time histeresis on
+//mid tests: absThresh time hysteresis on
 (
     {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12, minLengthAbove:441, outputType:0);
 				[DelayN.ar(source,0.1,441/44100), env]
     }.plot(0.1);
 )
-//mid tests: absThresh time histeresis off
+//mid tests: absThresh time hysteresis off
 (
     {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12, minLengthBelow:441);
@@ -153,7 +153,7 @@ code::
         [DelayN.ar(source,0.1,441/44100), env]
     }.plot(0.1);
 )
-//advanced tests: absThresh histeresis, long tail
+//advanced tests: absThresh hysteresis, long tail
 (
     {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:2000, absThreshOn:-12, absThreshOff: -16);

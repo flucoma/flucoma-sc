@@ -93,130 +93,92 @@ RETURNS::
 EXAMPLES::
 
 code::
-//basic tests: highPass sanity
+// define a test signal and a destination buffer
 (
-{var env, source = SinOsc.ar(320,0,0.5);
-	env = FluidAmpSlice.ar(source,highPassFreq:250, outputType:1);
-	[source, env]
-}.plot(0.03);
+	b = Buffer.sendCollection(s, Array.fill(44100,{|i| sin(i*pi/ (44100/640)) * (sin(i*pi/ 22050)).abs}));
+	c = Buffer.new(s);
 )
-//basic tests: absRampUp-Down sanity
-(
-	{var env, source = SinOsc.ar(320,0,0.5);
-		env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:1000, outputType:2);
-		[source.abs, env]
-	}.plot(0.03);
-)
-/////////////////////////////
+b.play
+b.plot
+
 //basic tests: absThresh sanity
-(
-    {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
-	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12);
-        [source, env]
-    }.plot(0.1);
-)
-//basic tests: absThresh histeresis
-(
-    {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
-	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -16);
-        [source, env]
-    }.plot(0.1);
-)
+FluidBufAmpSlice.process(s,b,indices:c, absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12)
+c.query
+c.getn(0,c.numFrames*2,{|item|item.postln;})
+
+//basic tests: absThresh hysteresis
+FluidBufAmpSlice.process(s,b,indices:c, absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -16)
+c.query
+c.getn(0,c.numFrames*2,{|item|item.postln;})
+
 //basic tests: absThresh min slice
-(
-    {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
-	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12, minSliceLength:441);
-        [source, env]
-    }.plot(0.1);
-)
+FluidBufAmpSlice.process(s,b,indices:c, absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12, minSliceLength:441)
+c.query
+c.getn(0,c.numFrames*2,{|item|item.postln;})
+
 //basic tests: absThresh min silence
-(
-    {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
-	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12, minSilenceLength:441);
-        [source, env]
-    }.plot(0.1);
-)
-//mid tests: absThresh time histeresis on
-(
-    {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
-	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12, minLengthAbove:441, outputType:0);
-				[DelayN.ar(source,0.1,441/44100), env]
-    }.plot(0.1);
-)
-//mid tests: absThresh time histeresis off
-(
-    {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
-	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12, minLengthBelow:441);
-        [DelayN.ar(source,0.1,441/44100), env]
-    }.plot(0.1);
-)
+FluidBufAmpSlice.process(s,b,indices:c, absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12, minSilenceLength:441)
+c.query
+c.getn(0,c.numFrames*2,{|item|item.postln;})
+
+
+//mid tests: absThresh time hysteresis on
+FluidBufAmpSlice.process(s,b,indices:c, absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12, minLengthAbove:441)
+c.query
+c.getn(0,c.numFrames*2,{|item|item.postln;})
+
+//mid tests: absThresh time hysteresis off
+FluidBufAmpSlice.process(s,b,indices:c, absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12, minLengthBelow:441)
+c.query
+c.getn(0,c.numFrames*2,{|item|item.postln;})
+
 //mid tests: absThresh with lookBack
-(
-    {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
-	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12,lookBack:441);
-        [DelayN.ar(source,0.1,441/44100), env]
-    }.plot(0.1);
-)
+FluidBufAmpSlice.process(s,b,indices:c, absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12, lookBack:441)
+c.query
+c.getn(0,c.numFrames*2,{|item|item.postln;})
+
 //mid tests: absThresh with lookAhead
-(
-    {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
-	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12,lookAhead:441);
-        [DelayN.ar(source,0.1,441/44100), env]
-    }.plot(0.1);
-)
+FluidBufAmpSlice.process(s,b,indices:c, absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12, lookAhead:441)
+c.query
+c.getn(0,c.numFrames*2,{|item|item.postln;})
+
 //mid tests: absThresh with asymetrical lookBack and lookAhead
-(
-    {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
-	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12,lookBack:221, lookAhead:441);
-        [DelayN.ar(source,0.1,441/44100), env]
-    }.plot(0.1);
-)
-//advanced tests: absThresh histeresis, long tail
-(
-    {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
-	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:2000, absThreshOn:-12, absThreshOff: -16);
-        [source, env]
-    }.plot(0.1);
-)
-//solution: have to recut with relThresh
-(
-    {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
-	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:2000, absThreshOn:-12, absThreshOff: -16, relRampUp:5, relRampDown:200, relThreshOn:-1, relThreshOff:-12);
-        [source, env]
-    }.plot(0.1);
-)
-//beware of double trig
-(
-    {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
-	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:2000, absThreshOn:-12, absThreshOff: -16, relRampUp:5, relRampDown:200, relThreshOn:-1, relThreshOff:-1);
-        [source, env]
-    }.plot(0.05);
-)
-//a solution: minSliceLength
-(
-    {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
-	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:2000, absThreshOn:-12, absThreshOff: -16, relRampUp:5, relRampDown:200, relThreshOn:-1, relThreshOff:-1, minSliceLength:441);
-        [source, env]
-    }.plot(0.05);
-)
+FluidBufAmpSlice.process(s,b,indices:c, absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12, lookBack:221, lookAhead:441)
+c.query
+c.getn(0,c.numFrames*2,{|item|item.postln;})
+
+//advanced tests: absThresh hysteresis, long tail //STRANGE OFFSET ADDRESS
+FluidBufAmpSlice.process(s,b,indices:c, absRampUp:10, absRampDown:22050, absThreshOn:-12, absThreshOff: -16, minSliceLength:441)
+c.query
+c.getn(0,c.numFrames*2,{|item|item.postln;})
+
+//solution: have to recut with relThresh //STRANGE OFFSET ADDRESS
+FluidBufAmpSlice.process(s,b,indices:c, absRampUp:10, absRampDown:22050, absThreshOn:-12, absThreshOff: -16, relRampUp:5, relRampDown:200, relThreshOn:-1, relThreshOff:-12)
+c.query
+c.getn(0,c.numFrames*2,{|item|item.postln;})
+
+//beware of double trig. a solution: minSliceLength //STRANGE OFFSET ADDRESS
+FluidBufAmpSlice.process(s,b,indices:c, absRampUp:10, absRampDown:22050, absThreshOn:-12, absThreshOff: -16, relRampUp:5, relRampDown:200, relThreshOn:-1, relThreshOff:-12, minSliceLength:441)
+c.query
+c.getn(0,c.numFrames*2,{|item|item.postln;})
+
+/////////////////////////
 //drum slicing, many ways
 //load a buffer
-b = Buffer.read(s,File.realpath(FluidAmpSlice.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
 (
-			{var env, source = PlayBuf.ar(1,b);
-	env = FluidAmpSlice.ar(source,absRampUp:2205, absRampDown:2205, absThreshOn:-70, absThreshOff: -80, relRampUp:10, relRampDown:441, relThreshOn:14, relThreshOff:12, minSliceLength:4410, outputType:0);
-        [source, env]
-			}.plot(2,maxval:[1,1],separately:true);
+b = Buffer.read(s,File.realpath(FluidBufAmpSlice.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
+c = Buffer.new(s);
 )
 
-(
-			{var env, source = PlayBuf.ar(1,b);
-				env = FluidAmpSlice.ar(source,highPassFreq:120, absRampUp:2205, absRampDown:2205, absThreshOn:-70, absThreshOff: -80, relRampUp:10, relRampDown:2205, relThreshOn:12, relThreshOff:8, minSliceLength:441);
-        [source, env]
-			}.play);
-)
+FluidBufAmpSlice.process(s,b,indices:c, absRampUp:2205, absRampDown:2205, absThreshOn:-70, absThreshOff: -80, relRampUp:10, relRampDown:441, relThreshOn:14, relThreshOff:12, minSliceLength:4410)
+c.query
+c.getn(0,c.numFrames*2,{|item|item.postln;})
+
+//AGAIN STRANGE OFFSET ADDRESSES
+
 ::
 
+	/// //TO TROUBLESHOOT
 STRONG::A stereo buffer example.::
 CODE::
 // make a stereo buffer
@@ -234,7 +196,7 @@ c = Buffer.new(s);
 // with basic params
 Routine{
     t = Main.elapsedTime;
-    FluidBufAmpSlice.process(s,b, indices: c);
+    FluidBufAmpSlice.process(s,b, indices: c, absRampUp:1, absRampDown:1, absThreshOn:-90, absThreshOff:-95);
     (Main.elapsedTime - t).postln;
 }.play
 )
