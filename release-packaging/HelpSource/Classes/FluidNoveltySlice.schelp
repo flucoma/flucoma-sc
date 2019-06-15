@@ -1,10 +1,10 @@
-TITLE:: FluidRTNoveltySlice
-SUMMARY:: Spectral Difference-Based Real-Time Audio Slicer
+TITLE:: FluidNoveltySlice
+SUMMARY:: Real-Time Novelty-Based Slicer
 CATEGORIES:: Libraries>FluidDecomposition
 RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
 
 DESCRIPTION::
-This class implements many spectral based onset detection functions, most of them taken from the literature. (http://www.dafx.ca/proceedings/papers/p_133.pdf) Some are already available in SuperCollider's LINK::Classes/Onsets:: object. It is part of the Fluid Decomposition Toolkit of the FluCoMa project.footnote::This was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+This class implements a real-time slicer using an algorithm assessing novelty in the signal to estimate the slicing points. A novelty curve is being derived from running a kernel across the diagonal of the similarity matrix, and looking for peak of changes. It implements the seminal results published in  'Automatic Audio Segmentation Using a Measure of Audio Novelty' by J Foote.  It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
 
 The process will return an audio steam with sample-long impulses at estimated starting points of the different slices.
 
@@ -20,10 +20,10 @@ ARGUMENT:: in
 ARGUMENT:: feature
 	The feature on which novelty is computed.
 		table::
-	##0 || Spectrum || todo
-	##1 || MFCC || todo
-	##2 || Pitch || todo
-	##3 || Loudness || todo
+	##0 || Spectrum || The magnitude of the full spectrum.
+	##1 || MFCC || 13 Mel-Frequency Cepstrum Coefficients.
+	##2 || Pitch || The pitch and its confidence.
+	##3 || Loudness || The TruePeak and Loudness.
 ::
 ARGUMENT:: kernelSize
 	The granularity of the window in which the algorithm looks for change, in samples. A small number will be sensitive to short term changes, and a large number should look for long term changes.
@@ -53,27 +53,28 @@ ARGUMENT:: maxFilterSize
 	This cannot be modulated.
 
 RETURNS::
-	An audio stream with impulses at detected transients. The latency between the input and the output is windowSize at maximum.
+	An audio stream with impulses at detected transients. The latency between the input and the output is (windowSize +
+		((((kernelSize - 1) / 2) + (filterSize - 1)) * hopSize) at maximum.
 
 EXAMPLES::
 
 code::
 //load some sounds
-b = Buffer.read(s,File.realpath(FluidRTNoveltySlice.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
+b = Buffer.read(s,File.realpath(FluidNoveltySlice.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
 
 // basic param (the process add a latency of windowSize samples
-{var sig = PlayBuf.ar(1,b,loop:1); [FluidRTNoveltySlice.ar(sig,0,3,0.2) * 0.5, DelayN.ar(sig, 1, 1024/ s.sampleRate)]}.play
+{var sig = PlayBuf.ar(1,b,loop:1); [FluidNoveltySlice.ar(sig,0,11,0.3) * 0.5, DelayN.ar(sig, 1, (1024 +((((11 - 1) / 2) + (1 - 1)) * 512)) / s.sampleRate)]}.play
 
 // other parameters
-{var sig = PlayBuf.ar(1,b,loop:1); [FluidRTNoveltySlice.ar(sig, 0, 31, 0.05, 4, 128, 64) * 0.5, DelayN.ar(sig, 1, (128)/ s.sampleRate)]}.play
+{var sig = PlayBuf.ar(1,b,loop:1); [FluidNoveltySlice.ar(sig, 1, 31, 0.004, 4, 128, 64) * 0.5, DelayN.ar(sig, 1, (128 +((((5 - 1) / 2) + (4 - 1)) * 64))/ s.sampleRate)]}.play
 
 // more musical trans-trigged autopan
 (
 {
     var sig, trig, syncd, pan;
     sig = PlayBuf.ar(1,b,loop:1);
-    trig = FluidRTNoveltySlice.ar(sig, 0, 0.2, 100, 8, 0, 128);
-    syncd = DelayN.ar(sig, 1, ( 128 / s.sampleRate));
+    trig = FluidNoveltySlice.ar(sig, 0, 11, 0.2, 4, 128);
+    syncd = DelayN.ar(sig, 1, ( (128 +((((11 - 1) / 2) + (4 - 1)) * 64)) / s.sampleRate));
     pan = TRand.ar(-1,1,trig);
     Pan2.ar(syncd,pan);
 }.play

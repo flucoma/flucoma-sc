@@ -36,6 +36,14 @@ ARGUMENT:: numChans
 ARGUMENT:: indices
 	The index of the buffer where the indices (in sample) of the estimated starting points of slices will be written. The first and last points are always the boundary points of the analysis.
 
+ARGUMENT:: feature
+	The feature on which novelty is computed.
+		table::
+	##0 || Spectrum || The magnitude of the full spectrum.
+	##1 || MFCC || 13 Mel-Frequency Cepstrum Coefficients.
+	##2 || Pitch || The pitch and its confidence.
+	##3 || Loudness || The TruePeak and Loudness.
+::
 ARGUMENT:: kernelSize
 	The granularity of the window in which the algorithm looks for change, in samples. A small number will be sensitive to short term changes, and a large number should look for long term changes.
 
@@ -74,7 +82,7 @@ c = Buffer.new(s);
 // with basic params
 Routine{
 	t = Main.elapsedTime;
-	FluidBufNoveltySlice.process(s,b, indices: c, threshold:0.6);
+	FluidBufNoveltySlice.process(s,b, indices: c, threshold:0.45);
 	(Main.elapsedTime - t).postln;
 }.play
 )
@@ -107,7 +115,7 @@ c = Buffer.new(s);
 )
 
 // process with a given filterSize
-FluidBufNoveltySlice.process(s,b, indices: c, kernelSize:31, threshold:0.3, filterSize:0)
+FluidBufNoveltySlice.process(s,b, indices: c, kernelSize:31, threshold:0.1, filterSize:1)
 
 //check the number of slices: it is the number of frames in the transBuf minus the boundary index.
 c.query;
@@ -124,13 +132,13 @@ c.query;
 }.play;
 )
 
-// change the filterSize in the code above to 4. Then to 8. Listen in between to the differences.
+// change the filterSize in the code above to 4. Then to 12. Listen in between to the differences.
 
 // What's happening? In the first instance (filterSize = 1), the novelty line is jittery and therefore overtriggers on the arpegiated guitar. We also can hear attacks at the end of the segment. Setting the threshold higher (like in the 'Basic Example' pane) misses some more subtle variations.
 
 // So in the second settings (filterSize = 4), we smooth the novelty line a little, which allows us to catch small differences that are not jittery. It also corrects the ending cutting by the same trick: the averaging of the sharp pick is sliding up, crossing the threshold slightly earlier.
 
-// If we smooth too much, like the third settings (filterSize = 8), we start to loose precision. Have fun with different values of theshold then will allow you to find the perfect segment for your signal.
+// If we smooth too much, like the third settings (filterSize = 12), we start to loose precision and miss attacks. Have fun with different values of theshold then will allow you to find the perfect segment for your signal.
 ::
 
 STRONG::A stereo buffer example.::
@@ -151,7 +159,7 @@ c = Buffer.new(s);
 // with basic params
 Routine{
     t = Main.elapsedTime;
-    FluidBufNoveltySlice.process(s,b, indices: c, threshold:0.6);
+    FluidBufNoveltySlice.process(s,b, indices: c, threshold:0.3);
     (Main.elapsedTime - t).postln;
 }.play
 )

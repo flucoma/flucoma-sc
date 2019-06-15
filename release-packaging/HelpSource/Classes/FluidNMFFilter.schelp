@@ -224,5 +224,5 @@ FluidBufNMF.process(s, d, bases:g, windowSize:2048, components:3);
 f.set(\bases, g.bufnum)
 
 //free
-f.free; e.free;
+f.free; e.free; b.free; c.free; d.free; g.free;
 ::

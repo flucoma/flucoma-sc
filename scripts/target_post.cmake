@@ -1,9 +1,11 @@
 
-# if(MSVC)
-#   target_compile_options(${PLUGIN} PRIVATE /W4 /WX)
-# else()
-#   target_compile_options(${PLUGIN} PRIVATE -Wall -Wextra -Wpedantic -Wreturn-type -Wconversion)
-# endif()
+target_compile_features(${PLUGIN} PUBLIC cxx_std_14)
+
+if(MSVC)
+  target_compile_options(${PLUGIN} PRIVATE /W4)
+else()
+  target_compile_options(${PLUGIN} PRIVATE -Wall -Wextra -Wpedantic -Wreturn-type -Wconversion)
+endif()
 
 set_target_properties(${PLUGIN} PROPERTIES
     CXX_STANDARD 14
@@ -30,23 +32,23 @@ target_include_directories(
 target_include_directories(
   ${PLUGIN}
   SYSTEM PRIVATE
-  ${SC_PATH}/include/plugin_interface
-  ${SC_PATH}/include/common
-  ${SC_PATH}/common
-  ${SC_PATH}/external_libraries/boost #we need boost::align for deallocating buffer memory :-(
+  "${SC_PATH}/include/plugin_interface"
+  "${SC_PATH}/include/common"
+  "${SC_PATH}/common"
+  "${SC_PATH}/external_libraries/boost" #we need boost::align for deallocating buffer memory :-(
 )
 
 get_property(HEADERS TARGET FLUID_DECOMPOSITION PROPERTY INTERFACE_SOURCES)
-source_group(TREE ${FLUID_PATH}/include FILES ${HEADERS})
+source_group(TREE "${FLUID_PATH}/include" FILES ${HEADERS})
 
 
 if (SUPERNOVA)
     target_include_directories(
       ${PLUGIN}
       SYSTEM PRIVATE
-      ${SC_PATH}/external_libraries/nova-tt
-      ${SC_PATH}/external_libraries/boost_lockfree
-      ${SC_PATH}/external_libraries/boost-lockfree
+      "${SC_PATH}/external_libraries/nova-tt"
+      "${SC_PATH}/external_libraries/boost_lockfree"
+      "${SC_PATH}/external_libraries/boost-lockfree"
     )
 endif()
 
@@ -74,6 +76,14 @@ if(MINGW)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mstackrealign")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mstackrealign")
 endif()
+
+if(MSVC)
+  target_compile_options(${PLUGIN} PRIVATE /arch:AVX -D_USE_MATH_DEFINES)
+else(MSVC)
+target_compile_options(
+   ${PLUGIN} PRIVATE $<$<NOT:$<CONFIG:DEBUG>>: -mavx -msse -msse2 -msse3 -msse4>
+)
+endif(MSVC)
 
 ####### added the fluid_decomposition
 

@@ -97,7 +97,7 @@ code::
         [source, env]
     }.plot(0.1);
 )
-//basic tests: absThresh histeresis
+//basic tests: absThresh hysteresis
 (
     {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -16);
@@ -118,14 +118,14 @@ code::
         [source, env]
     }.plot(0.1);
 )
-//mid tests: absThresh time histeresis on
+//mid tests: absThresh time hysteresis on
 (
     {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12, minLengthAbove:441, outputType:0);
 				[DelayN.ar(source,0.1,441/44100), env]
     }.plot(0.1);
 )
-//mid tests: absThresh time histeresis off
+//mid tests: absThresh time hysteresis off
 (
     {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12, minLengthBelow:441);
@@ -153,7 +153,7 @@ code::
         [DelayN.ar(source,0.1,441/44100), env]
     }.plot(0.1);
 )
-//advanced tests: absThresh histeresis, long tail
+//advanced tests: absThresh hysteresis, long tail
 (
     {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:2000, absThreshOn:-12, absThreshOff: -16);
@@ -172,22 +172,29 @@ code::
     {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:2000, absThreshOn:-12, absThreshOff: -16, relRampUp:5, relRampDown:200, relThreshOn:-1, relThreshOff:-1);
         [source, env]
-    }.plot(0.025);
+    }.plot(0.05);
 )
 //a solution: minSliceLength
 (
     {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:2000, absThreshOn:-12, absThreshOff: -16, relRampUp:5, relRampDown:200, relThreshOn:-1, relThreshOff:-1, minSliceLength:441);
         [source, env]
-    }.plot(0.025);
+    }.plot(0.05);
 )
 //drum slicing, many ways
 //load a buffer
 b = Buffer.read(s,File.realpath(FluidAmpSlice.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
 (
 			{var env, source = PlayBuf.ar(1,b);
-	env = FluidAmpSlice.ar(source,absRampUp:2205, absRampDown:2205, absThreshOn:-70, absThreshOff: -80, relRampUp:5, relRampDown:441, relThreshOn:5, relThreshOff:4, minSliceLength:441, outputType:0);
+	env = FluidAmpSlice.ar(source,absRampUp:2205, absRampDown:2205, absThreshOn:-70, absThreshOff: -80, relRampUp:10, relRampDown:441, relThreshOn:14, relThreshOff:12, minSliceLength:4410, outputType:0);
         [source, env]
-			}.plot(1,maxval:[1,10],separately:true);
+			}.plot(2,maxval:[1,1],separately:true);
+)
+
+(
+			{var env, source = PlayBuf.ar(1,b);
+				env = FluidAmpSlice.ar(source,highPassFreq:120, absRampUp:2205, absRampDown:2205, absThreshOn:-70, absThreshOff: -80, relRampUp:10, relRampDown:2205, relThreshOn:12, relThreshOff:8, minSliceLength:441);
+        [source, env]
+			}.play);
 )
 ::

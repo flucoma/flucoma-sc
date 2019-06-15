@@ -117,8 +117,8 @@ public:
 
     for (int i = 0; i < static_cast<int>(mClient.controlChannelsOut()); ++i) { mOutputs.emplace_back(nullptr, 0, 0); }
   
-  
-    set_calc_function<RealTime, &RealTime::next>();
+    mCalcFunc = make_calc_function<RealTime, &RealTime::next>();
+//    set_calc_function<RealTime, &RealTime::next>();    
     Wrapper::getInterfaceTable()->fClearUnitOutputs(this, 1);
     
     
@@ -129,7 +129,7 @@ public:
   {
     mControlsIterator.reset(mInBuf + 1); //mClient.audioChannelsIn());
     Wrapper::setParams(mParams, mWorld->mVerbosity > 0, mWorld, mControlsIterator); // forward on inputs N + audio inputs as params
-    mParams.template constrainParameterValues(); 
+    mParams.constrainParameterValues(); 
     const Unit *unit = this;
     for (size_t i = 0; i < mClient.audioChannelsIn(); ++i)
     {
@@ -218,7 +218,7 @@ private:
     
   static Result validateParameters(NonRealTime *w)
   {
-    auto results = w->mParams.template constrainParameterValues();
+    auto results = w->mParams.constrainParameterValues();
     for (auto &r : results)
     {
       if (!r.ok()) return r;
@@ -232,7 +232,7 @@ private:
 
     if (!r.ok())
     {
-      std::cout << "ERROR: " << Wrapper::getName() << ": " << r.message().c_str();
+      std::cout << "ERROR: " << Wrapper::getName() << ": " << r.message().c_str() << '\n';
       return false;
     }
 
@@ -397,7 +397,7 @@ public:
     if(inputs.size() == C::getParameterDescriptors().count())
     {
         p.template setParameterValues<ControlSetter>(verbose, world, inputs);
-        if (constrain)p.template constrainParameterValues();
+        if (constrain)p.constrainParameterValues();
     }
     return p;
   }
