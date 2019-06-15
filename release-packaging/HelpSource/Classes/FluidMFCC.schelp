@@ -61,7 +61,6 @@ a.reference_(Array.fill(13,{0.5})); //make a center line to show 0
 
 //run the window updating routine.
 (
-
 ~winRange = 500;
 
 r = Routine {

@@ -104,39 +104,47 @@ CODE::
 (
 b = Buffer.read(s,File.realpath(FluidNMFMatch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-AcousticStrums-M.wav");
 c = Buffer.new(s);
-x = Buffer.new(s);
-e = Buffer.new(s);
+~bases = Buffer.new(s);
+~spectralshapes = Buffer.new(s);
+~stats = Buffer.new(s);
+~centroids = Buffer.new(s);
+~trainedBases = Buffer.new(s);
 )
 
 // train only 2 seconds
 (
 Routine {
-    FluidBufNMF.process(s,b,0,88200,0,1, c, x, components:10,fftSize:2048);
+    FluidBufNMF.process(s,b,0,88200,0,1, c, ~bases, components:10,fftSize:2048);
     c.query;
 }.play;
 )
 
 // wait for the query to print
-// then find the component that has the picking sound by changing which channel to listen to
+// find the component that has the picking sound checking the median spectral centroid
 (
-    ~element = 6;
-    {PlayBuf.ar(10,c)[~element]}.play;
+FluidBufSpectralShape.process(s, c, features: ~spectralshapes, action:{
+	|shapes|FluidBufStats.process(s,shapes,stats:~stats, action:{
+		|stats|stats.getn(0, (stats.numChannels * stats.numFrames) ,{
+			|x| ~centroids = x.select({
+				|item, index| (index.mod(7) == 0) && (index.div(70) == 5);
+			})
+		})
+	})
+});
 )
 
-// copy all the other components on itself and the picking basis as the sole component of the 1st channel
+// we then copy the basis with the highest median centroid to a channel, and all the other bases to the other channel, of a 2-channel bases for decomposition
 (
-Routine{
-	z = (0..9);
-	FluidBufCompose.process(s, x, startChan: z.removeAt(~element), numChans: 1, destination: e);
-	z.do({|chan| FluidBufCompose.process(s, x, startChan:chan, numChans: 1, destStartChan: 1, destination: e, destGain:1)});
-    e.query;
-}.play;
+z = (0..9);
+[z.removeAt(~centroids.maxIndex)].do{|chan|FluidBufCompose.process(s, ~bases, startChan: chan, numChans: 1, destination: ~trainedBases, destGain:1)};
+z.postln;
+z.do({|chan| FluidBufCompose.process(s, ~bases, startChan:chan, numChans: 1, destStartChan: 1, destination: ~trainedBases, destGain:1)});
 )
 
-e.plot;
+~trainedBases.plot;
 
 //using this trained basis we can see the envelop (activations) of each component
-{FluidNMFMatch.kr(PlayBuf.ar(1,b),e,2,fftSize:2048)}.plot(1);
+{FluidNMFMatch.kr(PlayBuf.ar(1,b),~trainedBases,2,fftSize:2048)}.plot(1);
 // the left/top activations are before, the pick before the sustain.
 
 //we can then use the activation value to sidechain a compression patch that is sent in a delay
@@ -154,7 +162,7 @@ e.plot;
 
 	// compress the signal to send to the delays
 	todelay = DelayN.ar(source,0.1, 800/44100, //delaying it to compensate for FluidNMFMatch's latency
-		LagUD.ar(K2A.ar(FluidNMFMatch.kr(source,e,2,fftSize:2048)[0]), //reading the channel of the activations on the pick basis
+		LagUD.ar(K2A.ar(FluidNMFMatch.kr(source,~trainedBases,2,fftSize:2048)[0]), //reading the channel of the activations on the pick basis
 			80/44100, // lag uptime (compressor's attack)
 			1000/44100, // lag downtime (compressor's decay)
 			(1/(2.dbamp) // compressor's threshold inverted
@@ -195,7 +203,7 @@ Routine {
 // wait for the query to print
 // then find a component for each item you want to find. You could also sum them. Try to find a component with a good object-to-rest ratio
 (
-    ~dog =2;
+    ~dog =4;
     {PlayBuf.ar(10,c)[~dog]}.play
 )
 

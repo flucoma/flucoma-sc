@@ -66,135 +66,118 @@ ARGUMENT:: highPassFreq
 ARGUMENT:: maxSize
 	How large can the buffer be for time-critical conditions, by allocating memory at instantiation time. This cannot be modulated.
 
-ARGUMENT:: outputType
-(describe argument here)
-
 RETURNS::
 	An audio stream with square envelopes around the slices. The latency between the input and the output is STRONG::max(minLengthAbove + lookBack, max(minLengthBelow,lookAhead))::.
 
 EXAMPLES::
 
 code::
-//basic tests: highPass sanity
-(
-{var env, source = SinOsc.ar(320,0,0.5);
-	env = FluidAmpSlice.ar(source,highPassFreq:250, outputType:1);
-	[source, env]
-}.plot(0.03);
-)
-//basic tests: absRampUp-Down sanity
-(
-	{var env, source = SinOsc.ar(320,0,0.5);
-		env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:1000, outputType:2);
-		[source.abs, env]
-	}.plot(0.03);
-)
-/////////////////////////////
 //basic tests: absThresh sanity
 (
-    {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
+{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12);
-        [source, env]
-    }.plot(0.1);
+	[source, env]
+}.plot(0.1);
 )
 //basic tests: absThresh hysteresis
 (
-    {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
+{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -16);
-        [source, env]
-    }.plot(0.1);
+	[source, env]
+}.plot(0.1);
 )
 //basic tests: absThresh min slice
 (
-    {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
+{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12, minSliceLength:441);
-        [source, env]
-    }.plot(0.1);
+	[source, env]
+}.plot(0.1);
 )
 //basic tests: absThresh min silence
 (
-    {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
+{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12, minSilenceLength:441);
-        [source, env]
-    }.plot(0.1);
+	[source, env]
+}.plot(0.1);
 )
 //mid tests: absThresh time hysteresis on
 (
-    {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
-	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12, minLengthAbove:441, outputType:0);
-				[DelayN.ar(source,0.1,441/44100), env]
-    }.plot(0.1);
+{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
+	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12, minLengthAbove:441);
+	[DelayN.ar(source,0.1,441/44100), env]
+}.plot(0.1);
 )
 //mid tests: absThresh time hysteresis off
 (
-    {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
+{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12, minLengthBelow:441);
-        [DelayN.ar(source,0.1,441/44100), env]
-    }.plot(0.1);
+	[DelayN.ar(source,0.1,441/44100), env]
+}.plot(0.1);
 )
 //mid tests: absThresh with lookBack
 (
-    {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
+{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12,lookBack:441);
-        [DelayN.ar(source,0.1,441/44100), env]
-    }.plot(0.1);
+	[DelayN.ar(source,0.1,441/44100), env]
+}.plot(0.1);
 )
 //mid tests: absThresh with lookAhead
 (
-    {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
+{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12,lookAhead:441);
-        [DelayN.ar(source,0.1,441/44100), env]
-    }.plot(0.1);
+	[DelayN.ar(source,0.1,441/44100), env]
+}.plot(0.1);
 )
 //mid tests: absThresh with asymetrical lookBack and lookAhead
 (
-    {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
+{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12,lookBack:221, lookAhead:441);
-        [DelayN.ar(source,0.1,441/44100), env]
-    }.plot(0.1);
+	[DelayN.ar(source,0.1,441/44100), env]
+}.plot(0.1);
 )
 //advanced tests: absThresh hysteresis, long tail
 (
-    {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
+{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:2000, absThreshOn:-12, absThreshOff: -16);
-        [source, env]
-    }.plot(0.1);
+	[source, env]
+}.plot(0.1);
 )
 //solution: have to recut with relThresh
 (
-    {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
+{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:2000, absThreshOn:-12, absThreshOff: -16, relRampUp:5, relRampDown:200, relThreshOn:-1, relThreshOff:-12);
-        [source, env]
-    }.plot(0.1);
+	[source, env]
+}.plot(0.1);
 )
 //beware of double trig
 (
-    {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
+{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:2000, absThreshOn:-12, absThreshOff: -16, relRampUp:5, relRampDown:200, relThreshOn:-1, relThreshOff:-1);
-        [source, env]
-    }.plot(0.05);
+	[source, env]
+}.plot(0.05);
 )
 //a solution: minSliceLength
 (
-    {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
+{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpSlice.ar(source,absRampUp:10, absRampDown:2000, absThreshOn:-12, absThreshOff: -16, relRampUp:5, relRampDown:200, relThreshOn:-1, relThreshOff:-1, minSliceLength:441);
-        [source, env]
-    }.plot(0.05);
+	[source, env]
+}.plot(0.05);
 )
 //drum slicing, many ways
 //load a buffer
 b = Buffer.read(s,File.realpath(FluidAmpSlice.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
+//have fun with a gate (explore lookahead and lookback, but correct for latency)
 (
-			{var env, source = PlayBuf.ar(1,b);
-	env = FluidAmpSlice.ar(source,absRampUp:2205, absRampDown:2205, absThreshOn:-70, absThreshOff: -80, relRampUp:10, relRampDown:441, relThreshOn:14, relThreshOff:12, minSliceLength:4410, outputType:0);
-        [source, env]
-			}.plot(2,maxval:[1,1],separately:true);
+{var env, source = PlayBuf.ar(1,b);
+	env = FluidAmpSlice.ar(source,absRampUp:44, absRampDown:2205, absThreshOn:-20, absThreshOff: -23, minSilenceLength:1100, lookBack:441);
+	[DelayN.ar(source,delaytime:441/44100), env]
+}.plot(2,separately:true);
 )
 
 (
-			{var env, source = PlayBuf.ar(1,b);
-				env = FluidAmpSlice.ar(source,highPassFreq:120, absRampUp:2205, absRampDown:2205, absThreshOn:-70, absThreshOff: -80, relRampUp:10, relRampDown:2205, relThreshOn:12, relThreshOff:8, minSliceLength:441);
-        [source, env]
-			}.play);
+{var env, source = PlayBuf.ar(1,b);
+	env = FluidAmpSlice.ar(source,highPassFreq:120, absRampUp:4410, absRampDown:4410, absThreshOn:-60, absThreshOff: -60, relRampUp:10, relRampDown:2205, relThreshOn:13, relThreshOff:10, minSilenceLength:4410, highPassFreq:20);
+	[source,  Trig.ar(env,0)]
+}.play;
 )
 ::

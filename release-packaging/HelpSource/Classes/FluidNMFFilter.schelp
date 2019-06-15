@@ -104,36 +104,44 @@ CODE::
 (
 b = Buffer.read(s,File.realpath(FluidNMFMatch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-AcousticStrums-M.wav");
 c = Buffer.new(s);
-x = Buffer.new(s);
-e = Buffer.new(s);
+~bases = Buffer.new(s);
+~spectralshapes = Buffer.new(s);
+~stats = Buffer.new(s);
+~centroids = Buffer.new(s);
+~trainedBases = Buffer.new(s);
 )
 
 // train only 2 seconds
 (
 Routine {
-    FluidBufNMF.process(s,b,0,88200,0,1, c, x, components:10,fftSize:2048);
+    FluidBufNMF.process(s,b,0,88200,0,1, c, ~bases, components:10,fftSize:2048);
     c.query;
 }.play;
 )
 
 // wait for the query to print
-// then find the component that has more sustain pitch than pick (TODO: use descriptors with stats)
+// find the component that has the picking sound checking the median spectral centroid
 (
-    ~element = 4;
-    {PlayBuf.ar(10,c)[~element]}.play;
+FluidBufSpectralShape.process(s, c, features: ~spectralshapes, action:{
+	|shapes|FluidBufStats.process(s,shapes,stats:~stats, action:{
+		|stats|stats.getn(0, (stats.numChannels * stats.numFrames) ,{
+			|x| ~centroids = x.select({
+				|item, index| (index.mod(7) == 0) && (index.div(70) == 5);
+			})
+		})
+	})
+});
 )
 
-// copy all the other components on itself and the picking basis as the sole component of the 1st channel
+// we then copy the basis with the lowest median centroid to a channel, and all the other bases to the other channel, of a 2-channel bases for decomposition
 (
-Routine{
-	z = (0..9);
-	FluidBufCompose.process(s, x, startChan: z.removeAt(~element), numChans: 1, destination: e);
-	z.do({|chan| FluidBufCompose.process(s, x, startChan:chan, numChans: 1, destStartChan: 1, destination: e, destGain:1)});
-    e.query;
-}.play;
+z = (0..9);
+[z.removeAt(~centroids.minIndex)].do{|chan|FluidBufCompose.process(s, ~bases, startChan: chan, numChans: 1, destination: ~trainedBases, destGain:1)};
+z.postln;
+z.do({|chan| FluidBufCompose.process(s, ~bases, startChan:chan, numChans: 1, destStartChan: 1, destination: ~trainedBases, destGain:1)});
 )
 
-e.plot;
+~trainedBases.plot;
 
 //we can then use the resynthesised signal to sent in a delay
 (
@@ -149,7 +157,7 @@ e.plot;
 	mod4 = SinOsc.ar(((613 * 191) / (463 * 601)), 0, 0.001);
 
 	// compress the signal to send to the delays
-	todelay = FluidNMFFilter.ar(source,e,2,fftSize:2048)[0]; //reading the channel of the activations on the pick basis
+	todelay = FluidNMFFilter.ar(source,~trainedBases,2,fftSize:2048)[0]; //reading the channel of the activations on the pick basis
 
 	// delay network
 	feedback = LocalIn.ar(3);// take the feedback in for the delays
