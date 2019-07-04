@@ -235,49 +235,77 @@ CODE::
 //set some buffers
 (
 b = Buffer.read(s,File.realpath(FluidBufNMF.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-AcousticStrums-M.wav");
-c = Buffer.new(s);
-x = Buffer.new(s);
-e = Buffer.new(s);
-y = Buffer.new(s);
+
+~originalNMF = Buffer.new(s);
+~bases = Buffer.new(s);
+~trainedBases = Buffer.new(s);
+~activations = Buffer.new(s);
+~final = Buffer.new(s);
+~spectralshapes  = Buffer.new(s);
+~stats  = Buffer.new(s);
+~sortedNMF = Buffer.new(s);
 )
 
-// train only 2 seconds
+b.play
+
+// train using the first 2 seconds of the sound file
 (
 Routine {
-	FluidBufNMF.process(s,b,0,88200,0,1, c, x, components:10);
-	c.query;
+	FluidBufNMF.process(s,b,0,44100*5,0,1, ~originalNMF, ~bases, components:10);
+	~originalNMF.query;
 }.play;
 )
 
-// find the component that has the picking sound by changing which channel to listen to
+// listen to the 10 components across the stereo image
+{Splay.ar(PlayBuf.ar(10, ~originalNMF))}.play
+
+// plot the bases
+~bases.plot
+
+// find the component that has the picking sound checking the median spectral centroid
 (
-	~element = 4;
-	{PlayBuf.ar(10,c)[~element]}.play
+FluidBufSpectralShape.process(s, ~originalNMF, features: ~spectralshapes, action:{
+	|shapes|FluidBufStats.process(s,shapes,stats:~stats, action:{
+		|stats|stats.getn(0, (stats.numChannels * stats.numFrames) ,{
+			|x| ~centroids = x.select({
+				|item, index| (index.mod(7) == 0) && (index.div(70) == 5);
+			})
+		})
+	})
+});
 )
 
-// copy all the other components on itself and the picking basis as the sole component of the 1st channel
+//what is happening there? We run the spectralshapes on the buffer of 10 components from the nmf. See the structure of that buffer:
+~originalNMF.query
+//10 channel are therefore giving 70 channels: the 7 shapes of component0, then 7 shapes of compoenent1, etc
+~spectralshapes.query
+// we then run the bufstats on them. Each channel, which had a time series (an envelop) of each descriptor, is reduced to 7 frames
+~stats.query
+// we then need to retrieve the values that are where we want: the first of every 7 for the centroid, and the 6th frame of them as we want the median. Because we retrieve the values in an interleave format, the select function gets a bit tricky but we get the following values:
+~centroids.postln
+
+// we then copy the basis with the highest median centroid to a channel, and all the other bases to the other channel, of a 2-channel bases for decomposition
 (
-Routine{
-	z = (0..9);
-	FluidBufCompose.process(s, x, startChan: z.removeAt(~element), numChans: 1, destination: e);
-	z.do({|chan| FluidBufCompose.process(s, x, startChan:chan, numChans: 1, destStartChan: 1, destination: e, destGain:1)});
-    e.query;
-}.play;
+z = (0..9);
+[z.removeAt(~centroids.maxIndex)].do{|chan|FluidBufCompose.process(s, ~bases, startChan: chan, numChans: 1, destination: ~trainedBases, destGain:1)};
+z.postln;
+z.do({|chan| FluidBufCompose.process(s, ~bases, startChan:chan, numChans: 1, destStartChan: 1, destination: ~trainedBases, destGain:1)});
 )
+~trainedBases.plot
 
 //process the whole file, splitting it with the 2 trained bases
 (
 Routine{
-	FluidBufNMF.process(s, b, destination: c, bases: e, basesMode: 2, activations: y, components:2);
-	c.query;
+	FluidBufNMF.process(s, b, destination: ~sortedNMF, bases: ~trainedBases, basesMode: 2, components:2);
+	~originalNMF.query;
 }.play;
 )
 
-// play the result: pick on the left, rest on the right.
-c.play
+// play the result: pick on the left, sustain on the right!
+{PlayBuf.ar(2,~sortedNMF)}.play
 
 // it even null-sums
-{(PlayBuf.ar(2,c,doneAction:2).sum)-(PlayBuf.ar(1,b,doneAction:2))}.play
+{(PlayBuf.ar(2,~sortedNMF,doneAction:2).sum)-(PlayBuf.ar(1,b,doneAction:2))}.play
 ::
 
 STRONG::Updating Bases: The process can update bases provided as seed.::

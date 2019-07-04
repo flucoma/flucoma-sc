@@ -81,9 +81,6 @@ ARGUMENT:: relThreshOff
 ARGUMENT:: highPassFreq
 	The frequency of the fourth-order Linkwitz–Riley high-pass filter (https://en.wikipedia.org/wiki/Linkwitz%E2%80%93Riley_filter). This is done first on the signal to minimise low frequency intermodulation with very fast ramp lengths.
 
-ARGUMENT:: outputType
-(describe argument here)
-
 ARGUMENT:: action
 	A Function to be evaluated once the offline process has finished and indices instance variables have been updated on the client side. The metric will be passed indices as an argument.
 
@@ -95,8 +92,8 @@ EXAMPLES::
 code::
 // define a test signal and a destination buffer
 (
-	b = Buffer.sendCollection(s, Array.fill(44100,{|i| sin(i*pi/ (44100/640)) * (sin(i*pi/ 22050)).abs}));
-	c = Buffer.new(s);
+b = Buffer.sendCollection(s, Array.fill(44100,{|i| sin(i*pi/ (44100/640)) * (sin(i*pi/ 22050)).abs}));
+c = Buffer.new(s);
 )
 b.play
 b.plot
@@ -160,24 +157,36 @@ c.getn(0,c.numFrames*2,{|item|item.postln;})
 FluidBufAmpSlice.process(s,b,indices:c, absRampUp:2205, absRampDown:2205, absThreshOn:-60, absThreshOff: -60, relRampUp:5, relRampDown:220, relThreshOn:2, relThreshOff:1, minSliceLength:4410)
 c.query
 c.getn(0,c.numFrames*2,{|item|item.postln;})
+::
 
-/////////////////////////
-//drum slicing, many ways
+STRONG::A musical example.::
+CODE::
 //load a buffer
 (
 b = Buffer.read(s,File.realpath(FluidBufAmpSlice.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
 c = Buffer.new(s);
 )
 
+// slice the samples
 FluidBufAmpSlice.process(s,b,indices:c, absRampUp:2205, absRampDown:2205, absThreshOn:-70, absThreshOff: -80, relRampUp:10, relRampDown:441, relThreshOn:14, relThreshOff:12, minSliceLength:4410)
 c.query
 c.getn(0,c.numFrames*2,{|item|item.postln;})
 
-//AGAIN STRANGE OFFSET ADDRESSES
-
+//loops over a splice with the MouseX
+(
+{
+	BufRd.ar(1, b,
+		Phasor.ar(0,1,
+			BufRd.kr(1, c,
+				MouseX.kr(0, BufFrames.kr(c) - 1), 0, 1),
+			BufRd.kr(1, c,
+				MouseX.kr(1, BufFrames.kr(c)), 0, 1),
+			BufRd.kr(1,c,
+				MouseX.kr(0, BufFrames.kr(c) - 1), 0, 1)), 0, 1);
+		}.play;
+)
 ::
 
-	/// //TO TROUBLESHOOT
 STRONG::A stereo buffer example.::
 CODE::
 // make a stereo buffer
@@ -194,9 +203,9 @@ c = Buffer.new(s);
 (
 // with basic params
 Routine{
-    t = Main.elapsedTime;
-    FluidBufAmpSlice.process(s,b, indices: c, absRampUp:1, absRampDown:1, absThreshOn:-60, absThreshOff:-60);
-    (Main.elapsedTime - t).postln;
+	t = Main.elapsedTime;
+	FluidBufAmpSlice.process(s,b, indices: c, absRampUp:1, absRampDown:1, absThreshOn:-60, absThreshOff:-60);
+	(Main.elapsedTime - t).postln;
 }.play
 )
 
