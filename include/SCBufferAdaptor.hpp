@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SC_PlugIn.h>
+#include <SC_Errors.h>
 #include <boost/align/aligned_alloc.hpp>
 #include <cctype>
 #include <data/FluidTensor.hpp>
@@ -93,8 +94,8 @@ public:
   }
 
   // No locks in (vanilla) SC, so no-ops for these
-  bool acquire() override { return true; }
-  void release() override {}
+  bool acquire() const override { return true; }
+  void release() const override {}
 
   // Validity is based on whether this buffer is within the range the server
   // knows about
@@ -117,7 +118,6 @@ public:
     return v.col(channel);
   }
 
-  // Return a 2D chunk
   FluidTensorView<float, 1> samps(size_t offset, size_t nframes,
                                   size_t chanoffset) override
   {
@@ -127,6 +127,26 @@ public:
 
     return v(fluid::Slice(offset, nframes), fluid::Slice(chanoffset, 1)).col(0);
   }
+
+  const FluidTensorView<float, 1> samps(size_t channel) const override
+  {
+    FluidTensorView<float, 2> v{mBuffer->data, 0,
+                                static_cast<size_t>(mBuffer->frames),
+                                static_cast<size_t>(mBuffer->channels)};
+
+    return v.col(channel);
+  }
+
+  const FluidTensorView<float, 1> samps(size_t offset, size_t nframes,
+                                  size_t chanoffset) const override
+  {
+    FluidTensorView<float, 2> v{mBuffer->data, 0,
+                                static_cast<size_t>(mBuffer->frames),
+                                static_cast<size_t>(mBuffer->channels)};
+
+    return v(fluid::Slice(offset, nframes), fluid::Slice(chanoffset, 1)).col(0);
+  }
+
 
   size_t numFrames() const override
   {
@@ -140,14 +160,25 @@ public:
 
   double sampleRate() const override { return valid() ? mBuffer->samplerate : 0; }
 
-  void resize(size_t frames, size_t channels, double sampleRate) override
+  std::string asString() const override { return std::to_string(bufnum());  }
+
+  const Result resize(size_t frames, size_t channels, double sampleRate) override
   {
     SndBuf *thisThing = mBuffer;
     mOldData          = thisThing->data;
-    mWorld->ft->fBufAlloc(mBuffer, static_cast<int>(channels), static_cast<int>(frames), sampleRate);
+    int allocResult = mWorld->ft->fBufAlloc(mBuffer, static_cast<int>(channels), static_cast<int>(frames), sampleRate);
+    
+    Result r;
+    
+    if(allocResult != kSCErr_None)
+    {
+      r.set(Result::Status::kError);
+      r.addMessage("Resize on buffer ", bufnum(), " failed.");
+    }
+    return r; 
   }
 
-  intptr_t bufnum() { return mBufnum; }
+  intptr_t bufnum() const { return mBufnum; }
   void realTime(bool rt) { mRealTime = rt;  }
 
 protected:
