@@ -162,7 +162,11 @@ class NonRealTime: public SCUnit
   using ParamSetType = typename Client::ParamSetType;
 public:
 
-  static void setup(InterfaceTable *ft, const char *name) { registerUnit<Wrapper>(ft, name); }
+  static void setup(InterfaceTable *ft, const char *name)
+  {
+    registerUnit<Wrapper>(ft, name);
+    ft->fDefineUnitCmd(name, "cancel", doCancel);
+  }
   
   /// Final input is the doneAction, not a param, so we skip it in the controlsIterator
   NonRealTime() :
@@ -188,7 +192,6 @@ public:
     if(!mClient.done())
     {
       out0(0) = static_cast<float>(mClient.progress());
-//      if(in0(0) > 0) mClient.cancel();
     }
     else {
       mDone = true;
@@ -206,6 +209,7 @@ public:
     auto w = static_cast<Wrapper*>(f->mData);
     
     Result result = validateParameters(w);
+    
     if (!result.ok())
     {
         std::cout << "ERROR: " << Wrapper::getName() << ": " << result.message().c_str() << std::endl;
@@ -222,6 +226,12 @@ public:
     auto w = static_cast<Wrapper*>(data);
     Result r;
     w->mClient.checkProgress(r);
+    if(r.status() == Result::Status::kCancelled)
+    {
+      std::cout <<  Wrapper::getName() << ": Processing cancelled \n";
+      return false;
+    }
+    
     if(!r.ok())
     {
       std::cout << "ERROR: " << Wrapper::getName() << ": " << r.message().c_str() << '\n';
@@ -242,6 +252,12 @@ public:
     int doneAction = static_cast<int>(w->in0(static_cast<int>(w->mNumInputs - 1)));
     world->ft->fDoneAction(doneAction,w);
   }
+  
+  static void doCancel(Unit *unit, sc_msg_iter*)
+  {
+    static_cast<Wrapper *>(unit)->mClient.cancel();
+  }
+  
 
 private:
     

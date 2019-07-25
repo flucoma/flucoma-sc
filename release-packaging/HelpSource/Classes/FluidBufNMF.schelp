@@ -389,3 +389,28 @@ e.plot;
 // look at the activations (sharper 3rd component at transitions)
 g.plot;
 ::
+STRONG:: Placeholder: Run process as .kr ugen and use Poll to get progress updates, cancel with server message::
+CODE::
+//load some buffers
+(
+b = Buffer.read(s,File.realpath(FluidBufNMF.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
+c = Buffer.new(s);
+x = Buffer.new(s);
+y = Buffer.new(s);
+~fft_size = 1024;
+~frame_size = 512;
+~hop_size = 256;
+~which_component = 3;
+)
+//Run this to see progress in the scope
+(
+~synthID;
+a = {
+    var nmf = FluidBufNMF.kr(b, 0,-1,0,-1,c,x,0,y,0,5,100,~frame_size,~hop_size,~fft_size, doneAction: Done.freeSelf);
+    ~synthID = nmf.synthIndex;
+    Poll.kr(Impulse.kr(3),nmf)
+}.scope
+)
+//Run this to cancel processing
+Server.default.sendMsg("/u_cmd", a.nodeID, ~synthID, "cancel")
+ ::
