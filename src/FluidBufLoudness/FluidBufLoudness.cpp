@@ -9,5 +9,5 @@ static InterfaceTable *ft;
 PluginLoad(OfflineFluidDecompositionUGens) {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<NRTLoudnessClient>("BufLoudness", ft);
+  makeSCWrapper<NRTThreadedLoudnessClient>("FluidBufLoudness", ft);
 }

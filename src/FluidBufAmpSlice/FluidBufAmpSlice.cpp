@@ -11,5 +11,5 @@ PluginLoad(OfflineFluidDecompositionUGens)
 {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<NRTAmpSlice>("BufAmpSlice", ft);
+  makeSCWrapper<NRTThreadedAmpSlice>("FluidBufAmpSlice", ft);
 }

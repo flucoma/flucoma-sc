@@ -11,6 +11,5 @@ PluginLoad(OfflineFluidDecompositionUGens)
 {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<NRTSines>("BufSines", ft);
-  
+  makeSCWrapper<NRTThreadedSines>("FluidBufSines", ft);
 }

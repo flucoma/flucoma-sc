@@ -11,5 +11,5 @@ PluginLoad(OfflineFluidDecompositionUGens)
 {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<NRTHPSS>("BufHPSS", ft);
+  makeSCWrapper<NRTThreadedHPSS>("FluidBufHPSS", ft);
 }

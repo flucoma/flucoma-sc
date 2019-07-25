@@ -10,5 +10,5 @@ PluginLoad(OfflineFluidDecompositionUGens)
 {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<BufferStats>("BufStats", ft);
+  makeSCWrapper<NRTThreadedBufferStats>("FluidBufStats", ft);
 }

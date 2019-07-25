@@ -35,8 +35,12 @@ FluidBufNMF : UGen {
         destination = destination ? -1;
         bases = bases ? -1;
         activations = activations ? -1;
-        // this.server = server;
 
+		server = server ? Server.default;
+        server.ifNotRunning({
+            "WARNING: Server not running".postln;
+            ^nil;
+        });
         synth = {instance = FluidBufNMF.kr(source, startFrame, numFrames, startChan, numChans, destination, bases, basesMode, activations, actMode, components,iterations, windowSize, hopSize, fftSize, doneAction: Done.freeSelf)}.play(server);
 
         forkIfNeeded{

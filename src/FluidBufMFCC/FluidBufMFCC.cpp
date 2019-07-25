@@ -9,5 +9,5 @@ static InterfaceTable *ft;
 PluginLoad(FluidSTFTUGen) {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<NRTMFCCClient>("BufMFCC", ft);
+  makeSCWrapper<NRTThreadedMFCCClient>("FluidBufMFCC", ft);
 }
