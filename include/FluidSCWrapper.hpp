@@ -170,6 +170,7 @@ public:
     , mParams{Wrapper::Client::getParameterDescriptors()}
     , mClient{Wrapper::setParams(mParams,mWorld->mVerbosity > 0, mWorld, mControlsIterator,true)}
   {}
+  
 
   /// No option of not using a worker thread for now
   /// init() sets up the NRT process via the SC NRT thread, and then sets our UGen calc function going
@@ -235,10 +236,11 @@ public:
   static bool tidyUp(World *world, void *data) { return static_cast<Wrapper *>(data)->tidyUp(world); }
   
   /// Now we're actually properly done, call the UGen's done action (possibly destroying this instance)
-  static void destroy(World *, void *data)
+  static void destroy(World *world, void *data)
   {
     auto w = static_cast<Wrapper*>(data);
-    w->mWorld->ft->fDoneAction(static_cast<int>(w->mInBuf[w->mNumInputs - 1][0]),w);
+    int doneAction = static_cast<int>(w->in0(static_cast<int>(w->mNumInputs - 1)));
+    world->ft->fDoneAction(doneAction,w);
   }
 
 private:
