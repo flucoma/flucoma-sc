@@ -8,5 +8,5 @@ PluginLoad(OfflineFluidDecompositionUGens)
 {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<NMFClient>("BufNMF", ft);
+  makeSCWrapper<NRTThreadedNMF>("FluidBufNMF", ft);
 }
