@@ -136,7 +136,7 @@ public:
       if (mOutputConnections[i]) mOutputs[i].reset(out(static_cast<int>(i)), 0, fullBufferSize());
     }
     for (size_t i = 0; i < mClient.controlChannelsOut(); ++i) { mOutputs[i].reset(out(static_cast<int>(i)), 0, 1); }
-    mClient.process(mAudioInputs, mOutputs);
+    mClient.process(mAudioInputs, mOutputs,mContext);
   }
 
 private:
@@ -145,6 +145,7 @@ private:
   std::vector<HostVector> mAudioInputs;
   std::vector<HostVector> mOutputs;
   FloatControlsIter       mControlsIterator;
+  FluidContext            mContext;
 
 protected:
   ParamSetType  mParams;
