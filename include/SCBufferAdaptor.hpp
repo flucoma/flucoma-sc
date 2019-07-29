@@ -128,19 +128,19 @@ public:
     return v(fluid::Slice(offset, nframes), fluid::Slice(chanoffset, 1)).col(0);
   }
 
-  const FluidTensorView<float, 1> samps(size_t channel) const override
+  FluidTensorView<const float, 1> samps(size_t channel) const override
   {
-    FluidTensorView<float, 2> v{mBuffer->data, 0,
+    FluidTensorView<const float, 2> v{mBuffer->data, 0,
                                 static_cast<size_t>(mBuffer->frames),
                                 static_cast<size_t>(mBuffer->channels)};
 
     return v.col(channel);
   }
 
-  const FluidTensorView<float, 1> samps(size_t offset, size_t nframes,
+  FluidTensorView<const float, 1> samps(size_t offset, size_t nframes,
                                   size_t chanoffset) const override
   {
-    FluidTensorView<float, 2> v{mBuffer->data, 0,
+    FluidTensorView<const float, 2> v{mBuffer->data, 0,
                                 static_cast<size_t>(mBuffer->frames),
                                 static_cast<size_t>(mBuffer->channels)};
 
