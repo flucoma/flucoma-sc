@@ -375,7 +375,13 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
       typename LongT::type bufnum = static_cast<LongT::type>(fromArgs(w, args, LongT::type(), -1));
       return BufferT::type(bufnum >= 0 ? new SCBufferAdaptor(bufnum, w) : nullptr);
     }
-
+    
+    auto fromArgs(World *w, ArgType args, InputBufferT::type, int)
+    {
+      typename LongT::type bufnum = static_cast<LongT::type>(fromArgs(w, args, LongT::type(), -1));
+      return InputBufferT::type(bufnum >= 0 ? new SCBufferAdaptor(bufnum, w) : nullptr);
+    }
+    
     typename T::type operator()(World *w, ArgType args)
     {
       ParamLiteralConvertor<T, argSize> a;
