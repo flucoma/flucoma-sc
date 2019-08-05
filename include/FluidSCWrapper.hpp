@@ -195,8 +195,10 @@ public:
       out0(0) = static_cast<float>(mClient.progress());
     }
     else {
-      mDone = true;
+//      if(mClient.state() == kDone)
+//        mDone = true;
       mCalcFunc = mWorld->ft->fClearUnitOutputs;
+//    if(!mDone)
       mWorld->ft->fDoAsynchronousCommand(mWorld, nullptr, Wrapper::getName(), this,
                                       postProcess, exchangeBuffers, tidyUp, destroy,
                                       0, nullptr);
@@ -214,7 +216,7 @@ public:
     if (!result.ok())
     {
         std::cout << "ERROR: " << Wrapper::getName() << ": " << result.message().c_str() << std::endl;
-        w->mDone = true;
+//        w->mDone = true;
         return;
     }
     
@@ -238,6 +240,9 @@ public:
       std::cout << "ERROR: " << Wrapper::getName() << ": " << r.message().c_str() << '\n';
       return false;
     }
+    
+//    w->mDone = true;
+    
     return true;
   }
 
@@ -250,8 +255,11 @@ public:
   static void destroy(World *world, void *data)
   {
     auto w = static_cast<Wrapper*>(data);
-    int doneAction = static_cast<int>(w->in0(static_cast<int>(w->mNumInputs - 1)));
-    world->ft->fDoneAction(doneAction,w);
+//    if(w->mDone)
+//    {
+      int doneAction = static_cast<int>(w->in0(static_cast<int>(w->mNumInputs - 1)));
+      world->ft->fDoneAction(doneAction,w);
+//    }
   }
   
   static void doCancel(Unit *unit, sc_msg_iter*)
