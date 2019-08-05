@@ -369,6 +369,8 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
 
     auto fromArgs(World *, FloatControlsIter& args, LongT::type, int) { return args.next(); }
     auto fromArgs(World *, FloatControlsIter& args, FloatT::type, int) { return args.next(); }
+    auto fromArgs(World *, sc_msg_iter* args, LongT::type, int defVal) { return args->geti(defVal); }
+    auto fromArgs(World *, sc_msg_iter* args, FloatT::type, int) { return args->getf(); }
 
     auto fromArgs(World *w, ArgType args, BufferT::type, int)
     {
@@ -393,6 +395,8 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
       return a.value();
     }
   };
+  template <size_t N, typename T>
+  using ArgumentSetter = Setter<sc_msg_iter*, N, T>;
 
   template <size_t N, typename T>
   using ControlSetter = Setter<FloatControlsIter&, N, T>;
