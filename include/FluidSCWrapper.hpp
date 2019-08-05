@@ -361,28 +361,35 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
 {
   using FloatControlsIter = impl::FloatControlsIter;
   
-  // Iterate over arguments via callbacks from params object
-  template <typename ArgType, size_t N, typename T>
-  struct Setter
+  template <typename ArgType>
+  struct ParamReader
   {
-    static constexpr size_t argSize = C::getParameterDescriptors().template get<N>().fixedSize;
+  
+    static auto fromArgs(World *, FloatControlsIter& args, LongT::type, int) { return args.next(); }
+    static auto fromArgs(World *, FloatControlsIter& args, FloatT::type, int) { return args.next(); }
+    static auto fromArgs(World *, sc_msg_iter* args, LongT::type, int defVal) { return args->geti(defVal); }
+    static auto fromArgs(World *, sc_msg_iter* args, FloatT::type, int) { return args->getf(); }
 
-    auto fromArgs(World *, FloatControlsIter& args, LongT::type, int) { return args.next(); }
-    auto fromArgs(World *, FloatControlsIter& args, FloatT::type, int) { return args.next(); }
-    auto fromArgs(World *, sc_msg_iter* args, LongT::type, int defVal) { return args->geti(defVal); }
-    auto fromArgs(World *, sc_msg_iter* args, FloatT::type, int) { return args->getf(); }
-
-    auto fromArgs(World *w, ArgType args, BufferT::type, int)
+    static auto fromArgs(World *w, ArgType args, BufferT::type, int)
     {
       typename LongT::type bufnum = static_cast<LongT::type>(fromArgs(w, args, LongT::type(), -1));
       return BufferT::type(bufnum >= 0 ? new SCBufferAdaptor(bufnum, w) : nullptr);
     }
     
-    auto fromArgs(World *w, ArgType args, InputBufferT::type, int)
+    static auto fromArgs(World *w, ArgType args, InputBufferT::type, int)
     {
       typename LongT::type bufnum = static_cast<LongT::type>(fromArgs(w, args, LongT::type(), -1));
       return InputBufferT::type(bufnum >= 0 ? new SCBufferAdaptor(bufnum, w) : nullptr);
     }
+  };
+  
+  
+  
+  // Iterate over arguments via callbacks from params object
+  template <typename ArgType, size_t N, typename T>
+  struct Setter
+  {
+    static constexpr size_t argSize = C::getParameterDescriptors().template get<N>().fixedSize;
     
     typename T::type operator()(World *w, ArgType args)
     {
@@ -390,16 +397,48 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
       using LiteralType = typename ParamLiteralConvertor<T, argSize>::LiteralType;
 
       for (size_t i = 0; i < argSize; i++)
-        a[i] = static_cast<LiteralType>(fromArgs(w, args, a[0], 0));
+        a[i] = static_cast<LiteralType>(ParamReader<ArgType>::fromArgs(w, args, a[0], 0));
 
       return a.value();
     }
   };
+  
   template <size_t N, typename T>
   using ArgumentSetter = Setter<sc_msg_iter*, N, T>;
 
   template <size_t N, typename T>
   using ControlSetter = Setter<FloatControlsIter&, N, T>;
+  
+  //Sets up a single /u_cmd
+  template<size_t N, typename T>
+  struct SetupMessage
+  {
+    void operator()(const T& message)
+    {
+//      class_addmethod(getClass(), (method)invokeMessage<N>, message.name,A_GIMME, 0);
+        auto ft = getInterfaceTable();
+        ft->fDefineUnitCmd(message.name, invokeMessage<N>);
+    }
+  };
+
+  template<size_t N>
+  static void invokeMessage(FluidSCWrapper* x,sc_msg_iter* args)
+  {
+    using IndexList = typename Client::MessageSetType::template MessageDescriptorAt<Client,N>::IndexList;
+    invokeMessageImpl<N>(x,s,ac,av,IndexList());
+  }
+
+  template<size_t N, size_t...Is>
+  static void invokeMessageImp(FluidSCWrapper* x,sc_msg_iter* inArgs,std::index_sequence<Is...>)
+  {
+    using ArgTuple = typename Client::MessageSetType::template MessageDescriptorAt<Client,N>::ArgumentTypes;
+    ArgTuple args;
+    (void)std::initializer_list<int>{(std::get<Is>(args) = (ParamReader<sc_msg_iter>::fromArgs(x->mWorld,inArgs,std::get<Is>(args)),0))...};
+    
+  }
+  
+  
+  
   
 public:
   using Client = C;
