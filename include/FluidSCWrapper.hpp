@@ -8,10 +8,14 @@
 
 #include <SC_PlugIn.hpp>
 
+#include <algorithm>
+#include <string>
 #include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
+
+#include <scsynthsend.h>
 
 namespace fluid {
 namespace client {
@@ -114,9 +118,9 @@ public:
       mOutputConnections.emplace_back(true);
       mOutputs.emplace_back(nullptr, 0, 0);
     }
-
+    
     for (int i = 0; i < static_cast<int>(mClient.controlChannelsOut()); ++i) { mOutputs.emplace_back(nullptr, 0, 0); }
-  
+    
     mCalcFunc = make_calc_function<RealTime, &RealTime::next>();
     Wrapper::getInterfaceTable()->fClearUnitOutputs(this, 1);
   }
@@ -161,6 +165,7 @@ template <typename Client, typename Wrapper>
 class NonRealTime: public SCUnit
 {
   using ParamSetType = typename Client::ParamSetType;
+  
 public:
 
   static void setup(InterfaceTable *ft, const char *name)
@@ -184,26 +189,35 @@ public:
     mClient.setSynchronous(false); 
     mFifoMsg.Set(mWorld, initNRTJob, nullptr, this);
     mWorld->ft->fSendMsgFromRT(mWorld,mFifoMsg);
+    
+    //we want to poll thread roughly every 20ms
+    checkThreadInterval = static_cast<size_t>(0.02 / controlDur());
     set_calc_function<NonRealTime, &NonRealTime::poll>();
   };
   
   /// The calc function. Checks to see if we've cancelled, spits out progress, launches tidy up when complete
   void poll(int)
   {
-    if(!mClient.done())
-    {
+//    if(!mClient.done())
+//    {
       out0(0) = static_cast<float>(mClient.progress());
-    }
-    else {
-//      if(mClient.state() == kDone)
-//        mDone = true;
-      mCalcFunc = mWorld->ft->fClearUnitOutputs;
-//    if(!mDone)
-      mWorld->ft->fDoAsynchronousCommand(mWorld, nullptr, Wrapper::getName(), this,
+//    }
+//    else {
+      if(0 == pollCounter++)
+      {
+            mWorld->ft->fDoAsynchronousCommand(mWorld, nullptr, Wrapper::getName(), this,
                                       postProcess, exchangeBuffers, tidyUp, destroy,
                                       0, nullptr);
-      
-    }
+      }
+    
+      pollCounter %= checkThreadInterval;
+    
+//      if(mClient.state() == kDone)
+//        mDone = true;
+//      mCalcFunc = mWorld->ft->fClearUnitOutputs;
+//    if(!mDone)
+
+//    }
   }
 
   /// To be called on NRT thread. Validate parameters and commence processing in new thread
@@ -228,22 +242,25 @@ public:
   {
     auto w = static_cast<Wrapper*>(data);
     Result r;
-    w->mClient.checkProgress(r);
-    if(r.status() == Result::Status::kCancelled)
+    ProcessState s = w->mClient.checkProgress(r);
+    
+    if(s==ProcessState::kDone || s==ProcessState::kDoneStillProcessing)
     {
-      std::cout <<  Wrapper::getName() << ": Processing cancelled \n";
-      return false;
+      if(r.status() == Result::Status::kCancelled)
+      {
+        std::cout <<  Wrapper::getName() << ": Processing cancelled \n";
+        return false;
+      }
+      
+      if(!r.ok())
+      {
+        std::cout << "ERROR: " << Wrapper::getName() << ": " << r.message().c_str() << '\n';
+        return false;
+      }
+      
+      return true;
     }
-    
-    if(!r.ok())
-    {
-      std::cout << "ERROR: " << Wrapper::getName() << ": " << r.message().c_str() << '\n';
-      return false;
-    }
-    
-//    w->mDone = true;
-    
-    return true;
+    return false;
   }
 
   /// swap NRT buffers back to RT-land
@@ -252,13 +269,13 @@ public:
   static bool tidyUp(World *world, void *data) { return static_cast<Wrapper *>(data)->tidyUp(world); }
   
   /// Now we're actually properly done, call the UGen's done action (possibly destroying this instance)
-  static void destroy(World *world, void *data)
+  static void destroy(World*, void*)
   {
-    auto w = static_cast<Wrapper*>(data);
+//    auto w = static_cast<Wrapper*>(data);
 //    if(w->mDone)
 //    {
-      int doneAction = static_cast<int>(w->in0(static_cast<int>(w->mNumInputs - 1)));
-      world->ft->fDoneAction(doneAction,w);
+//      int doneAction = static_cast<int>(w->in0(static_cast<int>(w->mNumInputs - 1)));
+//      world->ft->fDoneAction(doneAction,w);
 //    }
   }
   
@@ -315,6 +332,8 @@ private:
   char *      mCompletionMessage = nullptr;
   void *      mReplyAddr         = nullptr;
   const char *mName              = nullptr;
+  size_t checkThreadInterval;
+  size_t pollCounter{0};
 protected:
   ParamSetType  mParams;
   Client        mClient;
@@ -367,24 +386,31 @@ using FluidSCWrapperBase = FluidSCWrapperImpl<Client, FluidSCWrapper<Client>, is
 template <typename C>
 class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
 {
+
   using FloatControlsIter = impl::FloatControlsIter;
   
   template <typename ArgType>
   struct ParamReader
   {
-  
+
+    static auto fromArgs(World *, sc_msg_iter* args, std::string, int)
+    {      
+      return std::string(args->gets(""));
+    }
+
+
     static auto fromArgs(World *, FloatControlsIter& args, LongT::type, int) { return args.next(); }
     static auto fromArgs(World *, FloatControlsIter& args, FloatT::type, int) { return args.next(); }
     static auto fromArgs(World *, sc_msg_iter* args, LongT::type, int defVal) { return args->geti(defVal); }
     static auto fromArgs(World *, sc_msg_iter* args, FloatT::type, int) { return args->getf(); }
 
-    static auto fromArgs(World *w, ArgType args, BufferT::type, int)
+    static auto fromArgs(World *w, ArgType args, BufferT::type&, int)
     {
       typename LongT::type bufnum = static_cast<LongT::type>(fromArgs(w, args, LongT::type(), -1));
       return BufferT::type(bufnum >= 0 ? new SCBufferAdaptor(bufnum, w) : nullptr);
     }
     
-    static auto fromArgs(World *w, ArgType args, InputBufferT::type, int)
+    static auto fromArgs(World *w, ArgType args, InputBufferT::type&, int)
     {
       typename LongT::type bufnum = static_cast<LongT::type>(fromArgs(w, args, LongT::type(), -1));
       return InputBufferT::type(bufnum >= 0 ? new SCBufferAdaptor(bufnum, w) : nullptr);
@@ -417,35 +443,155 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
   template <size_t N, typename T>
   using ControlSetter = Setter<FloatControlsIter&, N, T>;
   
+  //CryingEmoji.png: SC API hides all the useful functions for sending
+  //replies back to the language with things like, uh, strings and stuff.
+  //We have Node_SendReply, which assumes you are sending an array of float,
+  //and must be called only from the RT thread. Thanks.
+  //So, we do in reverse what the SendReply Ugen does, and parse
+  //an array of floats as characters in the language. VomitEmoji.png
+  
+  struct ToFloatArray
+  {
+    static size_t allocSize(SCBufferAdaptor*){ return 1; }
+    static size_t allocSize(double){ return 1; }
+    static size_t allocSize(float){ return 1; }
+    static size_t allocSize(intptr_t){ return 1; }
+    static size_t allocSize(std::string s){ return s.size(); }
+    static size_t allocSize(FluidTensor<std::string,1> s)
+    {
+      size_t count = 0;
+      for(auto& str: s) count += (str.size() + 1);
+      return count;
+    }
+    template<typename T>
+    static size_t allocSize(FluidTensor<T,1> s) { return s.size() ; }
+    
+  
+    static void convert(float* f, SCBufferAdaptor* buf) { f[0] = buf->bufnum(); }
+    static void convert(float* f, double d) { f[0] =  static_cast<float>(d); }
+    static void convert(float* f, intptr_t i) { f[0] = i; }
+    static void convert(float* f, std::string s) { std::copy(s.begin(), s.end(), f); }
+    static void convert(float* f, FluidTensor<std::string,1> s)
+    {
+      for(auto& str: s)
+      {
+        std::copy(str.begin(), str.end(), f);
+        f += str.size();
+        *f++ = 0;
+      }
+    }
+    template<typename T>
+    static void convert(float* f, FluidTensor<T,1> s)
+    {
+        static_assert(std::is_convertible<T,float>::value,"Can't convert this to float output");
+        std::copy(s.begin(), s.end(), f);
+    }
+  };
+  
+  
+  //So, to handle a message to a plugin we will need to
+  // (1) Launch the invovation of the message on the SC NRT Queue using FIFO Message
+  // (2) Run the actual function (maybe asynchronously, in our own thread)
+  // (3) Launch an asynchronous command to send the reply back (in Stage 3)
+  
+  template<size_t N, typename Ret, typename ArgTuple>
+  struct MessageDispatch
+  {
+    static constexpr size_t Message = N;
+    FluidSCWrapper* wrapper;
+    ArgTuple args;
+    Ret result;
+    std::string name;
+  };
+  
   //Sets up a single /u_cmd
   template<size_t N, typename T>
   struct SetupMessage
   {
     void operator()(const T& message)
     {
-//      class_addmethod(getClass(), (method)invokeMessage<N>, message.name,A_GIMME, 0);
         auto ft = getInterfaceTable();
-        ft->fDefineUnitCmd(message.name, invokeMessage<N>);
+        ft->fDefineUnitCmd(getName(), message.name, launchMessage<N>);
     }
   };
 
   template<size_t N>
-  static void invokeMessage(FluidSCWrapper* x,sc_msg_iter* args)
+  static void launchMessage(Unit* u,sc_msg_iter* args)
   {
+    FluidSCWrapper* x = static_cast<FluidSCWrapper*>(u);
     using IndexList = typename Client::MessageSetType::template MessageDescriptorAt<Client,N>::IndexList;
-    invokeMessageImpl<N>(x,s,ac,av,IndexList());
+    launchMessageImpl<N>(x,args,IndexList());
   }
 
   template<size_t N, size_t...Is>
-  static void invokeMessageImp(FluidSCWrapper* x,sc_msg_iter* inArgs,std::index_sequence<Is...>)
+  static void launchMessageImpl(FluidSCWrapper* x,sc_msg_iter* inArgs,std::index_sequence<Is...>)
   {
-    using ArgTuple = typename Client::MessageSetType::template MessageDescriptorAt<Client,N>::ArgumentTypes;
-    ArgTuple args;
-    (void)std::initializer_list<int>{(std::get<Is>(args) = (ParamReader<sc_msg_iter>::fromArgs(x->mWorld,inArgs,std::get<Is>(args)),0))...};
+    using MessageDescriptor = typename Client::MessageSetType::template MessageDescriptorAt<Client,N>;
+    using ArgTuple = typename MessageDescriptor::ArgumentTypes;
+    using ReturnType = typename MessageDescriptor::ReturnType;
+    using IndexList = typename MessageDescriptor::IndexList;
+    using MessageData =  MessageDispatch<N,ReturnType,ArgTuple>;
     
+    auto ft = getInterfaceTable();
+    void* msgptr = ft->fRTAlloc(x->mWorld,sizeof(MessageData));
+    MessageData* msg = new(msgptr) MessageData;
+    ArgTuple& args = msg->args;
+    (void)std::initializer_list<int>{(std::get<Is>(args) = ParamReader<sc_msg_iter*>::fromArgs(x->mWorld,inArgs,std::get<Is>(args),0),0)...};
+
+    msg->name = '/' + Client::getMessageDescriptors().template name<N>();
+    msg->wrapper = x;
+    ft->fDoAsynchronousCommand(x->mWorld, nullptr, getName(), msg,
+                              [](World*, void* data) //NRT thread: invocation
+                              {
+                                MessageData* m = static_cast<MessageData*>(data);
+                                m->result = ReturnType{invokeImpl<N>(m->wrapper, m->args, IndexList{})};
+                                
+                                
+                                
+                                if(!m->result.ok())
+                                {
+                                  printResult(m->wrapper, m->result);
+                                  return false;
+                                }
+                                return true;
+                              },
+                              [](World*, void* data) //RT thread:  response
+                              {
+                                MessageData* m = static_cast<MessageData*>(data);
+                                messageOutput(m->wrapper,m->name,m->result);
+                                return true;
+                              }
+                              , nullptr, //NRT Thread: No-op
+                              [](World* w, void* data) //RT thread: clean up
+                              {
+                                 getInterfaceTable()->fRTFree(w,data);
+                              },
+                              0, nullptr);
   }
   
+  template <size_t N, typename ArgsTuple,size_t...Is> //Call from NRT
+  static decltype(auto) invokeImpl(FluidSCWrapper* x, ArgsTuple& args, std::index_sequence<Is...>)
+  {
+    return x->mClient.template invoke<N>(x->mClient,std::get<Is>(args)...);
+  }
   
+  template<typename T> //call from RT
+  static void messageOutput(FluidSCWrapper* x, const std::string& s,  MessageResult<T>& result)
+  {
+        auto ft = getInterfaceTable();
+        //allocate return values
+        size_t numArgs = ToFloatArray::allocSize(static_cast<T>(result));
+        float* values = static_cast<float*>(ft->fRTAlloc(x->mWorld,numArgs * sizeof(float)));
+        //copy return data
+        ToFloatArray::convert(values,static_cast<T>(result));
+        ft->fSendNodeReply(&x->mParent->mNode, -1, s.c_str(), static_cast<int>(numArgs), values);
+  }
+  
+  static void messageOutput(FluidSCWrapper* x, const std::string& s,  MessageResult<void>&)
+  {
+      auto ft = getInterfaceTable();
+      ft->fSendNodeReply(&x->mParent->mNode, -1, s.c_str(), 0, nullptr);
+  }
   
   
 public:
@@ -474,6 +620,7 @@ public:
     getName(name);
     getInterfaceTable(ft);
     impl::FluidSCWrapperBase<Client>::setup(ft, name);
+    Client::getMessageDescriptors().template iterate<SetupMessage>(); 
   }
 
   static auto& setParams(ParameterSetType& p, bool verbose, World* world, FloatControlsIter& inputs, bool constrain = false)
@@ -489,7 +636,37 @@ public:
     }
     return p;
   }
+  
+  static void printResult(FluidSCWrapper* x, Result& r)
+  {
+    if (!x) return;
+
+    switch (r.status())
+    {
+      case Result::Status::kWarning:
+      {
+        if(x->mWorld->mVerbosity > 0)
+          std::cout << "WARNING: "  << r.message().c_str() << '\n';
+        break;
+      }
+      case Result::Status::kError:
+      {
+        std::cout << "ERROR: " << r.message().c_str() << '\n';
+        break;
+      }
+      case Result::Status::kCancelled:
+      {
+        std::cout << "Task cancelled\n" << '\n';
+        break;
+      }
+      default: {
+      }
+    }
+  }
 };
+
+
+
 
 template <template<typename T> class Client>
 void makeSCWrapper(const char *name, InterfaceTable *ft)
