@@ -10,5 +10,5 @@ PluginLoad(FluidSTFTUGen)
 {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<BaseSTFTClient>("FluidSTFTPass", ft);
+  makeSCWrapper<RTSTFTPassClient>("FluidSTFTPass", ft);
 }

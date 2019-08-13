@@ -9,5 +9,5 @@ static InterfaceTable *ft;
 PluginLoad(FluidSTFTUGen) {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<PitchClient>("FluidPitch", ft);
+  makeSCWrapper<RTPitchClient>("FluidPitch", ft);
 }

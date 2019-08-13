@@ -9,5 +9,5 @@ static InterfaceTable *ft;
 PluginLoad(FluidSTFTUGen) {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<MelBandsClient>("FluidMelBands", ft);
+  makeSCWrapper<RTMelBandsClient>("FluidMelBands", ft);
 }

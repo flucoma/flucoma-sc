@@ -10,5 +10,5 @@ PluginLoad(FluidSTFTUGen)
 {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<NMFMatch>("FluidNMFMatch", ft);
+  makeSCWrapper<RTNMFMatchClient>("FluidNMFMatch", ft);
 }

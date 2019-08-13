@@ -10,5 +10,5 @@ PluginLoad(FluidSTFTUGen)
 {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<TransientsSlice>("FluidTransientSlice", ft);
+  makeSCWrapper<RTTransientSliceClient>("FluidTransientSlice", ft);
 }

@@ -10,5 +10,5 @@ PluginLoad(FluidGainUgen)
 {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<GainClient>("FluidGain", ft);
+  makeSCWrapper<RTGainClient>("FluidGain", ft);
 }
