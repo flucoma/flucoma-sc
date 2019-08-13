@@ -219,12 +219,14 @@ public:
 
 //    }
   }
+  
+  static void nop(Unit*, int) {}
 
   /// To be called on NRT thread. Validate parameters and commence processing in new thread
   static void initNRTJob(FifoMsg* f)
   {
     auto w = static_cast<Wrapper*>(f->mData);
-    
+    w->mDone = false;
     Result result = validateParameters(w);
     
     if (!result.ok())
@@ -246,6 +248,8 @@ public:
     
     if(s==ProcessState::kDone || s==ProcessState::kDoneStillProcessing)
     {
+      w->mDone = true;
+      
       if(r.status() == Result::Status::kCancelled)
       {
         std::cout <<  Wrapper::getName() << ": Processing cancelled \n";
@@ -269,14 +273,15 @@ public:
   static bool tidyUp(World *world, void *data) { return static_cast<Wrapper *>(data)->tidyUp(world); }
   
   /// Now we're actually properly done, call the UGen's done action (possibly destroying this instance)
-  static void destroy(World*, void*)
+  static void destroy(World* world, void* data)
   {
-//    auto w = static_cast<Wrapper*>(data);
-//    if(w->mDone)
-//    {
-//      int doneAction = static_cast<int>(w->in0(static_cast<int>(w->mNumInputs - 1)));
-//      world->ft->fDoneAction(doneAction,w);
-//    }
+    auto w = static_cast<Wrapper*>(data);
+    if(w->mDone && w->mNumInputs > 0) //don't check for doneAction if UGen has no ins   
+    {
+      int doneAction = static_cast<int>(w->in0(static_cast<int>(w->mNumInputs - 1)));
+      if(doneAction >= 2) w->mCalcFunc = nop;
+      world->ft->fDoneAction(doneAction,w);
+    }
   }
   
   static void doCancel(Unit *unit, sc_msg_iter*)
@@ -537,16 +542,15 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
     MessageData* msg = new(msgptr) MessageData;
     ArgTuple& args = msg->args;
     (void)std::initializer_list<int>{(std::get<Is>(args) = ParamReader<sc_msg_iter*>::fromArgs(x->mWorld,inArgs,std::get<Is>(args),0),0)...};
-
+    
     msg->name = '/' + Client::getMessageDescriptors().template name<N>();
     msg->wrapper = x;
+    x->mDone = false;
     ft->fDoAsynchronousCommand(x->mWorld, nullptr, getName(), msg,
                               [](World*, void* data) //NRT thread: invocation
                               {
                                 MessageData* m = static_cast<MessageData*>(data);
                                 m->result = ReturnType{invokeImpl<N>(m->wrapper, m->args, IndexList{})};
-                                
-                                
                                 
                                 if(!m->result.ok())
                                 {
