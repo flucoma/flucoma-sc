@@ -631,7 +631,7 @@ public:
         p.template setParameterValues<ControlSetter>(verbose, world, inputs);
         if (constrain)p.constrainParameterValues();
     } else {
-      std::cout << "ERROR: " << getName() << ": parameter count mismatch. Perhaps your binary plugins and SC sources are different versions";
+      std::cout << "ERROR: " << getName() << ": parameter count mismatch. Perhaps your binary plugins and SC sources are different versions\n";
       //TODO: work out how to bring any further work to a halt
     }
     return p;
