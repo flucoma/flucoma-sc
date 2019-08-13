@@ -176,7 +176,7 @@ public:
   
   /// Final input is the doneAction, not a param, so we skip it in the controlsIterator
   NonRealTime() :
-      mControlsIterator{mInBuf,static_cast<size_t>(static_cast<ptrdiff_t>(mNumInputs) - mSpecialIndex - 1)}
+      mControlsIterator{mInBuf,static_cast<size_t>(mNumInputs == 0 ? 0 : static_cast<ptrdiff_t>(mNumInputs) - mSpecialIndex - 1)}
     , mParams{Wrapper::Client::getParameterDescriptors()}
     , mClient{Wrapper::setParams(mParams,mWorld->mVerbosity > 0, mWorld, mControlsIterator,true)}
   {}
@@ -381,7 +381,7 @@ class FluidSCWrapperImpl<Client, Wrapper, std::false_type, std::true_type> : pub
       
 // Make base class(es), full of CRTP mixin goodness
 template <typename Client>
-using FluidSCWrapperBase = FluidSCWrapperImpl<Client, FluidSCWrapper<Client>, isNonRealTime<Client>, isRealTime<Client>>;
+using FluidSCWrapperBase = FluidSCWrapperImpl<Client, FluidSCWrapper<Client>, typename Client::isNonRealTime, typename Client::isRealTime>;
 
 } // namespace impl
 
@@ -524,14 +524,14 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
   static void launchMessage(Unit* u,sc_msg_iter* args)
   {
     FluidSCWrapper* x = static_cast<FluidSCWrapper*>(u);
-    using IndexList = typename Client::MessageSetType::template MessageDescriptorAt<Client,N>::IndexList;
+    using IndexList = typename Client::MessageSetType::template MessageDescriptorAt<N>::IndexList;
     launchMessageImpl<N>(x,args,IndexList());
   }
 
   template<size_t N, size_t...Is>
   static void launchMessageImpl(FluidSCWrapper* x,sc_msg_iter* inArgs,std::index_sequence<Is...>)
   {
-    using MessageDescriptor = typename Client::MessageSetType::template MessageDescriptorAt<Client,N>;
+    using MessageDescriptor = typename Client::MessageSetType::template MessageDescriptorAt<N>;
     using ArgTuple = typename MessageDescriptor::ArgumentTypes;
     using ReturnType = typename MessageDescriptor::ReturnType;
     using IndexList = typename MessageDescriptor::IndexList;
@@ -669,13 +669,10 @@ public:
   }
 };
 
-
-
-
-template <template<typename T> class Client>
+template <typename  Client>
 void makeSCWrapper(const char *name, InterfaceTable *ft)
 {
-  FluidSCWrapper<Client<float>>::setup(ft, name);
+  FluidSCWrapper<Client>::setup(ft, name);
 }
 
 } // namespace client
