@@ -31,6 +31,7 @@ ENDMACRO()
 
 set(FLUID_PATH ~/fluid_decomposition CACHE PATH "The top level of the fluid_decomposition repo")
 set(LOCAL_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include")
+set(FLUID_M_PATH ~/dev/fluid_manipulation/fluid_manipulation CACHE PATH "The top level of the fluid_manipulation repo")
 
 
 get_filename_component(FLUID_ABS_PATH "${FLUID_PATH}" ABSOLUTE)

@@ -27,6 +27,7 @@ target_include_directories(
   ${PLUGIN}
   PRIVATE
   ${LOCAL_INCLUDES}
+  "${FLUID_M_PATH}/include/"
 )
 
 target_include_directories(
