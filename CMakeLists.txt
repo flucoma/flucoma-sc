@@ -29,28 +29,60 @@ MACRO(SUBDIRLIST result curdir)
   SET(${result} ${dirlist})
 ENDMACRO()
 
-set(FLUID_PATH ~/fluid_decomposition CACHE PATH "The top level of the fluid_decomposition repo")
-set(LOCAL_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include")
+include(FetchContent)
 
+set(FETCHCONTENT_QUIET FALSE)
 
-get_filename_component(FLUID_ABS_PATH "${FLUID_PATH}" ABSOLUTE)
-message("${FLUID_ABS_PATH}")
-# if (NOT DEFINED ${FLUID_DECOMP_PATH})
-# 	message(FATAL_ERROR "Please set the path to the fluid_decomposition sources with -DFLUID_DECOMP_PATH=<path>")
-# endif()
+if(DEFINED FLUID_PATH)
+get_filename_component(FLUID_PATH ${FLUID_PATH} ABSOLUTE)
+message(${FLUID_PATH})
+FetchContent_Declare(
+  fluid_decomposition
+  # URL ${FLUID_PATH}
+  DOWNLOAD_COMMAND ""
+  SOURCE_DIR "${FLUID_PATH}/"
+)
+else()
+FetchContent_Declare(
+  fluid_decomposition
+  GIT_REPOSITORY https://bitbucket.org/flucoma/fluid_decomposition.git
+  GIT_PROGRESS TRUE
+)
+endif()
 
-if (NOT (EXISTS "${FLUID_ABS_PATH}/build/fluid_decomposition-exports.cmake"))
-	message(FATAL_ERROR "Can't find the fluid_decomposition CMake targets file at ${FLUID_ABS_PATH}/build/fluid_decomposition-exports.cmake. Please go to ${FLUID_ABS_PATH}/build and run CMake")
+if(DEFINED FLUID_M_PATH)
+get_filename_component(FLUID_M_PATH ${FLUID_M_PATH} ABSOLUTE)
+FetchContent_Declare(
+  fluid_manipulation
+  # URL ${FLUID_M_PATH}
+  DOWNLOAD_COMMAND ""
+  SOURCE_DIR "${FLUID_M_PATH}/"
+)
+else()
+FetchContent_Declare(
+  fluid_manipulation
+  GIT_REPOSITORY https://bitbucket.org/flucoma/fluid_manipulation.git
+  GIT_PROGRESS TRUE
+)
+endif()
+
+FetchContent_GetProperties(fluid_decomposition)
+if(NOT fluid_decomposition_POPULATED)
+  FetchContent_Populate(fluid_decomposition)
+  add_subdirectory(${fluid_decomposition_SOURCE_DIR} ${fluid_decomposition_BINARY_DIR})
+endif()
+
+FetchContent_GetProperties(fluid_manipulation)
+if(NOT fluid_manipulation_POPULATED)
+  FetchContent_Populate(fluid_manipulation)
+  add_subdirectory(${fluid_manipulation_SOURCE_DIR} ${fluid_manipulation_BINARY_DIR})
 endif()
 
 if (NOT (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/release-packaging/AudioFiles/"))
 	file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/release-packaging/AudioFiles/")
 endif()
 
-file(COPY "${FLUID_ABS_PATH}/AudioFiles/" DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/release-packaging/AudioFiles/")
-
-
-include("${FLUID_ABS_PATH}/build/fluid_decomposition-exports.cmake")
+file(COPY "${fluid_decomposition_SOURCE_DIR}/AudioFiles/" DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/release-packaging/AudioFiles/")
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/release-packaging/plugins")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
@@ -61,26 +93,9 @@ if(APPLE OR WIN32)
 set(CMAKE_SHARED_MODULE_SUFFIX ".scx")
 endif()
 
-get_property(FFT_SOURCES TARGET HISSTools_FFT  PROPERTY INTERFACE_SOURCES)
-get_property(FFT_LINK TARGET HISSTools_FFT  PROPERTY INTERFACE_LINK_LIBRARIES)
-
-add_library(FFTLIB STATIC ${FFT_SOURCES})
-target_link_libraries(
-  FFTLIB PRIVATE ${FFT_LINK}
-)
-if(WIN32)
- target_compile_options(
-   FFTLIB PRIVATE $<$<NOT:$<CONFIG:DEBUG>>: /arch:AVX>
- )
-else(WIN32)
-target_compile_options(
-   FFTLIB PRIVATE $<$<NOT:$<CONFIG:DEBUG>>: -mavx -msse -msse2 -msse3 -msse4>
-)
-endif(WIN32)
-
 #needed for complaint-free static linking with GCC
 if(CMAKE_COMPILER_IS_GNUCXX)
-target_compile_options( FFTLIB PUBLIC -fPIC )
+target_compile_options( HISSTools_FFT PUBLIC -fPIC )
 ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
 add_library(FLUID_SC_WRAPPER INTERFACE)

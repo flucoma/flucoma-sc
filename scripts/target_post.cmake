@@ -17,9 +17,10 @@ target_link_libraries(
   ${PLUGIN}
   PUBLIC
   FLUID_DECOMPOSITION
+  FLUID_MANIP
   FLUID_SC_WRAPPER
   PRIVATE
-  FFTLIB
+  HISSTools_FFT
 )
 
 
@@ -39,8 +40,10 @@ target_include_directories(
 )
 
 get_property(HEADERS TARGET FLUID_DECOMPOSITION PROPERTY INTERFACE_SOURCES)
-source_group(TREE "${FLUID_PATH}/include" FILES ${HEADERS})
+source_group(TREE "${fluid_decomposition_SOURCE_DIR}/include" FILES ${HEADERS})
 
+get_property(HEADERS TARGET FLUID_MANIP PROPERTY INTERFACE_SOURCES)
+source_group(TREE "${fluid_manipulation_SOURCE_DIR}/include" FILES ${HEADERS})
 
 if (SUPERNOVA)
     target_include_directories(
@@ -66,7 +69,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
     target_compile_options(
         ${PLUGIN}
         PRIVATE
-        $<$<NOT:$<CONFIG:DEBUG>>: -mavx -msse -msse2 -msse3 -msse4>
+        $<$<NOT:$<CONFIG:DEBUG>>: -mavx>
     )
 endif()
 
@@ -81,14 +84,14 @@ if(MSVC)
   target_compile_options(${PLUGIN} PRIVATE /arch:AVX -D_USE_MATH_DEFINES)
 else(MSVC)
 target_compile_options(
-   ${PLUGIN} PRIVATE $<$<NOT:$<CONFIG:DEBUG>>: -mavx -msse -msse2 -msse3 -msse4>
+   ${PLUGIN} PRIVATE $<$<NOT:$<CONFIG:DEBUG>>: -mavx>
 )
 endif(MSVC)
 
 ####### added the fluid_decomposition
 
-if(SUPERNOVA)
-    add_library(${PLUGIN}_supernova MODULE ${FILENAME})
-    set_property(TARGET ${PROJECT}_supernova
-                 PROPERTY COMPILE_DEFINITIONS SUPERNOVA)
-endif()
+# if(SUPERNOVA)
+#     add_library(${PLUGIN}_supernova MODULE ${FILENAME})
+#     set_property(TARGET ${PROJECT}_supernova
+#                  PROPERTY COMPILE_DEFINITIONS SUPERNOVA)
+# endif()
