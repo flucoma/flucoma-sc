@@ -8,6 +8,9 @@ b = Buffer.read(s,File.realpath(FluidMessageTest.class.filenameSymbol).dirname.w
 ~messageTest.testAccessBuffer(nil,a.nodeID,b,{|msg| msg.postln});
 b.numFrames
 ~messageTest.testPassString(nil,a.nodeID,'hello, you big lovely server',1,2,3,{'testPassString Done'.postln});
+~messageTest.testReturnBuffer(nil,a.nodeID,b,{|buffer| b.numFrames.postln});
+~messageTest.testReturnHetero(nil,a.nodeID,{|x|x.postln});
 
+a.free
 // OSCFunc.trace(true)
 // OSCFunc.trace(false)
