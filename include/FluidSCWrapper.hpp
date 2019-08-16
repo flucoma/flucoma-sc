@@ -41,7 +41,10 @@ struct FloatControlsIter
   }
     
   size_t size() const noexcept { return mSize; }
-    
+  size_t remain()
+  {
+    return mSize - mCount;
+  }
 private:
   float **mValues;
   size_t  mSize;
@@ -88,17 +91,6 @@ public:
   {
     assert(!(mClient.audioChannelsOut() > 0 && mClient.controlChannelsOut() > 0) &&
            "Client can't have both audio and control outputs");
-
-    //If we don't the number of arguments we expect, the language side code is probably the wrong version
-    //set plugin to no-op, squawk, and bail;
-    if(mControlsIterator.size() != Client::getParameterDescriptors().count())
-    {
-      mCalcFunc = Wrapper::getInterfaceTable()->fClearUnitOutputs;
-      std::cout << "ERROR: " << Wrapper::getName() << " wrong number of arguments. Expected "
-                << Client::getParameterDescriptors().count() << ", got " << mControlsIterator.size()
-                << ". Your .sc file and binary plugin might be different versions." << std::endl;
-      return;
-    }
 
     mClient.sampleRate(fullSampleRate());
     mInputConnections.reserve(mClient.audioChannelsIn());
@@ -463,6 +455,13 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
     
     typename T::type operator()(World *w, ArgType args)
     {
+      //Just return default if there's nothing left to grab
+      if(args.remain() ==  0)
+      {
+        std::cout << "WARNING: " << getName() << " received fewer parameters than expected\n";
+        return C::getParameterDescriptors().template makeValue<N>();
+      }
+      
       ParamLiteralConvertor<T, argSize> a;
       using LiteralType = typename ParamLiteralConvertor<T, argSize>::LiteralType;
 
@@ -670,15 +669,9 @@ public:
 
   static auto& setParams(ParameterSetType& p, bool verbose, World* world, FloatControlsIter& inputs, bool constrain = false)
   {
-    //We won't even try and set params if the arguments don't match 
-    if(inputs.size() == C::getParameterDescriptors().count())
-    {
-        p.template setParameterValues<ControlSetter>(verbose, world, inputs);
-        if (constrain)p.constrainParameterValues();
-    } else {
-      std::cout << "ERROR: " << getName() << ": parameter count mismatch. Perhaps your binary plugins and SC sources are different versions\n";
-      //TODO: work out how to bring any further work to a halt
-    }
+    p.template setParameterValues<ControlSetter>(verbose, world, inputs);
+    if(inputs.remain() > 0) std::cout << "WARNING: "<< getName() << " received " << inputs.remain() << " more parameters than expected. Perhaps your binary plugins and SC sources are different versions\n";
+    if (constrain) p.constrainParameterValues();
     return p;
   }
   
