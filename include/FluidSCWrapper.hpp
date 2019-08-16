@@ -15,7 +15,6 @@
 #include <utility>
 #include <vector>
 
-#include <scsynthsend.h>
 
 namespace fluid {
 namespace client {
