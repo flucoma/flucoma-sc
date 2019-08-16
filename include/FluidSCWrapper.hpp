@@ -399,18 +399,50 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
 
     static auto fromArgs(World *, sc_msg_iter* args, std::string, int)
     {      
-      return std::string(args->gets(""));
+      const char* recv = args->gets("");
+      
+      return std::string(recv?recv:"");
     }
 
+    static auto fromArgs(World *w, FloatControlsIter& args, std::string, int)
+    {
+        //first is string size, then chars
+        int size = static_cast<int>(args.next());
+        char* chunk =  static_cast<char*>(FluidSCWrapper::getInterfaceTable()->fRTAlloc(w,size + 1));
+      
+        if (!chunk) {
+          std::cout << "ERROR: " << FluidSCWrapper::getName() << ": RT memory allocation failed\n";
+          return std::string{""};
+        }
+      
+        for(int i = 0; i < size; ++i)
+          chunk[i] = static_cast<char>(args.next());
+        
+        chunk[size] = 0; //terminate string
+        
+        return std::string{chunk};
+    }
+    
+    
+    template<typename T>
+    static std::enable_if_t<std::is_integral<T>::value,T>
+    fromArgs(World *, FloatControlsIter& args, T, int) { return args.next(); }
+    
+    template<typename T>
+    static std::enable_if_t<std::is_floating_point<T>::value,T>
+    fromArgs(World *, FloatControlsIter& args, T, int) { return args.next(); }
+    
+    template<typename T>
+    static std::enable_if_t<std::is_integral<T>::value,T>
+    fromArgs(World *, sc_msg_iter* args, T, int defVal) { return args->geti(defVal); }
 
-    static auto fromArgs(World *, FloatControlsIter& args, LongT::type, int) { return args.next(); }
-    static auto fromArgs(World *, FloatControlsIter& args, FloatT::type, int) { return args.next(); }
-    static auto fromArgs(World *, sc_msg_iter* args, LongT::type, int defVal) { return args->geti(defVal); }
-    static auto fromArgs(World *, sc_msg_iter* args, FloatT::type, int) { return args->getf(); }
+    template<typename T>
+    static std::enable_if_t<std::is_floating_point<T>::value,T>
+    fromArgs(World *, sc_msg_iter* args, T, int) { return args->getf(); }
 
     static auto fromArgs(World *w, ArgType args, BufferT::type&, int)
     {
-      typename LongT::type bufnum = static_cast<LongT::type>(fromArgs(w, args, LongT::type(), -1));
+      typename LongT::type bufnum = static_cast<typename LongT::type>(ParamReader::fromArgs(w, args, typename LongT::type(), -1));
       return BufferT::type(bufnum >= 0 ? new SCBufferAdaptor(bufnum, w) : nullptr);
     }
     
@@ -456,11 +488,14 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
   
   struct ToFloatArray
   {
-    static size_t allocSize(SCBufferAdaptor*){ return 1; }
-    static size_t allocSize(double){ return 1; }
-    static size_t allocSize(float){ return 1; }
-    static size_t allocSize(intptr_t){ return 1; }
-    static size_t allocSize(std::string s){ return s.size(); }
+    static size_t allocSize(typename BufferT::type){ return 1; }
+    
+    template<typename T>
+    static std::enable_if_t<std::is_integral<T>::value||std::is_floating_point<T>::value,size_t>
+    allocSize(T){ return 1; }
+    
+    static size_t allocSize(std::string s){ return s.size() + 1; } //put null char at end when we send
+    
     static size_t allocSize(FluidTensor<std::string,1> s)
     {
       size_t count = 0;
@@ -470,11 +505,18 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
     template<typename T>
     static size_t allocSize(FluidTensor<T,1> s) { return s.size() ; }
     
-  
-    static void convert(float* f, SCBufferAdaptor* buf) { f[0] = buf->bufnum(); }
-    static void convert(float* f, double d) { f[0] =  static_cast<float>(d); }
-    static void convert(float* f, intptr_t i) { f[0] = i; }
-    static void convert(float* f, std::string s) { std::copy(s.begin(), s.end(), f); }
+    
+    static void convert(float* f, typename BufferT::type buf) { f[0] = static_cast<SCBufferAdaptor*>(buf.get())->bufnum(); }
+   
+    template<typename T>
+    static std::enable_if_t<std::is_integral<T>::value||std::is_floating_point<T>::value>
+    convert(float* f, T x) { f[0] =  static_cast<float>(x); }
+   
+    static void convert(float* f, std::string s)
+    {
+      std::copy(s.begin(), s.end(), f);
+      f[s.size()] = 0; //terminate
+    }
     static void convert(float* f, FluidTensor<std::string,1> s)
     {
       for(auto& str: s)
