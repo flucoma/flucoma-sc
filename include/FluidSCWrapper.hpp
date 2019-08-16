@@ -512,6 +512,20 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
     template<typename T>
     static size_t allocSize(FluidTensor<T,1> s) { return s.size() ; }
     
+    template<typename...Ts>
+    static std::tuple<std::array<size_t,sizeof...(Ts)>,size_t> allocSize(std::tuple<Ts...>&& t)
+    {
+      return allocSizeImpl(std::forward<decltype(t)>(t), std::index_sequence_for<Ts...>());
+    };
+    
+    template<typename...Ts, size_t...Is>
+    static std::tuple<std::array<size_t,sizeof...(Ts)>,size_t> allocSizeImpl(std::tuple<Ts...>&& t,std::index_sequence<Is...>)
+    {
+      size_t size{0};
+      std::array<size_t,sizeof...(Ts)> res;
+      (void)std::initializer_list<int>{(res[Is] = size,size += ToFloatArray::allocSize(std::get<Is>(t)),0)...};
+      return std::make_tuple(res,size); //array of offsets into allocated buffer & total number of floats to alloc
+    };
     
     static void convert(float* f, typename BufferT::type buf) { f[0] = static_cast<SCBufferAdaptor*>(buf.get())->bufnum(); }
    
@@ -538,6 +552,12 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
     {
         static_assert(std::is_convertible<T,float>::value,"Can't convert this to float output");
         std::copy(s.begin(), s.end(), f);
+    }
+    
+    template<typename...Ts, size_t...Is>
+    static void convert(float* f,std::tuple<Ts...>&& t, std::array<size_t,sizeof...(Ts)> offsets, std::index_sequence<Is...>)
+    {
+        (void)std::initializer_list<int>{(convert(f + offsets[Is],std::get<Is>(t)),0)...};
     }
   };
   
@@ -644,6 +664,19 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
       auto ft = getInterfaceTable();
       ft->fSendNodeReply(&x->mParent->mNode, -1, s.c_str(), 0, nullptr);
   }
+  
+  template<typename...Ts>
+  static void messageOutput(FluidSCWrapper* x, const std::string& s,  MessageResult<std::tuple<Ts...>>& result)
+  {
+    auto ft = getInterfaceTable();
+    std::array<size_t,sizeof...(Ts)> offsets;
+    size_t numArgs;
+    std::tie(offsets,numArgs) = ToFloatArray::allocSize(static_cast<std::tuple<Ts...>>(result));
+    float* values = static_cast<float*>(ft->fRTAlloc(x->mWorld,numArgs * sizeof(float)));
+    ToFloatArray::convert(values,std::tuple<Ts...>(result),offsets,std::index_sequence_for<Ts...>());
+    ft->fSendNodeReply(&x->mParent->mNode, -1, s.c_str(), static_cast<int>(numArgs), values);
+  }
+  
   
   
 public:
