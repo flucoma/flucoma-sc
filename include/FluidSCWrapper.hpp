@@ -443,6 +443,14 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
       typename LongT::type bufnum = static_cast<LongT::type>(fromArgs(w, args, LongT::type(), -1));
       return InputBufferT::type(bufnum >= 0 ? new SCBufferAdaptor(bufnum, w) : nullptr);
     }
+    
+    template<typename P>
+    static std::enable_if_t<IsSharedClient<P>::value,P>
+    fromArgs(World *w, ArgType args, P&, int)
+    {
+        return {fromArgs(w, args, std::string{}, 0).c_str()};
+    }
+    
   };
   
   
