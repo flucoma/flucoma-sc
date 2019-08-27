@@ -131,7 +131,7 @@ STRONG::A musical example::
 CODE::
 //program that freezes mfcc spectra, then looks for matches between two frozen spectra
 (
-SynthDef("MFCCJamz", {arg freq=220, source = 0, buffer, mfccBus, distBus, t_freeze0=0, t_freeze1=0, onsetsOn0=0, onsetsOn1=0;
+SynthDef("MFCCJamz", {arg freq=220, source = 0, buffer, mfccBus, distBus, t_freeze0=0, t_freeze1=0, onsetsOn0=0, onsetsOn1=0, restart = 1;
 	var sound, mfcc, mfccFreeze0, mfccFreeze1, dist0, dist1, closest, slice;
 
 	sound = SelectX.ar(source, [
@@ -141,7 +141,7 @@ SynthDef("MFCCJamz", {arg freq=220, source = 0, buffer, mfccBus, distBus, t_free
 		Pulse.ar(freq, 0.5, 0.1),
 		WhiteNoise.ar(0.1),
 		PinkNoise.ar(0.1),
-		PlayBuf.ar(1, buffer, 1, loop:1)
+		PlayBuf.ar(1, buffer, 1, loop:1, trigger:restart)
 	]);
 
 	slice = FluidOnsetSlice.ar(sound); //onset detection for mfcc freeze on onset
@@ -168,7 +168,7 @@ SynthDef("MFCCJamz", {arg freq=220, source = 0, buffer, mfccBus, distBus, t_free
 
 
 (
-var buffers, buffer, paths, mfccBus, freezeBus, distBus, win, sliders, updateRout, winRange, currentMFCC, synth, movingGUI, trainButtons, oscFunc, closestBus;
+var buffers, buffer, paths, mfccBus, freezeBus, distBus, win, sliders, updateRout, winRange, currentMFCC, synth, movingGUI, trainButtons, playbackButton, oscFunc, closestBus;
 
 winRange = 100;
 
@@ -214,7 +214,7 @@ s.waitForBoot({
 			.maxWidth_(150),
 			PopUpMenu().items_(paths)
 			.action_{|menu| synth.set(\buffer, buffers[menu.value])}
-			.maxWidth_(150);
+			.maxWidth_(150)
 		];
 
 		//the buttons under the two frozen mfcc displays
@@ -237,10 +237,18 @@ s.waitForBoot({
 			trainButtons.add(StaticText());
 		};
 
+		playbackButton = Button().states_([["restart", Color.black, Color.green]])
+				.mouseDownAction_({arg butt;
+					synth.set(\restart, 0.5);
+				})
+				.action_{arg butt;
+					synth.set(\restart, -0.5);
+				};
+
 		win.layout_(HLayout(
 			VLayout(sliders[0], movingGUI[0], movingGUI[1], movingGUI[2]),
-			VLayout(sliders[1],HLayout(trainButtons[0],trainButtons[1]), HLayout(trainButtons[2],trainButtons[3])),
-			VLayout(sliders[2],HLayout(trainButtons[4],trainButtons[5]), HLayout(trainButtons[6],trainButtons[7]))
+			VLayout(sliders[1],HLayout(trainButtons[0],trainButtons[1]), HLayout(trainButtons[2],trainButtons[3]), movingGUI[3]),
+			VLayout(sliders[2],HLayout(trainButtons[4],trainButtons[5]), HLayout(trainButtons[6],trainButtons[7]), playbackButton)
 		));
 		win.front;
 		win.onClose_{synth.free; oscFunc.free; updateRout.stop};
