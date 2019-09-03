@@ -8,6 +8,8 @@
 
 #include <SC_PlugIn.hpp>
 
+#include <algorithm>
+#include <string>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -161,13 +163,38 @@ template <typename Client, typename Wrapper>
 class NonRealTime: public SCUnit
 {
   using ParamSetType = typename Client::ParamSetType;
+  
 public:
 
   static void setup(InterfaceTable *ft, const char *name)
   {
     registerUnit<Wrapper>(ft, name);
     ft->fDefineUnitCmd(name, "cancel", doCancel);
+    ft->fDefineUnitCmd(name, "queue_enabled", [](struct Unit* unit, struct sc_msg_iter* args)
+    {
+      auto w = static_cast<Wrapper *>(unit);
+      w->mQueueEnabled = args->geti(0);
+      w->mFifoMsg.Set(w->mWorld,[](FifoMsg* f)
+      {
+        auto w = static_cast<Wrapper*>(f->mData);
+        w->mClient.setQueueEnabled(w->mQueueEnabled);
+      },nullptr,w);
+      Wrapper::getInterfaceTable()->fSendMsgFromRT(w->mWorld, w->mFifoMsg);
+    });
+    ft->fDefineUnitCmd(name, "synchronous", [](struct Unit* unit, struct sc_msg_iter* args)
+    {
+      auto w = static_cast<Wrapper *>(unit);
+      w->mSynchronous = args->geti(0);
+      w->mFifoMsg.Set(w->mWorld,[](FifoMsg* f)
+      {
+        auto w = static_cast<Wrapper*>(f->mData);
+        w->mClient.setSynchronous(w->mSynchronous);
+      },nullptr,w);
+      Wrapper::getInterfaceTable()->fSendMsgFromRT(w->mWorld, w->mFifoMsg);
+    });
   }
+  
+
   
   /// Final input is the doneAction, not a param, so we skip it in the controlsIterator
   NonRealTime() :
@@ -181,36 +208,46 @@ public:
   /// init() sets up the NRT process via the SC NRT thread, and then sets our UGen calc function going
   void init()
   {
-    mClient.setSynchronous(false); 
     mFifoMsg.Set(mWorld, initNRTJob, nullptr, this);
     mWorld->ft->fSendMsgFromRT(mWorld,mFifoMsg);
+    
+    //we want to poll thread roughly every 20ms
+    checkThreadInterval = static_cast<size_t>(0.02 / controlDur());
     set_calc_function<NonRealTime, &NonRealTime::poll>();
   };
   
   /// The calc function. Checks to see if we've cancelled, spits out progress, launches tidy up when complete
   void poll(int)
   {
-    if(!mClient.done())
-    {
+//    if(!mClient.done())
+//    {
       out0(0) = static_cast<float>(mClient.progress());
-    }
-    else {
-//      if(mClient.state() == kDone)
-//        mDone = true;
-      mCalcFunc = mWorld->ft->fClearUnitOutputs;
-//    if(!mDone)
-      mWorld->ft->fDoAsynchronousCommand(mWorld, nullptr, Wrapper::getName(), this,
+//    }
+//    else {
+      if(0 == pollCounter++)
+      {
+            mWorld->ft->fDoAsynchronousCommand(mWorld, nullptr, Wrapper::getName(), this,
                                       postProcess, exchangeBuffers, tidyUp, destroy,
                                       0, nullptr);
-      
-    }
+      }
+    
+      pollCounter %= checkThreadInterval;
+    
+//      if(mClient.state() == kDone)
+//        mDone = true;
+//      mCalcFunc = mWorld->ft->fClearUnitOutputs;
+//    if(!mDone)
+
+//    }
   }
+  
+  static void nop(Unit*, int) {}
 
   /// To be called on NRT thread. Validate parameters and commence processing in new thread
   static void initNRTJob(FifoMsg* f)
   {
     auto w = static_cast<Wrapper*>(f->mData);
-    
+    w->mDone = false;
     Result result = validateParameters(w);
     
     if (!result.ok())
@@ -219,7 +256,9 @@ public:
 //        w->mDone = true;
         return;
     }
-    
+//    w->mClient.setSynchronous(mSynchronous);
+//    mClient.setQueu
+    w->mClient.enqueue(w->mParams);
     w->mClient.process();
   }
 
@@ -228,22 +267,27 @@ public:
   {
     auto w = static_cast<Wrapper*>(data);
     Result r;
-    w->mClient.checkProgress(r);
-    if(r.status() == Result::Status::kCancelled)
+    ProcessState s = w->mClient.checkProgress(r);
+    
+    if(s==ProcessState::kDone || s==ProcessState::kDoneStillProcessing)
     {
-      std::cout <<  Wrapper::getName() << ": Processing cancelled \n";
-      return false;
+      w->mDone = true;
+      
+      if(r.status() == Result::Status::kCancelled)
+      {
+        std::cout <<  Wrapper::getName() << ": Processing cancelled \n";
+        return false;
+      }
+      
+      if(!r.ok())
+      {
+        std::cout << "ERROR: " << Wrapper::getName() << ": " << r.message().c_str() << '\n';
+        return false;
+      }
+      
+      return true;
     }
-    
-    if(!r.ok())
-    {
-      std::cout << "ERROR: " << Wrapper::getName() << ": " << r.message().c_str() << '\n';
-      return false;
-    }
-    
-//    w->mDone = true;
-    
-    return true;
+    return false;
   }
 
   /// swap NRT buffers back to RT-land
@@ -252,14 +296,15 @@ public:
   static bool tidyUp(World *world, void *data) { return static_cast<Wrapper *>(data)->tidyUp(world); }
   
   /// Now we're actually properly done, call the UGen's done action (possibly destroying this instance)
-  static void destroy(World *world, void *data)
+  static void destroy(World* world, void* data)
   {
     auto w = static_cast<Wrapper*>(data);
-//    if(w->mDone)
-//    {
-      int doneAction = static_cast<int>(w->in0(static_cast<int>(w->mNumInputs - 1)));
+    if(w->mDone && w->mNumInputs > 0) //don't check for doneAction if UGen has no ins
+    {
+      int doneAction = static_cast<int>(w->in0(static_cast<int>(w->mNumInputs - 1))); //doneAction is last input; THIS IS THE LAW
+      if(doneAction >= 2) w->mCalcFunc = nop;
       world->ft->fDoneAction(doneAction,w);
-//    }
+    }
   }
   
   static void doCancel(Unit *unit, sc_msg_iter*)
@@ -312,13 +357,16 @@ private:
   
   FloatControlsIter       mControlsIterator;
   FifoMsg     mFifoMsg;
-  char *      mCompletionMessage = nullptr;
-  void *      mReplyAddr         = nullptr;
+  char*       mCompletionMessage = nullptr;
+  void*       mReplyAddr         = nullptr;
   const char *mName              = nullptr;
+  size_t checkThreadInterval;
+  size_t pollCounter{0};
 protected:
   ParamSetType  mParams;
   Client        mClient;
-  
+  bool          mSynchronous{true};
+  bool          mQueueEnabled{false};
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -367,6 +415,7 @@ using FluidSCWrapperBase = FluidSCWrapperImpl<Client, FluidSCWrapper<Client>, is
 template <typename C>
 class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
 {
+
   using FloatControlsIter = impl::FloatControlsIter;
   
   // Iterate over arguments via callbacks from params object
@@ -441,7 +490,7 @@ public:
         p.template setParameterValues<ControlSetter>(verbose, world, inputs);
         if (constrain)p.constrainParameterValues();
     } else {
-      std::cout << "ERROR: " << getName() << ": parameter count mismatch. Perhaps your binary plugins and SC sources are different versions";
+      std::cout << "ERROR: " << getName() << ": parameter count mismatch. Perhaps your binary plugins and SC sources are different versions\n";
       //TODO: work out how to bring any further work to a halt
     }
     return p;
