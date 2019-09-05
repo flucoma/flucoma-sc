@@ -219,26 +219,15 @@ public:
   /// The calc function. Checks to see if we've cancelled, spits out progress, launches tidy up when complete
   void poll(int)
   {
-//    if(!mClient.done())
-//    {
-      out0(0) = static_cast<float>(mClient.progress());
-//    }
-//    else {
-      if(0 == pollCounter++)
-      {
-            mWorld->ft->fDoAsynchronousCommand(mWorld, nullptr, Wrapper::getName(), this,
-                                      postProcess, exchangeBuffers, tidyUp, destroy,
-                                      0, nullptr);
-      }
-    
-      pollCounter %= checkThreadInterval;
-    
-//      if(mClient.state() == kDone)
-//        mDone = true;
-//      mCalcFunc = mWorld->ft->fClearUnitOutputs;
-//    if(!mDone)
+    out0(0) = static_cast<float>(mClient.progress());
 
-//    }
+    if(0 == pollCounter++)
+    {
+          mWorld->ft->fDoAsynchronousCommand(mWorld, nullptr, Wrapper::getName(), this,
+                                    postProcess, exchangeBuffers, tidyUp, destroy,
+                                    0, nullptr);
+    }
+    pollCounter %= checkThreadInterval;
   }
   
   static void nop(Unit*, int) {}
@@ -253,11 +242,8 @@ public:
     if (!result.ok())
     {
         std::cout << "ERROR: " << Wrapper::getName() << ": " << result.message().c_str() << std::endl;
-//        w->mDone = true;
         return;
     }
-//    w->mClient.setSynchronous(mSynchronous);
-//    mClient.setQueu
     w->mClient.enqueue(w->mParams);
     w->mClient.process();
   }
@@ -311,8 +297,6 @@ public:
   {
     static_cast<Wrapper *>(unit)->mClient.cancel();
   }
-  
-
 private:
     
   static Result validateParameters(NonRealTime *w)
