@@ -194,8 +194,6 @@ public:
     });
   }
   
-
-  
   /// Final input is the doneAction, not a param, so we skip it in the controlsIterator
   NonRealTime() :
       mControlsIterator{mInBuf,static_cast<size_t>(static_cast<ptrdiff_t>(mNumInputs) - mSpecialIndex - 1)}
@@ -209,8 +207,7 @@ public:
   void init()
   {
     mFifoMsg.Set(mWorld, initNRTJob, nullptr, this);
-    mWorld->ft->fSendMsgFromRT(mWorld,mFifoMsg);
-    
+    mWorld->ft->fSendMsgFromRT(mWorld,mFifoMsg);    
     //we want to poll thread roughly every 20ms
     checkThreadInterval = static_cast<size_t>(0.02 / controlDur());
     set_calc_function<NonRealTime, &NonRealTime::poll>();
@@ -223,9 +220,10 @@ public:
 
     if(0 == pollCounter++)
     {
-          mWorld->ft->fDoAsynchronousCommand(mWorld, nullptr, Wrapper::getName(), this,
-                                    postProcess, exchangeBuffers, tidyUp, destroy,
-                                    0, nullptr);
+      mWorld->ft->fDoAsynchronousCommand(mWorld, nullptr, Wrapper::getName(), this,
+                              postProcess, exchangeBuffers, tidyUp, destroy,
+                              0, nullptr);
+      mCalcFunc = nop;
     }
     pollCounter %= checkThreadInterval;
   }
@@ -237,6 +235,7 @@ public:
   {
     auto w = static_cast<Wrapper*>(f->mData);
     w->mDone = false;
+
     Result result = validateParameters(w);
     
     if (!result.ok())
@@ -258,7 +257,7 @@ public:
     if(s==ProcessState::kDone || s==ProcessState::kDoneStillProcessing)
     {
       w->mDone = true;
-      
+   
       if(r.status() == Result::Status::kCancelled)
       {
         std::cout <<  Wrapper::getName() << ": Processing cancelled \n";
@@ -270,9 +269,9 @@ public:
         std::cout << "ERROR: " << Wrapper::getName() << ": " << r.message().c_str() << '\n';
         return false;
       }
-      
       return true;
     }
+    w->template set_calc_function<NonRealTime, &NonRealTime::poll>();
     return false;
   }
 
@@ -288,7 +287,6 @@ public:
     if(w->mDone && w->mNumInputs > 0) //don't check for doneAction if UGen has no ins
     {
       int doneAction = static_cast<int>(w->in0(static_cast<int>(w->mNumInputs - 1))); //doneAction is last input; THIS IS THE LAW
-      if(doneAction >= 2) w->mCalcFunc = nop;
       world->ft->fDoneAction(doneAction,w);
     }
   }
