@@ -1,7 +1,7 @@
 FluidBufThreadDemo : UGen{
     var <>synth, <>server;
 
-		*kr {|source, result, time, doneAction = 0|
+		*kr {|result, time, doneAction = 0|
 
 		result = result.asUGenInput;
 
@@ -12,7 +12,7 @@ FluidBufThreadDemo : UGen{
         ^this.multiNew(\control, result, time, doneAction);
 	}
 
-    *process { |server, result, time, action|
+    *process { |server, result, time = 1000, action|
 
 		var synth,instance;
 

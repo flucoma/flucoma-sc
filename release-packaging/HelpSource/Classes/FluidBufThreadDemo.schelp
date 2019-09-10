@@ -1,0 +1,74 @@
+TITLE:: FluidBufThreadDemo
+SUMMARY:: A Tutorial Object to Experiment with Multithreading in FluidBuf* Objects
+CATEGORIES:: Libraries>FluidDecomposition
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreading
+
+DESCRIPTION::
+This class implements a simple tutorial object to illustrate and experiment with the behaviour of the FluidBuf* objects. It simply starts a process that will return a single value after a delay, during which it will just wait and do nothing. It is part of the Fluid Decomposition Toolkit of the FluCoMa project.footnote::This was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+
+The process will return its delay lenght as the first index of the specified destination buffer.
+
+CLASSMETHODS::
+
+METHOD:: process
+	This is the method that calls for the delay to be .
+
+ARGUMENT:: server
+(describe argument here)
+
+ARGUMENT:: result
+	The destination buffer, where the value should be written at the end of the process.
+
+ARGUMENT:: time
+	The duration in milliseconds of the delay that the background thread will wait for before yielding the value to the destination buffer.
+
+ARGUMENT:: action
+	A function that will be executed upon completion. It is passed the destination buffer as argument.
+
+RETURNS::
+	Nothing, as the destination buffer is specified in the call.
+
+
+METHOD:: kr
+	This is the UGEN that is holding the link with the background thread. It is called by the 'process' method.
+
+ARGUMENT:: result
+	The destination buffer, where the value should be written at the end of the process.
+
+ARGUMENT:: time
+	The duration of the delay that the background thread will wait for before yielding the value to the destination buffer.
+
+ARGUMENT:: doneAction
+	An integer representing an action to be executed when the process is finished. This can be used to free the enclosing synth, etc. See link::Classes/Done::  for more detail.
+
+RETURNS::
+	It report the approximate job progress, from 0 to 1.
+
+
+INSTANCEMETHODS::
+
+METHOD:: cancel
+	This allows to cancel the process on the background thread safely.
+
+RETURNS::
+	Nothing.
+
+
+EXAMPLES::
+
+For a thorough explanation, please refer to the tutorial on link::Guides/FluidBufMultiThreading::.
+
+CODE::
+// define a destination buffer
+b=Buffer.alloc(s,1);
+
+// simple call, where we query the destination buffer upon completion with the action message.
+FluidBufThreadDemo.process(s, b, 1000, {|x|x.get(0,{|y|y.postln});});
+
+// a simple call to the UGEN, where we can monitor the progress and interrup the process without killing the synth
+{c = FluidBufThreadDemo.kr(b,10000, Done.freeSelf);}.scope;
+
+// cancel the job
+c.cancel
+c.free
+::

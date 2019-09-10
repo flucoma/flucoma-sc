@@ -1,0 +1,31 @@
+TITLE:: FluidBuf* Multithreading Behaviour
+SUMMARY:: A tutorial on the multithreading behaviour of offline processes of the FluCoMa toolbox for signal decomposition
+CATEGORIES:: Libraries>FluidDecomposition
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
+
+DESCRIPTION::
+The Fluid Decomposition toolbox provides an open-ended, loosely coupled set of objects to break up and analyse sound in terms of slices (segments in time), layers (superositions in time and frequency) and objects (configurable or discoverable patterns in sound). Almost all objects have audio-rate and buffer-based versions. footnote::
+This toolbox was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+
+subsection:: basic usage
+
+	show the process method
+
+	show the process returned variable
+
+subsection:: kr usage
+
+	show the kr monitoring graphically
+
+	show the interruption
+
+	show the interruption again, but in a still working synth, mapping the KR out to a pitch gliss
+
+
+subsection:: bufnmf example
+
+	just for shits and giggles
+
+subsection: further reading
+
+	a few tutorials on how fucked up it is, includign the thread sync and NRT thread in SC.
