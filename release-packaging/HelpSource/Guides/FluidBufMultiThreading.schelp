@@ -4,28 +4,100 @@ CATEGORIES:: Libraries>FluidDecomposition
 RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
 
 DESCRIPTION::
-The Fluid Decomposition toolbox provides an open-ended, loosely coupled set of objects to break up and analyse sound in terms of slices (segments in time), layers (superositions in time and frequency) and objects (configurable or discoverable patterns in sound). Almost all objects have audio-rate and buffer-based versions. footnote::
-This toolbox was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+The Fluid Decomposition toolbox footnote::This toolbox was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).:: provides an open-ended, loosely coupled set of objects to break up and analyse sound in terms of slices (segments in time), layers (superositions in time and frequency) and objects (configurable or discoverable patterns in sound). Almost all objects have audio-rate and buffer-based versions.
 
-subsection:: basic usage
+These latter buffer-based processes can be very CPU intensive, and therefore require a careful consideration of the underlying architecture. Luckily, the FluidBuf* have different entry points, from transparent usage to more advanced control, to allow the creative coder to care as much as they need too.
 
-	show the process method
+subsection:: Basic Usage
 
-	show the process returned variable
+In SuperCollider, the server will delegate to a second, slow, non-real-time thread, tasks that are potentially too long for the real-time server, for instance, loading a soundfile to a buffer. This process is explained HERE and HERE, and for the inquisitive mind, in chapter XX of the SuperCollider book.
 
-subsection:: kr usage
+The problem with the FluidBuf* tasks is that they are very, very much longer than any of these native tasks, so we have to send them in their own thread in order to leave both real-time and non-real-time native server threads alone and responsive.
 
-	show the kr monitoring graphically
+The first approach, the simplest, is therefore to call the 'process' method on the FluidBuf* objects. For this tutorial, we will use a dummy class, LINK::Classes/FluidBufThreadDemo::, which in effects does nothing but to wait on that new thread before sending back one value in a buffer.
 
-	show the interruption
+CODE::
+// define a destination buffer
+b=Buffer.alloc(s,1);
 
-	show the interruption again, but in a still working synth, mapping the KR out to a pitch gliss
+// a simple call, where we query the destination buffer upon completion with the action message.
+FluidBufThreadDemo.process(s, b, 1000, {|x|x.get(0,{|y|y.postln});});
+::
+
+This will print 1000 in the Post window. But actually, this is what is happening:
+NUMBEREDLIST::
+
+	## The class will check the arguments' validity
+	## It will send the job to a new thread (in this case, doing nothing but waiting for 1000 ms, then writing that number to the first index of a destination buffer)
+	## It will received an acknoledgment of the job being done
+	## It will call the user-defined function with the destination buffer as argument. In this case, we send it to a function get which prints the value of index 0.
+::
+Actually, what is really happening is going to be discussed below, but this should be enough for most use cases.
+
+subsection:: Cancelling
+
+The 'process' method returns a pointer to the task running in background, which allows to cancel the job. To allow that, one must capture the returned task ID.
+
+CODE::
+//start a long process, capturing the instance of the process
+c = FluidBufThreadDemo.process(s, b, 100000, {|x|x.get(0,{|y|y.postln});});
+
+//cancel the job. Look at the Post Window
+c.cancel;
+
+//////////////////////////////
+////// FOR GERARD AND OWEN: we are still getting a call to the done function, which would be good to avoid
+//////////////////////////////
+::
+
+subsection:: KR Usage
+
+	If we look at the class definition, we will see that the 'process' method is actually calling a temporary Synth which connects to the process on the new thread. We can also call this method directly, in order to get a feedback on how the process is going.
+
+	CODE::
+// if a simple call to the UGen is used, the progress can be monitored
+{FluidBufThreadDemo.kr(b,10000, Done.freeSelf);}.scope;
+
+//or polled within a synth
+{FluidBufThreadDemo.kr(b,3000).poll;SinOsc.ar(110,0,0.1)}.play;
+
+//////////////////////////////
+////// FOR GERARD AND OWEN: here the KR out is never 1 nor never stops... let's see
+//////////////////////////////
+
+//or its value used to control other processes, here changing the pitch, whilst being polled to the window twice per second
+{SinOsc.ar(Poll.kr(Impulse.kr(2),FluidBufThreadDemo.kr(b,3000)).exprange(110,220),0,0.1)}.play;
+::
+
+STRONG::FOR GERARD AND OWEN:::
+
+To cancel, we now have to do some complicated magic like explained here:
+
+	CODE::
+a = {c = FluidBufThreadDemo.kr(b,50000,doneAction:Done.freeSelf)}.scope
+c.server = Server.default;
+c.synth = a;
+c.cancel
+::
+
+it would be better to do something more transparent like managing to inherit c.synth and c.server from the call and do just:
+
+	CODE::
+{c = FluidBufThreadDemo.kr(b,10000,doneAction:Done.freeSelf)}.scope
+c.cancel
+::
+
+Owen said:
+EMPHASIS::Synth definitely stores its server as a property, by dint of inheriting from Node. Would suggest that, barring any cleverer ideas, cancel() can take the synth as an argument; if its nil, the instance will try and fallback on its own stored synth variable and if that’s nil, an error happens. :: but what does Gerard the Wise think?
+
+NEXT IN LINE for PA to write:
+	show the interruption again, but in a still working synth, mapping the KR out to a pitch gliss for instance.
 
 
-subsection:: bufnmf example
+subsection:: A Musical Example: FluidBufNMF
 
-	just for shits and giggles
+	just for shits and giggles, I'll port something here.
 
-subsection: further reading
+subsection: Further Reading
 
-	a few tutorials on how fucked up it is, includign the thread sync and NRT thread in SC.
+	a few tutorials on how messed up it is, includign the thread sync and NRT thread in SC.

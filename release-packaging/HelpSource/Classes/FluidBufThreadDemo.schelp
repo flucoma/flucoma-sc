@@ -62,13 +62,13 @@ CODE::
 // define a destination buffer
 b=Buffer.alloc(s,1);
 
-// simple call, where we query the destination buffer upon completion with the action message.
+// a simple call, where we query the destination buffer upon completion with the action message.
 FluidBufThreadDemo.process(s, b, 1000, {|x|x.get(0,{|y|y.postln});});
 
-// a simple call to the UGEN, where we can monitor the progress and interrup the process without killing the synth
-{c = FluidBufThreadDemo.kr(b,10000, Done.freeSelf);}.scope;
-
-// cancel the job
+// as the 'process' returns its location, we can cancel the process easily
+c = FluidBufThreadDemo.process(s, b, 100000, {|x|x.get(0,{|y|y.postln});});
 c.cancel
-c.free
+
+// if a simple call to the UGen is used, the progress can be monitored
+{c = FluidBufThreadDemo.kr(b,10000, Done.freeSelf);}.scope;
 ::
