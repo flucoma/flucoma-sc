@@ -85,6 +85,6 @@ LINK:: Classes/FluidBufCompose::
 
 Copy, slice, stack, mix concatenate. All the things you've wanted to do with buffers...
 
-LINK:: Classes/FluidBufThreadDemo:
+LINK:: Classes/FluidBufThreadDemo::
 
 A tutorial object to experiment with multithreading in FluidBuf* objects
