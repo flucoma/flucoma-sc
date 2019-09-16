@@ -6,17 +6,18 @@ c = Buffer.new(s);
 (
 // with basic params
 Routine{
-	var startTime, goal, startThresh, prevThresh, curThresh, curVal, prevVal, iters, maxIters, dVal, dThresh;
+	var startTime, target, tolerance, startThresh, prevThresh, curThresh, curVal, prevVal, iters, maxIters, dVal, dThresh;
 	startTime = Main.elapsedTime;
 	prevThresh = 0.1; //initial threshold (between 0.00001 and 0.99999
-	goal = 10; //number of slices desired
+	target = 10; //number of slices desired
+	tolerance = 0; // the acceptable error in the number of slices yield
 	maxIters = 100; //max number of iterations acceptable
 
 	//makes a first iteration
 	FluidBufNoveltySlice.process(s,b, indices: c, threshold:prevThresh,action:{|x|prevVal = x.numFrames});
 	s.sync;
 	//makes a second iteration
-	if ( (prevVal <  goal), {
+	if ( (prevVal <  target), {
 		curThresh = (prevThresh * 0.5).max(0.000001);
 	}, {
 		curThresh = (prevThresh * 2).min(0.999999);
@@ -27,7 +28,7 @@ Routine{
 	//makes further iterations until the result is achieved, or the maximum of acceptable iterations is reached
 	iters = 2;
 	while ( {
-		(iters < maxIters) && ((curVal - goal) != 0)
+		(iters < maxIters) && ((curVal - target).abs > tolerance)
 	}, {
 		iters = iters + 1;
 		dVal = curVal - prevVal;
@@ -41,7 +42,7 @@ Routine{
 			curThresh = (dThresh + curThresh).min(0.999999).max(0.000001);
 		},{
 			//if we have
-			curThresh = (((dThresh / dVal) * (goal - curVal)) + curThresh).min(0.999999).max(0.000001);
+			curThresh = (((dThresh / dVal) * (target - curVal)) + curThresh).min(0.999999).max(0.000001);
 		});
 		FluidBufNoveltySlice.process(s,b, indices: c, threshold:curThresh,action:{|x|curVal = x.numFrames});
 		s.sync;
@@ -54,7 +55,7 @@ Routine{
 		"Failed to find a suitable threshold in % seconds.\n".postf((Main.elapsedTime - startTime).round(0.01));
 	}, {
 		// succeeded
-		"Found % as a suitable threshold in % seconds and % iterations.\n".postf(curThresh, (Main.elapsedTime - startTime).round(0.01), iters);
+		"Found % as a suitable threshold for % slices in % seconds and % iterations.\n".postf(curThresh, curVal, (Main.elapsedTime - startTime).round(0.01), iters);
 	}
 	);
 }.play
