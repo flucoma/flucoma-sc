@@ -15,7 +15,6 @@ Routine{
 
 	//makes a first iteration
 	FluidBufNoveltySlice.process(s,b, indices: c, threshold:prevThresh,action:{|x|prevVal = x.numFrames});
-	s.sync;
 	//makes a second iteration
 	if ( (prevVal <  target), {
 		curThresh = (prevThresh * 0.5).max(0.000001);
@@ -23,7 +22,6 @@ Routine{
 		curThresh = (prevThresh * 2).min(0.999999);
 	});
 	FluidBufNoveltySlice.process(s,b, indices: c, threshold:curThresh,action:{|x|curVal = x.numFrames});
-	s.sync;
 
 	//makes further iterations until the result is achieved, or the maximum of acceptable iterations is reached
 	iters = 2;
@@ -45,7 +43,6 @@ Routine{
 			curThresh = (((dThresh / dVal) * (target - curVal)) + curThresh).min(0.999999).max(0.000001);
 		});
 		FluidBufNoveltySlice.process(s,b, indices: c, threshold:curThresh,action:{|x|curVal = x.numFrames});
-		s.sync;
 	}
 	);
 	//depending on the outcome, gives the right info back
