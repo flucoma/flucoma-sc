@@ -4,17 +4,17 @@ CATEGORIES:: Libraries>FluidDecomposition
 RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreading
 
 DESCRIPTION::
-This class implements a simple tutorial object to illustrate and experiment with the behaviour of the FluidBuf* objects. It simply starts a process that will return a single value after a delay, during which it will just wait and do nothing. It is part of the Fluid Decomposition Toolkit of the FluCoMa project.footnote::This was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+This class implements a simple tutorial object to illustrate and experiment with the behaviour of the FluidBuf* objects.  It is part of the Fluid Decomposition Toolkit of the FluCoMa project.footnote::This was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).:: It simply starts a process that will, upon completion of its task, write a single value to the destination buffer. This is the general behaviour of much of the CPU consuming FluidBuf* objects. In this case, as a toy example, the task is simply just wait and do nothing, to simulate a task that would actually take that long in the background.
 
-The process will return its delay lenght as the first index of the specified destination buffer.
+The process will, after waiting for STRONG::time:: millisecond, return its delay lenght as a Float writen at index [0] of the specified destination buffer.
 
 CLASSMETHODS::
 
 METHOD:: process
-	This is the method that calls for the delay to be .
+	This is the method that calls for the job to be done. In this case, simply waiting STRONG::time:: millisecond before writing a value in the destination buffer.
 
 ARGUMENT:: server
-(describe argument here)
+	The server on which the destination buffer is declared.
 
 ARGUMENT:: result
 	The destination buffer, where the value should be written at the end of the process.
@@ -26,11 +26,11 @@ ARGUMENT:: action
 	A function that will be executed upon completion. It is passed the destination buffer as argument.
 
 RETURNS::
-	Nothing, as the destination buffer is specified in the call.
+	The instance of FluidNRTProcess which can be used to cancel the job.
 
 
 METHOD:: kr
-	This is the UGEN that is holding the link with the background thread. It is called by the 'process' method.
+	This is the UGen that is holding the link with the background thread. It is called by the 'process' method and can be used directly to monitor the progress of the job. For examples of such usage, please refer to the tutorial on link::Guides/FluidBufMultiThreading::.
 
 ARGUMENT:: result
 	The destination buffer, where the value should be written at the end of the process.
@@ -45,15 +45,6 @@ RETURNS::
 	It report the approximate job progress, from 0 to 1.
 
 
-INSTANCEMETHODS::
-
-METHOD:: cancel
-	This allows to cancel the process on the background thread safely.
-
-RETURNS::
-	Nothing.
-
-
 EXAMPLES::
 
 For a thorough explanation, please refer to the tutorial on link::Guides/FluidBufMultiThreading::.
@@ -65,10 +56,10 @@ b=Buffer.alloc(s,1);
 // a simple call, where we query the destination buffer upon completion with the action message.
 FluidBufThreadDemo.process(s, b, 1000, {|x|x.get(0,{|y|y.postln});});
 
-// as the 'process' returns its location, we can cancel the process easily
+// as the 'process' returns its parent UGen, we can cancel the process easily
 c = FluidBufThreadDemo.process(s, b, 100000, {|x|x.get(0,{|y|y.postln});});
 c.cancel
 
 // if a simple call to the UGen is used, the progress can be monitored
-{c = FluidBufThreadDemo.kr(b,10000, Done.freeSelf);}.scope;
+{c = FluidBufThreadDemo.kr(b,10000, Done.freeSelf); Poll.kr(Impulse.kr(2),c);}.scope;
 ::
