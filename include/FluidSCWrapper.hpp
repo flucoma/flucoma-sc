@@ -216,19 +216,18 @@ public:
   /// The calc function. Checks to see if we've cancelled, spits out progress, launches tidy up when complete
   void poll(int)
   {
-    out0(0) = static_cast<float>(mClient.progress());
+    out0(0) = mDone ? 1.0 : static_cast<float>(mClient.progress());
 
-    if(0 == pollCounter++)
+    if(0 == pollCounter++ && !mCheckingForDone)
     {
+      mCheckingForDone = true;
       mWorld->ft->fDoAsynchronousCommand(mWorld, nullptr, Wrapper::getName(), this,
                               postProcess, exchangeBuffers, tidyUp, destroy,
                               0, nullptr);
-      mCalcFunc = nop;
     }
     pollCounter %= checkThreadInterval;
   }
   
-  static void nop(Unit*, int) {}
 
   /// To be called on NRT thread. Validate parameters and commence processing in new thread
   static void initNRTJob(FifoMsg* f)
@@ -271,7 +270,6 @@ public:
       w->mDone = true;
       return true;
     }
-    w->template set_calc_function<NonRealTime, &NonRealTime::poll>();
     return false;
   }
 
@@ -288,7 +286,9 @@ public:
     {
       int doneAction = static_cast<int>(w->in0(static_cast<int>(w->mNumInputs - 1))); //doneAction is last input; THIS IS THE LAW
       world->ft->fDoneAction(doneAction,w);
+      return;
     }
+    w->mCheckingForDone = false;
   }
   
   static void doCancel(Unit *unit, sc_msg_iter*)
@@ -349,6 +349,7 @@ protected:
   Client        mClient;
   bool          mSynchronous{true};
   bool          mQueueEnabled{false};
+  bool          mCheckingForDone{false}; //only write to this from RT thread kthx
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
