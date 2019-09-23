@@ -256,8 +256,6 @@ public:
     
     if(s==ProcessState::kDone || s==ProcessState::kDoneStillProcessing)
     {
-      w->mDone = true;
-   
       if(r.status() == Result::Status::kCancelled)
       {
         std::cout <<  Wrapper::getName() << ": Processing cancelled \n";
@@ -269,6 +267,8 @@ public:
         std::cout << "ERROR: " << Wrapper::getName() << ": " << r.message().c_str() << '\n';
         return false;
       }
+      
+      w->mDone = true;
       return true;
     }
     w->template set_calc_function<NonRealTime, &NonRealTime::poll>();
