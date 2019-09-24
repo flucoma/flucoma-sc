@@ -31,8 +31,6 @@ FluidNRTProcess : Object{
 
         OSCFunc({
             forkIfNeeded{
-                synth.waitForFree;
-                server.sync;
                 outputBuffers.do{|buf|
                     buf = server.cachedBufferAt(buf.asUGenInput);
                     buf.updateInfo;
@@ -41,6 +39,12 @@ FluidNRTProcess : Object{
                 if(action.notNil){action.valueArray(outputBuffers)};
             }
         }, reply).oneShot;
+
+        forkIfNeeded{
+            synth.waitForFree;
+            server.sync;
+        }
+
 		^this;
 	}
 
