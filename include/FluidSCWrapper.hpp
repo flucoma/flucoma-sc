@@ -201,6 +201,13 @@ public:
     , mClient{Wrapper::setParams(mParams,mWorld->mVerbosity > 0, mWorld, mControlsIterator,true)}
   {}
   
+  ~NonRealTime()
+  {
+    if(mClient.state() == ProcessState::kProcessing)
+      std::cout << Wrapper::getName() << ": Processing cancelled \n";
+    //processing will be cancelled in ~NRTThreadAdaptor()
+  }
+  
 
   /// No option of not using a worker thread for now
   /// init() sets up the NRT process via the SC NRT thread, and then sets our UGen calc function going
@@ -255,6 +262,8 @@ public:
     
     if(s==ProcessState::kDone || s==ProcessState::kDoneStillProcessing)
     {
+      //Given that cancellation from the language now always happens by freeing the
+      //synth, this block isn't reached normally. HOwever, if someone cancels using u_cmd, this is what will fire
       if(r.status() == Result::Status::kCancelled)
       {
         std::cout <<  Wrapper::getName() << ": Processing cancelled \n";
