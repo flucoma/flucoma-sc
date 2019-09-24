@@ -22,20 +22,25 @@ FluidNRTProcess : Object{
 	}
 
 	process{|...ugenArgs|
-		synth = {
-			ugen.performList(\kr, ugenArgs.collect{|a| a.asUGenInput} ++ Done.freeSelf)
+        var reply = '/done' ++ UniqueID.next;
+        synth = {
+            var ug = ugen.performList(\kr, ugenArgs.collect{|a| a.asUGenInput} ++ Done.freeSelf);
+            SendReply.kr(Done.kr(ug),reply)
 		}.play(server);
 		synth.postln;
-		forkIfNeeded{
-            synth.waitForFree;
-			server.sync;
-			outputBuffers.do{|buf|
-				buf = server.cachedBufferAt(buf.asUGenInput);
-				buf.updateInfo;
-				server.sync;
-			};
-			if(action.notNil){action.valueArray(outputBuffers)};
-		};
+
+        OSCFunc({
+            forkIfNeeded{
+                synth.waitForFree;
+                server.sync;
+                outputBuffers.do{|buf|
+                    buf = server.cachedBufferAt(buf.asUGenInput);
+                    buf.updateInfo;
+                    server.sync;
+                };
+                if(action.notNil){action.valueArray(outputBuffers)};
+            }
+        }, reply).oneShot;
 		^this;
 	}
 
