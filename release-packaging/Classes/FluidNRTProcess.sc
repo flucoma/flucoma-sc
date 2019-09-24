@@ -23,12 +23,13 @@ FluidNRTProcess : Object{
 
 	process{|...ugenArgs|
 		synth = {
-			ugen.performList(\kr, ugenArgs.collect{|a| a.asUGenInput} ++ Done.freeSelf)
+            ugen.performList(\kr, ugenArgs.drop(-1).collect{|a| a.asUGenInput} ++ Done.freeSelf ++ ugenArgs.keep(-1).collect{|a| a.asUGenInput})
 		}.play(server);
 		synth.postln;
 		forkIfNeeded{
             synth.waitForFree;
 			server.sync;
+            "HERE".postln;
 			outputBuffers.do{|buf|
 				buf = server.cachedBufferAt(buf.asUGenInput);
 				buf.updateInfo;

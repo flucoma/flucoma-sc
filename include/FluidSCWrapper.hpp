@@ -194,11 +194,12 @@ public:
     });
   }
   
-  /// Final input is the doneAction, not a param, so we skip it in the controlsIterator
+  /// Penultimate input is the doneAction, final is blocking mode. Neither are params, so we skip them in the controlsIterator
   NonRealTime() :
-      mControlsIterator{mInBuf,static_cast<size_t>(static_cast<ptrdiff_t>(mNumInputs) - mSpecialIndex - 1)}
+      mControlsIterator{mInBuf,static_cast<size_t>(static_cast<ptrdiff_t>(mNumInputs) - mSpecialIndex - 2)}
     , mParams{Wrapper::Client::getParameterDescriptors()}
     , mClient{Wrapper::setParams(mParams,mWorld->mVerbosity > 0, mWorld, mControlsIterator,true)}
+    , mSynchronous{mNumInputs > 2 ? (in0(static_cast<int>(mNumInputs - 1)) > 0) : false}
   {}
   
 
@@ -242,6 +243,7 @@ public:
         std::cout << "ERROR: " << Wrapper::getName() << ": " << result.message().c_str() << std::endl;
         return;
     }
+    w->mClient.setSynchronous(w->mSynchronous); 
     w->mClient.enqueue(w->mParams);
     w->mClient.process();
   }
@@ -253,7 +255,8 @@ public:
     Result r;
     ProcessState s = w->mClient.checkProgress(r);
     
-    if(s==ProcessState::kDone || s==ProcessState::kDoneStillProcessing)
+    if((s==ProcessState::kDone || s==ProcessState::kDoneStillProcessing)
+      || (w->mSynchronous && s==ProcessState::kNoProcess) ) //I think this hinges on the fact that when mSynchrous = true, this call will always be behind process() on the command FIFO, so we can assume that if the state is kNoProcess, it has run (vs never having run) 
     {
       if(r.status() == Result::Status::kCancelled)
       {
@@ -282,9 +285,9 @@ public:
   static void destroy(World* world, void* data)
   {
     auto w = static_cast<Wrapper*>(data);
-    if(w->mDone && w->mNumInputs > 0) //don't check for doneAction if UGen has no ins
+    if(w->mDone && w->mNumInputs > 2) //don't check for doneAction if UGen has no ins (there should be 3 minimum -> sig, doneAction, blocking mode)
     {
-      int doneAction = static_cast<int>(w->in0(static_cast<int>(w->mNumInputs - 1))); //doneAction is last input; THIS IS THE LAW
+      int doneAction = static_cast<int>(w->in0(static_cast<int>(w->mNumInputs - 2))); //doneAction is penultimate input; THIS IS THE LAW
       world->ft->fDoneAction(doneAction,w);
       return;
     }
