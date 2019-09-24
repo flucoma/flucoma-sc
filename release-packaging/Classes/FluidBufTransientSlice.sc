@@ -1,7 +1,7 @@
 FluidBufTransientSlice : UGen{
     var <>synth, <>server;
 
-	*kr { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, order = 20, blockSize = 256, padSize = 128, skew = 0, threshFwd = 2, threshBack = 1.1, windowSize = 14, clumpLength = 25, minSliceLength = 1000, doneAction = 0, blocking = 0|
+	*kr { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, order = 20, blockSize = 256, padSize = 128, skew = 0, threshFwd = 2, threshBack = 1.1, windowSize = 14, clumpLength = 25, minSliceLength = 1000, doneAction = 0|
 
 		source = source.asUGenInput;
 		indices = indices.asUGenInput;
@@ -9,11 +9,11 @@ FluidBufTransientSlice : UGen{
 		source.isNil.if {"FluidBufNoveltySlice:  Invalid source buffer".throw};
 		indices.isNil.if {"FluidBufNoveltySlice:  Invalid features buffer".throw};
 
-		^this.multiNew(\control, source, startFrame, numFrames, startChan, numChans, indices, order, blockSize, padSize, skew, threshFwd, threshBack, windowSize, clumpLength, minSliceLength, doneAction, blocking);
+		^this.multiNew(\control, source, startFrame, numFrames, startChan, numChans, indices, order, blockSize, padSize, skew, threshFwd, threshBack, windowSize, clumpLength, minSliceLength, doneAction);
 
 	}
 
-    *process { |server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, order = 20, blockSize = 256, padSize = 128, skew = 0, threshFwd = 2, threshBack = 1.1, windowSize = 14, clumpLength = 25, minSliceLength = 1000, action, blocking = 0 |
+    *process { |server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, order = 20, blockSize = 256, padSize = 128, skew = 0, threshFwd = 2, threshBack = 1.1, windowSize = 14, clumpLength = 25, minSliceLength = 1000, action|
 
         var synth, instance;
 		source = source.asUGenInput;

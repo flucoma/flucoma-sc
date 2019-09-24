@@ -11,11 +11,11 @@ FluidBufStats : UGen{
 		^this.multiNew(\control, source, startFrame, numFrames, startChan, numChans, stats, numDerivs, low, middle, high,doneAction);
 	}
 
-    *process { |server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, stats, numDerivs = 0, low = 0, middle = 50, high = 100, action, blocking = 0 |
+    *process { |server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, stats, numDerivs = 0, low = 0, middle = 50, high = 100, action|
 		^FluidNRTProcess.new(
 			server, this, action, [stats]
 		).process(
-			source, startFrame, numFrames, startChan, numChans, stats,numDerivs, low, middle, high, blocking
+			source, startFrame, numFrames, startChan, numChans, stats,numDerivs, low, middle, high
 		);
 	}
 
