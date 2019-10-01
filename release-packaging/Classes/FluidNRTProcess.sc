@@ -29,7 +29,6 @@ FluidNRTProcess : Object{
 		forkIfNeeded{
             synth.waitForFree;
 			server.sync;
-            "HERE".postln;
 			outputBuffers.do{|buf|
 				buf = server.cachedBufferAt(buf.asUGenInput);
 				buf.updateInfo;
