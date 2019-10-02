@@ -101,6 +101,23 @@ f.free
 //to appreciate the multithreading, use your favourite CPU monitoring application. scsynth will be very, very high, despite the peakCPU and avgCPU being very low.
 ::
 
+subsection:: Ding, Fries are Done
+
+    There are a couple of options for dealing with the end of a job. First, the FluidBuf* objects support done actions, so you can use things like LINK::Classes/FreeSelfWhenDone:: or LINK::Classes/Done::, or set a doneAction in the call to .kr (see LINK::Classes/Done:: for details). Note that the UGen's done status only becomes true in the event of successful completion, so it will not catch cancellation. However, the doneAction will run whatever, so you can rely on the synth freeing itself.
+
+    Alternatively, the synth will send a /done reply to the node, which also carries information about whether it completed normally or was cancelled. You can use LINK::Classes/OSCFunc:: to listen for this message, targetted to your nodeID.
+
+CODE::
+a = {FluidBufThreadDemo.kr(b,1000,doneAction: 2).poll}.play;
+
+OSCFunc({|msg| //args are message symbol (/done), nodeID and replyID (which gives status)
+        if(msg[2]==0){"Completed Normally".postln}{"Cancelled".postln};
+    },"/done",argTemplate:[a.nodeID]).oneShot; //only listen to things sent for this node
+
+a.free; //optionally cancel
+::
+
+
 section:: Opting Out
 
     Whilst using a worker thread makes sense for long running jobs, the overhead of creating the thread may outweigh any advantages for very small tasks. This is because a certain amount of pre- and post-task work needs to be done before doing a job, particularly copying the buffers involved to temporary memory to avoid working on scsynth's memory outside of scsynth's official threads.
