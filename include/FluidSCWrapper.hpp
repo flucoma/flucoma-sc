@@ -205,7 +205,10 @@ public:
   ~NonRealTime()
   {
     if(mClient.state() == ProcessState::kProcessing)
+    {
       std::cout << Wrapper::getName() << ": Processing cancelled \n";
+      Wrapper::getInterfaceTable()->fSendNodeReply(&mParent->mNode,1,"/done",0,nullptr);
+    }
     //processing will be cancelled in ~NRTThreadAdaptor()
   }
   
@@ -324,7 +327,7 @@ private:
   bool exchangeBuffers(World *world) //RT thread
   {
     mParams.template forEachParamType<BufferT, AssignBuffer>(world);
-        //At this point, we can see if we're finished and let the language know (or it can wait for the doneAction, but that takes extra time)
+    //At this point, we can see if we're finished and let the language know (or it can wait for the doneAction, but that takes extra time)
     //use replyID to convey status (0 = normal completion, 1 = cancelled)
     if(mDone)      world->ft->fSendNodeReply(&mParent->mNode,0,"/done",0,nullptr);
     if(mCancelled) world->ft->fSendNodeReply(&mParent->mNode,1,"/done",0,nullptr);
