@@ -1,8 +1,8 @@
 FluidNRTProcess : Object{
-    var  <server, <ugen, <action, <outputBuffers, <synth;
+    var  <server, <ugen, <action, <outputBuffers, <blocking, <synth;
 
-	*new {|server, ugen, action, outputBuffers|
-		^super.newCopyArgs(server, ugen, action, outputBuffers).init;
+	*new {|server, ugen, action, outputBuffers, blocking = 0|
+		^super.newCopyArgs(server, ugen, action, outputBuffers, blocking).init;
 	}
 
 	init{
@@ -22,19 +22,26 @@ FluidNRTProcess : Object{
 	}
 
 	process{|...ugenArgs|
+
+        var c = Condition.new(false);
+
 		synth = {
-            ugen.performList(\kr, ugenArgs.drop(-1).collect{|a| a.asUGenInput} ++ Done.freeSelf ++ ugenArgs.keep(-1).collect{|a| a.asUGenInput})
+            ugen.performList(\new1,\control, ugenArgs.collect{|a| a.asUGenInput} ++ Done.freeSelf ++ blocking);
 		}.play(server);
 		synth.postln;
-		forkIfNeeded{
-            synth.waitForFree;
-			server.sync;
+
+        OSCFunc({ |m|
 			outputBuffers.do{|buf|
 				buf = server.cachedBufferAt(buf.asUGenInput);
 				buf.updateInfo;
-				server.sync;
 			};
-			if(action.notNil){action.valueArray(outputBuffers)};
+            if(action.notNil && m[2]==0){action.valueArray(outputBuffers)};
+            c.test = true;
+            c.signal;
+        },'/done',argTemplate:[synth.nodeID]).oneShot;
+
+		forkIfNeeded{
+            c.wait;
 		};
 		^this;
 	}
