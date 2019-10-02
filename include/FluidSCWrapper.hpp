@@ -235,6 +235,7 @@ public:
   {
     auto w = static_cast<Wrapper*>(f->mData);
     w->mDone = false;
+    w->mCancelled = false;
 
     Result result = validateParameters(w);
     
@@ -261,6 +262,7 @@ public:
       if(r.status() == Result::Status::kCancelled)
       {
         std::cout <<  Wrapper::getName() << ": Processing cancelled \n";
+        w->mCancelled = true;
         return false;
       }
       
@@ -310,13 +312,17 @@ private:
     return {};
   }
 
-  bool exchangeBuffers(World *world)
+  bool exchangeBuffers(World *world) //RT thread
   {
     mParams.template forEachParamType<BufferT, AssignBuffer>(world);
+        //At this point, we can see if we're finished and let the language know (or it can wait for the doneAction, but that takes extra time)
+    //use replyID to convey status (0 = normal completion, 1 = cancelled)
+    if(mDone)      world->ft->fSendNodeReply(&mParent->mNode,0,"/done",0,nullptr);
+    if(mCancelled) world->ft->fSendNodeReply(&mParent->mNode,1,"/done",0,nullptr);
     return true;
   }
 
-  bool tidyUp(World *)
+  bool tidyUp(World *) //NRT thread
   {
     mParams.template forEachParamType<BufferT, CleanUpBuffer>();
     return true;
@@ -345,14 +351,15 @@ private:
   char*       mCompletionMessage = nullptr;
   void*       mReplyAddr         = nullptr;
   const char *mName              = nullptr;
-  size_t checkThreadInterval;
-  size_t pollCounter{0};
+  size_t      checkThreadInterval;
+  size_t      pollCounter{0};
 protected:
   ParamSetType  mParams;
   Client        mClient;
   bool          mSynchronous{true};
   bool          mQueueEnabled{false};
   bool          mCheckingForDone{false}; //only write to this from RT thread kthx
+  bool          mCancelled{false};
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
