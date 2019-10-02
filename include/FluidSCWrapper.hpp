@@ -24,6 +24,26 @@ class FluidSCWrapper;
 
 namespace impl {
 
+  template <size_t N, typename T>
+  struct AssignBuffer
+  {
+    void operator()(const typename BufferT::type &p, World *w)
+    {
+      if (auto b = static_cast<SCBufferAdaptor *>(p.get()))
+          b->assignToRT(w);
+    }
+  };
+
+  template <size_t N, typename T>
+  struct CleanUpBuffer
+  {
+    void operator()(const typename BufferT::type &p)
+    {
+      if (auto b = static_cast<SCBufferAdaptor *>(p.get())) b->cleanUp();
+    }
+  };
+
+
 // Iterate over kr/ir inputs via callbacks from params object
 struct FloatControlsIter
 {
@@ -295,33 +315,17 @@ private:
 
   bool exchangeBuffers(World *world)
   {
-    mParams.template forEachParamType<BufferT, AssignBuffer>(world);
+    mParams.template forEachParamType<BufferT, impl::AssignBuffer>(world);
     return true;
   }
 
   bool tidyUp(World *)
   {
-    mParams.template forEachParamType<BufferT, CleanUpBuffer>();
+    mParams.template forEachParamType<BufferT, impl::CleanUpBuffer>();
     return true;
   }
 
-  template <size_t N, typename T>
-  struct AssignBuffer
-  {
-    void operator()(const typename BufferT::type &p, World *w)
-    {
-      if (auto b = static_cast<SCBufferAdaptor *>(p.get())) b->assignToRT(w);
-    }
-  };
 
-  template <size_t N, typename T>
-  struct CleanUpBuffer
-  {
-    void operator()(const typename BufferT::type &p)
-    {
-      if (auto b = static_cast<SCBufferAdaptor *>(p.get())) b->cleanUp();
-    }
-  };
   
   FloatControlsIter       mControlsIterator;
   FifoMsg     mFifoMsg;
@@ -627,9 +631,10 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
                                 }
                                 return true;
                               },
-                              [](World*, void* data) //RT thread:  response
+                              [](World* world, void* data) //RT thread:  response
                               {
                                 MessageData* m = static_cast<MessageData*>(data);
+                                MessageDescriptor::template forEachArg<typename BufferT::type,impl::AssignBuffer>(m->args, world);
                                 messageOutput(m->wrapper,m->name,m->result);
                                 return true;
                               }
