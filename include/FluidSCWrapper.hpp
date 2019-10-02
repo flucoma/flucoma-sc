@@ -194,11 +194,12 @@ public:
     });
   }
   
-  /// Final input is the doneAction, not a param, so we skip it in the controlsIterator
+  /// Penultimate input is the doneAction, final is blocking mode. Neither are params, so we skip them in the controlsIterator
   NonRealTime() :
-      mControlsIterator{mInBuf,static_cast<size_t>(static_cast<ptrdiff_t>(mNumInputs) - mSpecialIndex - 1)}
+      mControlsIterator{mInBuf,static_cast<size_t>(static_cast<ptrdiff_t>(mNumInputs) - mSpecialIndex - 2)}
     , mParams{Wrapper::Client::getParameterDescriptors()}
     , mClient{Wrapper::setParams(mParams,mWorld->mVerbosity > 0, mWorld, mControlsIterator,true)}
+    , mSynchronous{mNumInputs > 2 ? (in0(static_cast<int>(mNumInputs - 1)) > 0) : false}
   {}
   
   ~NonRealTime()
@@ -241,6 +242,7 @@ public:
   {
     auto w = static_cast<Wrapper*>(f->mData);
     w->mDone = false;
+    w->mCancelled = false;
 
     Result result = validateParameters(w);
     
@@ -249,6 +251,7 @@ public:
         std::cout << "ERROR: " << Wrapper::getName() << ": " << result.message().c_str() << std::endl;
         return;
     }
+    w->mClient.setSynchronous(w->mSynchronous); 
     w->mClient.enqueue(w->mParams);
     w->mClient.process();
   }
@@ -260,13 +263,15 @@ public:
     Result r;
     ProcessState s = w->mClient.checkProgress(r);
     
-    if(s==ProcessState::kDone || s==ProcessState::kDoneStillProcessing)
+    if((s==ProcessState::kDone || s==ProcessState::kDoneStillProcessing)
+      || (w->mSynchronous && s==ProcessState::kNoProcess) ) //I think this hinges on the fact that when mSynchrous = true, this call will always be behind process() on the command FIFO, so we can assume that if the state is kNoProcess, it has run (vs never having run) 
     {
       //Given that cancellation from the language now always happens by freeing the
       //synth, this block isn't reached normally. HOwever, if someone cancels using u_cmd, this is what will fire
       if(r.status() == Result::Status::kCancelled)
       {
         std::cout <<  Wrapper::getName() << ": Processing cancelled \n";
+        w->mCancelled = true;
         return false;
       }
       
@@ -291,9 +296,9 @@ public:
   static void destroy(World* world, void* data)
   {
     auto w = static_cast<Wrapper*>(data);
-    if(w->mDone && w->mNumInputs > 0) //don't check for doneAction if UGen has no ins
+    if(w->mDone && w->mNumInputs > 2) //don't check for doneAction if UGen has no ins (there should be 3 minimum -> sig, doneAction, blocking mode)
     {
-      int doneAction = static_cast<int>(w->in0(static_cast<int>(w->mNumInputs - 1))); //doneAction is last input; THIS IS THE LAW
+      int doneAction = static_cast<int>(w->in0(static_cast<int>(w->mNumInputs - 2))); //doneAction is penultimate input; THIS IS THE LAW
       world->ft->fDoneAction(doneAction,w);
       return;
     }
@@ -316,13 +321,17 @@ private:
     return {};
   }
 
-  bool exchangeBuffers(World *world)
+  bool exchangeBuffers(World *world) //RT thread
   {
     mParams.template forEachParamType<BufferT, AssignBuffer>(world);
+        //At this point, we can see if we're finished and let the language know (or it can wait for the doneAction, but that takes extra time)
+    //use replyID to convey status (0 = normal completion, 1 = cancelled)
+    if(mDone)      world->ft->fSendNodeReply(&mParent->mNode,0,"/done",0,nullptr);
+    if(mCancelled) world->ft->fSendNodeReply(&mParent->mNode,1,"/done",0,nullptr);
     return true;
   }
 
-  bool tidyUp(World *)
+  bool tidyUp(World *) //NRT thread
   {
     mParams.template forEachParamType<BufferT, CleanUpBuffer>();
     return true;
@@ -351,14 +360,15 @@ private:
   char*       mCompletionMessage = nullptr;
   void*       mReplyAddr         = nullptr;
   const char *mName              = nullptr;
-  size_t checkThreadInterval;
-  size_t pollCounter{0};
+  size_t      checkThreadInterval;
+  size_t      pollCounter{0};
 protected:
   ParamSetType  mParams;
   Client        mClient;
   bool          mSynchronous{true};
   bool          mQueueEnabled{false};
   bool          mCheckingForDone{false}; //only write to this from RT thread kthx
+  bool          mCancelled{false};
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

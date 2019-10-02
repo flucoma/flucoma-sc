@@ -1,7 +1,6 @@
 FluidBufNMF : UGen {
 
-
-    *kr {|source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, destination, bases, basesMode = 0, activations, actMode = 0, components = 1, iterations = 100, windowSize = 1024, hopSize = -1, fftSize = -1, windowType = 0, randomSeed = -1, doneAction = 0|
+        *new1 {|rate, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, destination, bases, basesMode = 0, activations, actMode = 0, components = 1, iterations = 100, windowSize = 1024, hopSize = -1, fftSize = -1, windowType = 0, randomSeed = -1, doneAction = 0, blocking = 0|
 
         source = source.asUGenInput;
         destination = destination.asUGenInput;
@@ -14,15 +13,33 @@ FluidBufNMF : UGen {
         bases = bases ? -1;
         activations = activations ? -1;
 
-        ^this.multiNew('control',source, startFrame, numFrames, startChan, numChans, destination, bases, basesMode, activations, actMode, components, iterations, windowSize, hopSize, fftSize, doneAction);
+        ^super.new1(rate,source, startFrame, numFrames, startChan, numChans, destination, bases, basesMode, activations, actMode, components, iterations, windowSize, hopSize, fftSize, doneAction, blocking);
+
+    }
+
+    *kr {|source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, destination, bases, basesMode = 0, activations, actMode = 0, components = 1, iterations = 100, windowSize = 1024, hopSize = -1, fftSize = -1, windowType = 0, randomSeed = -1, doneAction = 0|
+        ^this.multiNew(\control,source, startFrame, numFrames, startChan, numChans, destination, bases, basesMode, activations, actMode, components, iterations, windowSize, hopSize, fftSize, doneAction);
 
     }
 
 
     *process { |server,  source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, destination = -1, bases = -1, basesMode = 0, activations = -1, actMode = 0, components = 1, iterations = 100, windowSize = 1024, hopSize = -1, fftSize = -1, windowType = 0, randomSeed = -1, action|
 
+        source.isNil.if {"FluidBufNMF:  Invalid source buffer".throw};
+
 		^FluidNRTProcess.new(
 			server, this, action, [destination, bases, activations].select{|x| x!= -1}
+		).process(
+			source, startFrame, numFrames, startChan, numChans, destination, bases, basesMode, activations, actMode, components,iterations, windowSize, hopSize, fftSize, windowType, randomSeed
+		);
+    }
+
+    *processBlocking { |server,  source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, destination = -1, bases = -1, basesMode = 0, activations = -1, actMode = 0, components = 1, iterations = 100, windowSize = 1024, hopSize = -1, fftSize = -1, windowType = 0, randomSeed = -1, action|
+
+        source.isNil.if {"FluidBufNMF:  Invalid source buffer".throw};
+
+		^FluidNRTProcess.new(
+			server, this, action, [destination, bases, activations].select{|x| x!= -1},blocking: 1
 		).process(
 			source, startFrame, numFrames, startChan, numChans, destination, bases, basesMode, activations, actMode, components,iterations, windowSize, hopSize, fftSize, windowType, randomSeed
 		);
