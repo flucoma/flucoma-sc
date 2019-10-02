@@ -28,8 +28,8 @@ FileDialog.new({|selection|
 			f.postln;
 			("Loading"+(i+1)+"of"+total).postln;
 			Buffer.read(s, f.asAbsolutePath,action:{arg tempbuf; FluidBufCompose.process(s,tempbuf,destination:b,destStartFrame:c[i],action:{tempbuf.free});});
-			s.sync;
 		};
+			s.sync;
 		("loading buffers done in" + (Main.elapsedTime - t).round(0.1) + "seconds.").postln;
 	}.play;
 }, fileMode:2);
