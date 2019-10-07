@@ -1,7 +1,7 @@
 TITLE:: FluidBufHPSS
 SUMMARY:: Buffer-Based Harmonic-Percussive Source Separation Using Median Filtering
 CATEGORIES:: Libraries>FluidDecomposition, UGens>Buffer
-RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreading
 
 
 DESCRIPTION::

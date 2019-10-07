@@ -1,7 +1,7 @@
 TITLE:: FluidBufSines
 SUMMARY:: Buffer-Based Sinusoidal Modelling and Resynthesis
 CATEGORIES:: Libraries>FluidDecomposition, UGens>Buffer
-RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreading, Guides/FluidBufMultiThreading
 
 
 DESCRIPTION::

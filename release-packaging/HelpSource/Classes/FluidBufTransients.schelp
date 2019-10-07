@@ -1,7 +1,7 @@
 TITLE:: FluidBufTransients
 SUMMARY:: Buffer-Based Transient Extractor
 CATEGORIES:: Libraries>FluidDecomposition, UGens>Buffer
-RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreading
 
 DESCRIPTION::
 This class triggers a transient extractor on buffers on the non-real-time thread of the server. It implements declicking algorithm from chapter 5 of the classic Digital Audio Restoration by Godsill, Simon J., Rayner, Peter J.W. with some bespoke improvements on the detection function tracking. It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::

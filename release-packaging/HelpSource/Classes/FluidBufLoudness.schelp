@@ -1,7 +1,7 @@
 TITLE:: FluidBufLoudness
 SUMMARY:: A Loudness and True-Peak Descriptor on a Buffer
 CATEGORIES:: Libraries>FluidDecomposition
-RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreading
 
 
 DESCRIPTION::

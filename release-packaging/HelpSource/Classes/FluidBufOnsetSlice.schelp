@@ -1,7 +1,7 @@
 TITLE:: FluidBufOnsetSlice
 SUMMARY:: Spectral Difference-Based Audio Buffer Slicer
 CATEGORIES:: Libraries>FluidDecomposition
-RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreading
 
 DESCRIPTION::
 This class implements many spectral-based onset detection metrics, most of them taken from the literature. (http://www.dafx.ca/proceedings/papers/p_133.pdf) Some are already available in SuperCollider's LINK::Classes/Onsets:: object yet not as offline processes. It is part of the Fluid Decomposition Toolkit of the FluCoMa project.footnote::This was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::

@@ -1,7 +1,7 @@
 TITLE:: FluidBufPitch
 SUMMARY:: A Selection of Pitch Descriptors on a Buffer
 CATEGORIES:: Libraries>FluidDecomposition
-RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/SpecCentroid, Classes/SpecFlatness, Classes/SpecCentroid, Classes/SpecPcile
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreading, Classes/SpecCentroid, Classes/SpecFlatness, Classes/SpecCentroid, Classes/SpecPcile
 
 
 DESCRIPTION::

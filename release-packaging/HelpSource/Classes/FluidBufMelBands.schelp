@@ -1,7 +1,7 @@
 TITLE:: FluidBufMelBands
 SUMMARY:: A Perceptually Spread Spectral Contour Descriptor on a Buffer
 CATEGORIES:: Libraries>FluidDecomposition
-RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/FluidBufMFCC
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreading, Classes/FluidBufMFCC
 
 
 DESCRIPTION::

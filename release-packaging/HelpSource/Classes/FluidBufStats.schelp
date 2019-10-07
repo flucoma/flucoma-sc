@@ -1,7 +1,7 @@
 TITLE:: FluidBufStats
 SUMMARY:: Computing Statistics on Buffers as Series.
 CATEGORIES:: Libraries>FluidDecomposition, UGens>Buffer
-RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreading
 
 
 DESCRIPTION::

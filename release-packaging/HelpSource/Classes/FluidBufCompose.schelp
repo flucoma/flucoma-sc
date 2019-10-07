@@ -1,7 +1,7 @@
 TITLE:: FluidBufCompose
 SUMMARY:: Buffer Compositing Utility
 CATEGORIES:: Libraries>FluidDecomposition, UGens>Buffer
-RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/Buffer
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreading, Classes/Buffer
 
 DESCRIPTION::
 A FluidBufCompose object provides a flexible utility for combining the contents of buffers on the server. It can be used for thing like mixing down multichannel buffers, or converting from left-right stereo to mid-side. It is used extensively in all the example code of LINK::Guides/FluidDecomposition:: as part of the FluCoMa project. footnote::

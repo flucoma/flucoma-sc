@@ -1,7 +1,7 @@
 TITLE:: FluidBufNoveltySlice
 SUMMARY:: Buffer-Based Novelty-Based Slicer
 CATEGORIES:: Libraries>FluidDecomposition, UGens>Buffer
-RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreading
 
 DESCRIPTION::
 This class implements a non-real-time slicer using an algorithm assessing novelty in the signal to estimate the slicing points. A novelty curve is being derived from running a kernel across the diagonal of the similarity matrix, and looking for peak of changes. It implements the seminal results published in  'Automatic Audio Segmentation Using a Measure of Audio Novelty' by J Foote.  It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
