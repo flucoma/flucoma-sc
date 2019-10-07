@@ -9,6 +9,10 @@ This class implements three popular pitch descriptors, computed as frequency and
 
 The process will return a multichannel buffer with two channels per input channel, one for pitch and one for the pitch tracking confidence. Each sample represents a value, which is every hopSize. Its sampling rate is sourceSR / hopSize.
 
+STRONG::Threading::
+
+By default, this UGen spawns a new thread to avoid blocking the server command queue, so it is free to go about with its business. For a more detailed discussion of the available threading and monitoring options, including the two undocumented Class Methods below (.processBlocking and .kr) please read the guide LINK::Guides/FluidBufMultiThreading::.
+
 CLASSMETHODS::
 
 METHOD:: process

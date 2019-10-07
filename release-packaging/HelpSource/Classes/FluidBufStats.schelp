@@ -9,6 +9,10 @@ This class implements non-real-time statistical analysis on buffer channels. Typ
 
 The process returns a buffer where each channel of the STRONG::source:: buffer has been reduced to 7 statistics: mean, standard deviation, skewness, kurtosis, followed by 3 percentiles, by default the minimum value, the median, and the maximum value. Moreover, it is possible to request the same 7 stats to be applied to derivative of the input. These are useful to describe statistically the rate of change of the time series. The STRONG::stats:: buffer will grow accordingly, yielding the seven same statistical description of the n requested derivatives. Therefore, the STRONG::stats:: buffer will have as many channel as the input buffer, and as many frames as 7 times the requested STRONG::numDerivs::.
 
+STRONG::Threading::
+
+By default, this UGen spawns a new thread to avoid blocking the server command queue, so it is free to go about with its business. For a more detailed discussion of the available threading and monitoring options, including the two undocumented Class Methods below (.processBlocking and .kr) please read the guide LINK::Guides/FluidBufMultiThreading::.
+
 CLASSMETHODS::
 
 METHOD:: process

@@ -8,6 +8,10 @@ This class implements many spectral-based onset detection metrics, most of them 
 
 The process will return a buffer which contains indices (in sample) of estimated starting points of different slices.
 
+STRONG::Threading::
+
+By default, this UGen spawns a new thread to avoid blocking the server command queue, so it is free to go about with its business. For a more detailed discussion of the available threading and monitoring options, including the two undocumented Class Methods below (.processBlocking and .kr) please read the guide LINK::Guides/FluidBufMultiThreading::.
+
 CLASSMETHODS::
 
 METHOD:: process

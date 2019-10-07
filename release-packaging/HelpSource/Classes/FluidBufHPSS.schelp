@@ -22,6 +22,9 @@ This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ 
 
 More information on median filtering, and on HPSS for musicianly usage, are availabe in LINK::Guides/FluCoMa:: overview file.
 
+STRONG::Threading::
+
+By default, this UGen spawns a new thread to avoid blocking the server command queue, so it is free to go about with its business. For a more detailed discussion of the available threading and monitoring options, including the two undocumented Class Methods below (.processBlocking and .kr) please read the guide LINK::Guides/FluidBufMultiThreading::.
 
 CLASSMETHODS::
 

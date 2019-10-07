@@ -3,7 +3,6 @@ SUMMARY:: Buffer-Based Non-Negative Matrix Factorisation on Spectral Frames
 CATEGORIES:: Libraries>FluidDecomposition, UGens>Buffer
 RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/FluidNMFMatch, Classes/FluidNMFFilter
 
-
 DESCRIPTION::
 The FluidBufNMF object decomposes the spectrum of a sound into a number of components using Non-Negative Matrix Factorisation (NMF) footnote:: Lee, Daniel D., and H. Sebastian Seung. 1999. ‘Learning the Parts of Objects by Non-Negative Matrix Factorization’. Nature 401 (6755): 788–91. https://doi.org/10.1038/44565.
 ::. NMF has been a popular technique in signal processing research for things like source separation and transcription footnote:: Smaragdis and Brown, Non-Negative Matrix Factorization for Polyphonic Music Transcription.::, although its creative potential is so far relatively  unexplored.
@@ -32,6 +31,10 @@ More information on possible musicianly uses of NMF are availabe in LINK::Guides
 
 FluidBufNMF is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
 This was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899). ::
+
+STRONG::Threading::
+
+By default, this UGen spawns a new thread to avoid blocking the server command queue, so it is free to go about with its business. For a more detailed discussion of the available threading and monitoring options, including the two undocumented Class Methods below (.processBlocking and .kr) please read the guide LINK::Guides/FluidBufMultiThreading::.
 
 CLASSMETHODS::
 

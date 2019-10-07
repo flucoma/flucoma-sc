@@ -10,6 +10,10 @@ FluidAmpSlice is based on two envelop followers on a highpassed version of the s
 
 The process will return a two-channel buffer with the addresses of the onset on the first channel, and the address of the offset on the second channel.
 
+STRONG::Threading::
+
+By default, this UGen spawns a new thread to avoid blocking the server command queue, so it is free to go about with its business. For a more detailed discussion of the available threading and monitoring options, including the two undocumented Class Methods below (.processBlocking and .kr) please read the guide LINK::Guides/FluidBufMultiThreading::.
+
 CLASSMETHODS::
 
 METHOD:: process

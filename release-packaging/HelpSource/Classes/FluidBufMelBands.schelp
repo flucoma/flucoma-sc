@@ -9,6 +9,10 @@ This class implements a spectral shape descriptor where the amplitude is given f
 
 The process will return a single multichannel buffer of STRONG::numBands:: per input channel. Each frame represents a value, which is every hopSize.
 
+STRONG::Threading::
+
+By default, this UGen spawns a new thread to avoid blocking the server command queue, so it is free to go about with its business. For a more detailed discussion of the available threading and monitoring options, including the two undocumented Class Methods below (.processBlocking and .kr) please read the guide LINK::Guides/FluidBufMultiThreading::.
+
 CLASSMETHODS::
 
 METHOD:: process
