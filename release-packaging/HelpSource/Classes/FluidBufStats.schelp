@@ -115,7 +115,43 @@ FluidBufStats.process(s, b, stats:c, numDerivs:1, action:{c.getn(0,c.numFrames,{
 STRONG::A musical example::
 
 CODE::
-// todo: port the Max one
+// create some buffers
+(
+b = Buffer.read(s,File.realpath(FluidBufStats.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-ASWINE-ScratchySynth-M.wav");
+c = Buffer.new(s);
+d = Buffer.new(s);
+)
+
+//split in various chunks, collecting the indices in an array
+FluidBufOnsetSlice.process(s,b, minSliceLength: 10, metric: 9, threshold: 0.4, filterSize: 7, indices: c, action:{c.loadToFloatArray(action: {|array| e = array.add(b.numFrames).addFirst(0);e.postln;})});
+
+//describe the whole input too, here using pitch, and collecting the values in an array, dismissing the (interleaved) confidence.
+FluidBufPitch.process(s,b,features:c, action:{c.loadToFloatArray(action: {|array| f = array.unlace(2)[0]; f.postln;})});
+
+// iterate through each slice, taking the median of the first derivative of the pitch of each
+(
+g= Array.new;
+Routine({
+	e.doAdjacentPairs({
+		arg start,end;
+		FluidBufStats.processBlocking(s,c,(start/512).asInt,((end-start)/512).max(2).asInt,0,1,d,1, action: {d.loadToFloatArray(action: {
+			arg array;
+			g = g.add(array[12]);
+			"% % %\n".postf((start/512).asInt,((end-start)/512).max(2).asInt, array[12]);
+		})});
+});
+	"Done".postln;
+}).play;
+)
+
+//obtain the order of indices that would sort the stats
+h = g.order;
+
+//play in loop the slice in order of pitch direction (the median of the slice's pitch variation)
+(
+var which = h[5];
+{BufRd.ar(1, b, Phasor.ar(0,1,e[which],e[which+1],e[which]))}.play;
+)
 ::
 
 
