@@ -1,7 +1,7 @@
 
 // A tool from the FluCoMa project, funded by the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899)
 
-#include <clients/rt/OnsetSlice.hpp>
+#include <clients/rt/OnsetSliceClient.hpp>
 #include <FluidSCWrapper.hpp>
 
 static InterfaceTable *ft;
@@ -9,5 +9,5 @@ static InterfaceTable *ft;
 PluginLoad(FluidSTFTUGen) {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<OnsetSlice>("FluidOnsetSlice", ft);
+  makeSCWrapper<OnsetSliceClient>("FluidOnsetSlice", ft);
 }
