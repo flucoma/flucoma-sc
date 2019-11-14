@@ -107,7 +107,7 @@ x.set(\bands,20)
 // back to the full range
 x.set(\bands,40)
 
-// focus all the bands on a mid range
+// focus all the bands on a mid range: nothing to see!
 x.set(\low,320, \high, 800)
 
 // focusing on the low end shows the fft resolution issue. One could restart the analysis with a larger fft to show more precision
@@ -125,12 +125,12 @@ STRONG::A musical example: a perceptually spread vocoder::
 CODE::
 //load a source and define control bus for the resynthesis cluster
 (
-b = Bus.new(\control,0,40);
+b = Bus.control(s,40);
 c = Buffer.read(s,File.realpath(FluidMelBands.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
 d = Group.new;
 )
 
-//play the source and s
+//play the source and send the analysis on the
 (
 x = {
 	arg dry = 0.2;
@@ -154,7 +154,7 @@ var stepMel = rangeMel / 41;
 	arg i;
 	var freqMel = (stepMel * (i +1)) + lowMel;
 	var freq = ((freqMel/ 1127.01048).exp - 1 ) * 700;
-	{SinOsc.ar(freq,mul:Lag.kr(In.kr(b,40)[i],512*SampleDur.ir,0.0001))}.play(d,1,addAction:\addToTail);
+	{SinOsc.ar(freq,mul:Lag.kr(In.kr(b,40)[i],512*SampleDur.ir,0.00005))}.play(d,1,addAction:\addToTail);
 });
 )
 
@@ -167,7 +167,7 @@ d.free; x.free; b.free; c.free;
 
 // the bus, source and group
 (
-b = Bus.new(\control,0,40);
+b = Bus.control(s,40);
 c = Buffer.read(s,File.realpath(FluidMelBands.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
 d = Group.new;
 )
@@ -193,11 +193,10 @@ x = {
 		var stepMel = rangeMel / 41;
 		var freqMel = (stepMel * (i +1)) + lowMel;
 		var freq = ((freqMel/ 1127.01048).exp - 1 ) * 700;
-		SinOsc.ar(freq,mul:Lag.kr(In.kr(b,40)[i],512*SampleDur.ir,0.0001))}.play(d,1,addAction:\addToTail);
+		SinOsc.ar(freq,mul:Lag.kr(In.kr(b,40)[i],512*SampleDur.ir,0.00005))}.play(d,1,addAction:\addToTail);
 });
 )
 
 // free all
 d.free; x.free; b.free; c.free;
-
 ::
