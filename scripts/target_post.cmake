@@ -26,8 +26,15 @@ target_link_libraries(
 target_include_directories(
   ${PLUGIN}
   PRIVATE
-  ${LOCAL_INCLUDES}
+  "${LOCAL_INCLUDES}"
   "${FLUID_M_PATH}/include/"
+  "${FLUID_M_PATH}/thirdparty"
+)
+
+file(GLOB_RECURSE FLUID_MANIPULATION_HEADERS CONFIGURE_DEPENDS "${FLUID_M_PATH}/include/**/*.hpp")
+
+target_sources(
+  ${PLUGIN} PUBLIC ${FLUID_MANIPULATION_HEADERS}
 )
 
 target_include_directories(
