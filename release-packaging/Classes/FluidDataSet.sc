@@ -39,7 +39,7 @@ FluidDataSet : UGen {
         this.pr_sendMsg(\updatePoint,[label,buffer.asUGenInput],action);
     }
 
-    deletePoint{|label,buffer action|
+    deletePoint{|label,buffer, action|
         this.pr_sendMsg(\deletePoint,[label,buffer.asUGenInput],action);
     }
 
