@@ -28,45 +28,42 @@ FluidDataSet : UGen {
     }
 
     addPoint{|label, buffer, action|
-        this.pr_sendMsg(this.server, this.synth, 'addPoint',[label,buffer.asUGenInput],action);
+        this.pr_sendMsg(\addPoint,[label,buffer.asUGenInput],action);
     }
 
     getPoint{|label, buffer, action|
-        this.pr_sendMsg(this.server, this.synth, 'getPoint',[label,buffer.asUGenInput],action);
+        this.pr_sendMsg(\getPoint,[label,buffer.asUGenInput],action);
     }
 
     updatePoint{|label, buffer, action|
-        this.pr_sendMsg(this.server, this.synth, 'updatePoint',[label,buffer.asUGenInput],action);
+        this.pr_sendMsg(\updatePoint,[label,buffer.asUGenInput],action);
     }
 
     deletePoint{|label,buffer action|
-        this.pr_sendMsg(this.server, this.synth,  'deletePoint',[label,buffer.asUGenInput],action);
+        this.pr_sendMsg(\deletePoint,[label,buffer.asUGenInput],action);
     }
 
     cols {|action|
-        this.pr_sendMsg(this.server, this.synth, \cols,[],action,[numbers(FluidMessageResponse,_,1,_)]);
+        this.pr_sendMsg(\cols,[],action,[numbers(FluidMessageResponse,_,1,_)]);
     }
 
     read{|filename,action|
-        this.pr_sendMsg(this.server, this.synth, \read,[filename],action);
+        this.pr_sendMsg(\read,[filename],action);
     }
 
     write{|filename,action|
-        this.pr_sendMsg(this.server, this.synth, \write,[filename],action);
+        this.pr_sendMsg(\write,[filename],action);
     }
 
     size { |action|
-        this.pr_sendMsg(this.server, this.synth, \size,[],action,[numbers(FluidMessageResponse,_,1,_)]);
+        this.pr_sendMsg(\size,[],action,[numbers(FluidMessageResponse,_,1,_)]);
     }
 
-    clear { |server,node,action|
-        this.pr_sendMsg(server, node, \clear,[],action);
+    clear { |action|
+        this.pr_sendMsg(\clear,[],action);
     }
 
-    pr_sendMsg { |server, node, msg, args, action,parser|
-
-        server = server ? Server.default;
-
+    pr_sendMsg { |msg, args, action,parser|
         OSCFunc(
             { |msg|
                 var result = FluidMessageResponse.collectArgs(parser,msg.drop(3));
@@ -74,6 +71,6 @@ FluidDataSet : UGen {
             },'/'++msg
         ).oneShot;
 
-        server.listSendMsg(['/u_cmd',node.nodeID,this.synthIndex,msg].addAll(args));
+        this.server.listSendMsg(['/u_cmd',this.synth.nodeID,this.synthIndex,msg].addAll(args));
     }
 }   
