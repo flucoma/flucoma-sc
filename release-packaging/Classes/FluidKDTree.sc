@@ -6,10 +6,10 @@ FluidKDTree : UGen {
         ^this.multiNew('control');
 	}
 
-    *new{ |server, name, dims|
+    *new{ |server|
         var synth, instance;
         server = server ? Server.default;
-        synth = {instance = FluidKDTree.kr(name,dims)}.play(server);
+        synth = {instance = FluidKDTree.kr()}.play(server);
         instance.server = server;
         instance.synth = synth;
         ^instance
