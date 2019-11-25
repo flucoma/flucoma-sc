@@ -1,13 +1,10 @@
 
 // A tool from the FluCoMa project, funded by the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899)
 
-#include <clients/nrt/CorpusClient.hpp>
 #include <clients/nrt/DataSetClient.hpp>
 #include <clients/nrt/LabelSetClient.hpp>
 #include <clients/nrt/KDTreeClient.hpp>
 #include <clients/nrt/KMeansClient.hpp>
-#include <clients/nrt/KNNClasClient.hpp>
-#include <clients/nrt/KNNRegClient.hpp>
 #include <clients/nrt/KNNClient.hpp>
 #include <clients/nrt/NormalizeClient.hpp>
 #include <clients/nrt/StandardizeClient.hpp>
@@ -24,8 +21,6 @@ PluginLoad(FluidSTFTUGen)
   makeSCWrapper<NRTThreadedLabelSetClient>("FluidLabelSet",ft);
   makeSCWrapper<NRTThreadedKDTreeClient>("FluidKDTree",ft);
   makeSCWrapper<NRTThreadedKMeansClient>("FluidKMeans",ft);
-  makeSCWrapper<NRTThreadedKNNClasClient>("FluidKNNClassifier",ft);
-  makeSCWrapper<NRTThreadedKNNRegClient>("FluidKNNRegressor",ft);
   makeSCWrapper<NRTThreadedKNNClient>("FluidKNN",ft);
   makeSCWrapper<NRTThreadedNormalizeClient>("FluidNormalize",ft);
   makeSCWrapper<NRTThreadedStandardizeClient>("FluidStandardize",ft);
