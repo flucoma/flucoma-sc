@@ -1,7 +1,7 @@
 TITLE:: FluidBufAmpSlice
 SUMMARY:: Amplitude-based Slicer for Buffers
 CATEGORIES:: Libraries>FluidDecomposition
-RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreading
 
 DESCRIPTION::
 This class implements an amplitude-based slicer, with various customisable options and conditions to detect absolute and relative amplitude changes as onsets and offsets. It is part of the Fluid Decomposition Toolkit of the FluCoMa project.footnote::This was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
@@ -9,6 +9,10 @@ This class implements an amplitude-based slicer, with various customisable optio
 FluidAmpSlice is based on two envelop followers on a highpassed version of the signal: one absolute, and one relative. Each have features that will interact, including independent Schmidt triggers and state-aware time contraints. The example code below is unfolding the various possibilites in order of complexity.
 
 The process will return a two-channel buffer with the addresses of the onset on the first channel, and the address of the offset on the second channel.
+
+STRONG::Threading::
+
+By default, this UGen spawns a new thread to avoid blocking the server command queue, so it is free to go about with its business. For a more detailed discussion of the available threading and monitoring options, including the two undocumented Class Methods below (.processBlocking and .kr) please read the guide LINK::Guides/FluidBufMultiThreading::.
 
 CLASSMETHODS::
 
@@ -171,19 +175,22 @@ c = Buffer.new(s);
 FluidBufAmpSlice.process(s,b,indices:c, absRampUp:2205, absRampDown:2205, absThreshOn:-70, absThreshOff: -80, relRampUp:10, relRampDown:441, relThreshOn:14, relThreshOff:12, minSliceLength:4410)
 c.query
 c.getn(0,c.numFrames*2,{|item|item.postln;})
+//reformatting to read the onsets and offsets as pairs
+c.getn(0,c.numFrames*2,{|items|items.reshape(c.numFrames,2).do({|x| x.postln});})
 
-//loops over a splice with the MouseX
+//loops over a splice with the MouseX, taking the respective onset and offset of a given slice
 (
 {
 	BufRd.ar(1, b,
 		Phasor.ar(0,1,
-			BufRd.kr(1, c,
-				MouseX.kr(0, BufFrames.kr(c) - 1), 0, 1),
-			BufRd.kr(1, c,
-				MouseX.kr(1, BufFrames.kr(c)), 0, 1),
-			BufRd.kr(1,c,
-				MouseX.kr(0, BufFrames.kr(c) - 1), 0, 1)), 0, 1);
-		}.play;
+			BufRd.kr(2, c,
+				MouseX.kr(0, BufFrames.kr(c)), 0, 1)[0],
+			BufRd.kr(2, c,
+				MouseX.kr(1, BufFrames.kr(c)), 0, 1)[1],
+			BufRd.kr(2,c,
+				MouseX.kr(0, BufFrames.kr(c)), 0, 1)[0]
+	), 0, 1);
+}.play;
 )
 ::
 
@@ -209,6 +216,6 @@ Routine{
 }.play
 )
 
-// list the indicies of detected attacks - the two input channels have been summed
-c.getn(0,c.numFrames,{|item|item.postln;})
+// list the indicies of detected attacks - the two input channels have been summed. The two channels of the output, respectively onset and offset indices, are interleaved as this is the SuperCollider buffer data formatting
+c.getn(0,c.numFrames*2,{|item|item.postln;})
 ::

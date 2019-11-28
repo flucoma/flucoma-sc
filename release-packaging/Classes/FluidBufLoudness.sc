@@ -1,8 +1,5 @@
 FluidBufLoudness : UGen{
-
-    var <>server, <>synth;
-
-    *kr { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, features,  kWeighting = 1, truePeak = 1, windowSize = 1024, hopSize = 512, doneAction = 0|
+    *new1 { |rate,source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, features,  kWeighting = 1, truePeak = 1, windowSize = 1024, hopSize = 512, doneAction = 0, blocking = 0|
 
         var maxwindowSize = windowSize.nextPowerOfTwo;
 
@@ -12,40 +9,26 @@ FluidBufLoudness : UGen{
         source.isNil.if {"FluidBufPitch:  Invalid source buffer".throw};
         features.isNil.if {"FluidBufPitch:  Invalid features buffer".throw};
 
-        ^this.multiNew('control', source, startFrame, numFrames, startChan, numChans, features, kWeighting, truePeak, windowSize, hopSize, maxwindowSize, doneAction);
+        ^super.new1(rate, source, startFrame, numFrames, startChan, numChans, features, kWeighting, truePeak, windowSize, hopSize, maxwindowSize, doneAction, blocking);
+    }
+
+    *kr { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, features,  kWeighting = 1, truePeak = 1, windowSize = 1024, hopSize = 512, doneAction = 0|
+        ^this.multiNew('control', source, startFrame, numFrames, startChan, numChans, features, kWeighting, truePeak, windowSize, hopSize, doneAction, blocking:0 );
     }
 
     *process { |server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, features,  kWeighting = 1, truePeak = 1, windowSize = 1024, hopSize = 512, action|
-
-        var synth, instance;
-        source = source.asUGenInput;
-        features = features.asUGenInput;
-
-        source.isNil.if {"FluidBufPitch:  Invalid source buffer".throw};
-        features.isNil.if {"FluidBufPitch:  Invalid features buffer".throw};
-
-        server = server ? Server.default;
-        server.ifNotRunning({
-            "WARNING: Server not running".postln;
-            ^nil;
-        });
-        synth = {instance = FluidBufLoudness.kr(source, startFrame, numFrames, startChan, numChans, features, kWeighting, truePeak, windowSize, hopSize, doneAction:Done.freeSelf)}.play(server);
-
-        forkIfNeeded{
-            synth.waitForFree;
-            server.sync;
-            features = server.cachedBufferAt(features); features.updateInfo; server.sync;
-            action.value(features);
-        };
-
-        instance.server = server;
-        instance.synth = synth;
-        ^instance;
+		^FluidNRTProcess.new(
+			server, this, action, [features]
+		).process(
+			source, startFrame, numFrames, startChan, numChans, features, kWeighting, truePeak, windowSize, hopSize
+		);
     }
 
-
-    cancel{
-        if(this.server.notNil)
-        {this.server.sendMsg("/u_cmd", this.synth.nodeID, this.synthIndex, "cancel")};
+    *processBlocking { |server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, features,  kWeighting = 1, truePeak = 1, windowSize = 1024, hopSize = 512, action|
+		^FluidNRTProcess.new(
+			server, this, action, [features], blocking: 1
+		).process(
+			source, startFrame, numFrames, startChan, numChans, features, kWeighting, truePeak, windowSize, hopSize
+		);
     }
 }

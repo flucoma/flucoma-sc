@@ -183,24 +183,55 @@ public:
   {
     registerUnit<Wrapper>(ft, name);
     ft->fDefineUnitCmd(name, "cancel", doCancel);
+    ft->fDefineUnitCmd(name, "queue_enabled", [](struct Unit* unit, struct sc_msg_iter* args)
+    {
+      auto w = static_cast<Wrapper *>(unit);
+      w->mQueueEnabled = args->geti(0);
+      w->mFifoMsg.Set(w->mWorld,[](FifoMsg* f)
+      {
+        auto w = static_cast<Wrapper*>(f->mData);
+        w->mClient.setQueueEnabled(w->mQueueEnabled);
+      },nullptr,w);
+      Wrapper::getInterfaceTable()->fSendMsgFromRT(w->mWorld, w->mFifoMsg);
+    });
+    ft->fDefineUnitCmd(name, "synchronous", [](struct Unit* unit, struct sc_msg_iter* args)
+    {
+      auto w = static_cast<Wrapper *>(unit);
+      w->mSynchronous = args->geti(0);
+      w->mFifoMsg.Set(w->mWorld,[](FifoMsg* f)
+      {
+        auto w = static_cast<Wrapper*>(f->mData);
+        w->mClient.setSynchronous(w->mSynchronous);
+      },nullptr,w);
+      Wrapper::getInterfaceTable()->fSendMsgFromRT(w->mWorld, w->mFifoMsg);
+    });
   }
   
-  /// Final input is the doneAction, not a param, so we skip it in the controlsIterator
+  /// Penultimate input is the doneAction, final is blocking mode. Neither are params, so we skip them in the controlsIterator
   NonRealTime() :
-      mControlsIterator{mInBuf,static_cast<size_t>(mNumInputs == 0 ? 0 : static_cast<ptrdiff_t>(mNumInputs) - mSpecialIndex - 1)}
+      mControlsIterator{mInBuf,static_cast<size_t>(static_cast<ptrdiff_t>(mNumInputs) - mSpecialIndex - 2)}
     , mParams{Wrapper::Client::getParameterDescriptors()}
     , mClient{Wrapper::setParams(mParams,mWorld->mVerbosity > 0, mWorld, mControlsIterator,true)}
+    , mSynchronous{mNumInputs > 2 ? (in0(static_cast<int>(mNumInputs - 1)) > 0) : false}
   {}
+  
+  ~NonRealTime()
+  {
+    if(mClient.state() == ProcessState::kProcessing)
+    {
+      std::cout << Wrapper::getName() << ": Processing cancelled \n";
+      Wrapper::getInterfaceTable()->fSendNodeReply(&mParent->mNode,1,"/done",0,nullptr);
+    }
+    //processing will be cancelled in ~NRTThreadAdaptor()
+  }
   
 
   /// No option of not using a worker thread for now
   /// init() sets up the NRT process via the SC NRT thread, and then sets our UGen calc function going
   void init()
   {
-    mClient.setSynchronous(false); 
     mFifoMsg.Set(mWorld, initNRTJob, nullptr, this);
-    mWorld->ft->fSendMsgFromRT(mWorld,mFifoMsg);
-    
+    mWorld->ft->fSendMsgFromRT(mWorld,mFifoMsg);    
     //we want to poll thread roughly every 20ms
     checkThreadInterval = static_cast<size_t>(0.02 / controlDur());
     set_calc_function<NonRealTime, &NonRealTime::poll>();
@@ -209,44 +240,35 @@ public:
   /// The calc function. Checks to see if we've cancelled, spits out progress, launches tidy up when complete
   void poll(int)
   {
-//    if(!mClient.done())
-//    {
-      out0(0) = static_cast<float>(mClient.progress());
-//    }
-//    else {
-      if(0 == pollCounter++)
-      {
-            mWorld->ft->fDoAsynchronousCommand(mWorld, nullptr, Wrapper::getName(), this,
-                                      postProcess, exchangeBuffers, tidyUp, destroy,
-                                      0, nullptr);
-      }
-    
-      pollCounter %= checkThreadInterval;
-    
-//      if(mClient.state() == kDone)
-//        mDone = true;
-//      mCalcFunc = mWorld->ft->fClearUnitOutputs;
-//    if(!mDone)
+    out0(0) = mDone ? 1.0 : static_cast<float>(mClient.progress());
 
-//    }
+    if(0 == pollCounter++ && !mCheckingForDone)
+    {
+      mCheckingForDone = true;
+      mWorld->ft->fDoAsynchronousCommand(mWorld, nullptr, Wrapper::getName(), this,
+                              postProcess, exchangeBuffers, tidyUp, destroy,
+                              0, nullptr);
+    }
+    pollCounter %= checkThreadInterval;
   }
   
-  static void nop(Unit*, int) {}
 
   /// To be called on NRT thread. Validate parameters and commence processing in new thread
   static void initNRTJob(FifoMsg* f)
   {
     auto w = static_cast<Wrapper*>(f->mData);
     w->mDone = false;
+    w->mCancelled = false;
+
     Result result = validateParameters(w);
     
     if (!result.ok())
     {
         std::cout << "ERROR: " << Wrapper::getName() << ": " << result.message().c_str() << std::endl;
-//        w->mDone = true;
         return;
     }
-    
+    w->mClient.setSynchronous(w->mSynchronous); 
+    w->mClient.enqueue(w->mParams);
     w->mClient.process();
   }
 
@@ -257,13 +279,15 @@ public:
     Result r;
     ProcessState s = w->mClient.checkProgress(r);
     
-    if(s==ProcessState::kDone || s==ProcessState::kDoneStillProcessing)
+    if((s==ProcessState::kDone || s==ProcessState::kDoneStillProcessing)
+      || (w->mSynchronous && s==ProcessState::kNoProcess) ) //I think this hinges on the fact that when mSynchrous = true, this call will always be behind process() on the command FIFO, so we can assume that if the state is kNoProcess, it has run (vs never having run) 
     {
-      w->mDone = true;
-      
+      //Given that cancellation from the language now always happens by freeing the
+      //synth, this block isn't reached normally. HOwever, if someone cancels using u_cmd, this is what will fire
       if(r.status() == Result::Status::kCancelled)
       {
         std::cout <<  Wrapper::getName() << ": Processing cancelled \n";
+        w->mCancelled = true;
         return false;
       }
       
@@ -273,6 +297,7 @@ public:
         return false;
       }
       
+      w->mDone = true;
       return true;
     }
     return false;
@@ -287,20 +312,19 @@ public:
   static void destroy(World* world, void* data)
   {
     auto w = static_cast<Wrapper*>(data);
-    if(w->mDone && w->mNumInputs > 0) //don't check for doneAction if UGen has no ins   
+    if(w->mDone && w->mNumInputs > 2) //don't check for doneAction if UGen has no ins (there should be 3 minimum -> sig, doneAction, blocking mode)
     {
-      int doneAction = static_cast<int>(w->in0(static_cast<int>(w->mNumInputs - 1)));
-      if(doneAction >= 2) w->mCalcFunc = nop;
+      int doneAction = static_cast<int>(w->in0(static_cast<int>(w->mNumInputs - 2))); //doneAction is penultimate input; THIS IS THE LAW
       world->ft->fDoneAction(doneAction,w);
+      return;
     }
+    w->mCheckingForDone = false;
   }
   
   static void doCancel(Unit *unit, sc_msg_iter*)
   {
     static_cast<Wrapper *>(unit)->mClient.cancel();
   }
-  
-
 private:
     
   static Result validateParameters(NonRealTime *w)
@@ -313,13 +337,17 @@ private:
     return {};
   }
 
-  bool exchangeBuffers(World *world)
+  bool exchangeBuffers(World *world) //RT thread
   {
     mParams.template forEachParamType<BufferT, impl::AssignBuffer>(world);
+    //At this point, we can see if we're finished and let the language know (or it can wait for the doneAction, but that takes extra time)
+    //use replyID to convey status (0 = normal completion, 1 = cancelled)
+    if(mDone)      world->ft->fSendNodeReply(&mParent->mNode,0,"/done",0,nullptr);
+    if(mCancelled) world->ft->fSendNodeReply(&mParent->mNode,1,"/done",0,nullptr);
     return true;
   }
 
-  bool tidyUp(World *)
+  bool tidyUp(World *) //NRT thread
   {
     mParams.template forEachParamType<BufferT, impl::CleanUpBuffer>();
     return true;
@@ -329,15 +357,18 @@ private:
   
   FloatControlsIter       mControlsIterator;
   FifoMsg     mFifoMsg;
-  char *      mCompletionMessage = nullptr;
-  void *      mReplyAddr         = nullptr;
+  char*       mCompletionMessage = nullptr;
+  void*       mReplyAddr         = nullptr;
   const char *mName              = nullptr;
-  size_t checkThreadInterval;
-  size_t pollCounter{0};
+  size_t      checkThreadInterval;
+  size_t      pollCounter{0};
 protected:
   ParamSetType  mParams;
   Client        mClient;
-  
+  bool          mSynchronous{true};
+  bool          mQueueEnabled{false};
+  bool          mCheckingForDone{false}; //only write to this from RT thread kthx
+  bool          mCancelled{false};
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

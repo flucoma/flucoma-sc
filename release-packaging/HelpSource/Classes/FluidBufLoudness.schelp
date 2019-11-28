@@ -1,13 +1,17 @@
 TITLE:: FluidBufLoudness
 SUMMARY:: A Loudness and True-Peak Descriptor on a Buffer
 CATEGORIES:: Libraries>FluidDecomposition
-RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreading
 
 
 DESCRIPTION::
 This class implements two loudness descriptors, computing the true peak of the signal as well as applying the filters proposed by broadcasting standards to emulate the perception of amplitude. It is part of the Fluid Decomposition Toolkit of the FluCoMa project.FOOTNOTE::This was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
 
 The process will return a multichannel buffer with two channels per input channel, one for loudness and one for the true peak value of the frame, both in dBfs. More information on broadcasting standardisation of loudness measurement is available at the reference page FOOTNOTE::https://tech.ebu.ch/docs/tech/tech3341.pdf:: and in more musician-friendly explantions here FOOTNOTE::http://designingsound.org/2013/02/06/loudness-and-metering-part-1/::. Each sample represents a value, which is every hopSize. Its sampling rate is STRONG::sourceSR / hopSize::.
+
+STRONG::Threading::
+
+By default, this UGen spawns a new thread to avoid blocking the server command queue, so it is free to go about with its business. For a more detailed discussion of the available threading and monitoring options, including the two undocumented Class Methods below (.processBlocking and .kr) please read the guide LINK::Guides/FluidBufMultiThreading::.
 
 CLASSMETHODS::
 

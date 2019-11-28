@@ -1,9 +1,6 @@
 FluidBufAmpSlice : UGen {
 
-    var <>server, <>synth;
-
-	*kr { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, absRampUp = 10, absRampDown = 10, absThreshOn = -90, absThreshOff = -90, minSliceLength = 1, minSilenceLength = 1, minLengthAbove = 1, minLengthBelow = 1, lookBack = 0, lookAhead = 0, relRampUp = 1, relRampDown = 1, relThreshOn = 144, relThreshOff = -144, highPassFreq = 85, doneAction = 0|
-
+	*new1 { |rate, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, absRampUp = 10, absRampDown = 10, absThreshOn = -90, absThreshOff = -90, minSliceLength = 1, minSilenceLength = 1, minLengthAbove = 1, minLengthBelow = 1, lookBack = 0, lookAhead = 0, relRampUp = 1, relRampDown = 1, relThreshOn = 144, relThreshOff = -144, highPassFreq = 85, doneAction = 0, blocking|
 		var maxSize = max(minLengthAbove + lookBack, max(minLengthBelow,lookAhead));
 
 		source = source.asUGenInput;
@@ -12,42 +9,29 @@ FluidBufAmpSlice : UGen {
 		source.isNil.if {"FluidBufAmpSlice:  Invalid source buffer".throw};
 		indices.isNil.if {"FluidBufAmpSlice:  Invalid features buffer".throw};
 
-		^this.multiNew(\control, source, startFrame, numFrames, startChan, numChans, indices, absRampUp, absRampDown, absThreshOn, absThreshOff, minSliceLength, minSilenceLength, minLengthAbove, minLengthBelow, lookBack, lookAhead, relRampUp, relRampDown, relThreshOn, relThreshOff, highPassFreq, maxSize, 0, doneAction);
+		^super.new1(rate, source, startFrame, numFrames, startChan, numChans, indices, absRampUp, absRampDown, absThreshOn, absThreshOff, minSliceLength, minSilenceLength, minLengthAbove, minLengthBelow, lookBack, lookAhead, relRampUp, relRampDown, relThreshOn, relThreshOff, highPassFreq, maxSize, 0, doneAction, blocking);
 	}
 
-    *process { |server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, absRampUp = 10, absRampDown = 10, absThreshOn = -90, absThreshOff = -90, minSliceLength = 1, minSilenceLength = 1, minLengthAbove = 1, minLengthBelow = 1, lookBack = 0, lookAhead = 0, relRampUp = 1, relRampDown = 1, relThreshOn = 144, relThreshOff = -144, highPassFreq = 85, action|
+	*kr { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, absRampUp = 10, absRampDown = 10, absThreshOn = -90, absThreshOff = -90, minSliceLength = 1, minSilenceLength = 1, minLengthAbove = 1, minLengthBelow = 1, lookBack = 0, lookAhead = 0, relRampUp = 1, relRampDown = 1, relThreshOn = 144, relThreshOff = -144, highPassFreq = 85, doneAction = 0|
 
-        var instance,synth;
-
-		source = source.asUGenInput;
-		indices = indices.asUGenInput;
-
-		source.isNil.if {"FluidBufAmpSlice:  Invalid source buffer".throw};
-		indices.isNil.if {"FluidBufAmpSlice:  Invalid features buffer".throw};
-
-		server = server ? Server.default;
-        server.ifNotRunning({
-            "WARNING: Server not running".postln;
-            ^nil;
-        });
-        synth = {instance = FluidBufAmpSlice.kr(source, startFrame, numFrames, startChan, numChans, indices, absRampUp, absRampDown, absThreshOn, absThreshOff, minSliceLength, minSilenceLength, minLengthAbove, minLengthBelow, lookBack, lookAhead, relRampUp, relRampDown, relThreshOn, relThreshOff, highPassFreq, doneAction: Done.freeSelf)}.play(server);
-
-         forkIfNeeded{
-            synth.waitForFree;
-			server.sync;
-			indices = server.cachedBufferAt(indices);
-            indices.updateInfo;
-            server.sync;
-			action.value(indices);
-		};
-        instance.synth = synth;
-        instance.server = server;
-        ^instance;
+		^this.multiNew(\control, source, startFrame, numFrames, startChan, numChans, indices, absRampUp, absRampDown, absThreshOn, absThreshOff, minSliceLength, minSilenceLength, minLengthAbove, minLengthBelow, lookBack, lookAhead, relRampUp, relRampDown, relThreshOn, relThreshOff, highPassFreq, 0, doneAction,blocking:0);
 	}
 
-    cancel{
-        if(this.server.notNil)
-        {this.server.sendMsg("/u_cmd", this.synth.nodeID, this.synthIndex, "cancel")};
-    }
+    *process { |server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, absRampUp = 10, absRampDown = 10, absThreshOn = -90, absThreshOff = -90, minSliceLength = 1, minSilenceLength = 1, minLengthAbove = 1, minLengthBelow = 1, lookBack = 0, lookAhead = 0, relRampUp = 1, relRampDown = 1, relThreshOn = 144, relThreshOff = -144, highPassFreq = 85, action |
 
+		^FluidNRTProcess.new(
+			server, this, action, [indices]
+		).process(
+			source, startFrame, numFrames, startChan, numChans, indices, absRampUp, absRampDown, absThreshOn, absThreshOff, minSliceLength, minSilenceLength, minLengthAbove, minLengthBelow, lookBack, lookAhead, relRampUp, relRampDown, relThreshOn, relThreshOff, highPassFreq
+		);
+	}
+
+     *processBlocking { |server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, absRampUp = 10, absRampDown = 10, absThreshOn = -90, absThreshOff = -90, minSliceLength = 1, minSilenceLength = 1, minLengthAbove = 1, minLengthBelow = 1, lookBack = 0, lookAhead = 0, relRampUp = 1, relRampDown = 1, relThreshOn = 144, relThreshOff = -144, highPassFreq = 85, action|
+
+		^FluidNRTProcess.new(
+			server, this, action, [indices], blocking: 1
+		).process(
+			source, startFrame, numFrames, startChan, numChans, indices, absRampUp, absRampDown, absThreshOn, absThreshOff, minSliceLength, minSilenceLength, minLengthAbove, minLengthBelow, lookBack, lookAhead, relRampUp, relRampDown, relThreshOn, relThreshOff, highPassFreq
+		);
+	}
 }

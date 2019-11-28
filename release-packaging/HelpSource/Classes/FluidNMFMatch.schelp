@@ -107,7 +107,7 @@ c = Buffer.new(s);
 ~bases = Buffer.new(s);
 ~spectralshapes = Buffer.new(s);
 ~stats = Buffer.new(s);
-~centroids = Buffer.new(s);
+~centroids = Array.new();
 ~trainedBases = Buffer.new(s);
 )
 
@@ -312,5 +312,66 @@ c.query
 ::
 	STRONG::Strange Resonators::
 	CODE::
-	//to be completed
+//load the source and declare buffers/arrays
+(
+b = Buffer.read(s,File.realpath(FluidNMFMatch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-AcousticStrums-M.wav");
+c = Buffer.new(s);
+~bases = Buffer.new(s);
+~spectralshapes = Buffer.new(s);
+~stats = Buffer.new(s);
+~centroids = Array.new();
+)
+
+// train only 2 seconds
+(
+Routine {
+    FluidBufNMF.process(s,b,0,88200,0,1, c, ~bases, components:8, hopSize:256, fftSize:2048);
+    c.query;
+}.play;
+)
+
+// wait for the query to print
+// find the component that has the picking sound checking the median spectral centroid
+(
+FluidBufSpectralShape.process(s, c, features: ~spectralshapes, action:{
+	|shapes|FluidBufStats.process(s,shapes,stats:~stats, action:{
+		|stats|stats.getn(0, (stats.numChannels * stats.numFrames) ,{
+			|x| ~centroids = x.select({
+				|item, index| (index.mod(7) == 0) && (index.div(56) == 5);
+			})
+		})
+	})
+});
+)
+
+//7 shapes (track) x 8 components (tracks) x 7 stats(frames)
+~stats.query
+~centroids.size()
+
+// make a player with harmonic on the out0, percussive on the out1, and 8 ctlout of nmfmatch
+~splitaudio = Bus.audio(s,1);
+~nmfenvs = Bus.control(s,8);
+
+// start the player and you should hear only the pick a little
+(
+x = {
+	var sound = PlayBuf.ar(1,b,loop:1);
+	var  harm, perc;
+	# harm, perc = FluidHPSS.ar(sound, maskingMode:1, harmThreshFreq1: 0.005869, harmThreshAmp1: -9.6875, harmThreshFreq2: 0.006609, harmThreshAmp2: -4.375, hopSize:256);
+	Out.ar(~splitaudio, harm);
+	Out.kr(~nmfenvs, FluidNMFMatch.kr(sound, ~bases, maxComponents:8, hopSize:256, fftSize:2048));
+	Out.ar(0,perc.dup)
+}.play;
+)
+
+// make an array of resonators tuned on the median of the centroids
+(
+8.do({
+	arg i;
+	{
+		var audio = BPF.ar(In.ar(~splitaudio,1), ~centroids[i],0.01,LagUD.kr(In.kr(~nmfenvs,8)[i],0.001,0.01,0.1));
+		Out.ar(0,Pan2.ar(audio, (i / 14) - 0.25));
+	}.play(x,addAction: \addAfter);
+});
+)
 ::

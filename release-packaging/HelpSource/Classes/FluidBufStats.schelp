@@ -1,13 +1,17 @@
 TITLE:: FluidBufStats
 SUMMARY:: Computing Statistics on Buffers as Series.
 CATEGORIES:: Libraries>FluidDecomposition, UGens>Buffer
-RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreading
 
 
 DESCRIPTION::
 This class implements non-real-time statistical analysis on buffer channels. Typically, a buffer would hold various time series (i.e. descriptors over time), and link::Classes/FluidBufStats:: allows this series to be described statistically. It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
 
 The process returns a buffer where each channel of the STRONG::source:: buffer has been reduced to 7 statistics: mean, standard deviation, skewness, kurtosis, followed by 3 percentiles, by default the minimum value, the median, and the maximum value. Moreover, it is possible to request the same 7 stats to be applied to derivative of the input. These are useful to describe statistically the rate of change of the time series. The STRONG::stats:: buffer will grow accordingly, yielding the seven same statistical description of the n requested derivatives. Therefore, the STRONG::stats:: buffer will have as many channel as the input buffer, and as many frames as 7 times the requested STRONG::numDerivs::.
+
+STRONG::Threading::
+
+By default, this UGen spawns a new thread to avoid blocking the server command queue, so it is free to go about with its business. For a more detailed discussion of the available threading and monitoring options, including the two undocumented Class Methods below (.processBlocking and .kr) please read the guide LINK::Guides/FluidBufMultiThreading::.
 
 CLASSMETHODS::
 
@@ -111,7 +115,43 @@ FluidBufStats.process(s, b, stats:c, numDerivs:1, action:{c.getn(0,c.numFrames,{
 STRONG::A musical example::
 
 CODE::
-// todo: port the Max one
+// create some buffers
+(
+b = Buffer.read(s,File.realpath(FluidBufStats.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-ASWINE-ScratchySynth-M.wav");
+c = Buffer.new(s);
+d = Buffer.new(s);
+)
+
+//split in various chunks, collecting the indices in an array
+FluidBufOnsetSlice.process(s,b, minSliceLength: 10, metric: 9, threshold: 0.4, filterSize: 7, indices: c, action:{c.loadToFloatArray(action: {|array| e = array.add(b.numFrames).addFirst(0);e.postln;})});
+
+//describe the whole input too, here using pitch, and collecting the values in an array, dismissing the (interleaved) confidence.
+FluidBufPitch.process(s,b,features:c, action:{c.loadToFloatArray(action: {|array| f = array.unlace(2)[0]; f.postln;})});
+
+// iterate through each slice, taking the median of the first derivative of the pitch of each
+(
+g= Array.new;
+Routine({
+	e.doAdjacentPairs({
+		arg start,end;
+		FluidBufStats.processBlocking(s,c,(start/512).asInt,((end-start)/512).max(2).asInt,0,1,d,1, action: {d.loadToFloatArray(action: {
+			arg array;
+			g = g.add(array[12]);
+			"% % %\n".postf((start/512).asInt,((end-start)/512).max(2).asInt, array[12]);
+		})});
+});
+	"Done".postln;
+}).play;
+)
+
+//obtain the order of indices that would sort the stats
+h = g.order;
+
+//play in loop the slice in order of pitch direction (the median of the slice's pitch variation)
+(
+var which = h[5];
+{BufRd.ar(1, b, Phasor.ar(0,1,e[which],e[which+1],e[which]))}.play;
+)
 ::
 
 

@@ -120,8 +120,84 @@ x.set(\low,20, \high, 20000)
 x.free;b.free;c.free;r.stop;
 ::
 
-STRONG::A musical example::
+STRONG::A musical example: a perceptually spread vocoder::
 
 CODE::
-// todo: port the Max one
+//load a source and define control bus for the resynthesis cluster
+(
+b = Bus.new(\control,0,40);
+c = Buffer.read(s,File.realpath(FluidMelBands.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
+d = Group.new;
+)
+
+//play the source and s
+(
+x = {
+	arg dry = 0.2;
+	var source = PlayBuf.ar(1,c,loop:1);
+	Out.kr(b,FluidMelBands.kr(source,maxNumBands:40));
+	Out.ar(0, DelayN.ar(source,delaytime:1024*SampleDur.ir,mul:dry));
+}.play;
+)
+
+// set the dry playback volume
+x.set(\dry, 0.5)
+
+
+// create a cluster of sines tuned on each MelBand center frequency, as a sort of vocoder.
+(
+var lowMel =  1127.010498 * ((20/700) + 1).log;
+var highMel = 1127.010498 * ((20000/700) + 1).log;
+var rangeMel = highMel - lowMel;
+var stepMel = rangeMel / 41;
+40.do({
+	arg i;
+	var freqMel = (stepMel * (i +1)) + lowMel;
+	var freq = ((freqMel/ 1127.01048).exp - 1 ) * 700;
+	{SinOsc.ar(freq,mul:Lag.kr(In.kr(b,40)[i],512*SampleDur.ir,0.0001))}.play(d,1,addAction:\addToTail);
+});
+)
+
+// free all
+d.free; x.free; b.free; c.free;
+
+/////////////////////////////////////
+// instantiate a more dynamic vocoder:
+// MouseX defines the bottom frequency and MouseY define the top frequency, between which the 40 bands of analysis and synthesis are perceptually equally spred
+
+// the bus, source and group
+(
+b = Bus.new(\control,0,40);
+c = Buffer.read(s,File.realpath(FluidMelBands.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
+d = Group.new;
+)
+
+// the modified source
+(
+x = {
+	arg dry = 0.2;
+	var source = PlayBuf.ar(1,c,loop:1);
+	Out.kr(b,FluidMelBands.kr(source,maxNumBands:40,minFreq:MouseX.kr().exprange(20,600),maxFreq:MouseY.kr().exprange(650,20000)));
+	Out.ar(0, DelayN.ar(source,delaytime:1024*SampleDur.ir,mul:dry));
+}.play;
+)
+
+// the modified vocoder
+(
+40.do({
+	arg i;
+	{
+		var lowMel =  1127.010498 * ((MouseX.kr().exprange(20,600)/700) + 1).log;
+		var highMel = 1127.010498 * ((MouseY.kr().exprange(650,20000)/700) + 1).log;
+		var rangeMel = highMel - lowMel;
+		var stepMel = rangeMel / 41;
+		var freqMel = (stepMel * (i +1)) + lowMel;
+		var freq = ((freqMel/ 1127.01048).exp - 1 ) * 700;
+		SinOsc.ar(freq,mul:Lag.kr(In.kr(b,40)[i],512*SampleDur.ir,0.0001))}.play(d,1,addAction:\addToTail);
+});
+)
+
+// free all
+d.free; x.free; b.free; c.free;
+
 ::

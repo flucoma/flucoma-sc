@@ -1,8 +1,7 @@
 TITLE:: FluidBufNMF
 SUMMARY:: Buffer-Based Non-Negative Matrix Factorisation on Spectral Frames
 CATEGORIES:: Libraries>FluidDecomposition, UGens>Buffer
-RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Classes/FluidNMFMatch, Classes/FluidNMFFilter
-
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreading, Classes/FluidNMFMatch, Classes/FluidNMFFilter
 
 DESCRIPTION::
 The FluidBufNMF object decomposes the spectrum of a sound into a number of components using Non-Negative Matrix Factorisation (NMF) footnote:: Lee, Daniel D., and H. Sebastian Seung. 1999. ‘Learning the Parts of Objects by Non-Negative Matrix Factorization’. Nature 401 (6755): 788–91. https://doi.org/10.1038/44565.
@@ -32,6 +31,10 @@ More information on possible musicianly uses of NMF are availabe in LINK::Guides
 
 FluidBufNMF is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
 This was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899). ::
+
+STRONG::Threading::
+
+By default, this UGen spawns a new thread to avoid blocking the server command queue, so it is free to go about with its business. For a more detailed discussion of the available threading and monitoring options, including the two undocumented Class Methods below (.processBlocking and .kr) please read the guide LINK::Guides/FluidBufMultiThreading::.
 
 CLASSMETHODS::
 
@@ -389,28 +392,3 @@ e.plot;
 // look at the activations (sharper 3rd component at transitions)
 g.plot;
 ::
-STRONG:: Placeholder: Run process as .kr ugen and use Poll to get progress updates, cancel with server message::
-CODE::
-//load some buffers
-(
-b = Buffer.read(s,File.realpath(FluidBufNMF.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
-c = Buffer.new(s);
-x = Buffer.new(s);
-y = Buffer.new(s);
-~fft_size = 1024;
-~frame_size = 512;
-~hop_size = 256;
-~which_component = 3;
-)
-//Run this to see progress in the scope
-(
-~synthID;
-a = {
-    var nmf = FluidBufNMF.kr(b, 0,-1,0,-1,c,x,0,y,0,5,100,~frame_size,~hop_size,~fft_size, doneAction: Done.freeSelf);
-    ~synthID = nmf.synthIndex;
-    Poll.kr(Impulse.kr(3),nmf)
-}.scope
-)
-//Run this to cancel processing
-Server.default.sendMsg("/u_cmd", a.nodeID, ~synthID, "cancel")
- ::
