@@ -13,11 +13,11 @@ FluidKMeans : FluidManipulationClient {
     }
 
     predictPoint { |buffer, action|
-        this.pr_sendMsg(\predictPoint,[buffer.asUGenInput],action,[numbers(FluidMessageResponse,_,1,_)]);
+        this.pr_sendMsg(\predictPoint,[buffer.asUGenInput],action,[number(FluidMessageResponse,_,_)]);
     }
 
     cols { |action|
-        this.pr_sendMsg(\cols,[],action,[numbers(FluidMessageResponse,_,1,_)]);
+        this.pr_sendMsg(\cols,[],action,[number(FluidMessageResponse,_,_)]);
     }
 
     read{ |filename,action|

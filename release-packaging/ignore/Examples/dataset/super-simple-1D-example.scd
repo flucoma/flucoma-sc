@@ -44,11 +44,11 @@ Routine{
 
 ~labels = FluidLabelSet(s,\simple1label);
 
-~kmeans.predict(~ds,~labels, {|x| ("Size of each cluster" +  x[0]).postln})
+~kmeans.predict(~ds,~labels, {|x| ("Size of each cluster" +  x).postln})
 (
 Routine{
     var n;
-    ~labels.size({|x| n = x[0][0]});
+    ~labels.size({|x| n = x.asInt});
     n.asInt.do{|i|
         ~labels.getLabel(i.asString,action: {|l|("Label for" + i ++ ":" + l).postln});
     }

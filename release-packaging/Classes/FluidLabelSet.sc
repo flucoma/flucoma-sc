@@ -29,7 +29,7 @@ FluidLabelSet : FluidManipulationClient {
     }
 
     cols {|action|
-        this.pr_sendMsg(\cols,[],action,[numbers(FluidMessageResponse,_,1,_)]);
+        this.pr_sendMsg(\cols,[],action,[number(FluidMessageResponse,_,_)]);
     }
 
     read{|filename,action|
@@ -41,7 +41,7 @@ FluidLabelSet : FluidManipulationClient {
     }
 
     size { |action|
-        this.pr_sendMsg(\size,[],action,[numbers(FluidMessageResponse,_,1,_)]);
+        this.pr_sendMsg(\size,[],action,[number(FluidMessageResponse,_,_)]);
     }
 
     clear { |action|

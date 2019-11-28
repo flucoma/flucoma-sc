@@ -80,7 +80,7 @@ c = Buffer.new(s)
 ~kMeans.predict(~dataset,~labels, {|x| x.postln})
 ~labels.getLabel(~audioBuffers[2].path,action:{|c| c.postln})
 Routine{
-    ~labels.size({|x|x[0][0].do {|i|
+    ~labels.size({|x|x.do {|i|
         forkIfNeeded{
             ~audioBuffers[i].path.postln;
             ~labels.getLabel(~audioBuffers[i].path,action:{|c| c.postln});

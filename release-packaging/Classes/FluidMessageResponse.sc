@@ -9,9 +9,11 @@ FluidMessageResponse : Object
         selectors.do{ |selector|
             var newThings;
             # newThings,idx = selector.value(a, idx);
-            response = response.add(newThings);
+            response = response ++ newThings;
         };
-        ^response
+
+        if(response.size == 1,
+            {^response[0]},{^response})
     }
 
     *string{ |a, offset|
@@ -23,6 +25,10 @@ FluidMessageResponse : Object
 
     *numbers{ |a, n, offset|
         ^[a.copyRange(offset, offset + n),offset + n]
+    }
+
+    *number{ |a,offset|
+        ^[a[offset]];
     }
 
     *buffer{ |a,server,offset|
