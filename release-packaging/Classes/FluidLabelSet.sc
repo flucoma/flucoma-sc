@@ -1,6 +1,6 @@
 FluidLabelSet : FluidManipulationClient {
 
-   var  <> synth, <> server, id;
+   var  <> synth, <> server, <>id;
 
     *kr{ |name|
         ^this.multiNew('control',name);
@@ -16,20 +16,16 @@ FluidLabelSet : FluidManipulationClient {
         ^id;
     }
 
-    addPoint{|id, label, action|
-        this.pr_sendMsg(\addPoint,[id, label],action);
+    addLabel{|id, label, action|
+        this.pr_sendMsg(\addLabel,[id, label],action);
     }
 
-    getPoint{|id, action|
-        this.pr_sendMsg(\getPoint,[id],action);
+    getLabel{|id, action|
+        this.pr_sendMsg(\getLabel,[id],action,[string(FluidMessageResponse,_,_)]);
     }
 
-    updatePoint{|id, label, action|
-        this.pr_sendMsg(\updatePoint,[id, label],action);
-    }
-
-    deletePoint{|id, action|
-        this.pr_sendMsg(\deletePoint,[id],action);
+    deleteLabel{|id, action|
+        this.pr_sendMsg(\deleteLabel,[id],action);
     }
 
     cols {|action|
