@@ -18,15 +18,24 @@ FluidManipulationClient : UGen {
     }
 
     pr_sendMsg { |msg, args, action,parser|
+        var c = Condition.new(false);
 
         OSCFunc(
             { |msg|
-                var result;
-                // msg.postln;
-                result = FluidMessageResponse.collectArgs(parser,msg.drop(3));
-                if(action.notNil){action.value(result)}{action.value};
+                forkIfNeeded{
+                    var result;
+                    // msg.postln;
+                    result = FluidMessageResponse.collectArgs(parser,msg.drop(3));
+                    this.server.sync;
+                    c.test = true;
+                    c.signal;
+                    if(action.notNil){action.value(result)}{action.value};
+                }
         },'/'++msg).oneShot;
 
         this.server.listSendMsg(['/u_cmd',this.synth.nodeID,this.synthIndex,msg].addAll(args));
+
+        forkIfNeeded { c.wait };
+
     }
 }
