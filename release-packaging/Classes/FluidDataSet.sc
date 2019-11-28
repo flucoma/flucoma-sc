@@ -14,7 +14,7 @@ FluidDataSet : FluidManipulationClient {
     }
 
     asString {
-        ^id
+        ^id.asString;
     }
 
     addPoint{|label, buffer, action|

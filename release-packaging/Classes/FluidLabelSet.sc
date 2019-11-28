@@ -13,7 +13,7 @@ FluidLabelSet : FluidManipulationClient {
     }
 
     asString {
-        ^id;
+        ^id.asString;
     }
 
     addLabel{|id, label, action|
