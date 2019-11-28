@@ -1,30 +1,15 @@
-FluidStandardize : UGen {
-
-   var  <> synth, <> server;
-
-    *kr{
-        ^this.multiNew('control');
-	}
-
-    *new{ |server|
-        var synth, instance;
-        server = server ? Server.default;
-        synth = {instance = FluidStandardize.kr}.play(server);
-        instance.server = server;
-        instance.synth = synth;
-        ^instance
-    }
+FluidStandardize : FluidManipulationClient {
 
     fit{|dataset, action|
-        this.pr_sendMsg(\fit,[dataset],action);
+        this.pr_sendMsg(\fit,[dataset.asUGenInput],action);
     }
 
     standardize{|sourceDataset, destDataset, action|
-        this.pr_sendMsg(\standardize,[sourceDataset, destDataset],action);
+        this.pr_sendMsg(\standardize,[sourceDataset.asUGenInput, destDataset.asUGenInput],action);
     }
 
     standardizePoint{|sourceBuffer, destBuffer, action|
-        this.pr_sendMsg(\standardizePoint,[sourceBuffer, destBuffer],action);
+        this.pr_sendMsg(\standardizePoint,[sourceBuffer.asUGenInput, destBuffer.asUGenInput],action);
     }
 
     cols {|action|
@@ -39,14 +24,4 @@ FluidStandardize : UGen {
         this.pr_sendMsg(\write,[filename],action);
     }
 
-    pr_sendMsg { |msg, args, action,parser|
-        OSCFunc(
-            { |msg|
-                var result = FluidMessageResponse.collectArgs(parser,msg.drop(3));
-                if(result.notNil){action.value(result)}{action.value};
-            },'/'++msg
-        ).oneShot;
-
-        this.server.listSendMsg(['/u_cmd',this.synth.nodeID,this.synthIndex,msg].addAll(args));
-    }
 }   

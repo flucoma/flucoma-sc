@@ -1,30 +1,20 @@
-FluidDataSet : UGen {
+FluidDataSet : FluidManipulationClient {
 
-   var  <> synth, <> server;
+    var <>synth, <>server, <>id;
 
     *kr{ |name, dims|
-        ^this.multiNew('control',name, dims);
+        ^this.new1('control',name, dims);
 	}
 
-    *new{ |server, name, dims|
-        var synth, instance;
-        server = server ? Server.default;
-        synth = {instance = FluidDataSet.kr(name,dims)}.play(server);
-        instance.server = server;
-        instance.synth = synth;
-        ^instance
-    }
-
-    *new1 { |rate, name, dims|
+    init { |name, dims|
         var ascii = name.ascii;
-        ^super.new1(*[rate, ascii.size].addAll(ascii)++dims);
+        this.id = name;
+        // specialIndex = -1;
+        inputs = [ascii.size].addAll(ascii)++dims++Done.none++FluidManipulationClient.nonBlocking;
     }
 
-    init { |size...chars|
-        //Send the number of inputs (size of provider string) as specialIndex,
-        //so server plugin knows what's going on
-        specialIndex = -1;
-        inputs = [size].addAll(chars);
+    asString {
+        ^id
     }
 
     addPoint{|label, buffer, action|
@@ -63,14 +53,4 @@ FluidDataSet : UGen {
         this.pr_sendMsg(\clear,[],action);
     }
 
-    pr_sendMsg { |msg, args, action,parser|
-        OSCFunc(
-            { |msg|
-                var result = FluidMessageResponse.collectArgs(parser,msg.drop(3));
-                if(result.notNil){action.value(result)}{action.value};
-            },'/'++msg
-        ).oneShot;
-
-        this.server.listSendMsg(['/u_cmd',this.synth.nodeID,this.synthIndex,msg].addAll(args));
-    }
 }   

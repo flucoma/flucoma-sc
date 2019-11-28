@@ -1,34 +1,34 @@
-FluidKMeans : UGen {
+FluidKMeans : FluidManipulationClient {
 
-    var  <> synth, <> server;
+ /*   var  <> synth, <> server,k;
 
 	*kr {
-        ^this.multiNew('control');
+        ^this.multiNew('control',Done.none);
 	}
-
-    *new{ |server|
+*/
+/*    *new{ |server|
         var synth, instance;
         server = server ? Server.default;
+        this.asString.postln;
+        if(server.serverRunning.not,{"ERROR: FluidKMeans – server not running".postln; ^nil});
         synth = {instance = FluidKMeans.kr()}.play(server);
         instance.server = server;
         instance.synth = synth;
         ^instance
-    }
+    }*/
 
-    train{|dataset,k, maxIter = 100, buffer, action|
-
+    fit{|dataset,k, maxIter = 100, buffer, action|
        buffer = buffer ? -1;
-
-       this.pr_sendMsg(\train,[dataset, k,maxIter, buffer.asUGenInput],action);
+        this.k = k;
+        this.pr_sendMsg(\fit,[dataset.asString, k,maxIter, buffer.asUGenInput],action,[numbers(FluidMessageResponse,_,k,_)]);
     }
 
-    cluster{ |dataset, labelset, k, maxIter=100, buffer,action|
-        buffer = buffer ? -1;
-        this.pr_sendMsg(\cluster,[dataset, labelset, k, maxIter, buffer.asUGenInput],action,k.collect{string(FluidMessageResponse,_,_)});
+    predict{ |dataset, labelset,action|
+        this.pr_sendMsg(\predict,[dataset.asString, labelset.asString],action,[numbers(FluidMessageResponse,_,this.k,_)]);
     }
 
-    predict { |buffer, action|
-        this.pr_sendMsg(\predict,[buffer.asUGenInput],action,[numbers(FluidMessageResponse,_,1,_)]);
+    predictPoint { |buffer, action|
+        this.pr_sendMsg(\predictPoint,[buffer.asUGenInput],action,[numbers(FluidMessageResponse,_,1,_)]);
     }
 
     cols { |action|
