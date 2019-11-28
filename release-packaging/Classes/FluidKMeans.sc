@@ -1,21 +1,6 @@
 FluidKMeans : FluidManipulationClient {
 
- /*   var  <> synth, <> server,k;
-
-	*kr {
-        ^this.multiNew('control',Done.none);
-	}
-*/
-/*    *new{ |server|
-        var synth, instance;
-        server = server ? Server.default;
-        this.asString.postln;
-        if(server.serverRunning.not,{"ERROR: FluidKMeans – server not running".postln; ^nil});
-        synth = {instance = FluidKMeans.kr()}.play(server);
-        instance.server = server;
-        instance.synth = synth;
-        ^instance
-    }*/
+    var <>k;
 
     fit{|dataset,k, maxIter = 100, buffer, action|
        buffer = buffer ? -1;
@@ -41,18 +26,5 @@ FluidKMeans : FluidManipulationClient {
 
     write{ |filename,action|
         this.pr_sendMsg(\write,[filename],action);
-    }
-
-    pr_sendMsg { |msg, args, action,parser|
-
-        OSCFunc(
-            { |msg|
-                var result;
-                // msg.postln;
-                result = FluidMessageResponse.collectArgs(parser,msg.drop(3));
-                if(action.notNil){action.value(result)}{action.value};
-        },'/'++msg).oneShot;
-
-        this.server.listSendMsg(['/u_cmd',this.synth.nodeID,this.synthIndex,msg].addAll(args));
     }
 }
