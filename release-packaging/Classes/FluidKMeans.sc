@@ -12,8 +12,12 @@ FluidKMeans : FluidManipulationClient {
         this.pr_sendMsg(\predict,[dataset.asString, labelset.asString],action,[numbers(FluidMessageResponse,_,this.k,_)]);
     }
 
+    getClusters{ |dataset, labelset,action|
+        this.pr_sendMsg(\getClusters,[dataset.asString, labelset.asString],action);
+    }
+
     predictPoint { |buffer, action|
-        this.pr_sendMsg(\predictPoint,[buffer.asUGenInput],action,[number(FluidMessageResponse,_,_)]);
+        this.pr_sendMsg(\predictPoint,[buffer.asUGenInput],action,[numbers(FluidMessageResponse,_,_)]);
     }
 
     cols { |action|

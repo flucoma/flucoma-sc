@@ -1,7 +1,7 @@
 FluidKDTree : FluidManipulationClient {
 
-    index{|dataset,action|
-       this.pr_sendMsg(\index,[dataset.asString],action);
+    fit{|dataset,action|
+       this.pr_sendMsg(\fit,[dataset.asString],action);
     }
 
     kNearest{ |buffer, k,action|
