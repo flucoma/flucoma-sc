@@ -1,0 +1,97 @@
+TITLE:: FluidLabelSet
+summary:: A set of labels associated with IDs
+categories:: FluidManipulation
+related:: Classes/FluidDataSet, Classes/FluidKMeans
+
+DESCRIPTION::
+FluidLabelSet is a server-side container of associations between labels (from a link::Classes/FluidDataSet::) and IDs, for instance from some clustering or classification of the points in a data set.
+
+
+CLASSMETHODS::
+
+PRIVATE:: kr
+
+METHOD:: new
+Make a new instance of a label set, uniquely identified by its name. Multiple instances to of this class with the same name refer to the same server-side entity.
+
+ARGUMENT:: server
+The link::Classes/Server:: on which to create the label set
+
+ARGUMENT:: name
+symbol or string with the label set's name
+
+INSTANCEMETHODS::
+
+PRIVATE:: init, id, server, synth
+
+METHOD:: getLabel
+Retreive the label associated with an ID. Will report an error if the ID isn't present in the set
+
+ARGUMENT:: id
+symbol or string with the ID to retreive.
+
+ARGUMENT:: action
+A function to run when the server responds, with the label as its argument
+
+METHOD:: cols
+Returns the dimensionality of the link::Classes/FluidDataSet:: associated with this label set
+
+ARGUMENT:: action
+A function to run when the server responds, with the dimensionality as its argument
+
+METHOD:: write
+Write this label set to disk as a JSON file. Will not overwrite existing files.
+
+ARGUMENT:: filename
+Absolute path of file to write
+
+ARGUMENT:: action
+A function to run when the file is written
+
+METHOD:: read
+Read a label set from a JSON file on disk
+
+ARGUMENT:: filename
+Absolute path of the file to read
+
+ARGUMENT:: action
+A function to run when the file is read
+
+METHOD:: deleteLabel
+Remove a id-label pair from the label set
+
+ARGUMENT:: id
+symbol or string with the ID to remove
+
+ARGUMENT:: action
+A function to run when the label has been removed
+
+METHOD:: size
+Report the num er of items in the label set
+
+ARGUMENT:: action
+A function to run when the server responds, taking the size as its argument
+
+METHOD:: addLabel
+Add a label to the label set
+
+ARGUMENT:: id
+symbol or string with the ID for this label
+
+ARGUMENT:: label
+symbol or string with the label to add
+
+ARGUMENT:: action
+function to run when the operation completes
+
+METHOD:: clear
+Empty the label set
+
+ARGUMENT:: action
+Function to run whrn the action completes
+
+EXAMPLES::
+
+code::
+(some example code)
+::

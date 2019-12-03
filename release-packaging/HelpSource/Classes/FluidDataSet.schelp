@@ -1,0 +1,141 @@
+TITLE:: FluidDataSet
+summary:: Container for labelled,  multidimensional data
+categories:: UGens>FluidManipulation
+related:: Classes/FluidLabelSet, Classes/FluidKDTree, Classes/FluidKNN, Classes/FluidKMeans
+​
+DESCRIPTION::
+A server-side container associating labels with multi-dimensional data. FluidDataSet is identified by its name, and multiple instances of the object with the same name point to the same instance on the server.
+​
+CLASSMETHODS::
+​
+PRIVATE::kr
+
+METHOD:: new
+Create a new instance of the dataset, with the given name and dimensionality. If an instance already exists on the server, then the existing dimensionality takes precedence.
+​
+ARGUMENT:: server
+The link::Classes/Server:: on which to create the data set
+
+ARGUMENT:: name
+A symbol or string with the name of the dataset.
+​
+ARGUMENT:: dims
+An integer number of dimensions
+​
+returns:: The new instance
+
+INSTANCEMETHODS::
+​
+PRIVATE::init,id
+
+METHOD:: synth
+The internal synth the object uses to communicate with the server
+​
+returns:: A link::Classes/Synth::
+​
+METHOD:: server
+The server instance the object uses
+​
+returns:: A link::Classes/Server::
+​​​
+METHOD:: updatePoint
+Update an existing label's data. Will report an error if the label doesn't exist, or if the size of the data does not match the given dimensionality of the dataset.
+​
+ARGUMENT:: label
+symbol or string with the label
+​
+ARGUMENT:: buffer
+A link::Classes/Buffer:: containing the updated data
+​
+ARGUMENT:: action
+A function to run when the server has updated
+​​​
+METHOD:: size
+Report the number of items currently in the data set
+​
+ARGUMENT:: action
+A function to run when the server responds, whose argument is the data set size
+​​
+METHOD:: addPoint
+Add a new point to the data set. Will report an error if the label already exists, or if the size of the data does not match the given dimensionality of the dataset.
+​
+ARGUMENT:: label
+A symbol or string with the label for the new point
+​
+ARGUMENT:: buffer
+A link::Classes/Buffer:: with the new data point
+​
+ARGUMENT:: action
+A function to run when the point has been added
+​​
+METHOD:: write
+Write the data set to disk as a JSON file. Will not overwrite existing files
+​
+ARGUMENT:: filename
+Absolute path for the new file
+​
+ARGUMENT:: action
+A function to run when the file has been written
+​​
+METHOD:: asString
+​
+returns:: The name of the data set as a string
+​
+METHOD:: deletePoint
+Remove a point from the data set. Will report an error if the label doesn't exist.
+​
+ARGUMENT:: label
+symbol or string with the label to remove
+​
+ARGUMENT:: action
+Function to run when the point has been deleted
+​​
+METHOD:: clear
+Empty the data set
+​
+ARGUMENT:: action
+Function to run when the data set has been emptied
+​
+METHOD:: getPoint
+Retreive a point from the data set into a link::Classes/Buffer::. Will report an error if the label or buffer doesn't exist
+​
+ARGUMENT:: label
+symbol or string with the label to retreive
+​
+ARGUMENT:: buffer
+link::Classes/Buffer:: to fill
+​
+ARGUMENT:: action
+function to run when the point has been retreived
+​​
+METHOD:: read
+Read a data set from a JSON file on disk
+​
+ARGUMENT:: filename
+The absolute path of the JSON file to read
+​
+ARGUMENT:: action
+A function to run when the file has been read
+​​
+METHOD:: cols
+Report the dimensionality of the data set
+​
+EXAMPLES::
+
+CODE::
+
+// Make a one-dimensional data set called 'simple1data'
+~ds = FluidDataSet.new(s,\simple1data,1)
+// Make a buffer to use for adding points
+~point = Buffer.alloc(s,1,1)
+//Add 10 points, using the index as a label.
+(
+Routine{
+    10.do{|i|
+        ~point.set(0,i);
+        s.sync;
+        ~ds.addPoint(i.asString,~point,{("addPoint"+i).postln})
+    }
+}.play
+)
+::
