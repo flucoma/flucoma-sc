@@ -6,6 +6,10 @@ FluidDataSet : FluidManipulationClient {
         ^this.new1('control',name, dims);
 	}
 
+    *new { |server,name,dims|
+        ^super.new(server,name,dims);
+    }
+
     init { |name, dims|
         var ascii = name.ascii;
         this.id = name;
@@ -29,8 +33,8 @@ FluidDataSet : FluidManipulationClient {
         this.pr_sendMsg(\updatePoint,[label,buffer.asUGenInput],action);
     }
 
-    deletePoint{|label,buffer, action|
-        this.pr_sendMsg(\deletePoint,[label,buffer.asUGenInput],action);
+    deletePoint{|label, action|
+        this.pr_sendMsg(\deletePoint,[label],action);
     }
 
     cols {|action|

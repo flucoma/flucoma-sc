@@ -6,6 +6,11 @@ FluidLabelSet : FluidManipulationClient {
         ^this.multiNew('control',name);
 	}
 
+
+    *new { |server,name|
+        ^super.new(server,name);
+    }
+
     init { |name|
         var ascii = name.ascii;
         this.id = name;
