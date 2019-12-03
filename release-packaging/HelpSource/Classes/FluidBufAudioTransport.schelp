@@ -1,0 +1,82 @@
+TITLE:: FluidBufAudioTransport
+summary:: Interpolate between buffers
+categories:: FluidManipulation
+related:: Classes/FluidAudioTransport
+
+DESCRIPTION::
+Interpolates between the spectra of two sounds using the Optimal Transport algorithm
+
+See
+Henderson and Solomonm (2019) AUDIO TRANSPORT: A GENERALIZED PORTAMENTO VIA OPTIMAL TRANSPORT, DaFx
+
+CLASSMETHODS::
+
+METHOD:: process
+Process two audio link::Classes/Buffer::
+
+ARGUMENT:: server
+The server the process runs on
+
+ARGUMENT:: source1
+The first source buffer
+
+ARGUMENT:: startFrame1
+offset into the first source buffer (samples)
+
+ARGUMENT:: numFrames1
+number of samples to use from first source buffer
+
+ARGUMENT:: startChan1
+starting channel of first source buffer
+
+ARGUMENT:: numChans1
+number of channels to process in first source buffer
+
+ARGUMENT:: source2
+the second source buffer
+
+ARGUMENT:: startFrame2
+offset into the second source buffer (samples)
+
+ARGUMENT:: numFrames2
+number of samples to process from second buffer
+
+ARGUMENT:: startChan2
+starting channel for second buffer
+
+ARGUMENT:: numChans2
+number of channels to process in second buffer
+
+ARGUMENT:: destination
+buffer for interpolated audio
+
+ARGUMENT:: interpolation
+The amount to interpolate between A and B (0-1, 0 = A, 1 = B)
+
+ARGUMENT:: bandwidth
+Someone tell me
+
+ARGUMENT:: windowSize
+The size of the processing window (kr)
+
+ARGUMENT:: hopSize
+The processing hop size (kr). Default = windowSize / 2
+
+ARGUMENT:: fftSize
+The processing FFT size (kr). Default = windowSize
+
+ARGUMENT:: action
+Function to run when processing complete, taking the destination buffer as its argument
+
+INSTANCEMETHODS::
+
+private:: synth, server
+
+METHOD:: cancel
+cancel processing on the server
+
+EXAMPLES::
+
+code::
+(some example code)
+::

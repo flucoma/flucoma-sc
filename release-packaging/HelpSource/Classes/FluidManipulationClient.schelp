@@ -1,0 +1,51 @@
+TITLE:: FluidManipulationClient
+summary:: A base case for FluidManipulation classes
+categories:: FluidManipulation
+
+DESCRIPTION::
+A utility base class for FluidManipulation classes, that deals with common functionality (wrapping a link::Classes/Synth:: in the instance, etc.)
+
+Not intended to be used directly.
+
+CLASSMETHODS::
+
+PRIVATE:: nonBlocking
+
+METHOD:: kr
+The kr of the underlying UGem, which will output progress readings once all messages can be asynchronous.
+
+If, for whatever reason, you create an instance of a client object using code::kr:: in your own synth, make sure to set the instance's link::Classes/FluidManipulationClient#synth:: and link::Classes/FluidManipulationClient#server::, or nothing will work.
+
+returns:: An instance
+
+METHOD:: new
+Language-side constructor. Internally, this creates a new synth around an instance of the sub-class being constructed, and maintains a variable pointing to the synth, so that it can be communicated with.
+
+ARGUMENT:: server
+The link::Classes/Server:: this instance is running on
+
+ARGUMENT::  ... args
+Arguments specific to the sub-class at hand
+
+returns:: A new instance
+
+INSTANCEMETHODS::
+
+private:: pr_sendMsg
+
+METHOD:: synth
+Fluid Manipulation client objects are server-side entities, wrapped in a Node to manage communication between language and object. For this, a link::Classes/Synth:: is needed, as the representation of a server node.
+
+returns:: the instance's link::Classes/Synth::
+
+METHOD:: server
+The link::Classes/Server:: that our instance's object is running on
+
+returns:: a link::Classes/Server::
+
+
+EXAMPLES::
+
+code::
+(some example code)
+::

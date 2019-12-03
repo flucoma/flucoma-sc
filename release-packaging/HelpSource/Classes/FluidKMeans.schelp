@@ -1,0 +1,96 @@
+TITLE:: FluidKMeans
+summary:: Cluster data points with K-Means
+categories:: FluidManipulation
+related:: Classes/FluidDataSet, Classes/FluidLabelSet, Classes/FluidKNN
+
+DESCRIPTION::
+Uses the K-Means algorithm to learn clusters from a link::Classes/FluidDataSet::
+
+https://scikit-learn.org/stable/tutorial/statistical_inference/unsupervised_learning.html#clustering-grouping-observations-together
+
+CLASSMETHODS::
+
+INSTANCEMETHODS::
+
+PRIVATE::k
+
+METHOD:: predictPoint
+Given a trained object, return the cluster ID for a data point in a link::Classes/Buffer::
+
+ARGUMENT:: buffer
+a link::Classes/Buffer:: containing a data point
+
+ARGUMENT:: action
+A function to run when the server responds, taking the ID of the cluser as its argument
+
+METHOD:: fit
+Identify code::k:: clusters in a link::Classes/FluidDataSet::
+
+ARGUMENT:: dataset
+A link::Classes/FluidDataSet:: of data points
+
+ARGUMENT:: k
+The number of clusters to identify in the data set
+
+ARGUMENT:: maxIter
+Maximum number of iterations to use partitioning the data
+
+ARGUMENT:: buffer
+Seed centroids for clusters WARNING:: Not yet implemented ::
+
+ARGUMENT:: action
+A function to run when fitting is complete, taking as its argument an array with the number of data points for each cluster
+
+METHOD:: write
+write learned clusters to disk as a JSON file. Will not overwrite existing files
+
+ARGUMENT:: filename
+Absolute path for file
+
+ARGUMENT:: action
+A function to run when the file is written
+
+METHOD:: read
+Read a learned clustering of a data set from a JSON file
+
+ARGUMENT:: filename
+Absolute path of the JSON file
+
+ARGUMENT:: action
+Function to run when the file has been read
+
+METHOD:: getClusters
+Fill a link::Classes/FluidLabelSet:: with the assignments for each point in the passed link::Classes/FluidDataSet:: that was used to train this instance
+
+ARGUMENT:: dataset
+The link::Classes/FluidDataSet:: used to train this instance
+
+ARGUMENT:: labelset
+A link::Classes/FluidLabelSet:: to fill with assignments
+
+ARGUMENT:: action
+A function to run when the operation is complete
+
+METHOD:: cols
+Retreive the dimentionality of the dataset this instance is trained on
+
+ARGUMENT:: action
+A function to run when the server responds, taking the dimensionality as its argument
+
+METHOD:: predict
+Report cluster assignments for previously unseen data
+
+ARGUMENT:: dataset
+A link::Classes/FluidDataSet:: of data points
+
+ARGUMENT:: labelset
+A link::Classes/FluidLabelSet:: to contain assigments
+
+ARGUMENT:: action
+A function to run when complete, taking an array of the counts for each catgegory as its argument
+
+EXAMPLES::
+
+code::
+(some example code)
+::
