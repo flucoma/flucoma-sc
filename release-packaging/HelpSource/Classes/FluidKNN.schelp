@@ -25,7 +25,7 @@ source link::Classes/FluidDataSet::
 ARGUMENT:: action
 A function to run when fitting is complete
 
-METHOD:: regress
+METHOD:: regressPoint
 Map a point between a source link::Classes/FluidDataSet:: used when link::Classes/FluidKNN#index::ing this KNN, and a target data set passed as an argument.
 
 For this to work, the target data set must have labels in common with the source data set. The code::k:: nearest neighbours to the supplied data point are retrrived from the source tree, and then a mapping is obtained through the average of the equivalently labelled points in the target data set.
@@ -44,7 +44,7 @@ The number of neighbours to use in the estimation
 ARGUMENT:: action
 A function to run when the server responds, taking the value of the regressed point as its argument
 
-METHOD:: classify
+METHOD:: classifyPoint
 Classify a point, using categories from the supplied label set, which maps labels from the source data set to category IDs. This works by getting the labels of the code::k:: nearest points to the passed data point from the source data set, and looking up their IDs in the passed label set. The most frequently ocurring ID is designated as the class for the point.
 
 ARGUMENT:: buffer
