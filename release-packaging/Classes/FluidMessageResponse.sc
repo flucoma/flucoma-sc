@@ -20,7 +20,7 @@ FluidMessageResponse : Object
         var split = a.find([0],offset);
         var res;
         if(split.isNil) {"ERROR: can't parse string from server".throw};
-        ^[a.copyRange(offset,split-1).keep(split).collectAs({|x|x.asInt.asAscii},String), split + 1]
+        ^[[a.copyRange(offset,split-1).keep(split).collectAs({|x|x.asInt.asAscii},String)], split + 1]
     }
 
     *numbers{ |a, n, offset|
