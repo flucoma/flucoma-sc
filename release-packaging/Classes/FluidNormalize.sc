@@ -1,8 +1,12 @@
 FluidNormalize : FluidManipulationClient {
 
-    *kr{ |min, max|
+    *kr{ |min = 0, max = 1|
         ^this.multiNew('control',min, max, Done.none, super.nonBlocking);
 	}
+
+    *new { |server,min = 0 ,max = 1|
+        ^super.new(server,min,max);
+    }
 
     fit{|dataset, action|
         this.pr_sendMsg(\fit,[dataset.asUGenInput],action);
