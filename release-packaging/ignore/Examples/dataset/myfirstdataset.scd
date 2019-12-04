@@ -12,13 +12,13 @@ s.reboot;
 if(s.hasBooted.not){"Warning: server not running".postln};
 
 //STEP 1: Get some files
-(
 Buffer.freeAll;
+(
 FileDialog.new(fileMode:2,okFunc:{|x| ~path = x[0];
 	~audioBuffers = SoundFile.collectIntoBuffers(~path+/+'*',s);
 	~lookup = Dictionary(n:~audioBuffers.size);
 	~audioBuffers.do{|b| ~lookup.add(b.path->b)};
-	});
+});
 )
 
 //STEP 2: Make a FluidDataSet
@@ -27,29 +27,61 @@ FileDialog.new(fileMode:2,okFunc:{|x| ~path = x[0];
 //STEP 3A: EITHER populate the dataset like so (and cry about how long the data point assembly takes)
 (
 Routine{
-    ~audioBuffers.do{|b|
-        var tmpMFCCs = Buffer.new(s);
-        var tmpStats = Buffer.new(s);
-        var tmpFlat = Buffer.new(s,12 * 4 * 2, 1);
-        s.sync;
-        ("Analyzing" + b.path).postln;
-        FluidBufMFCC.process(s,b,features: tmpMFCCs);
-        FluidBufStats.process(s,source:tmpMFCCs, stats: tmpStats,numDerivs:1);
-        "stats".postln;
-         12.do{|i|
-            //This takes ages becayse of server syncing :-(
-            FluidBufCompose.process(s,tmpStats,0,2, i+1,1, destination: tmpFlat, destStartFrame: (i*8));
-            FluidBufCompose.process(s,tmpStats,4,1, i+1,1, destination: tmpFlat, destStartFrame: (i*8) + 2);
-            FluidBufCompose.process(s,tmpStats,6,1, i+1,1, destination:tmpFlat, destStartFrame: (i*8) + 3);
-            FluidBufCompose.process(s,tmpStats,0,2, i+1,1, destination: tmpFlat, destStartFrame: (i*8) + 4);
-            FluidBufCompose.process(s,tmpStats,4,1, i+1,1, destination: tmpFlat, destStartFrame: (i*8) + 6);
-            FluidBufCompose.process(s,tmpStats,6,1, i+1,1, destination:tmpFlat, destStartFrame: (i*8) + 7);
-          };
-         ~dataset.addPoint(b.path,tmpFlat);
-          tmpFlat.free;
-          tmpStats.free;
-          tmpMFCCs.free;
-    };
+	var tmpMFCCs = Buffer.new(s);
+	var tmpStats = Buffer.new(s);
+	var tmpFlat = Buffer.alloc(s,12 * 4 * 2, 1);
+	s.sync;
+	~audioBuffers.do{|b|
+		("Analyzing" + b.path).postln;
+		FluidBufMFCC.process(s,b,features: tmpMFCCs);
+		FluidBufStats.process(s,source:tmpMFCCs, stats: tmpStats,numDerivs:1);
+		"stats".postln;
+		12.do{|i|
+			//This takes ages becayse of server syncing :-(
+			FluidBufCompose.process(s,tmpStats,0,2, i+1,1, destination: tmpFlat, destStartFrame: (i*8));
+			FluidBufCompose.process(s,tmpStats,4,1, i+1,1, destination: tmpFlat, destStartFrame: (i*8) + 2);
+			FluidBufCompose.process(s,tmpStats,6,3, i+1,1, destination:tmpFlat, destStartFrame: (i*8) + 3);
+			FluidBufCompose.process(s,tmpStats,11,1, i+1,1, destination: tmpFlat, destStartFrame: (i*8) + 6);
+			FluidBufCompose.process(s,tmpStats,13,1, i+1,1, destination:tmpFlat, destStartFrame: (i*8) + 7);
+		};
+		~dataset.addPoint(b.path,tmpFlat);
+	};
+	s.sync;
+	"Done".postln;
+	tmpFlat.free;
+	tmpStats.free;
+	tmpMFCCs.free;
+}.play
+)
+
+//STEP 3B: OR populate the dataset with the flattening happening in langage side (much faster for now)
+(
+Routine{
+	var tmpMFCCs = Buffer.new(s);
+	var tmpStats = Buffer.new(s);
+	var langStats;
+	var langFlat;
+	var tmpFlat = Buffer.alloc(s,12 * 4 * 2, 1);
+	s.sync;
+	~audioBuffers.do{|b|
+		("Analyzing" + b.path).postln;
+		FluidBufMFCC.process(s,b,features: tmpMFCCs);
+		FluidBufStats.process(s,source:tmpMFCCs, stats: tmpStats,numDerivs:1);
+		tmpStats.getn(0,182,{|y| langStats = y;});
+		s.sync;
+		"stats".postln;
+		langFlat = Array.new();
+		//taking the mean, std, min and max, and the mean, std, min and max of the first derivative, of each MFCCs except coeff 0 to dismiss amplitude)
+		[0,1,4,6,7,8,11,13].do({|i| var j,k; j =((i*13)+1); k = j + 11;langFlat = langFlat ++ langStats[j..k]});
+		tmpFlat.setn(0,langFlat);
+		s.sync;
+		~dataset.addPoint(b.path,tmpFlat);
+	};
+	s.sync;
+	"Done".postln;
+	tmpStats.free;
+	tmpMFCCs.free;
+	tmpFlat.free;
 }.play
 )
 
@@ -68,7 +100,7 @@ FileDialog.new(fileMode: 0, acceptMode: 1, okFunc:{|x| var file = x[0];
 });
 )
 
-//STEP 3B: OR load in one you rolled earlier
+//STEP 3C: OR load in one you rolled earlier
 FileDialog.new(fileMode: 0, acceptMode: 0, okFunc:{|x| ~dataset.read(x[0])});
 
 //peek
@@ -79,6 +111,7 @@ c = Buffer.new(s)
 //FluidKDTree
 ~kdtree = FluidKDTree.new(s)
 ~kdtree.fit(~dataset,action:{"fit".postln})
+
 //match
 ~kdtree.kNearest(c,5,{|x| ~matches = x;})
 ~kdtree.kNearestDist(c,5,{|x| x.postln})
@@ -94,13 +127,13 @@ c = Buffer.new(s)
 ~kMeans.predict(~dataset,~labels, {|x| x.postln})
 ~labels.getLabel(~audioBuffers[2].path,action:{|c| c.postln})
 Routine{
-    ~labels.size({|x|x.do {|i|
-        forkIfNeeded{
-            ~audioBuffers[i].path.postln;
-            ~labels.getLabel(~audioBuffers[i].path,action:{|c| c.postln});
-            s.sync;
-        }
-    }
-    });
+	~labels.size({|x|x.do {|i|
+		forkIfNeeded{
+			~audioBuffers[i].path.postln;
+			~labels.getLabel(~audioBuffers[i].path,action:{|c| c.postln});
+			s.sync;
+		}
+	}
+	});
 }.play
 ~labels.write(~path+/+"labels.json")
