@@ -13,7 +13,7 @@ Routine{
 
 /*** KDTREE ***/
 ~tree = FluidKDTree.new(s)
-~tree.index(~ds,action:{"Done indexing".postln})
+~tree.fit(~ds,action:{"Done indexing".postln})
 
 k = 5; //play with this
 (
@@ -32,6 +32,7 @@ Routine{
 ~kmeans = FluidKMeans.new(s)
 ~nClusters = 4; //play with this
 ~kmeans.fit(~ds,~nClusters,100,action:{"Done fitting".postln})
+
 (
 Routine{
     10.do{|i|
@@ -45,6 +46,7 @@ Routine{
 ~labels = FluidLabelSet(s,\simple1label);
 
 ~kmeans.predict(~ds,~labels, {|x| ("Size of each cluster" +  x).postln})
+
 (
 Routine{
     var n;

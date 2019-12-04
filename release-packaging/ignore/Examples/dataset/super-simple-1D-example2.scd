@@ -15,15 +15,15 @@ Routine{
 
 /*** KDTREE ***/
 ~tree = FluidKDTree.new(s)
-~tree.index(~ds,action:{"Done indexing".postln})
+~tree.fit(~ds,action:{"Done indexing".postln})
 
 k = 5; //play with this
 (
 Routine{
     10.do{|i|
-        ~point.set(0,i*10);
+        ~point.set(0,i*2);
         s.sync;
-        ("Neighbours for point" + (i*10)).postln;
+        ("Neighbours for point" + (i*2)).postln;
         ~tree.kNearest(~point, k, {|x| ("Labels:" + x).postln});
         ~tree.kNearestDist(~point,k,{|x| ("Distances:" + x).postln})
     }
