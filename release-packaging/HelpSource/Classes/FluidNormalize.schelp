@@ -1,0 +1,94 @@
+TITLE:: FluidNormalize
+summary:: Normalize a FluidDataSet
+categories:: FluidManipulation
+related:: Classes/FluidStandardize, Classes/FluidDataSet
+
+DESCRIPTION::
+Normalize the entries of a link::Classes/FluidDataSet::, or normalize a data point according to the learned bounrds of a data set. On the server.
+
+See http://www.faqs.org/faqs/ai-faq/neural-nets/part2/section-16.html
+
+CLASSMETHODS::
+
+private:: kr
+
+METHOD:: new
+Create a new instance
+
+ARGUMENT:: server
+The link::Classes/Server:: on which to run
+
+ARGUMENT:: min
+Minimum output value, default 0
+
+ARGUMENT:: max
+Maximum output value, default 1
+
+returns:: new instance
+
+
+INSTANCEMETHODS::
+
+METHOD:: fit
+Normalize a link::Classes/FluidDataSet:: strong::in-place::
+
+ARGUMENT:: dataset
+The link::Classes/FluidDataSet:: to normalize
+
+ARGUMENT:: action
+A function to run when processing is complete
+
+METHOD:: normalize
+Normalize a link::Classes/FluidDataSet:: non-destructively into another link::Classes/FluidDataSet::
+
+ARGUMENT:: sourceDataset
+The link::Classes/FluidDataSet:: to normalize
+
+ARGUMENT:: destDataset
+The link::Classes/FluidDataSet:: to populate with normalized data
+
+ARGUMENT:: action
+A function to run when processing is complete
+
+METHOD:: normalizePoint
+Normalize a new data point, using the learned extrema from a previous link::Classes/FluidNormalize#fit::ting
+
+ARGUMENT:: sourceBuffer
+A link::Classes/Buffer:: with the new data point
+
+ARGUMENT:: destBuffer
+A link::Classes/Buffer:: to contain the normalized value
+
+ARGUMENT:: action
+A function to run when processing is complete
+
+METHOD:: read
+Load internal state (dimensionality, mins, maxes) from a JSON file
+
+ARGUMENT:: filename
+Absolute path to the JSON file
+
+ARGUMENT:: action
+A function to run when file is loaded
+
+METHOD:: write
+Store the internal state of object on disk as a JSON file. Will not overwrite existing files
+
+ARGUMENT:: filename
+Absolute path of file to write
+
+ARGUMENT:: action
+A function to run when file is written
+
+METHOD:: cols
+Retreive the dimensionality of the data set we have fitted on
+
+ARGUMENT:: action
+A function to run when the server responds, taking the dimensions as its argument
+
+
+EXAMPLES::
+
+code::
+(some example code)
+::
