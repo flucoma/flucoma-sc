@@ -17,7 +17,7 @@ FluidKMeans : FluidManipulationClient {
     }
 
     predictPoint { |buffer, action|
-        this.pr_sendMsg(\predictPoint,[buffer.asUGenInput],action,[numbers(FluidMessageResponse,_,_)]);
+        this.pr_sendMsg(\predictPoint,[buffer.asUGenInput],action,[number(FluidMessageResponse,_,_)]);
     }
 
     cols { |action|
