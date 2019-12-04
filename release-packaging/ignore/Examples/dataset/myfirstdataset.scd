@@ -13,17 +13,19 @@ if(s.hasBooted.not){"Warning: server not running".postln};
 
 //STEP 1: Get some files
 (
-// ~path = nil
-// FileDialog.new(fileMode:2,okFunc:{|x| ~path = x[0]});
-~path="/Users/owen/Documents/16bitBoxes/";
-~audioBuffers = SoundFile.collectIntoBuffers(~path+/+'*',s);
-~lookup = Dictionary(n:~audioBuffers.size);
-~audioBuffers.do{|b| ~lookup.add(b.path->b)}
+Buffer.freeAll;
+FileDialog.new(fileMode:2,okFunc:{|x| ~path = x[0];
+	~audioBuffers = SoundFile.collectIntoBuffers(~path+/+'*',s);
+	~lookup = Dictionary(n:~audioBuffers.size);
+	~audioBuffers.do{|b| ~lookup.add(b.path->b)};
+	});
 )
 
 //STEP 2: Make a FluidDataSet
 ~dataset = FluidDataSet.new(s,"mfccs", 96) //12 dims * 4 stats * 2 derivatives
+
 //STEP 3A: EITHER populate the dataset like so (and cry about how long the data point assembly takes)
+(
 Routine{
     ~audioBuffers.do{|b|
         var tmpMFCCs = Buffer.new(s);
@@ -49,13 +51,25 @@ Routine{
           tmpMFCCs.free;
     };
 }.play
+)
+
 //check
 ~dataset.size({|x| x.postln})
-//save
-~dataset.write("/Users/owen/Documents/16bitBoxes/mfccs.json")
 
-//STEP 3B: OR load in one you rolled eearlier
-~dataset.read("/Users/owen/Documents/16bitBoxes/mfccs.json")
+//save
+(
+FileDialog.new(fileMode: 0, acceptMode: 1, okFunc:{|x| var file = x[0];
+	//if the file exists and is a json, delete it
+	if ((file.splitext[1] == "json") && (File.existsCaseSensitive(file)), {File.delete(file);"File Overwritten".postln;});
+	//if not json, make it so
+	if (file.splitext[1] != "json", {file = file ++ ".json";});
+	// then write
+	~dataset.write(file);
+});
+)
+
+//STEP 3B: OR load in one you rolled earlier
+FileDialog.new(fileMode: 0, acceptMode: 0, okFunc:{|x| ~dataset.read(x[0])});
 
 //peek
 c = Buffer.new(s)
@@ -64,12 +78,12 @@ c = Buffer.new(s)
 /*************************************/
 //FluidKDTree
 ~kdtree = FluidKDTree.new(s)
-~kdtree.index(~dataset,action:{"index".postln})
+~kdtree.fit(~dataset,action:{"fit".postln})
 //match
-~kdtree.kNearest(c,5,{|x| ~matches = x})
+~kdtree.kNearest(c,5,{|x| ~matches = x;})
 ~kdtree.kNearestDist(c,5,{|x| x.postln})
 
-~lookup[~matches[4]].play
+~lookup[~matches[4]].postln
 
 /*************************************/
 //FluidKMeans
