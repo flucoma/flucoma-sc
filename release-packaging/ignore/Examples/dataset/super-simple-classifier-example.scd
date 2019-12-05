@@ -18,9 +18,8 @@ w = Window.new("Viewer",  Rect(100,Window.screenBounds.height - 400, 310, 310)).
 v = View.new(w,Rect(0,0, 310, 310));
 
 //creates a function that reacts to mousedown
-// v.mouseMoveAction = {|view, x, y|myx=x;myy=y;w.refresh;};
 v.mouseDownAction = {|view, x, y|myx=x;myy=y;w.refresh;
-	myx.postln;myy.postln;
+	// myx.postln;myy.postln;
 	Routine{
 		b.setn(0,[myx,myy]);
 		s.sync;

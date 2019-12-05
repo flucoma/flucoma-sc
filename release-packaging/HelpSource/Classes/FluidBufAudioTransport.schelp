@@ -78,5 +78,18 @@ cancel processing on the server
 EXAMPLES::
 
 code::
-(some example code)
+//Make 2 sources to be interpolated
+(
+b = Buffer.loadCollection(s, FloatArray.fill(44100, {|a|(a / pi).sin * 0.1}));
+c = Buffer.loadCollection(s, FloatArray.fill(44100, {|a|(a / pi / 2).sin * 0.1}));
+d = Buffer.new
+)
+
+//make an sound interpolating their spectrum
+FluidBufAudioTransport.process(s,b,source2:c,destination:d,interpolation:0.5,action:{"Ding".postln})
+
+// listen to the source and the result
+b.play
+c.play
+d.play
 ::
