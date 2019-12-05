@@ -5,7 +5,7 @@ FluidKNN : FluidManipulationClient {
     }
 
     classifyPoint{ |buffer, labelset, k, action|
-        this.pr_sendMsg(\classify,[buffer.asUGenInput, labelset.asString, k],action,k.collect{string(FluidMessageResponse,_,_)});
+        this.pr_sendMsg(\classify,[buffer.asUGenInput, labelset.asString, k],action,[string(FluidMessageResponse,_,_)]);
     }
 
     regressPoint { |buffer,dataset, k, action|
