@@ -64,7 +64,7 @@ EXAMPLES::
 code::
 
 ~path = File.realpath(FluidBufNMF.class.filenameSymbol).dirname.withTrailingSlash +/+ "../AudioFiles/"
-b = Buffer.read(s,~path+/+"~Nicol-LoopE-M.wav")
+b = Buffer.read(s,~path+/+"Nicol-LoopE-M.wav")
 t = Buffer.read(s,~path+/+"Tremblay-SA-UprightPianoPedalWide.wav")
 o = Buffer.new
 FluidBufNMFCross.process(s,t,b,o,action:{"Ding".postln})
