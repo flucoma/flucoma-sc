@@ -122,18 +122,28 @@ c = Buffer.new(s)
 //FluidKMeans
 ~kMeans= FluidKMeans.new(s)
 ~kMeans.fit(~dataset,k:5,action:{"fit".postln})
+
+
+// predicts in which cluster a point would be
 ~kMeans.predictPoint(c,{|x|x.postln})
+
+// predicts which cluster each points of a dataset would be in, as a label
 ~labels = FluidLabelSet.new(s,"clusters")
 ~kMeans.predict(~dataset,~labels, {|x| x.postln})
+
 ~labels.getLabel(~audioBuffers[2].path,action:{|c| c.postln})
+
+//query each item
+(
 Routine{
 	~labels.size({|x|x.do {|i|
-		forkIfNeeded{
-			~audioBuffers[i].path.postln;
-			~labels.getLabel(~audioBuffers[i].path,action:{|c| c.postln});
-			s.sync;
+		~audioBuffers[i].path.postln;
+		~labels.getLabel(~audioBuffers[i].path,action:{|c| c.postln});
+		s.sync;
 		}
-	}
 	});
 }.play
+)
+
+//labelset can be written as json
 ~labels.write(~path+/+"labels.json")

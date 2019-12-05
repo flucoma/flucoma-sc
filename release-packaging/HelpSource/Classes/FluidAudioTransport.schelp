@@ -43,5 +43,6 @@ The maximum FFT size for processing
 EXAMPLES::
 
 code::
-(some example code)
+//the mouse X axis interpolates between the two sinewaves
+{FluidAudioTransport.ar(SinOsc.ar(220),SinOsc.ar(440),MouseX.kr())}.play;
 ::
