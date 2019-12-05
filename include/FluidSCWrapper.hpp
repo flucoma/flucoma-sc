@@ -138,7 +138,7 @@ public:
 
   void next(int)
   {
-    mControlsIterator.reset(mInBuf + 1); //mClient.audioChannelsIn());
+    mControlsIterator.reset(mInBuf + mSpecialIndex + 1); //mClient.audioChannelsIn());
     Wrapper::setParams(mParams, mWorld->mVerbosity > 0, mWorld, mControlsIterator); // forward on inputs N + audio inputs as params
     mParams.constrainParameterValues(); 
     const Unit *unit = this;
