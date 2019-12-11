@@ -9,12 +9,5 @@ add_library(
   ${FILENAME}
 )
 
-target_include_directories(
-  ${PLUGIN} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../../include
-)
-
-target_link_libraries(
-  ${PLUGIN} PRIVATE FLUID_DECOMPOSITION
-)
 
 include(${CMAKE_CURRENT_LIST_DIR}/../../scripts/target_post.cmake)
