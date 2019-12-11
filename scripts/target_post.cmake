@@ -1,10 +1,12 @@
 
-target_compile_features(${PLUGIN} PUBLIC cxx_std_14)
+target_compile_features(${PLUGIN} PRIVATE cxx_std_14)
 
 if(MSVC)
-  target_compile_options(${PLUGIN} PRIVATE /W4)
+  target_compile_options(${PLUGIN} PRIVATE /W3)
 else()
-  target_compile_options(${PLUGIN} PRIVATE -Wall -Wextra -Wpedantic -Wreturn-type -Wconversion)
+  target_compile_options(${PLUGIN} PRIVATE 
+    -Wall -Wextra -Wpedantic -Wreturn-type -Wconversion -Wno-conversion -Wno-c++11-narrowing -Wno-sign-compare
+  )
 endif()
 
 set_target_properties(${PLUGIN} PROPERTIES
@@ -15,14 +17,12 @@ set_target_properties(${PLUGIN} PROPERTIES
 
 target_link_libraries(
   ${PLUGIN}
-  PUBLIC
-  FLUID_DECOMPOSITION
-  FLUID_MANIP
-  FLUID_SC_WRAPPER
   PRIVATE
+  FLUID_DECOMPOSITION
+  # FLUID_MANIP
+  FLUID_SC_WRAPPER  
   HISSTools_FFT
 )
-
 
 target_include_directories(
   ${PLUGIN}
@@ -42,38 +42,18 @@ target_include_directories(
 get_property(HEADERS TARGET FLUID_DECOMPOSITION PROPERTY INTERFACE_SOURCES)
 source_group(TREE "${fluid_decomposition_SOURCE_DIR}/include" FILES ${HEADERS})
 
-get_property(HEADERS TARGET FLUID_MANIP PROPERTY INTERFACE_SOURCES)
-source_group(TREE "${fluid_manipulation_SOURCE_DIR}/include" FILES ${HEADERS})
-
-if (SUPERNOVA)
-    target_include_directories(
-      ${PLUGIN}
-      SYSTEM PRIVATE
-      "${SC_PATH}/external_libraries/nova-tt"
-      "${SC_PATH}/external_libraries/boost_lockfree"
-      "${SC_PATH}/external_libraries/boost-lockfree"
-    )
-endif()
-
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
-    target_compile_options(${PLUGIN} PRIVATE -fvisibility=hidden)
-
-    include (CheckCXXCompilerFlag)
-
-    # CHECK_CXX_COMPILER_FLAG(-msse HAS_CXX_SSE)
-    # CHECK_CXX_COMPILER_FLAG(-msse2 HAS_CXX_SSE2)
-    # CHECK_CXX_COMPILER_FLAG(-mfpmath=sse HAS_CXX_FPMATH_SSE)
-    # CHECK_CXX_COMPILER_FLAG(-mavx HAS_AVX)
-    # CHECK_CXX_COMPILER_FLAG(-mavx2 HAS_AVX2)
-
-    target_compile_options(
-        ${PLUGIN}
-        PRIVATE
-        $<$<NOT:$<CONFIG:DEBUG>>: -mavx>
-    )
-endif()
-
-
+# get_property(HEADERS TARGET FLUID_MANIP PROPERTY INTERFACE_SOURCES)
+# source_group(TREE "${fluid_manipulation_SOURCE_DIR}/include" FILES ${HEADERS})
+# 
+# if (SUPERNOVA)
+#     target_include_directories(
+#       ${PLUGIN}
+#       SYSTEM PRIVATE
+#       "${SC_PATH}/external_libraries/nova-tt"
+#       "${SC_PATH}/external_libraries/boost_lockfree"
+#       "${SC_PATH}/external_libraries/boost-lockfree"
+#     )
+# endif()
 
 if(MINGW)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mstackrealign")
@@ -82,16 +62,8 @@ endif()
 
 if(MSVC)
   target_compile_options(${PLUGIN} PRIVATE /arch:AVX -D_USE_MATH_DEFINES)
-else(MSVC)
-target_compile_options(
-   ${PLUGIN} PRIVATE $<$<NOT:$<CONFIG:DEBUG>>: -mavx>
-)
-endif(MSVC)
-
-####### added the fluid_decomposition
-
-# if(SUPERNOVA)
-#     add_library(${PLUGIN}_supernova MODULE ${FILENAME})
-#     set_property(TARGET ${PROJECT}_supernova
-#                  PROPERTY COMPILE_DEFINITIONS SUPERNOVA)
-# endif()
+else()
+  target_compile_options(
+     ${PLUGIN} PRIVATE $<$<NOT:$<CONFIG:DEBUG>>: -mavx> -fvisibility=hidden
+  )
+endif()
