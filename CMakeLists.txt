@@ -73,6 +73,11 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 ENDIF()
 
 add_library(FLUID_SC_WRAPPER INTERFACE)
+target_include_directories(FLUID_SC_WRAPPER 
+  INTERFACE
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/"
+)
+  
 target_sources(FLUID_SC_WRAPPER 
   INTERFACE
   "${CMAKE_CURRENT_SOURCE_DIR}/include/FluidSCWrapper.hpp"
@@ -89,7 +94,7 @@ endforeach ()
 
 #install bits. 
 
-set(SC_INSTALL_PREFIX "." CACHE PATH "Prefix for assembling PD packages")
+set(SC_INSTALL_PREFIX "." CACHE PATH "Prefix for assembling SC packages")
 set(FLUID_PACKAGE_NAME FluidCorpusManipulation CACHE STRING "Name for published package")
 set(SC_PACKAGE_ROOT ${SC_INSTALL_PREFIX}/${FLUID_PACKAGE_NAME})
 
