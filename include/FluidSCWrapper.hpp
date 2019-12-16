@@ -26,7 +26,7 @@ namespace impl {
 // Iterate over kr/ir inputs via callbacks from params object
 struct FloatControlsIter
 {
-  FloatControlsIter(float **vals, size_t N)
+  FloatControlsIter(float **vals, index N)
   : mValues(vals)
   , mSize(N)
   {}
@@ -39,12 +39,12 @@ struct FloatControlsIter
     mCount  = 0;
   }
     
-  size_t size() const noexcept { return mSize; }
+  index size() const noexcept { return mSize; }
     
 private:
   float **mValues;
-  size_t  mSize;
-  size_t  mCount{0};
+  index  mSize;
+  index  mCount{0};
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -78,7 +78,7 @@ public:
   }
     
   RealTime()
-    : mControlsIterator{mInBuf + mSpecialIndex + 1,static_cast<size_t>(static_cast<ptrdiff_t>(mNumInputs) - mSpecialIndex - 1)}
+    : mControlsIterator{mInBuf + mSpecialIndex + 1,static_cast<index>(mNumInputs) - mSpecialIndex - 1}
     , mParams{Wrapper::Client::getParameterDescriptors()}
     , mClient{Wrapper::setParams(mParams,mWorld->mVerbosity > 0, mWorld, mControlsIterator,true)}
   {}
@@ -100,24 +100,24 @@ public:
     }
 
     mClient.sampleRate(fullSampleRate());
-    mInputConnections.reserve(mClient.audioChannelsIn());
-    mOutputConnections.reserve(mClient.audioChannelsOut());
-    mAudioInputs.reserve(mClient.audioChannelsIn());
-    mOutputs.reserve(std::max(mClient.audioChannelsOut(), mClient.controlChannelsOut()));
+    mInputConnections.reserve(asUnsigned(mClient.audioChannelsIn()));
+    mOutputConnections.reserve(asUnsigned(mClient.audioChannelsOut()));
+    mAudioInputs.reserve(asUnsigned(mClient.audioChannelsIn()));
+    mOutputs.reserve(asUnsigned(std::max(mClient.audioChannelsOut(), mClient.controlChannelsOut())));
 
-    for (int i = 0; i < static_cast<int>(mClient.audioChannelsIn()); ++i)
+    for (index i = 0; i < mClient.audioChannelsIn(); ++i)
     {
-      mInputConnections.emplace_back(isAudioRateIn(i));
+      mInputConnections.emplace_back(isAudioRateIn(static_cast<int>(i)));
       mAudioInputs.emplace_back(nullptr, 0, 0);
     }
 
-    for (int i = 0; i < static_cast<int>(mClient.audioChannelsOut()); ++i)
+    for (index i = 0; i < mClient.audioChannelsOut(); ++i)
     {
       mOutputConnections.emplace_back(true);
       mOutputs.emplace_back(nullptr, 0, 0);
     }
 
-    for (int i = 0; i < static_cast<int>(mClient.controlChannelsOut()); ++i) { mOutputs.emplace_back(nullptr, 0, 0); }
+    for (index i = 0; i < mClient.controlChannelsOut(); ++i) { mOutputs.emplace_back(nullptr, 0, 0); }
   
     mCalcFunc = make_calc_function<RealTime, &RealTime::next>();
     Wrapper::getInterfaceTable()->fClearUnitOutputs(this, 1);
@@ -129,15 +129,23 @@ public:
     Wrapper::setParams(mParams, mWorld->mVerbosity > 0, mWorld, mControlsIterator); // forward on inputs N + audio inputs as params
     mParams.constrainParameterValues(); 
     const Unit *unit = this;
-    for (size_t i = 0; i < mClient.audioChannelsIn(); ++i)
+    for (index i = 0; i < mClient.audioChannelsIn(); ++i)
     {
-      if (mInputConnections[i]) mAudioInputs[i].reset(IN(i), 0, fullBufferSize());
+      if (mInputConnections[asUnsigned(i)])
+      {
+        mAudioInputs[asUnsigned(i)].reset(IN(i), 0, fullBufferSize());
+      }
     }
-    for (size_t i = 0; i < mClient.audioChannelsOut(); ++i)
+    for (index i = 0; i < mClient.audioChannelsOut(); ++i)
     {
-      if (mOutputConnections[i]) mOutputs[i].reset(out(static_cast<int>(i)), 0, fullBufferSize());
+      assert(i <= std::numeric_limits<int>::max());
+      if (mOutputConnections[asUnsigned(i)]) mOutputs[asUnsigned(i)].reset(out(static_cast<int>(i)), 0, fullBufferSize());
     }
-    for (size_t i = 0; i < mClient.controlChannelsOut(); ++i) { mOutputs[i].reset(out(static_cast<int>(i)), 0, 1); }
+    for (index i = 0; i < mClient.controlChannelsOut(); ++i)
+    {
+      assert(i <= std::numeric_limits<int>::max());
+      mOutputs[asUnsigned(i)].reset(out(static_cast<int>(i)), 0, 1);
+    }
     mClient.process(mAudioInputs, mOutputs,mContext);
   }
 
@@ -196,10 +204,10 @@ public:
   
   /// Penultimate input is the doneAction, final is blocking mode. Neither are params, so we skip them in the controlsIterator
   NonRealTime() :
-      mControlsIterator{mInBuf,static_cast<size_t>(static_cast<ptrdiff_t>(mNumInputs) - mSpecialIndex - 2)}
+      mControlsIterator{mInBuf,index(mNumInputs) - mSpecialIndex - 2}
     , mParams{Wrapper::Client::getParameterDescriptors()}
     , mClient{Wrapper::setParams(mParams,mWorld->mVerbosity > 0, mWorld, mControlsIterator,true)}
-    , mSynchronous{mNumInputs > 2 ? (in0(static_cast<int>(mNumInputs - 1)) > 0) : false}
+    , mSynchronous{mNumInputs > 2 ? (in0(int(mNumInputs) - 1) > 0) : false}
   {}
   
   ~NonRealTime()
@@ -220,7 +228,7 @@ public:
     mFifoMsg.Set(mWorld, initNRTJob, nullptr, this);
     mWorld->ft->fSendMsgFromRT(mWorld,mFifoMsg);    
     //we want to poll thread roughly every 20ms
-    checkThreadInterval = static_cast<size_t>(0.02 / controlDur());
+    checkThreadInterval = static_cast<index>(0.02 / controlDur());
     set_calc_function<NonRealTime, &NonRealTime::poll>();
   };
   
@@ -301,7 +309,7 @@ public:
     auto w = static_cast<Wrapper*>(data);
     if(w->mDone && w->mNumInputs > 2) //don't check for doneAction if UGen has no ins (there should be 3 minimum -> sig, doneAction, blocking mode)
     {
-      int doneAction = static_cast<int>(w->in0(static_cast<int>(w->mNumInputs - 2))); //doneAction is penultimate input; THIS IS THE LAW
+      int doneAction = static_cast<int>(w->in0(int(w->mNumInputs) - 2)); //doneAction is penultimate input; THIS IS THE LAW
       world->ft->fDoneAction(doneAction,w);
       return;
     }
@@ -363,8 +371,8 @@ private:
   char*       mCompletionMessage = nullptr;
   void*       mReplyAddr         = nullptr;
   const char *mName              = nullptr;
-  size_t      checkThreadInterval;
-  size_t      pollCounter{0};
+  index      checkThreadInterval;
+  index      pollCounter{0};
 protected:
   ParamSetType  mParams;
   Client        mClient;
@@ -427,7 +435,7 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
   template <typename ArgType, size_t N, typename T>
   struct Setter
   {
-    static constexpr size_t argSize = C::getParameterDescriptors().template get<N>().fixedSize;
+    static constexpr index argSize = C::getParameterDescriptors().template get<N>().fixedSize;
 
     auto fromArgs(World *, FloatControlsIter& args, LongT::type, int) { return args.next(); }
     auto fromArgs(World *, FloatControlsIter& args, FloatT::type, int) { return args.next(); }
@@ -449,7 +457,7 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
       ParamLiteralConvertor<T, argSize> a;
       using LiteralType = typename ParamLiteralConvertor<T, argSize>::LiteralType;
 
-      for (size_t i = 0; i < argSize; i++)
+      for (index i = 0; i < argSize; i++)
         a[i] = static_cast<LiteralType>(fromArgs(w, args, a[0], 0));
 
       return a.value();
