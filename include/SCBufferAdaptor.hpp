@@ -26,9 +26,9 @@ struct NRTBuf {
       : mBuffer(b)
   {
   }
-  NRTBuf(World *world, uint32 bufnum, bool rt = false)
-      : NRTBuf(rt ? World_GetBuf(world, bufnum)
-                  : World_GetNRTBuf(world, bufnum))
+  NRTBuf(World *world, index bufnum, bool rt = false)
+      : NRTBuf(rt ? World_GetBuf(world, static_cast<uint32>(bufnum))
+                  : World_GetNRTBuf(world, static_cast<uint32>(bufnum)))
   {
     if (mBuffer && !static_cast<bool>(mBuffer->samplerate))
       mBuffer->samplerate = world->mFullRate.mSampleRate;
@@ -65,8 +65,8 @@ public:
   SCBufferAdaptor& operator=(SCBufferAdaptor&&) = default;
 
 
-  SCBufferAdaptor(intptr_t bufnum,World *world, bool rt = false)
-      : NRTBuf(world, static_cast<uint32>(bufnum), rt)
+  SCBufferAdaptor(index bufnum,World *world, bool rt = false)
+      : NRTBuf(world, bufnum, rt)
       , mBufnum(bufnum)
       , mWorld(world)
   {
@@ -109,60 +109,60 @@ public:
     return true; 
   }
 
-  FluidTensorView<float, 1> samps(size_t channel) override
+  FluidTensorView<float, 1> samps(index channel) override
   {
     FluidTensorView<float, 2> v{mBuffer->data, 0,
-                                static_cast<size_t>(mBuffer->frames),
-                                static_cast<size_t>(mBuffer->channels)};
+                                mBuffer->frames,
+                                mBuffer->channels};
 
     return v.col(channel);
   }
 
-  FluidTensorView<float, 1> samps(size_t offset, size_t nframes,
-                                  size_t chanoffset) override
+  FluidTensorView<float, 1> samps(index offset, index nframes,
+                                  index chanoffset) override
   {
     FluidTensorView<float, 2> v{mBuffer->data, 0,
-                                static_cast<size_t>(mBuffer->frames),
-                                static_cast<size_t>(mBuffer->channels)};
+                                mBuffer->frames,
+                                mBuffer->channels};
 
     return v(fluid::Slice(offset, nframes), fluid::Slice(chanoffset, 1)).col(0);
   }
 
-  FluidTensorView<const float, 1> samps(size_t channel) const override
+  FluidTensorView<const float, 1> samps(index channel) const override
   {
     FluidTensorView<const float, 2> v{mBuffer->data, 0,
-                                static_cast<size_t>(mBuffer->frames),
-                                static_cast<size_t>(mBuffer->channels)};
+                                      mBuffer->frames,
+                                      mBuffer->channels};
 
     return v.col(channel);
   }
 
-  FluidTensorView<const float, 1> samps(size_t offset, size_t nframes,
-                                  size_t chanoffset) const override
+  FluidTensorView<const float, 1> samps(index offset, index nframes,
+                                  index chanoffset) const override
   {
     FluidTensorView<const float, 2> v{mBuffer->data, 0,
-                                static_cast<size_t>(mBuffer->frames),
-                                static_cast<size_t>(mBuffer->channels)};
+                                      mBuffer->frames,
+                                      mBuffer->channels};
 
     return v(fluid::Slice(offset, nframes), fluid::Slice(chanoffset, 1)).col(0);
   }
 
 
-  size_t numFrames() const override
+  index numFrames() const override
   {
-    return valid() ? static_cast<size_t>(this->mBuffer->frames) : 0u;
+    return valid() ? this->mBuffer->frames : 0;
   }
 
-  size_t numChans() const override
+  index numChans() const override
   {
-    return valid() ? static_cast<size_t>(this->mBuffer->channels) : 0u;
+    return valid() ? this->mBuffer->channels : 0;
   }
 
   double sampleRate() const override { return valid() ? mBuffer->samplerate : 0; }
 
   std::string asString() const override { return std::to_string(bufnum());  }
 
-  const Result resize(size_t frames, size_t channels, double sampleRate) override
+  const Result resize(index frames, index channels, double sampleRate) override
   {
     SndBuf *thisThing = mBuffer;
     mOldData          = thisThing->data;
@@ -178,14 +178,14 @@ public:
     return r; 
   }
 
-  intptr_t bufnum() const { return mBufnum; }
+  index bufnum() const { return mBufnum; }
   void realTime(bool rt) { mRealTime = rt;  }
 
 protected:
 
   bool  mRealTime{false};
   float *mOldData{0};
-  intptr_t   mBufnum;
+  index mBufnum;
   World *mWorld;
 };
 
