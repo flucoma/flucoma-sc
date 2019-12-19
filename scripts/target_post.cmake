@@ -5,7 +5,7 @@ if(MSVC)
   target_compile_options(${PLUGIN} PRIVATE /W3)
 else()
   target_compile_options(${PLUGIN} PRIVATE 
-    -Wall -Wextra -Wpedantic -Wreturn-type -Wconversion -Wno-conversion -Wno-c++11-narrowing -Wno-sign-compare
+    -Wall -Wextra -Wpedantic -Wreturn-type -Wconversion -Wno-c++11-narrowing
   )
 endif()
 
@@ -14,6 +14,14 @@ set_target_properties(${PLUGIN} PROPERTIES
     CXX_STANDARD_REQUIRED YES
     CXX_EXTENSIONS NO
 )
+
+if(APPLE)
+  set_target_properties(${PLUGIN} PROPERTIES
+    XCODE_GENERATE_SCHEME ON
+  )
+  #If we target 10.7 (actually < 10.9), we have to manually include this:
+  target_compile_options(${PLUGIN} PRIVATE -stdlib=libc++)
+endif()
 
 target_link_libraries(
   ${PLUGIN}
