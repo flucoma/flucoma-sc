@@ -1,6 +1,5 @@
 // A  complex example of using composition as an Mid-Side FIR filtering process
 
-
 // load a stereo buffer and initialise the many destinations
 (
 b = Buffer.read(s,File.realpath(FluidBufCompose.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-SA-UprightPianoPedalWide.wav");
@@ -66,4 +65,3 @@ f.play;
 
 // compare with the original
 b.play;
-::
