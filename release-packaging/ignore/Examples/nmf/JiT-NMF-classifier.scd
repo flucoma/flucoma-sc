@@ -7,7 +7,7 @@ b = Buffer.alloc(s,s.sampleRate * 2);
 g = Bus.audio(s,1);
 
 SynthDef(\JITcircular,{arg bufnum = 0, input = 0, env = 0;
-	var head, head2, duration, audioin, halfdur;
+	var head, head2, duration, audioin, halfdur, trig;
 	duration = BufFrames.kr(bufnum) / 2;
 	halfdur = duration / 2;
 	head = Phasor.ar(0,1,0,duration);
@@ -17,11 +17,12 @@ SynthDef(\JITcircular,{arg bufnum = 0, input = 0, env = 0;
 	audioin = In.ar(input,1);
 	BufWr.ar(audioin,bufnum,head,0);
 	BufWr.ar(audioin,bufnum,head+duration,0);
+	trig = FluidAmpSlice.ar(audioin,4410,4410,-60,-70,4410,4410,relRampUp: 10, relRampDown:2205, relThreshOn:12, relThreshOff: 9, highPassFreq: 300);
 
 	// cue the calculations via the language
-	SendReply.ar(FluidOnsetSlice.ar(audioin,9,0.2,5), '/attack',head);
+	SendReply.ar(trig, '/attack',head);
 
-	Out.ar(0,[audioin, FluidOnsetSlice.ar(audioin,9,0.1,5)]);
+	Out.ar(0,[audioin, trig]);
 }).add;
 
 // drum sounds modified from original code by snappizz
