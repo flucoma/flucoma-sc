@@ -7,6 +7,8 @@ b = Buffer.alloc(s,s.sampleRate * 2);
 g = Bus.audio(s,1);
 c = 0;
 d = 0;
+e = Buffer.alloc(s, 65);
+f = Buffer.alloc(s, 65, 3);
 
 SynthDef(\JITcircular,{arg bufnum = 0, input = 0, env = 0;
 	var head, head2, duration, audioin, halfdur, trig;
@@ -109,16 +111,19 @@ r = OSCFunc({ arg msg;
 )
 
 // stop it all
-
 (
-w = Window("Control", Rect(100,100,360,100)).front;
+w = Window("Control", Rect(100,100,440,100)).front;
 
 Button(w, Rect(10,10,80, 80)).states_([["bd",Color.black,Color.white]]).mouseDownAction_({Synth(\fluidbd, [\out, g.index], x, \addBefore)});
 Button(w, Rect(100,10,80, 80)).states_([["sn",Color.black,Color.white]]).mouseDownAction_({Synth(\fluidsn, [\out, g.index], x, \addBefore)});
 Button(w, Rect(190,10,80, 80)).states_([["hh",Color.black,Color.white]]).mouseDownAction_({Synth(\fluidhh, [\out, g.index], x,\addBefore)});
-StaticText(w, Rect(280,7,70,25)).string_("Select").align_(\center);
-PopUpMenu(w, Rect(280,32,70,25)).items_(["train","guess"]).action_({|value| c = value.value;});
-e = PopUpMenu(w, Rect(280,65,70,25)).items_(["classA","classB","classC"]).action_({|value| d = value.value;});
+StaticText(w, Rect(280,7,75,25)).string_("Select").align_(\center);
+PopUpMenu(w, Rect(280,32,75,25)).items_(["learn","classify"]).action_({|value| c = value.value; if (c == 0, {e.fill(0,65,0.1)}, {FluidBufCompose.process(s, e, numChans:1, destination:f, destStartChan:d);});});
+PopUpMenu(w, Rect(280,65,75,25)).items_(["classA","classB","classC"]).action_({|value| d = value.value;});
+Button(w, Rect(365,65,65,25)).states_([["transfer",Color.black,Color.white]]).mouseDownAction_({if (c == 0, {FluidBufCompose.process(s, e, numChans:1, destination:f, destStartChan:d); e.fill(0,65,0.1)});});
+
 w.onClose_({b.free;g.free;r.clear;x.free; y.free;});
 )
 
+e.getn(0,65,{|x|x.postln;})
+f.getn(0,65 * 3,{|x|x.postln;})
