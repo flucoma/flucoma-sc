@@ -9,6 +9,9 @@ c = 0;
 d = 0;
 e = Buffer.alloc(s, 65);
 f = Buffer.alloc(s, 65, 3);
+h = Buffer.alloc(s, 65, 3);
+j = [0.0,0.0,0.0];
+k = [0.0,0.0,0.0];
 
 SynthDef(\JITcircular,{arg bufnum = 0, input = 0, env = 0;
 	var head, head2, duration, audioin, halfdur, trig;
@@ -21,12 +24,12 @@ SynthDef(\JITcircular,{arg bufnum = 0, input = 0, env = 0;
 	audioin = In.ar(input,1);
 	BufWr.ar(audioin,bufnum,head,0);
 	BufWr.ar(audioin,bufnum,head+duration,0);
-	trig = FluidAmpSlice.ar(audioin,4410,4410,-60,-70,4410,4410,relRampUp: 10, relRampDown:2205, relThreshOn:12, relThreshOff: 9, highPassFreq: 300);
+	trig = FluidAmpSlice.ar(audioin,2205,2205,-47,-47,4410,4410,relRampUp: 10, relRampDown:1666, relThreshOn:12, relThreshOff: 9, highPassFreq: 85);
 
 	// cue the calculations via the language
 	SendReply.ar(trig, '/attack',head);
 
-	Out.ar(0,[audioin, trig]);
+	Out.ar(0,audioin);
 }).add;
 
 // drum sounds taken from original code by snappizz
@@ -98,32 +101,64 @@ SynthDef(\fluidhh, {
 (
 // instantiate the JIT-circular-buffer
 x = Synth(\JITcircular,[\bufnum, b.bufnum, \input, g.index]);
+e.fill(0,65,0.1);
 
 // instantiate the listener to cue the processing from the language side
 
 r = OSCFunc({ arg msg;
 	if (c == 0, {
-		msg[0].postln;
+		FluidBufNMF.process(s, b, msg[3], 128, bases:e, basesMode: 1, windowSize: 128);
 	}, {
-		msg[3].postln;
+		FluidBufNMF.process(s, b, msg[3], 128, components:3, bases:f, basesMode: 2, activations:h, windowSize: 128, action:{
+			h.getn(3,3,{|x|
+				j = x;
+				if (j[0] >= k[0], {Synth(\fluidbd,[\out,1])});
+				if (j[1] >= k[1], {Synth(\fluidsn,[\out,1])});
+				if (j[2] >= k[2], {Synth(\fluidhh,[\out,1])});
+			});
+		};
+		);
 	});
 }, '/attack', s.addr);
 )
 
 // stop it all
 (
-w = Window("Control", Rect(100,100,440,100)).front;
+w = Window("Control", Rect(100,100,590,100)).front;
 
 Button(w, Rect(10,10,80, 80)).states_([["bd",Color.black,Color.white]]).mouseDownAction_({Synth(\fluidbd, [\out, g.index], x, \addBefore)});
 Button(w, Rect(100,10,80, 80)).states_([["sn",Color.black,Color.white]]).mouseDownAction_({Synth(\fluidsn, [\out, g.index], x, \addBefore)});
 Button(w, Rect(190,10,80, 80)).states_([["hh",Color.black,Color.white]]).mouseDownAction_({Synth(\fluidhh, [\out, g.index], x,\addBefore)});
 StaticText(w, Rect(280,7,75,25)).string_("Select").align_(\center);
-PopUpMenu(w, Rect(280,32,75,25)).items_(["learn","classify"]).action_({|value| c = value.value; if (c == 0, {e.fill(0,65,0.1)}, {FluidBufCompose.process(s, e, numChans:1, destination:f, destStartChan:d);});});
-PopUpMenu(w, Rect(280,65,75,25)).items_(["classA","classB","classC"]).action_({|value| d = value.value;});
-Button(w, Rect(365,65,65,25)).states_([["transfer",Color.black,Color.white]]).mouseDownAction_({if (c == 0, {FluidBufCompose.process(s, e, numChans:1, destination:f, destStartChan:d); e.fill(0,65,0.1)});});
+PopUpMenu(w, Rect(280,32,75,25)).items_(["learn","classify"]).action_({|value| c = value.value; if (c == 0, {e.fill(0,65,0.1)});});
+PopUpMenu(w, Rect(280,65,75,25)).items_(["classA","classB","classC"]).action_({|value| d = value.value; e.fill(0,65,0.1);});
+Button(w, Rect(365,65,65,25)).states_([["transfer",Color.black,Color.white]]).mouseDownAction_({if (c == 0, {FluidBufCompose.process(s, e, numChans:1, destination:f, destStartChan:d);});});
+StaticText(w, Rect(440,7,75,25)).string_("Activations");
+l = Array.fill(3, {arg i;
+	StaticText(w, Rect(440,((i+1) * 20 )+ 7,75,25));
+});
+StaticText(w, Rect(520,7,55,25)).string_("Thresh").align_(\center);
+3.do {arg i;
+	TextField(w, Rect(520,((i+1) * 20 )+ 7,55,25)).action_({|x| k[i] = x.value.asFloat;});
+});
 
-w.onClose_({b.free;g.free;r.clear;x.free; y.free;});
+w.onClose_({b.free;g.free;r.clear;x.free; y.free;q.stop;});
+)
+
+(
+q = Routine {
+	{
+		{
+			l[0].string_("A: " ++ j[0].round(0.001));
+			l[1].string_("B: " ++ j[1].round(0.001));
+			l[2].string_("C: " ++ j[2].round(0.001));
+		}.defer;
+		0.1.wait;
+	}.loop;
+}.play;
 )
 
 e.getn(0,65,{|x|x.postln;})
 f.getn(0,65 * 3,{|x|x.postln;})
+f.plot(numChannels:3)
+h.plot(numChannels:3)
