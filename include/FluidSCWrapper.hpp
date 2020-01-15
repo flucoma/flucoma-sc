@@ -1,6 +1,9 @@
 #pragma once
 
 #include "SCBufferAdaptor.hpp"
+
+#include <FluidVersion.hpp>
+
 #include <clients/common/FluidBaseClient.hpp>
 #include <clients/common/Result.hpp>
 #include <data/FluidTensor.hpp>
@@ -467,6 +470,12 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
   template <size_t N, typename T>
   using ControlSetter = Setter<FloatControlsIter&, N, T>;
   
+  static void doVersion(Unit *, sc_msg_iter *)
+  {
+    std::cout << "Fluid Corpus Manipualtion Toolkit version " << fluidVersion() << '\n'; 
+  }
+  
+  
 public:
   using Client = C;
   using ParameterSetType = typename C::ParamSetType;
@@ -493,6 +502,7 @@ public:
     getName(name);
     getInterfaceTable(ft);
     impl::FluidSCWrapperBase<Client>::setup(ft, name);
+    ft->fDefineUnitCmd(name, "version", doVersion);
   }
 
   static auto& setParams(ParameterSetType& p, bool verbose, World* world, FloatControlsIter& inputs, bool constrain = false)

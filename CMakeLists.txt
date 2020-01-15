@@ -57,6 +57,8 @@ FetchContent_GetProperties(fluid_decomposition)
 if(NOT fluid_decomposition_POPULATED)
   FetchContent_Populate(fluid_decomposition)
   add_subdirectory(${fluid_decomposition_SOURCE_DIR} ${fluid_decomposition_BINARY_DIR})
+  message(STATUS "GODDMAND DN DNSKD KSFJKJFSSKFJ JJ   ${CMAKE_MODULE_PATH}")
+  include(flucoma_version)
 endif()
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${CMAKE_SYSTEM_NAME}/plugins")
