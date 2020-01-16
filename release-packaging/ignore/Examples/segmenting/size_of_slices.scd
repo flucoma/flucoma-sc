@@ -57,7 +57,7 @@ Routine{
 		"Failed to find a suitable threshold in % seconds.\n".postf((Main.elapsedTime - startTime).round(0.01));
 	}, {
 		// succeeded
-		"Found % as a suitable threshold for an average lenght of % samples per slices in % seconds and % iterations.\n".postf(curThresh, curVal.asInt, (Main.elapsedTime - startTime).round(0.01), iters);
+		"Found % as a suitable threshold for an average lenght of % samples per slices (% of target) in % seconds and % iterations.\n".postf(curThresh.round(0.001), curVal.asInt, (curVal/target).round(0.01), (Main.elapsedTime - startTime).round(0.01), iters);
 	}
 	);
 }.play
