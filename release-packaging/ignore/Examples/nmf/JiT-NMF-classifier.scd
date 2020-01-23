@@ -199,4 +199,4 @@ Routine {
 }.play;
 )
 
-// thank you to Ted Moore for the SC code cleaning and improvments!
+// thanks to Ted Moore for the SC code cleaning and improvments!
