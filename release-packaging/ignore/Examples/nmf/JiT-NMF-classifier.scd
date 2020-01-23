@@ -13,28 +13,31 @@
 //    3.4 click the transfer button
 //    3.5 repeat (3.2-3.4) for the other 2 classes.
 //    3.x you can observe the 3 bases here:
-f.plot(numChannels:3)
+~classify_bases.plot(numChannels:3)
 
 // 4. classify
 //    4.1 select the classify option
 //    4.2 press a pad and look at the activation
 //    4.3 tweak the thresholds and enjoy the resynthesis. (the right audio channel is the detected class where classA is a bd sound)
 //    4.x you can observe the 3 activations here:
-h.plot(numChannels:3)
-
-
+~activations.plot(numChannels:3)
 
 /// code to execute first
 (
-b = Buffer.alloc(s,s.sampleRate * 2);
-g = Bus.audio(s,1);
-c = 0;
-d = 0;
-e = Buffer.alloc(s, 65);
-f = Buffer.alloc(s, 65, 3);
-h = Buffer.alloc(s, 65, 3);
-j = [0.0,0.0,0.0];
-k = [0.5,0.5,0.5];
+var circle_buf = Buffer.alloc(s,s.sampleRate * 2); // b
+var input_bus = Bus.audio(s,1); // g
+var classifying = 0; // c
+var cur_training_class = 0; // d
+var train_base = Buffer.alloc(s, 65); // e
+var activation_vals = [0.0,0.0,0.0]; // j
+var thresholds = [0.5,0.5,0.5]; // k
+var activations_disps;
+var analysis_synth;
+var osc_func;
+var update_rout;
+
+~classify_bases = Buffer.alloc(s, 65, 3); // f
+~activations = Buffer.new(s);
 
 // the circular buffer with triggered actions sending the location of the head at the attack
 Routine {
@@ -125,22 +128,30 @@ Routine {
 	s.sync;
 
 	// instantiate the JIT-circular-buffer
-	x = Synth(\JITcircular,[\bufnum, b.bufnum, \input, g.index]);
-	e.fill(0,65,0.1);
+	analysis_synth = Synth(\JITcircular,[\bufnum, circle_buf, \input, input_bus]);
+	train_base.fill(0,65,0.1);
 
 	// instantiate the listener to cue the processing from the language side
-	r = OSCFunc({ arg msg;
-		if (c == 0, {
+	osc_func = OSCFunc({ arg msg;
+		var head_pos = msg[3];
+		// when an attack happens
+		if (classifying == 0, {
 			// if in training mode, makes a single component nmf
-			FluidBufNMF.process(s, b, msg[3], 128, bases:e, basesMode: 1, windowSize: 128);
+			FluidBufNMF.process(s, circle_buf, head_pos, 128, bases:train_base, basesMode: 1, windowSize: 128);
 		}, {
 			// if in classifying mode, makes a 3 component nmf from the pretrained bases and compares the activations with the set thresholds
-			FluidBufNMF.process(s, b, msg[3], 128, components:3, bases:f, basesMode: 2, activations:h, windowSize: 128, action:{
-				h.getn(3,3,{|x|
-					j = x;
-					if (j[0] >= k[0], {Synth(\fluidbd,[\out,1])});
-					if (j[1] >= k[1], {Synth(\fluidsn,[\out,1])});
-					if (j[2] >= k[2], {Synth(\fluidhh,[\out,1])});
+			FluidBufNMF.process(s, circle_buf, head_pos, 128, components:3, bases:~classify_bases, basesMode: 2, activations:~activations, windowSize: 128, action:{
+				// we are retrieving and comparing against the 2nd activation, because FFT processes are zero-padded on each sides, therefore the complete 128 samples are in the middle of the analysis.
+				~activations.getn(3,3,{|x|
+					activation_vals = x;
+					if (activation_vals[0] >= thresholds[0], {Synth(\fluidbd,[\out,1])});
+					if (activation_vals[1] >= thresholds[1], {Synth(\fluidsn,[\out,1])});
+					if (activation_vals[2] >= thresholds[2], {Synth(\fluidhh,[\out,1])});
+					defer{
+						activations_disps[0].string_("A: " ++ activation_vals[0].round(0.001));
+						activations_disps[1].string_("B: " ++ activation_vals[1].round(0.001));
+						activations_disps[2].string_("C: " ++ activation_vals[2].round(0.001));
+					};
 				});
 			};
 			);
@@ -152,39 +163,40 @@ Routine {
 
 	// GUI for control
 	{
-		w = Window("Control", Rect(100,100,590,100)).front;
+		var win = Window("Control", Rect(100,100,590,100)).front;
 
-		Button(w, Rect(10,10,80, 80)).states_([["bd",Color.black,Color.white]]).mouseDownAction_({Synth(\fluidbd, [\out, g.index], x, \addBefore)});
-		Button(w, Rect(100,10,80, 80)).states_([["sn",Color.black,Color.white]]).mouseDownAction_({Synth(\fluidsn, [\out, g.index], x, \addBefore)});
-		Button(w, Rect(190,10,80, 80)).states_([["hh",Color.black,Color.white]]).mouseDownAction_({Synth(\fluidhh, [\out, g.index], x,\addBefore)});
-		StaticText(w, Rect(280,7,75,25)).string_("Select").align_(\center);
-		PopUpMenu(w, Rect(280,32,75,25)).items_(["learn","classify"]).action_({|value| c = value.value; if (c == 0, {e.fill(0,65,0.1)});});
-		PopUpMenu(w, Rect(280,65,75,25)).items_(["classA","classB","classC"]).action_({|value| d = value.value; e.fill(0,65,0.1);});
-		Button(w, Rect(365,65,65,25)).states_([["transfer",Color.black,Color.white]]).mouseDownAction_({if (c == 0, {FluidBufCompose.process(s, e, numChans:1, destination:f, destStartChan:d);});});
-		StaticText(w, Rect(440,7,75,25)).string_("Activations");
-		l = Array.fill(3, {arg i;
-			StaticText(w, Rect(440,((i+1) * 20 )+ 7,75,25));
+		Button(win, Rect(10,10,80, 80)).states_([["bd",Color.black,Color.white]]).mouseDownAction_({Synth(\fluidbd, [\out, input_bus], analysis_synth, \addBefore)});
+		Button(win, Rect(100,10,80, 80)).states_([["sn",Color.black,Color.white]]).mouseDownAction_({Synth(\fluidsn, [\out, input_bus], analysis_synth, \addBefore)});
+		Button(win, Rect(190,10,80, 80)).states_([["hh",Color.black,Color.white]]).mouseDownAction_({Synth(\fluidhh, [\out, input_bus], analysis_synth,\addBefore)});
+		StaticText(win, Rect(280,7,75,25)).string_("Select").align_(\center);
+		PopUpMenu(win, Rect(280,32,75,25)).items_(["learn","classify"]).action_({|value|
+			classifying = value.value;
+			if(classifying == 0, {
+				train_base.fill(0,65,0.1)
+			});
 		});
-		StaticText(w, Rect(520,7,55,25)).string_("Thresh").align_(\center);
+		PopUpMenu(win, Rect(280,65,75,25)).items_(["classA","classB","classC"]).action_({|value|
+			cur_training_class = value.value;
+			train_base.fill(0,65,0.1);
+		});
+		Button(win, Rect(365,65,65,25)).states_([["transfer",Color.black,Color.white]]).mouseDownAction_({
+			if(classifying == 0, {
+				// if training
+				FluidBufCompose.process(s, train_base, numChans:1, destination:~classify_bases, destStartChan:cur_training_class);
+			});
+		});
+		StaticText(win, Rect(440,7,75,25)).string_("Activations");
+		activations_disps = Array.fill(3, {arg i;
+			StaticText(win, Rect(440,((i+1) * 20 )+ 7,75,25));
+		});
+		StaticText(win, Rect(520,7,55,25)).string_("Thresh").align_(\center);
 		3.do {arg i;
-			TextField(w, Rect(520,((i+1) * 20 )+ 7,55,25)).string_("0.5").action_({|x| k[i] = x.value.asFloat;});
+			TextField(win, Rect(520,((i+1) * 20 )+ 7,55,25)).string_("0.5").action_({|x| thresholds[i] = x.value.asFloat;});
 		};
 
-		w.onClose_({b.free;g.free;r.clear;x.free; y.free;q.stop;});
+		win.onClose_({circle_buf.free;input_bus.free;osc_func.clear;analysis_synth.free;});
 	}.defer;
-
-	s.sync;
-
-	// updates the activations
-	q = Routine {
-		{
-			{
-				l[0].string_("A: " ++ j[0].round(0.001));
-				l[1].string_("B: " ++ j[1].round(0.001));
-				l[2].string_("C: " ++ j[2].round(0.001));
-			}.defer;
-			0.1.wait;
-		}.loop;
-	}.play;
 }.play;
 )
+
+// thank you to Ted Moore for the SC code cleaning and improvments!
