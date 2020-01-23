@@ -9,11 +9,11 @@ FluidNormalize : FluidManipulationClient {
     }
 
     fit{|dataset, action|
-        this.pr_sendMsg(\fit,[dataset.asUGenInput],action);
+        this.pr_sendMsg(\fit,[dataset.asString],action);
     }
 
     normalize{|sourceDataset, destDataset, action|
-        this.pr_sendMsg(\normalize,[sourceDataset.asUGenInput, destDataset.asUGenInput],action);
+        this.pr_sendMsg(\normalize,[sourceDataset.asString, destDataset.asString],action);
     }
 
     normalizePoint{|sourceBuffer, destBuffer, action|

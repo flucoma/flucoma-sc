@@ -1,11 +1,11 @@
 FluidStandardize : FluidManipulationClient {
 
     fit{|dataset, action|
-        this.pr_sendMsg(\fit,[dataset.asUGenInput],action);
+        this.pr_sendMsg(\fit,[dataset.asString],action);
     }
 
     standardize{|sourceDataset, destDataset, action|
-        this.pr_sendMsg(\standardize,[sourceDataset.asUGenInput, destDataset.asUGenInput],action);
+        this.pr_sendMsg(\standardize,[sourceDataset.asString, destDataset.asString],action);
     }
 
     standardizePoint{|sourceBuffer, destBuffer, action|
