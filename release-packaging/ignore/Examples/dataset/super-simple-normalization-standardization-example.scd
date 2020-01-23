@@ -33,13 +33,13 @@
 ~normalize = FluidNormalize(s,0,1);
 
 // fits the dataset to find the coefficients
-~normalize.fit(~dataset,{"done".postln;}); // throws error
+~normalize.fit(~dataset,{"done".postln;});
 
 // making an empty 'normed_dataset' which is required for the normalize function
 ~normed_dataset = FluidDataSet(s,\normed,~nb_of_dim);
 
 // normalize the full dataset
-~normalize.normalize(~dataset,~normed_dataset,{"done".postln;}); // throws error
+~normalize.normalize(~dataset,~normed_dataset,{"done".postln;});
 
 // look at a point to see that it has points in it
 ~normed_dataset.getPoint("point-0",~query_buf,{~query_buf.getn(0,~nb_of_dim,{|x|x.postln;});});
@@ -87,7 +87,7 @@
 ~normtree.fit(~normed_dataset)
 ~normtree.kNearest(~normbuf,2, {|x| ("Labels:" + x).postln});
 ~normtree.kNearestDist(~normbuf,2, {|x| ("Distances:" + x).postln});
-// its nearest neighbourg is still itself as it should be, but the 2nd neighbourg will have changed. The distance is now different too
+// its nearest neighbourg is still itself as it should be, but the 2nd neighbourg will probably have changed. The distance is now different too
 
 // standardize that same point (~query_buf) to be at the right scale
 ~stdbuf = Buffer.alloc(s,~nb_of_dim);
@@ -99,7 +99,7 @@
 ~stdtree.fit(~standardized_dataset)
 ~stdtree.kNearest(~stdbuf,2, {|x| ("Labels:" + x).postln});
 ~stdtree.kNearestDist(~stdbuf,2, {|x| ("Distances:" + x).postln});
-// its nearest neighbourg is still itself as it should be, but the 2nd neighbourg will have changed yet again. The distance is also different too
+// its nearest neighbourg is still itself as it should be, but the 2nd neighbourg will probably have changed yet again. The distance is also different too
 
 // where it starts to be interesting is when we query points that are not in our original dataset
 
