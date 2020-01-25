@@ -60,8 +60,8 @@
 ~standardized_dataset.getPoint("point-0",~query_buf,{~query_buf.getn(0,~nb_of_dim,{|x|x.postln;});});
 // 10 numbers that are standardize, which mean that, for each column/dimension/descriptor, the average of all the points will be 0. and the standard deviation 1.
 
-/////////////////////////////////////////////////////
-// exploring point querying  conceepts via norm and std
+////////////////////////////////////////////////////
+// exploring point querying  concepts via norm and std
 
 // Once a dataset is normalized / standardized, query points have to be scaled accordingly to be used in distance measurement. In our instance, values were originally between 0 and 100, and now they will be between 0 and 1 (norm), or their average will be 0. (std). If we have data that we want to match from a similar ranging input, which is usually the case, we will need to normalize the searching point in each dimension using the same coefficients.
 
