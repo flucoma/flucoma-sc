@@ -134,11 +134,11 @@ c = Buffer.new(s);
 // with basic params
 Routine{
     t = Main.elapsedTime;
-    FluidBufOnsetSlice.process(s,b, indices: c, threshold:0.1);
+    FluidBufOnsetSlice.process(s,b, indices: c, threshold:0.00001);
     (Main.elapsedTime - t).postln;
 }.play
 )
 
 // list the indicies of detected attacks - the two input channels have been summed
-c.getn(0,c.numFrames,{|item|item.postln;})
+c.getn(0,c.numFrames,{|item|(item * 2).postln;})
 ::
