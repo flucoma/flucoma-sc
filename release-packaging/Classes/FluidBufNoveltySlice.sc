@@ -1,5 +1,5 @@
 FluidBufNoveltySlice : UGen {
-		*new1 { |rate, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, feature = 0, kernelSize = 3, threshold = 0.5, filterSize = 1, windowSize = 1024, hopSize = -1, fftSize = -1, doneAction = 0, blocking = 0 |
+		*new1 { |rate, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, feature = 0, kernelSize = 3, threshold = 0.5, filterSize = 1, minSliceLenght = 1, windowSize = 1024, hopSize = -1, fftSize = -1, doneAction = 0, blocking = 0 |
 
 		var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};
 
