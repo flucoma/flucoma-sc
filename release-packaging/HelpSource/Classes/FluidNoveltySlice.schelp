@@ -34,6 +34,9 @@ ARGUMENT:: threshold
 ARGUMENT:: filterSize
 	The size of a smoothing filter that is applied on the novelty curve. A larger filter filter size allows for cleaner cuts on very sharp changes.
 
+ARGUMENT:: minSliceLength
+	The minimum duration of a slice in number of hopSize.
+
 ARGUMENT:: windowSize
 	The window size. As sinusoidal estimation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
@@ -53,8 +56,7 @@ ARGUMENT:: maxFilterSize
 	This cannot be modulated.
 
 RETURNS::
-	An audio stream with impulses at detected transients. The latency between the input and the output is (windowSize +
-		((((kernelSize - 1) / 2) + (filterSize - 1)) * hopSize) at maximum.
+	An audio stream with impulses at detected transients. The latency between the input and the output is STRONG::hopSize * (((kernelSize+1)/2) + filterSize):: at minimum.
 
 EXAMPLES::
 
@@ -63,18 +65,18 @@ code::
 b = Buffer.read(s,File.realpath(FluidNoveltySlice.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
 
 // basic param (the process add a latency of windowSize samples
-{var sig = PlayBuf.ar(1,b,loop:1); [FluidNoveltySlice.ar(sig,0,11,0.3) * 0.5, DelayN.ar(sig, 1, (1024 +((((11 - 1) / 2) + (1 - 1)) * 512)) / s.sampleRate)]}.play
+{var sig = PlayBuf.ar(1,b,loop:1); [FluidNoveltySlice.ar(sig,0,11,0.33) * 0.5, DelayN.ar(sig, 1,  512 * (((11+1)/2) + 1)/ s.sampleRate)]}.play
 
 // other parameters
-{var sig = PlayBuf.ar(1,b,loop:1); [FluidNoveltySlice.ar(sig, 1, 31, 0.004, 4, 128, 64) * 0.5, DelayN.ar(sig, 1, (128 +((((5 - 1) / 2) + (4 - 1)) * 64))/ s.sampleRate)]}.play
+{var sig = PlayBuf.ar(1,b,loop:1); [FluidNoveltySlice.ar(sig, 1, 31, 0.004, 4, 128, 32) * 0.5, DelayN.ar(sig, 1, 32 * (((31+1)/2) + 4)/ s.sampleRate)]}.play
 
 // more musical trans-trigged autopan
 (
 {
     var sig, trig, syncd, pan;
     sig = PlayBuf.ar(1,b,loop:1);
-    trig = FluidNoveltySlice.ar(sig, 0, 11, 0.2, 4, 128);
-    syncd = DelayN.ar(sig, 1, ( (128 +((((11 - 1) / 2) + (4 - 1)) * 64)) / s.sampleRate));
+    trig = FluidNoveltySlice.ar(sig, 0, 11, 0.25, 5, 128, 32);
+    syncd = DelayN.ar(sig, 1, 64 * (((11+1)/2) + 5) / s.sampleRate);
     pan = TRand.ar(-1,1,trig);
     Pan2.ar(syncd,pan);
 }.play
