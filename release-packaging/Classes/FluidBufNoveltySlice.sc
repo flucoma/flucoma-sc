@@ -13,25 +13,25 @@ FluidBufNoveltySlice : UGen {
 
 	}
 
-    *kr { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, feature = 0, kernelSize = 3, threshold = 0.5, filterSize = 1, windowSize = 1024, hopSize = -1, fftSize = -1, doneAction = 0 |
+    *kr { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, feature = 0, kernelSize = 3, threshold = 0.5, filterSize = 1, minSliceLength = 1, windowSize = 1024, hopSize = -1, fftSize = -1, doneAction = 0 |
 
-		^this.multiNew(\control, source, startFrame, numFrames, startChan, numChans, indices, feature, kernelSize, threshold, filterSize, windowSize, hopSize, fftSize, doneAction);
+		^this.multiNew(\control, source, startFrame, numFrames, startChan, numChans, indices, feature, kernelSize, threshold, filterSize, minSliceLength, windowSize, hopSize, fftSize, doneAction);
 
 	}
 
-    *process { |server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, feature = 0, kernelSize = 3, threshold = 0.5, filterSize = 1, windowSize = 1024, hopSize = -1, fftSize = -1, action |
+    *process { |server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, feature = 0, kernelSize = 3, threshold = 0.5, filterSize = 1, minSliceLength = 1, windowSize = 1024, hopSize = -1, fftSize = -1, action |
 		^FluidNRTProcess.new(
 			server, this, action, [indices]
 		).process(
-			source, startFrame, numFrames, startChan, numChans, indices, feature, kernelSize, threshold, filterSize, windowSize, hopSize, fftSize
+			source, startFrame, numFrames, startChan, numChans, indices, feature, kernelSize, threshold, filterSize, minSliceLength, windowSize, hopSize, fftSize
 		);
 	}
 
-    *processBlocking { |server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, feature = 0, kernelSize = 3, threshold = 0.5, filterSize = 1, windowSize = 1024, hopSize = -1, fftSize = -1, action |
+    *processBlocking { |server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, feature = 0, kernelSize = 3, threshold = 0.5, filterSize = 1, minSliceLength = 1, windowSize = 1024, hopSize = -1, fftSize = -1, action |
 		^FluidNRTProcess.new(
 			server, this, action, [indices], blocking:1
 		).process(
-			source, startFrame, numFrames, startChan, numChans, indices, feature, kernelSize, threshold, filterSize, windowSize, hopSize, fftSize
+			source, startFrame, numFrames, startChan, numChans, indices, feature, kernelSize, threshold, filterSize, minSliceLength, windowSize, hopSize, fftSize
 		);
 	}
 }
