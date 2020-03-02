@@ -9,7 +9,7 @@ FluidBufNoveltySlice : UGen {
 		source.isNil.if {"FluidBufNoveltySlice:  Invalid source buffer".throw};
 		indices.isNil.if {"FluidBufNoveltySlice:  Invalid features buffer".throw};
 
-		^super.new1(rate, source, startFrame, numFrames, startChan, numChans, indices, feature, kernelSize, threshold, filterSize, windowSize, hopSize, fftSize, maxFFTSize, kernelSize, filterSize, doneAction, blocking);
+		^super.new1(rate, source, startFrame, numFrames, startChan, numChans, indices, feature, kernelSize, threshold, filterSize, minSliceLength, windowSize, hopSize, fftSize, maxFFTSize, kernelSize, filterSize, doneAction, blocking);
 
 	}
 

@@ -84,10 +84,10 @@ c = Buffer.new(s);
 )
 
 (
-// with basic params
+// with basic params, with a minimum slight length to avoid over
 Routine{
 	t = Main.elapsedTime;
-	FluidBufNoveltySlice.process(s,b, indices: c, threshold:0.45);
+	FluidBufNoveltySlice.process(s,b, indices: c, threshold:0.4,filterSize: 4, minSliceLength: 8);
 	(Main.elapsedTime - t).postln;
 }.play
 )
