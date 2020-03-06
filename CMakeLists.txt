@@ -10,7 +10,7 @@ cmake_minimum_required(VERSION 3.11)
 ################################################################################
 # Paths
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/release-packaging")
-set(MAX_TARGET_NAMESPACE "" CACHE STRING "Optional namesapce to prepend to targets to prevent collision in super-builds")
+
 set(SC_LIBRARY_OUTPUT_PREFIX "release-packaging" CACHE STRING "Where in the hierarchy to write sc plugins (different for superbuild)")
 
 set(SC_PATH "" CACHE PATH "Path to the top of SuperCollider source tree")
