@@ -75,10 +75,12 @@ if(MINGW)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mstackrealign")
 endif()
 
+if(DEFINED FLUID_ARCH)
+  target_compile_options(${PLUGIN} PRIVATE ${FLUID_ARCH})
+endif()
+
 if(MSVC)
-  target_compile_options(${PLUGIN} PRIVATE /arch:AVX -D_USE_MATH_DEFINES)
+  target_compile_options(${PLUGIN} PRIVATE -D_USE_MATH_DEFINES)
 else()
-  target_compile_options(
-     ${PLUGIN} PRIVATE $<$<NOT:$<CONFIG:DEBUG>>: -mavx> -fvisibility=hidden
-  )
+  target_compile_options(${PLUGIN} PRIVATE -fvisibility=hidden)
 endif()
