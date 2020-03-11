@@ -8,7 +8,7 @@ under the European Union’s Horizon 2020 research and innovation programme
 (grant agreement No 725899).
 */
 
-#include <clients/rt/AmpSliceClient.hpp>
+#include <clients/rt/AmpGateClient.hpp>
 
 #include <FluidSCWrapper.hpp>
 
@@ -18,5 +18,5 @@ PluginLoad(FluidSTFTUGen)
 {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<AmpSliceClient>("FluidAmpSlice", ft);
+  makeSCWrapper<AmpGateClient>("FluidAmpGate", ft);
 }
