@@ -1,14 +1,14 @@
-TITLE:: FluidBufAmpSlice
+TITLE:: FluidBufAmpGate
 SUMMARY:: Amplitude-based Slicer for Buffers
 CATEGORIES:: Libraries>FluidDecomposition
 RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreading
 
 DESCRIPTION::
-This class implements an amplitude-based slicer,with various customisable options and conditions to detect relative amplitude changes as onsets. It is part of the Fluid Decomposition Toolkit of the FluCoMa project.footnote::This was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+This class implements an amplitude-based slicer, with various customisable options and conditions to detect absolute amplitude changes as onsets and offsets. It is part of the Fluid Decomposition Toolkit of the FluCoMa project.footnote::This was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
 
-FluidBufAmpSlice is based on two envelop followers on a highpassed version of the signal: one slow that gives the trend, and one fast. Each have features that will interact. The example code below is unfolding the various possibilites in order of complexity.
+FluidBufAmpGate is based on an envelop follower on a highpassed version of the signal, which is then going through a Schmidt trigger and state-aware time contraints. The example code below is unfolding the various possibilites in order of complexity.
 
-The process will return a buffer which contains indices (in sample) of estimated starting points of different slices.
+The process will return a two-channel buffer with the addresses of the onset on the first channel, and the address of the offset on the second channel.
 
 STRONG::Threading::
 
@@ -40,32 +40,38 @@ ARGUMENT:: numChans
 ARGUMENT:: indices
 	The index of the buffer where the indices (in sample) of the estimated starting points of slices will be written. The first and last points are always the boundary points of the analysis.
 
-ARGUMENT:: fastRampUp
-	The number of samples the fast envelope follower will take to reach the next value when raising. Typically, this will be faster than slowRampUp.
-
-ARGUMENT:: fastRampDown
-	The number of samples the fast envelope follower will take to reach the next value when falling. Typically, this will be faster than slowRampDown.
-
-ARGUMENT:: slowRampUp
+ARGUMENT:: rampUp
 	The number of samples the absolute envelope follower will take to reach the next value when raising.
 
-ARGUMENT:: slowRampDown
+ARGUMENT:: rampDown
 	The number of samples the absolute envelope follower will take to reach the next value when falling.
 
 ARGUMENT:: onThreshold
-	The threshold in dB of the relative envelope follower to trigger an onset, aka to go ON when in OFF state. It is computed on the difference between the two envelope followers.
+	The threshold in dB of the absolute envelope follower to trigger an onset, aka to go ON when in OFF state.
 
 ARGUMENT:: offThreshold
-	The threshold in dB of the relative envelope follower to reset, aka to allow the differential envelop to trigger again.
-
-ARGUMENT:: floor
-	The level in dB the slowRamp needs to be above to consider a detected difference valid, allowing to ignore the slices in the noise floor.
-
-ARGUMENT:: highPassFreq
-	The frequency of the fourth-order Linkwitz–Riley high-pass filter (https://en.wikipedia.org/wiki/Linkwitz%E2%80%93Riley_filter). This is done first on the signal to minimise low frequency intermodulation with very fast ramp lengths.
+	The threshold in dB of the absolute envelope follower to trigger an offset, , aka to go ON when in OFF state.
 
 ARGUMENT:: minSliceLength
 	The length in samples that the Slice will stay ON. Changes of states during that period will be ignored.
+
+ARGUMENT:: minSilenceLength
+	The length in samples that the Slice will stay OFF. Changes of states during that period will be ignored.
+
+ARGUMENT:: minLengthAbove
+	The length in samples that the absolute envelope have to be above the threshold to consider it a valid transition to ON. The Slice will start at the first sample when the condition is met. Therefore, this affects the latency.
+
+ARGUMENT:: minLengthBelow
+	The length in samples that the absolute envelope have to be below the threshold to consider it a valid transition to OFF. The Slice will end at the first sample when the condition is met. Therefore, this affects the latency.
+
+ARGUMENT:: lookBack
+	The length of the buffer kept before an onset to allow the algorithm, once a new Slice is detected, to go back in time (up to that many samples) to find the minimum amplitude as the Slice onset point. This affects the latency of the algorithm.
+
+ARGUMENT:: lookAhead
+	The length of the buffer kept after an offset to allow the algorithm, once the Slice is considered finished, to wait further in time (up to that many samples) to find a minimum amplitude as the Slice offset point. This affects the latency of the algorithm.
+
+ARGUMENT:: highPassFreq
+	The frequency of the fourth-order Linkwitz–Riley high-pass filter (https://en.wikipedia.org/wiki/Linkwitz%E2%80%93Riley_filter). This is done first on the signal to minimise low frequency intermodulation with very fast ramp lengths.
 
 ARGUMENT:: action
 	A Function to be evaluated once the offline process has finished and indices instance variables have been updated on the client side. The metric will be passed indices as an argument.
@@ -85,62 +91,47 @@ b.play
 b.plot
 
 //basic tests: absThresh sanity
-FluidBufAmpSlice.process(s,b,indices:c, absRampUp:5, absRampDown:50, absThreshOn:-12, absThreshOff: -12)
+FluidBufAmpGate.process(s, b, indices:c, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12)
 c.query
 c.getn(0,c.numFrames*2,{|item|item.postln;})
 
 //basic tests: absThresh hysteresis
-FluidBufAmpSlice.process(s,b,indices:c, absRampUp:5, absRampDown:50, absThreshOn:-12, absThreshOff: -16)
+FluidBufAmpGate.process(s, b, indices:c, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -16)
 c.query
 c.getn(0,c.numFrames*2,{|item|item.postln;})
 
 //basic tests: absThresh min slice
-FluidBufAmpSlice.process(s,b,indices:c, absRampUp:5, absRampDown:50, absThreshOn:-12, absThreshOff: -12, minSliceLength:441)
+FluidBufAmpGate.process(s, b, indices:c, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12, minSliceLength:441)
 c.query
 c.getn(0,c.numFrames*2,{|item|item.postln;})
 
 //basic tests: absThresh min silence
-FluidBufAmpSlice.process(s,b,indices:c, absRampUp:5, absRampDown:50, absThreshOn:-12, absThreshOff: -12, minSilenceLength:441)
+FluidBufAmpGate.process(s, b, indices:c, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12, minSilenceLength:441)
 c.query
 c.getn(0,c.numFrames*2,{|item|item.postln;})
 
 //mid tests: absThresh time hysteresis on
-FluidBufAmpSlice.process(s,b,indices:c, absRampUp:5, absRampDown:50, absThreshOn:-12, absThreshOff: -12, minLengthAbove:441)
+FluidBufAmpGate.process(s, b, indices:c, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12, minLengthAbove:441)
 c.query
 c.getn(0,c.numFrames*2,{|item|item.postln;})
 
 //mid tests: absThresh time hysteresis off
-FluidBufAmpSlice.process(s,b,indices:c, absRampUp:5, absRampDown:50, absThreshOn:-12, absThreshOff: -12, minLengthBelow:441)
+FluidBufAmpGate.process(s, b, indices:c, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12, minLengthBelow:441)
 c.query
 c.getn(0,c.numFrames*2,{|item|item.postln;})
 
 //mid tests: absThresh with lookBack
-FluidBufAmpSlice.process(s,b,indices:c, absRampUp:5, absRampDown:50, absThreshOn:-12, absThreshOff: -12, lookBack:441)
+FluidBufAmpGate.process(s, b, indices:c, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12, lookBack:441)
 c.query
 c.getn(0,c.numFrames*2,{|item|item.postln;})
 
 //mid tests: absThresh with lookAhead
-FluidBufAmpSlice.process(s,b,indices:c, absRampUp:5, absRampDown:50, absThreshOn:-12, absThreshOff: -12, lookAhead:441)
+FluidBufAmpGate.process(s, b, indices:c, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12, lookAhead:441)
 c.query
 c.getn(0,c.numFrames*2,{|item|item.postln;})
 
 //mid tests: absThresh with asymetrical lookBack and lookAhead
-FluidBufAmpSlice.process(s,b,indices:c, absRampUp:5, absRampDown:50, absThreshOn:-12, absThreshOff: -12, lookBack:221, lookAhead:441)
-c.query
-c.getn(0,c.numFrames*2,{|item|item.postln;})
-
-//advanced tests: absThresh hysteresis, long tail
-FluidBufAmpSlice.process(s,b,indices:c, absRampUp:2205, absRampDown:2205, absThreshOn:-60, absThreshOff: -70)
-c.query
-c.getn(0,c.numFrames*2,{|item|item.postln;})
-
-//solution: have to recut with relThresh
-FluidBufAmpSlice.process(s,b,indices:c, absRampUp:2205, absRampDown:2205, absThreshOn:-60, absThreshOff: -70, relRampUp:5, relRampDown:220, relThreshOn:-1, relThreshOff:-2)
-c.query
-c.getn(0,c.numFrames*2,{|item|item.postln;})
-
-//beware of double trig. a solution: minSliceLength
-FluidBufAmpSlice.process(s,b,indices:c, absRampUp:2205, absRampDown:2205, absThreshOn:-60, absThreshOff: -70, relRampUp:5, relRampDown:220, relThreshOn:-1, relThreshOff:-2, minSliceLength:2205)
+FluidBufAmpGate.process(s, b, indices:c, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12, lookBack:221, lookAhead:441)
 c.query
 c.getn(0,c.numFrames*2,{|item|item.postln;})
 ::
@@ -149,12 +140,12 @@ STRONG::A musical example.::
 CODE::
 //load a buffer
 (
-b = Buffer.read(s,File.realpath(FluidBufAmpSlice.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
+b = Buffer.read(s,File.realpath(FluidBufAmpGate.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
 c = Buffer.new(s);
 )
 
 // slice the samples
-FluidBufAmpSlice.process(s,b,indices:c, absRampUp:4410, absRampDown:4410, absThreshOn:-60, absThreshOff: -70, relRampUp:10, relRampDown:2205, relThreshOn:13, relThreshOff:10, minSliceLength:4410, highPassFreq:20)
+FluidBufAmpGate.process(s, b, indices:c, rampUp:1103, rampDown:2205, onThreshold:-27, offThreshold: -31, minSilenceLength:1100, lookBack:441, highPassFreq:40)
 c.query
 c.getn(0,c.numFrames*2,{|item|item.postln;})
 //reformatting to read the onsets and offsets as pairs
@@ -193,7 +184,7 @@ c = Buffer.new(s);
 // with basic params
 Routine{
 	t = Main.elapsedTime;
-	FluidBufAmpSlice.process(s,b, indices: c, absRampUp:1, absRampDown:20);
+	FluidBufAmpGate.process(s, b, indices: c, rampUp:1, rampDown:20);
 	(Main.elapsedTime - t).postln;
 }.play
 )
