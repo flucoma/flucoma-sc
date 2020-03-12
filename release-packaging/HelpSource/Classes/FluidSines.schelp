@@ -24,17 +24,29 @@ ARGUMENT:: in
 ARGUMENT:: bandwidth
 	The width in bins of the fragment of the fft window that is considered a normal deviation for a potential continuous sinusoidal track. It has an effect on CPU cost: the widest is more accurate but more computationally expensive. It is capped at (fftSize / 2) + 1.
 
-ARGUMENT:: threshold
-	The normalised threshold, between 0 an 1, to consider a peak as a sinusoidal component from the normalized cross-correlation.
+ARGUMENT:: detectionThreshold
+	The threshold in dB above which to consider a peak as a sinusoidal component from the normalized cross-correlation.
+
+ARGUMENT:: birthLowThreshold
+	The threshold in dB above which to consider a peak to start a sinusoidal component tracking, for the low end of the spectrum. It is interpolated across the spectrom until birthHighThreshold at half-Nyquist.
+
+ARGUMENT:: birthHighThreshold
+	The threshold in dB above which to consider a peak to start a sinusoidal component tracking, for the high end of the spectrum. It is interpolated across the spectrom until birthLowThreshold at DC.
 
 ARGUMENT:: minTrackLen
 	The minimum duration, in spectral frames, for a sinusoidal track to be accepted as a partial. It allows to remove space-monkeys, but is more CPU intensive and might reject quick pitch material.
 
-ARGUMENT:: magWeight
-	The weight of the magnitude proximity of a peak when trying to associate it to an existing track (relative to freqWeight - suggested between 0 to 1)
+ARGUMENT:: trackingMethod
+	The algorithm used to track the sinusoidal continuity between spectral frames. 0 is the default, "Greedy", and 1 is a more expensive "Munkres". footnote::reference here::
 
-ARGUMENT:: freqWeight
-	The weight of the frequency proximity of a peak when trying to associate it to an existing track (relative to magWeight - suggested between 0 to 1)
+ARGUMENT:: trackMagRange
+	The frequency difference allowed for a track to diverge between frames, in Hertz.
+
+ARGUMENT:: trackFreqRange
+	The amplitude difference allowed for a track to diverge between frames, in dB.
+
+ARGUMENT:: trackProb
+	The probability of the tracking algorithm to find a track. At a value of 0, it will not try outside of the conditions. With a value of 1, it will match 100% of its peaks to a track.
 
 ARGUMENT:: windowSize
 	The window size. As sinusoidal estimation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
