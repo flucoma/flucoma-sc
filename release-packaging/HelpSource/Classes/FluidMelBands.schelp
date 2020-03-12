@@ -28,6 +28,9 @@ ARGUMENT:: maxFreq
 ARGUMENT:: maxNumBands
 		The maximum number of Mel bands that can be modelled. This sets the number of channels of the output, and therefore cannot be modulated.
 
+ARGUMENT:: normalize
+	This flag enables the scaling of the output to preserve the energy per band. It is on (1) by default.
+
 ARGUMENT:: windowSize
 	The window size. As sinusoidal estimation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
@@ -59,7 +62,7 @@ a = MultiSliderView(w,Rect(10, 10, 600, 300)).elasticMode_(1).isFilled_(1);
 
 //run the window updating routine.
 (
-~winRange = 100;
+~winRange = 0.1;
 r = Routine {
     {
         b.get({ arg val;
@@ -78,7 +81,7 @@ r = Routine {
 (
 x = 	{
 	var source = SinOsc.ar(LFTri.kr(0.1).exprange(80,800),0,0.1);
-	Out.kr(b,FluidMelBands.kr(source,maxNumBands:40) / 50);
+	Out.kr(b,FluidMelBands.kr(source,maxNumBands:40));
 	source.dup;
 }.play;
 )
@@ -99,7 +102,7 @@ x = 	{arg bands = 40, low = 20, high = 20000;
 )
 
 //set the winRange to a more informative value
-~winRange = 400;
+~winRange = 0.05;
 
 // observe the number of bands. The unused ones at the top are not updated
 x.set(\bands,20)
@@ -154,7 +157,7 @@ var stepMel = rangeMel / 41;
 	arg i;
 	var freqMel = (stepMel * (i +1)) + lowMel;
 	var freq = ((freqMel/ 1127.01048).exp - 1 ) * 700;
-	{SinOsc.ar(freq,mul:Lag.kr(In.kr(b,40)[i],512*SampleDur.ir,0.00005))}.play(d,1,addAction:\addToTail);
+	{SinOsc.ar(freq,mul:Lag.kr(In.kr(b,40)[i],512*SampleDur.ir,0.5))}.play(d,1,addAction:\addToTail);
 });
 )
 
@@ -193,7 +196,7 @@ x = {
 		var stepMel = rangeMel / 41;
 		var freqMel = (stepMel * (i +1)) + lowMel;
 		var freq = ((freqMel/ 1127.01048).exp - 1 ) * 700;
-		SinOsc.ar(freq,mul:Lag.kr(In.kr(b,40)[i],512*SampleDur.ir,0.00005))}.play(d,1,addAction:\addToTail);
+		SinOsc.ar(freq,mul:Lag.kr(In.kr(b,40)[i],512*SampleDur.ir,0.5))}.play(d,1,addAction:\addToTail);
 });
 )
 

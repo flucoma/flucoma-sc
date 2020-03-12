@@ -48,6 +48,9 @@ ARGUMENT:: minFreq
 ARGUMENT:: maxFreq
 	The highest boundary of the highest band of the model, in Hz.
 
+ARGUMENT:: normalize
+	This flag enables the scaling of the output to preserve the energy per band. It is on (1) by default.
+
 ARGUMENT:: windowSize
 	The window size. As spectral description relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
