@@ -29,7 +29,7 @@ ARGUMENT:: maxNumBands
 		The maximum number of Mel bands that can be modelled. This sets the number of channels of the output, and therefore cannot be modulated.
 
 ARGUMENT:: normalize
-	This flag enables the scaling of the output to preserve the energy per band. It is on (1) by default.
+	This flag enables the scaling of the output to preserve the energy of the window. It is on (1) by default.
 
 ARGUMENT:: windowSize
 	The window size. As sinusoidal estimation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
