@@ -40,16 +40,16 @@ SynthDef(\playa, { arg output = 0, bufnum = 0;
 // instantiate the player
 x = Synth(\playa,[\output, g.index, \bufnum, e.bufnum]);
 
-// instantiate the processor
+// instantiate the processor, please ignore the Buffer UGen warnings
 y = Synth(\becauseIcan,[\bufnum, b.bufnum, \nmfa, c.bufnum, \nmfb, d.bufnum, \input, g.index, \env, h.bufnum], x, 'addAfter');
 
 // instantiate the listener to cue the processing from the language side
 (
 w = OSCFunc({ arg msg;
 			if(msg[3]== 1, {
-			FluidBufNMF.process(s, b, numFrames: 22500, destination: c.bufnum, iterations: 3, fftSize: 1024, windowSize: 512, hopSize: 256);
+			FluidBufNMF.process(s, b, numFrames: 22500, resynth: c.bufnum, iterations: 3, fftSize: 1024, windowSize: 512, hopSize: 256);
 	}, {
-			FluidBufNMF.process(s, b, 22050, 22500, destination: d.bufnum, iterations: 3, fftSize: 1024, windowSize: 512, hopSize: 256);
+			FluidBufNMF.process(s, b, 22050, 22500, resynth: d.bufnum, iterations: 3, fftSize: 1024, windowSize: 512, hopSize: 256);
 	});}, '/processplease', s.addr);
 )
 
