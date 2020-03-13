@@ -9,7 +9,7 @@ FluidBufAmpGate : UGen {
 		source.isNil.if {"FluidBufAmpSlice:  Invalid source buffer".throw};
 		indices.isNil.if {"FluidBufAmpSlice:  Invalid features buffer".throw};
 
-		^super.new1(rate, source, startFrame, numFrames, startChan, numChans, indices, rampUp, rampDown, onThreshold, offThreshold, minSliceLength, minSilenceLength, minLengthAbove, minLengthBelow, lookBack, lookAhead, highPassFreq, maxSize, 0, doneAction, blocking);
+		^super.new1(rate, source, startFrame, numFrames, startChan, numChans, indices, rampUp, rampDown, onThreshold, offThreshold, minSliceLength, minSilenceLength, minLengthAbove, minLengthBelow, lookBack, lookAhead, highPassFreq, maxSize, doneAction, blocking);
 	}
 
 	*kr { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, rampUp = 10, rampDown = 10, onThreshold = -90, offThreshold = -90, minSliceLength = 1, minSilenceLength = 1, minLengthAbove = 1, minLengthBelow = 1, lookBack = 0, lookAhead = 0, highPassFreq = 85, doneAction = 0|
