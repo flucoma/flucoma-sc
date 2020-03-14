@@ -65,9 +65,13 @@ if(NOT fluid_decomposition_POPULATED)
   FetchContent_Populate(fluid_decomposition)
   add_subdirectory(${fluid_decomposition_SOURCE_DIR} ${fluid_decomposition_BINARY_DIR})
   include(flucoma_version)
+  include(flucoma-buildtools)
 endif()
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${SC_LIBRARY_OUTPUT_PREFIX}/plugins")
+set_if_toplevel(VAR CMAKE_LIBRARY_OUTPUT_DIRECTORY 
+                TOPLEVEL "${CMAKE_CURRENT_SOURCE_DIR}/${SC_LIBRARY_OUTPUT_PREFIX}/plugins"
+                SUPERBUILD "${CMAKE_SOURCE_DIR}/sc_plugins/${CMAKE_HOST_SYSTEM_NAME}/${CMAKE_HOST_SYSTEM_PROCESSOR}")
+
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 set(CMAKE_SHARED_MODULE_PREFIX "")
@@ -111,7 +115,7 @@ foreach(PACKAGE_DIRECTORY Classes;HelpSource;ignore)
   install(DIRECTORY "release-packaging/${PACKAGE_DIRECTORY}" DESTINATION ${SC_PACKAGE_ROOT})
 endforeach()
 
-install(DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} DESTINATION ${SC_PACKAGE_ROOT} PATTERN "*.ilk" EXCLUDE PATTERN "*.PDB" EXCLUDE)
+install(DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/ DESTINATION ${SC_PACKAGE_ROOT}/plugins PATTERN "*.ilk" EXCLUDE PATTERN "*.PDB" EXCLUDE)
 install(DIRECTORY "${fluid_decomposition_SOURCE_DIR}/AudioFiles" DESTINATION ${SC_PACKAGE_ROOT})
 install(FILES QuickStart.md DESTINATION ${SC_PACKAGE_ROOT})
 install(FILES ${fluid_decomposition_SOURCE_DIR}/license-executableform.md DESTINATION ${SC_PACKAGE_ROOT} RENAME license.md)
