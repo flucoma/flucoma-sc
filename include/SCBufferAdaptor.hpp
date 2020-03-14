@@ -111,7 +111,7 @@ public:
   // knows about
   bool valid() const override
   {
-    return (mBuffer && mBufnum >= 0 && mBufnum < mWorld->mNumSndBufs);
+    return (mBuffer && mBufnum >= 0 && mBufnum <  asSigned(mWorld->mNumSndBufs));
   }
   
   bool exists() const override
