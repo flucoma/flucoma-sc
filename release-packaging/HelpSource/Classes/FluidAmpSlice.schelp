@@ -51,112 +51,35 @@ RETURNS::
 EXAMPLES::
 
 code::
-//basic tests: absThresh sanity
+// detrending explained
+// the source is a sinewave that does not go to silence and has sharp-ish amplitude bumps as onsets we try to track
 (
-{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
-	env = FluidAmpSlice.ar(source,absRampUp:5, absRampDown:50, absThreshOn:-12, absThreshOff: -12);
-	[source, env]
-}.plot(0.1);
-)
-//basic tests: absThresh hysteresis
-(
-{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
-	env = FluidAmpSlice.ar(source,absRampUp:5, absRampDown:50, absThreshOn:-12, absThreshOff: -16);
-	[source, env]
-}.plot(0.1);
-)
-//basic tests: absThresh min slice
-(
-{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
-	env = FluidAmpSlice.ar(source,absRampUp:5, absRampDown:50, absThreshOn:-12, absThreshOff: -12, minSliceLength:441);
-	[source, env]
-}.plot(0.1);
-)
-//basic tests: absThresh min silence
-(
-{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
-	env = FluidAmpSlice.ar(source,absRampUp:5, absRampDown:50, absThreshOn:-12, absThreshOff: -12, minSilenceLength:441);
-	[source, env]
-}.plot(0.1);
-)
-//mid tests: absThresh time hysteresis on
-(
-{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
-	env = FluidAmpSlice.ar(source,absRampUp:5, absRampDown:50, absThreshOn:-12, absThreshOff: -12, minLengthAbove:441);
-	[DelayN.ar(source,0.1,441/44100), env]
-}.plot(0.1);
-)
-//mid tests: absThresh time hysteresis off
-(
-{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
-	env = FluidAmpSlice.ar(source,absRampUp:5, absRampDown:50, absThreshOn:-12, absThreshOff: -12, minLengthBelow:441);
-	[DelayN.ar(source,0.1,441/44100), env]
-}.plot(0.1);
-)
-//mid tests: absThresh with lookBack
-(
-{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
-	env = FluidAmpSlice.ar(source,absRampUp:5, absRampDown:50, absThreshOn:-12, absThreshOff: -12,lookBack:441);
-	[DelayN.ar(source,0.1,441/44100), env]
-}.plot(0.1);
-)
-//mid tests: absThresh with lookAhead
-(
-{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
-	env = FluidAmpSlice.ar(source,absRampUp:5, absRampDown:50, absThreshOn:-12, absThreshOff: -12,lookAhead:441);
-	[DelayN.ar(source,0.1,441/44100), env]
-}.plot(0.1);
-)
-//mid tests: absThresh with asymetrical lookBack and lookAhead
-(
-{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
-	env = FluidAmpSlice.ar(source,absRampUp:5, absRampDown:50, absThreshOn:-12, absThreshOff: -12,lookBack:221, lookAhead:441);
-	[DelayN.ar(source,0.1,441/44100), env]
-}.plot(0.1);
-)
-//advanced tests: absThresh hysteresis, long tail
-(
-{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
-	env = FluidAmpSlice.ar(source,absRampUp:220, absRampDown:220, absThreshOn:-60, absThreshOff: -70);
-	[source, env]
-}.plot(0.1);
-)
-//solution: have to recut with relThresh
-(
-{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
-	env = FluidAmpSlice.ar(source,absRampUp:220, absRampDown:220, absThreshOn:-60, absThreshOff: -70, relRampUp:5, relRampDown:200, relThreshOn:1, relThreshOff:0);
+{var env, source = SinOsc.ar(320,0,LFSaw.ar(20,0, -0.4, 0.6));
+	env = FluidAmpSlice.ar(source,fastRampUp: 5,fastRampDown: 50,slowRampUp: 220,slowRampDown: 220, onThreshold: 10, offThreshold: 10,floor: -60);
 	[source, env]
 }.plot(0.08);
 )
-//beware of double trig
+//beware of double trigger at the begining of the 2nd cycle above). A solution: Schmidth triggers
 (
-{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
-	env = FluidAmpSlice.ar(source,absRampUp:220, absRampDown:220, absThreshOn:-60, absThreshOff: -70, relRampUp:5, relRampDown:200, relThreshOn:1, relThreshOff:0);
+{var env, source = SinOsc.ar(320,0,LFSaw.ar(20,0, -0.4, 0.6));
+	env = FluidAmpSlice.ar(source,fastRampUp: 5,fastRampDown: 50,slowRampUp: 220,slowRampDown: 220, onThreshold: 10, offThreshold: 7,floor: -60);
 	[source, env]
-}.plot(0.005);
+}.plot(0.08);
 )
-//a solution: minSliceLength
+// another solution: minslicelength
 (
-{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
-	env = FluidAmpSlice.ar(source,absRampUp:220, absRampDown:220, absThreshOn:-60, absThreshOff: -70, relRampUp:5, relRampDown:200, relThreshOn:1, relThreshOff:0, minSliceLength:2205);
+{var env, source = SinOsc.ar(320,0,LFSaw.ar(20,0, -0.4, 0.6));
+	env = FluidAmpSlice.ar(source,fastRampUp: 5,fastRampDown: 50,slowRampUp: 220,slowRampDown: 220, onThreshold: 10, offThreshold: 7,floor: -60, minSliceLength: 220);
 	[source, env]
-}.plot(0.005);
+}.plot(0.08);
 )
-//drum slicing, many ways
+//quick drum onsets
 //load a buffer
 b = Buffer.read(s,File.realpath(FluidAmpSlice.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
-//have fun with a gate (explore lookahead and lookback, but correct for latency)
 (
 {var env, source = PlayBuf.ar(1,b);
-	env = FluidAmpSlice.ar(source,absRampUp:1103, absRampDown:2205, absThreshOn:-27, absThreshOff: -31, minSilenceLength:1100, lookBack:441, highPassFreq:40);
-	[DelayN.ar(source,delaytime:441/44100), env]
-}.plot(2,separately:true);
-)
-
-(
-{var env, source = PlayBuf.ar(1,b, loop:1);
-	env = FluidAmpSlice.ar(source, absRampUp:4410, absRampDown:4410, absThreshOn:-60, absThreshOff: -70, relRampUp:10, relRampDown:2205, relThreshOn:12, relThreshOff:9, minSilenceLength:4410, highPassFreq:20);
-	[source,  Trig.ar(env,0)]
+				env = FluidAmpSlice.ar(source,fastRampUp: 10,fastRampDown: 2205,slowRampUp: 4410,slowRampDown: 4410,onThreshold: 10,offThreshold: 5,floor: -40,minSliceLength: 4410,highPassFreq: 20);
+	[source, env]
 }.play;
 )
 ::
