@@ -61,11 +61,11 @@ ARGUMENT:: offThreshold
 ARGUMENT:: floor
 	The level in dB the slowRamp needs to be above to consider a detected difference valid, allowing to ignore the slices in the noise floor.
 
-ARGUMENT:: highPassFreq
-	The frequency of the fourth-order Linkwitz–Riley high-pass filter (https://en.wikipedia.org/wiki/Linkwitz%E2%80%93Riley_filter). This is done first on the signal to minimise low frequency intermodulation with very fast ramp lengths.
-
 ARGUMENT:: minSliceLength
 	The length in samples that the Slice will stay ON. Changes of states during that period will be ignored.
+
+ARGUMENT:: highPassFreq
+	The frequency of the fourth-order Linkwitz–Riley high-pass filter (https://en.wikipedia.org/wiki/Linkwitz%E2%80%93Riley_filter). This is done first on the signal to minimise low frequency intermodulation with very fast ramp lengths.
 
 ARGUMENT:: action
 	A Function to be evaluated once the offline process has finished and indices instance variables have been updated on the client side. The metric will be passed indices as an argument.
