@@ -1,5 +1,5 @@
 TITLE:: FluidAmpGate
-SUMMARY:: Amplitude-based Slicer
+SUMMARY:: Amplitude-based Gating Slicer
 CATEGORIES:: Libraries>FluidDecomposition
 RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
 
@@ -126,10 +126,10 @@ code::
 //drum slicing, many ways
 //load a buffer
 b = Buffer.read(s,File.realpath(FluidAmpGate.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
-//have fun with a gate (explore lookahead and lookback, but correct for latency)
+//have fun with a gate (explore lookahead and lookback, but correct for latency, which will be the greatest of the lookahead and lookback)
 (
 {var env, source = PlayBuf.ar(1,b);
-	env = FluidAmpGate.ar(source, rampUp:1103, rampDown:2205, onThreshold:-27, offThreshold: -31, minSilenceLength:1100, lookBack:441, highPassFreq:40);
+	env = FluidAmpGate.ar(source, rampUp:441, rampDown:2205, onThreshold:-27, offThreshold: -31, minSilenceLength:1100, lookBack:441, highPassFreq:20);
 	[DelayN.ar(source,delaytime:441/44100), env]
 }.plot(2, separately:true);
 )

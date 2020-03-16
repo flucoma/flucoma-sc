@@ -1,5 +1,5 @@
 TITLE:: FluidBufAmpSlice
-SUMMARY:: Amplitude-based Slicer for Buffers
+SUMMARY:: Amplitude-based Detrending Slicer for Buffers
 CATEGORIES:: Libraries>FluidDecomposition
 RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreading
 
@@ -79,7 +79,7 @@ code::
 // detrending explained
 // define a test signal and a destination buffer
 (
-b = Buffer.sendCollection(s, Array.fill(44100,{|i| sin(i*pi/ (44100/640)) * ((((35000-i)/30000)%0.8) + 0.2)}));
+b = Buffer.sendCollection(s, Array.fill(44100,{|i| sin(i*pi/ (44100/640)) * ((((79000-i) % 22050).abs / 28000.0) + 0.2)}));
 c = Buffer.new(s);
 )
 // the source is a sinewave that does not go to silence and has sharp-ish amplitude bumps as onsets we try to track
