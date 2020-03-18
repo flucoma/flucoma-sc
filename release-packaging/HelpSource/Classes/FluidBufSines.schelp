@@ -73,6 +73,9 @@ ARGUMENT:: trackFreqRange
 ARGUMENT:: trackProb
 	The probability of the tracking algorithm to find a track. At a value of 0, it will not try outside of the conditions. With a value of 1, it will match 100% of its peaks to a track.
 
+ARGUMENT:: windowSize
+	The window size. As spectral differencing relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
+
 ARGUMENT:: hopSize
 	The window hop size. As sinusoidal estimation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of windowSize (overlap of 2).
 
@@ -132,7 +135,7 @@ d = Buffer.new(s); e = Buffer.new(s);
 (
 Routine{
     t = Main.elapsedTime;
-    FluidBufSines.process(s, b, sines: d, residual:e, threshold:0.3);
+    FluidBufSines.process(s, b, sines: d, residual:e, windowSize: 2048, hopSize: 256, fftSize: 16384);
     (Main.elapsedTime - t).postln;
 }.play
 )
