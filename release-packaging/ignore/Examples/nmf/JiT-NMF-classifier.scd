@@ -52,7 +52,7 @@ Routine {
 		audioin = In.ar(input,1);
 		BufWr.ar(audioin,bufnum,head,0);
 		BufWr.ar(audioin,bufnum,head+duration,0);
-		trig = FluidAmpSlice.ar(audioin,2205,2205,-47,-47,4410,4410,relRampUp: 10, relRampDown:1666, relThreshOn:12, relThreshOff: 9, highPassFreq: 85);
+		trig = FluidAmpSlice.ar(audioin, 10, 1666, 2205, 2205, 12, 9, -47,4410, 85);
 
 		// cue the calculations via the language
 		SendReply.ar(trig, '/attack',head);
@@ -148,9 +148,9 @@ Routine {
 					if (activation_vals[1] >= thresholds[1], {Synth(\fluidsn,[\out,1])});
 					if (activation_vals[2] >= thresholds[2], {Synth(\fluidhh,[\out,1])});
 					defer{
-						activations_disps[0].string_("A: " ++ activation_vals[0].round(0.001));
-						activations_disps[1].string_("B: " ++ activation_vals[1].round(0.001));
-						activations_disps[2].string_("C: " ++ activation_vals[2].round(0.001));
+						activations_disps[0].string_("A:" ++ activation_vals[0].round(0.01));
+						activations_disps[1].string_("B:" ++ activation_vals[1].round(0.01));
+						activations_disps[2].string_("C:" ++ activation_vals[2].round(0.01));
 					};
 				});
 			};
@@ -163,35 +163,35 @@ Routine {
 
 	// GUI for control
 	{
-		var win = Window("Control", Rect(100,100,590,100)).front;
+		var win = Window("Control", Rect(100,100,610,100)).front;
 
 		Button(win, Rect(10,10,80, 80)).states_([["bd",Color.black,Color.white]]).mouseDownAction_({Synth(\fluidbd, [\out, input_bus], analysis_synth, \addBefore)});
 		Button(win, Rect(100,10,80, 80)).states_([["sn",Color.black,Color.white]]).mouseDownAction_({Synth(\fluidsn, [\out, input_bus], analysis_synth, \addBefore)});
 		Button(win, Rect(190,10,80, 80)).states_([["hh",Color.black,Color.white]]).mouseDownAction_({Synth(\fluidhh, [\out, input_bus], analysis_synth,\addBefore)});
-		StaticText(win, Rect(280,7,75,25)).string_("Select").align_(\center);
-		PopUpMenu(win, Rect(280,32,75,25)).items_(["learn","classify"]).action_({|value|
+		StaticText(win, Rect(280,7,85,25)).string_("Select").align_(\center);
+		PopUpMenu(win, Rect(280,32,85,25)).items_(["learn","classify"]).action_({|value|
 			classifying = value.value;
 			if(classifying == 0, {
 				train_base.fill(0,65,0.1)
 			});
 		});
-		PopUpMenu(win, Rect(280,65,75,25)).items_(["classA","classB","classC"]).action_({|value|
+		PopUpMenu(win, Rect(280,65,85,25)).items_(["classA","classB","classC"]).action_({|value|
 			cur_training_class = value.value;
 			train_base.fill(0,65,0.1);
 		});
-		Button(win, Rect(365,65,65,25)).states_([["transfer",Color.black,Color.white]]).mouseDownAction_({
+		Button(win, Rect(375,65,85,25)).states_([["transfer",Color.black,Color.white]]).mouseDownAction_({
 			if(classifying == 0, {
 				// if training
 				FluidBufCompose.process(s, train_base, numChans:1, destination:~classify_bases, destStartChan:cur_training_class);
 			});
 		});
-		StaticText(win, Rect(440,7,75,25)).string_("Activations");
+		StaticText(win, Rect(470,7,75,25)).string_("Acts");
 		activations_disps = Array.fill(3, {arg i;
-			StaticText(win, Rect(440,((i+1) * 20 )+ 7,75,25));
+			StaticText(win, Rect(470,((i+1) * 20 )+ 7,80,25));
 		});
-		StaticText(win, Rect(520,7,55,25)).string_("Thresh").align_(\center);
+		StaticText(win, Rect(540,7,55,25)).string_("Thresh").align_(\center);
 		3.do {arg i;
-			TextField(win, Rect(520,((i+1) * 20 )+ 7,55,25)).string_("0.5").action_({|x| thresholds[i] = x.value.asFloat;});
+			TextField(win, Rect(540,((i+1) * 20 )+ 7,55,25)).string_("0.5").action_({|x| thresholds[i] = x.value.asFloat;});
 		};
 
 		win.onClose_({circle_buf.free;input_bus.free;osc_func.clear;analysis_synth.free;});
