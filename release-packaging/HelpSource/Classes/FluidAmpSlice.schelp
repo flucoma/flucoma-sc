@@ -1,5 +1,5 @@
 TITLE:: FluidAmpSlice
-SUMMARY:: Amplitude-based Slicer
+SUMMARY:: Amplitude-based Detrending Slicer
 CATEGORIES:: Libraries>FluidDecomposition
 RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
 
@@ -39,11 +39,11 @@ ARGUMENT:: offThreshold
 ARGUMENT:: floor
 	The level in dB the slowRamp needs to be above to consider a detected difference valid, allowing to ignore the slices in the noise floor.
 
-ARGUMENT:: highPassFreq
-	The frequency of the fourth-order Linkwitz–Riley high-pass filter (https://en.wikipedia.org/wiki/Linkwitz%E2%80%93Riley_filter). This is done first on the signal to minimise low frequency intermodulation with very fast ramp lengths.
-
 ARGUMENT:: minSliceLength
 	The length in samples that the Slice will stay ON. Changes of states during that period will be ignored.
+
+ARGUMENT:: highPassFreq
+	The frequency of the fourth-order Linkwitz–Riley high-pass filter (https://en.wikipedia.org/wiki/Linkwitz%E2%80%93Riley_filter). This is done first on the signal to minimise low frequency intermodulation with very fast ramp lengths.
 
 RETURNS::
 	An audio stream with square envelopes around the slices. The latency between the input and the output is dependant on the relation between the two envelope followers.
@@ -52,23 +52,23 @@ EXAMPLES::
 
 code::
 // detrending explained
-// the source is a sinewave that does not go to silence and has sharp-ish amplitude bumps as onsets we try to track
+// Our source here is a sinewave that does not go to silence and has sharp-ish amplitude bumps as onsets we try to track
 (
-{var env, source = SinOsc.ar(320,0,LFSaw.ar(20,0, -0.4, 0.6));
+{var env, source = SinOsc.ar(320,0,LFSaw.ar(20, 0, -0.4, 0.6));
 	env = FluidAmpSlice.ar(source,fastRampUp: 5,fastRampDown: 50,slowRampUp: 220,slowRampDown: 220, onThreshold: 10, offThreshold: 10,floor: -60);
 	[source, env]
 }.plot(0.08);
 )
 //beware of double trigger at the begining of the 2nd cycle above). A solution: Schmidth triggers
 (
-{var env, source = SinOsc.ar(320,0,LFSaw.ar(20,0, -0.4, 0.6));
+{var env, source = SinOsc.ar(320,0,LFSaw.ar(20, 0, -0.4, 0.6));
 	env = FluidAmpSlice.ar(source,fastRampUp: 5,fastRampDown: 50,slowRampUp: 220,slowRampDown: 220, onThreshold: 10, offThreshold: 7,floor: -60);
 	[source, env]
 }.plot(0.08);
 )
 // another solution: minslicelength
 (
-{var env, source = SinOsc.ar(320,0,LFSaw.ar(20,0, -0.4, 0.6));
+{var env, source = SinOsc.ar(320,0,LFSaw.ar(20, 0, -0.4, 0.6));
 	env = FluidAmpSlice.ar(source,fastRampUp: 5,fastRampDown: 50,slowRampUp: 220,slowRampDown: 220, onThreshold: 10, offThreshold: 7,floor: -60, minSliceLength: 220);
 	[source, env]
 }.plot(0.08);

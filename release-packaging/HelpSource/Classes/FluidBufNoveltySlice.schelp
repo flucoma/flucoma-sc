@@ -125,15 +125,15 @@ FluidBufNoveltySlice.process(s,b, indices: c, kernelSize:31, threshold:0.1, filt
 //check the number of slices: it is the number of frames in the transBuf minus the boundary index.
 c.query;
 
-//play slice number 2
+//play slice number 3
 (
 {
-	BufRd.ar(1, b,
-		Line.ar(
-			BufRd.kr(1, c, DC.kr(2), 0, 1),
-			BufRd.kr(1, c, DC.kr(3), 0, 1),
-			(BufRd.kr(1, c, DC.kr(3)) - BufRd.kr(1, c, DC.kr(2), 0, 1) + 1) / s.sampleRate),
-		0,1);
+    BufRd.ar(1, b,
+        Line.ar(
+            BufRd.kr(1, c, DC.kr(3), 0, 1),
+            BufRd.kr(1, c, DC.kr(4), 0, 1),
+            (BufRd.kr(1, c, DC.kr(4)) - BufRd.kr(1, c, DC.kr(3), 0, 1) + 1) / s.sampleRate),
+        0,1);
 }.play;
 )
 
