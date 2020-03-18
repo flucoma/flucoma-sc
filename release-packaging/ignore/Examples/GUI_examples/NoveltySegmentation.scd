@@ -8,16 +8,16 @@ var synthDef, synth;
 var synths;
 
 var playing, currentSelection, colors, prevColor;
-
-playing = Array.fill(10, {false});
+var qwerty = "1234567890qwertyuiopasdfghjklzxcvbnm";
+playing = Array.fill(qwerty.size, {false});
 server = Server.default;
 Font.default = Font("Monaco", 16);
 
 audioBuffer = Buffer.new;
 slicesBuffer = Buffer.new;
 
-colors = Array.fill(64, {Color.rand});
-synths = Array.fill(10, {nil});
+colors = Array.fill(qwerty.size, {Color.rand});
+synths = Array.fill(qwerty.size, {nil});
 
 synthDef = SynthDef(\noveltySegDemo,{|buf, start, end|
 	Out.ar(0, BufRd.ar(1, buf, Phasor.ar(1,  1, start, end)));
@@ -48,17 +48,16 @@ win = Window.new("NoveltySegmentation",
 	Rect(200,200,800,450)).background_(Color.gray);
 
 win.view.keyDownAction_{|view, char, modifiers, unicode, keycode, key|
-	if (char.isDecDigit){
-		var digit = char.digit;
-		if(digit.notNil && slicesArray.notNil){
-			playFunc.value(digit - 1);
-		}
+	var num = qwerty.indexOf(char);
+	if (num.notNil&& slicesArray.notNil){
+			playFunc.value(num);
 	}
 };
 
 win.view.keyUpAction_{|view, char|
-	if(char.isDecDigit){
-		stopFunc.value(char.digit - 1);
+	var num = qwerty.indexOf(char);
+	if(num.notNil){
+		stopFunc.value(num);
     }
 };
 
@@ -83,7 +82,6 @@ thSlider = Slider(win, Rect(0, 0, 100, 10)).value_(0.5);
 
 loadButton.action_{
 	FileDialog({ |path|
-		path.postln;
 		soundFile = SoundFile.new;
 		soundFile.openRead(path[0]);
 		audioBuffer = Buffer.read(server, path[0]);

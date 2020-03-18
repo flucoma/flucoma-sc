@@ -7,8 +7,7 @@ var makeSynthDef;
 
 Font.default = Font("Monaco", 16);
 buffer = Buffer.new;
-win = Window.new("HPSS",
-	Rect(200,200,800,450)).background_(Color.gray);
+win = Window.new("HPSS", Rect(200,200,800,450)).background_(Color.gray);
 
 soundFileView = SoundFileView.new(win)
 	.gridOn_(false)
@@ -33,11 +32,9 @@ freqSscope.active_(true);
 
 loadButton.action_{
 	FileDialog({ |path|
-		path.postln;
 		soundFile = SoundFile.new;
 		soundFile.openRead(path[0]);
 		buffer = Buffer.read(Server.default, path[0]);
-		buffer.bufnum.postln;
 		soundFileView.soundfile = soundFile;
 		soundFileView.read(0, soundFile.numFrames);
    });
@@ -45,14 +42,8 @@ loadButton.action_{
 
 loopButton.action_{|but|
 	if(but.value == 1, {
-		Routine{
-			{makeSynthDef.value}.defer;
-			"hi".postln;
-			Server.default.sync;
-			synth = Synth(\hpssExtractionDemo, [\buffer, buffer.bufnum]);
-						synth.postln;
-			{mixSlider.action.value(mixSlider)}.defer;
-		}.play;
+		synth = Synth(\hpssExtractionDemo, [\buffer, buffer.bufnum]);
+		mixSlider.action.value(mixSlider);
 	},{
 		synth.free;
 	});
@@ -75,9 +66,8 @@ synthDef  = SynthDef(\hpssExtractionDemo,
 		player = PlayBuf.ar(1, buffer, loop:1);
 		fhpss = FluidHPSS.ar(in: player, harmFilterSize: harmSize, percFilterSize: percSize, maskingMode: 1, harmThreshFreq1: 0.1, harmThreshAmp1: 0, harmThreshFreq2: 0.5, harmThreshAmp2: 0, percThreshFreq1: 0.1, percThreshAmp1: 0, percThreshFreq2: 0.5, percThreshAmp2: 0, windowSize: 1024, hopSize: 256, fftSize: -1);
 
-
 		mix =(bal * fhpss[0]) + ((1 - bal) * fhpss[1]);
-			Out.ar(0,Pan2.ar(SinOsc.ar(200)));
+			Out.ar(0,Pan2.ar(mix));
 	}
 ).add;
 
@@ -105,5 +95,6 @@ win.layout_(
 	)
 );
 
+makeSynthDef.value;
 win.front;
 )

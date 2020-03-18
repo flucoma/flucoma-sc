@@ -32,11 +32,9 @@ freqSscope.active_(true);
 
 loadButton.action_{
 	FileDialog({ |path|
-		path.postln;
 		soundFile = SoundFile.new;
 		soundFile.openRead(path[0]);
 		buffer = Buffer.read(Server.default, path[0]);
-		buffer.bufnum.postln;
 		soundFileView.soundfile = soundFile;
 		soundFileView.read(0, soundFile.numFrames);
    });

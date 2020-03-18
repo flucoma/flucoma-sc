@@ -7,6 +7,7 @@ var addSelections, playFunc, stopFunc;
 var synthDef, synth;
 
 var playing, currentSelection, colors, prevColor;
+var qwerty = "1234567890qwertyuiopasdfghjklzxcvbnm";
 
 playing = false;
 server = Server.default;
@@ -45,11 +46,9 @@ win = Window.new("TransientSegmentation",
 	Rect(200,200,800,450)).background_(Color.gray);
 
 win.view.keyDownAction_{|view, char, modifiers, unicode, keycode, key|
-	if (char.isDecDigit){
-		var digit = char.digit;
-		if(slicesArray.notNil){
-			playFunc.value(digit - 1);
-		}
+	var num = qwerty.indexOf(char);
+	if(num.notNil && slicesArray.notNil){
+		playFunc.value(num);
 	}
 };
 
@@ -78,7 +77,6 @@ debounceSlider = Slider(win, Rect(0, 0, 100, 10)).value_(0.5);
 
 loadButton.action_{
 	FileDialog({ |path|
-		path.postln;
 		soundFile = SoundFile.new;
 		soundFile.openRead(path[0]);
 		audioBuffer = Buffer.read(server, path[0]);
@@ -88,8 +86,8 @@ loadButton.action_{
 };
 
 processButton.action_{|but|
-	var fw = ControlSpec(0, 5).map(fwSlider.value);
-	var bw = ControlSpec(0, 5).map(bwSlider.value);
+	var fw = ControlSpec(0.0001, 3, \exp).map(fwSlider.value);
+	var bw = ControlSpec(0.0001, 3, \exp).map(bwSlider.value);
 	var db = ControlSpec(1, 4410).map(debounceSlider.value);
 	if(but.value == 1, {
 		Routine{

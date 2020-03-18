@@ -52,18 +52,15 @@ sliders = Array.fill(4, {|i|
 
 loadButton.action_{
 	FileDialog({ |path|
-		path.postln;
-
 		soundFile = SoundFile.new;
 		soundFile.openRead(path[0]);
-
 		soundFileView.soundfile = soundFile;
 		soundFileView.read(0, soundFile.numFrames);
 		Routine{
 		audioBuffer = Buffer.read(server, path[0]);
 		server.sync;
 		FluidBufNMF.process(server,
-			audioBuffer.bufnum,destination:destBuffer.bufnum, components:4
+			audioBuffer.bufnum,resynth:destBuffer.bufnum, components:4
 		);
 		server.sync;
 		destBuffer.query;

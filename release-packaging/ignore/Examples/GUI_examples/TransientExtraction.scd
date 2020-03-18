@@ -32,11 +32,9 @@ freqSscope.active_(true);
 
 loadButton.action_{
 	FileDialog({ |path|
-		path.postln;
 		soundFile = SoundFile.new;
 		soundFile.openRead(path[0]);
 		buffer = Buffer.read(Server.default, path[0]);
-		buffer.bufnum.postln;
 		soundFileView.soundfile = soundFile;
 		soundFileView.read(0, soundFile.numFrames);
    });
@@ -60,12 +58,12 @@ mixSlider.action_{|slider|
 
 
 fwSlider.action_{|slider|
-	synth.set(\fw, ControlSpec(0, 5).map(slider.value));
+	synth.set(\fw, ControlSpec(0.0001, 3, \exp).map(slider.value));
 };
 
 
 bwSlider.action_{|slider|
-	synth.set(\bw, ControlSpec(0, 5).map(slider.value));
+	synth.set(\bw, ControlSpec(0.0001, 3, \exp).map(slider.value));
 };
 
 
