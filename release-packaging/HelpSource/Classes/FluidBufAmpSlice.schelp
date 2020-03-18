@@ -153,5 +153,5 @@ Routine{
 )
 
 // list the indicies of detected attacks - the two input channels have been summed.
-c.getn(0,c.numFrames,{|item|item.postln;})
+c.getn(0,c.numFrames,{|item|(item * 2).postln;})
 ::

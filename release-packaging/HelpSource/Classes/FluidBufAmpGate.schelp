@@ -190,7 +190,7 @@ Routine{
 )
 
 // list the indicies of detected attacks - the two input channels have been summed. The two channels of the output, respectively onset and offset indices, are interleaved as this is the SuperCollider buffer data formatting
-c.getn(0,c.numFrames*2,{|item|item.postln;})
+c.getn(0,c.numFrames*2,{|item|(item*2).postln;})
 // a more readable version: deinterleave onsetand offset
-c.getn(0,c.numFrames*2,{|items|items.reshape(c.numFrames,2).do({|x| x.postln});})
+c.getn(0,c.numFrames*2,{|items|items.reshape(c.numFrames,2).do({|x| (x*2).postln});})
 ::
