@@ -79,10 +79,9 @@ b = Buffer.read(s,File.realpath(FluidSines.class.filenameSymbol).dirname.withTra
 // null test (the process add a latency of (( hopSize * minTrackLen) + windowSize) samples
 {var sig = PlayBuf.ar(1,b,loop:1); [FluidSines.ar(sig).sum - DelayN.ar(sig, 1, ((( 512 * 15) + 1024)/ s.sampleRate))]}.play
 
-// as the algorithm resynthesize the sinusoidal peaks, we would expect to get it to work almost perfectly on a sine wave
-{FluidSines.ar(SinOsc.ar(mul: 0.1),detectionThreshold: -144,birthLowThreshold: -144,birthHighThreshold: -144,minTrackLen: 1,trackMagRange: 300,trackFreqRange: 1000,trackProb: 0)}.play;
+// as the algorithm resynthesize the sinusoidal peaks, we would expect to get it to work almost perfectly on a sine wave, with these settings that tell the process to tolerate everything as a sinusoid, even short and quiet peaks
+{FluidSines.ar(SinOsc.ar(mul: 0.1),detectionThreshold: -144,birthLowThreshold: -144,birthHighThreshold: -144,minTrackLen: 1,trackMagRange: 200,trackFreqRange: 1000,trackProb: 0)}.play;
 
 // as this is a windowed process, the frequency of the peak is good for that full window, and therefore interesting artefacts appear when the pitch is changing.
-// work in progress on slide example
 {FluidSines.ar(SinOsc.ar(LFTri.kr(0.1).exprange(220,880),mul: 0.1),detectionThreshold: -144,birthLowThreshold: -144,birthHighThreshold: -144,minTrackLen: 1,trackMagRange: 300,trackFreqRange: 1000,trackProb: 0)}.play;
 ::
