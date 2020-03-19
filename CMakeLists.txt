@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.11)
 
 ################################################################################
 # Paths
-set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/release-packaging")
+set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/install" CACHE PATH "")
 
 set(SC_LIBRARY_OUTPUT_PREFIX "release-packaging" CACHE STRING "Where in the hierarchy to write sc plugins (different for superbuild)")
 

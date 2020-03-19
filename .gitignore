@@ -8,3 +8,4 @@ release-packaging/AudioFiles
 Darwin/*
 Linux/*
 Windows/*
+install/
