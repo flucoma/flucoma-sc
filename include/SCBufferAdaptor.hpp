@@ -81,9 +81,6 @@ public:
       , mWorld(world)
   {
   }
-  
-
-  SCBufferAdaptor() = default;
 
   ~SCBufferAdaptor(){ cleanUp(); }
 
