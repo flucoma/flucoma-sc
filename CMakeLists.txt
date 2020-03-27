@@ -111,7 +111,7 @@ set(SC_INSTALL_PREFIX "." CACHE PATH "Prefix for assembling SC packages")
 set(FLUID_PACKAGE_NAME FluidCorpusManipulation CACHE STRING "Name for published package")
 set(SC_PACKAGE_ROOT ${SC_INSTALL_PREFIX}/${FLUID_PACKAGE_NAME})
 
-foreach(PACKAGE_DIRECTORY Classes;HelpSource;ignore)
+foreach(PACKAGE_DIRECTORY Classes;HelpSource;Examples)
   install(DIRECTORY "release-packaging/${PACKAGE_DIRECTORY}" DESTINATION ${SC_PACKAGE_ROOT})
 endforeach()
 
