@@ -71,7 +71,7 @@ b = Buffer.read(s,File.realpath(FluidOnsetSlice.class.filenameSymbol).dirname.wi
 // other parameters
 {var sig = PlayBuf.ar(1,b,loop:1); [FluidOnsetSlice.ar(sig, 2, 0.06, 55, 7, 0, 128, 64) * 0.5, DelayN.ar(sig, 1, (128)/ s.sampleRate)]}.play
 
-// more musical trans-trigged autopan
+// More musical, onset-trigged autopan
 (
 {
     var sig, trig, syncd, pan;

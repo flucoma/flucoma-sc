@@ -59,7 +59,7 @@ b = Buffer.read(s,File.realpath(FluidTransientSlice.class.filenameSymbol).dirnam
 // other parameters
 {var sig = PlayBuf.ar(1,b,loop:1); [FluidTransientSlice.ar(sig,order:80,minSliceLength:2205) * 0.5, DelayN.ar(sig, 1, ((256 + 128 - 80)/ s.sampleRate))]}.play
 
-// more musical trans-trigged autopan
+// More musical, transient-trigged autopan
 (
 {
 	var sig, trig, syncd, pan;
