@@ -78,7 +78,7 @@ public:
 
     std::stringstream ss;
     ss << '/' << Wrapper::getName() << "_latency";
-    std::cout << ss.str() << '\n';
+    std::cout << ss.str() << std::endl;
     ft->fSendNodeReply(&unit->mParent->mNode, -1, ss.str().c_str(), 1, l);
   }
 
@@ -236,7 +236,7 @@ public:
   {
     if (mClient.state() == ProcessState::kProcessing)
     {
-      std::cout << Wrapper::getName() << ": Processing cancelled \n";
+      std::cout << Wrapper::getName() << ": Processing cancelled" << std::endl;
       Wrapper::getInterfaceTable()->fSendNodeReply(&mParent->mNode, 1, "/done",
                                                    0, nullptr);
     }
@@ -260,7 +260,7 @@ public:
   /// launches tidy up when complete
   void poll(int)
   {
-    out0(0) = mDone ? 1.0 : static_cast<float>(mClient.progress());
+    out0(0) = mDone ? 1.0f : static_cast<float>(mClient.progress());
 
     if (0 == pollCounter++ && !mCheckingForDone)
     {
@@ -315,7 +315,7 @@ public:
       // cancels using u_cmd, this is what will fire
       if (r.status() == Result::Status::kCancelled)
       {
-        std::cout << Wrapper::getName() << ": Processing cancelled \n";
+        std::cout << Wrapper::getName() << ": Processing cancelled" << std::endl;
         w->mCancelled = true;
         return false;
       }
@@ -323,7 +323,7 @@ public:
       if (!r.ok())
       {
         std::cout << "ERROR: " << Wrapper::getName() << ": "
-                  << r.message().c_str() << '\n';
+                  << r.message().c_str() << std::endl;
         return false;
       }
 
@@ -534,7 +534,7 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
   static void doVersion(Unit*, sc_msg_iter*)
   {
     std::cout << "Fluid Corpus Manipualtion Toolkit version " << fluidVersion()
-              << '\n';
+              << std::endl;
   }
 
 
@@ -577,7 +577,8 @@ public:
     {
       std::cout << "ERROR: " << getName()
                 << ": parameter count mismatch. Perhaps your binary plugins "
-                   "and SC sources are different versions\n";
+                   "and SC sources are different versions"
+                << std::endl;
       // TODO: work out how to bring any further work to a halt
     }
     return p;
