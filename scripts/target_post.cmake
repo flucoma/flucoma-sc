@@ -1,10 +1,28 @@
+# Copyright 2017-2019 University of Huddersfield.
+# Licensed under the BSD-3 License.
+# See license.md file in the project root for full license information.
+# This project has received funding from the European Research Council (ERC)
+# under the European Union’s Horizon 2020 research and innovation programme
+# (grant agreement No 725899).
 
-target_compile_features(${PLUGIN} PUBLIC cxx_std_14)
+target_compile_features(${PLUGIN} PRIVATE cxx_std_14)
 
 if(MSVC)
-  target_compile_options(${PLUGIN} PRIVATE /W4)
+  foreach(flag_var
+      CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
+      CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+    if(${flag_var} MATCHES "/MD")
+      string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
+    endif()
+  endforeach()
+endif()
+
+if(MSVC)
+  target_compile_options(${PLUGIN} PRIVATE /W3)
 else()
-  target_compile_options(${PLUGIN} PRIVATE -Wall -Wextra -Wpedantic -Wreturn-type -Wconversion)
+  target_compile_options(${PLUGIN} PRIVATE 
+    -Wall -Wextra -Wpedantic -Wreturn-type -Wconversion -Wno-c++11-narrowing
+  )
 endif()
 
 set_target_properties(${PLUGIN} PROPERTIES
@@ -13,15 +31,22 @@ set_target_properties(${PLUGIN} PROPERTIES
     CXX_EXTENSIONS NO
 )
 
+if(APPLE)
+  set_target_properties(${PLUGIN} PROPERTIES
+    XCODE_GENERATE_SCHEME ON
+  )
+  #If we target 10.7 (actually < 10.9), we have to manually include this:
+  target_compile_options(${PLUGIN} PRIVATE -stdlib=libc++)
+endif()
+
 target_link_libraries(
   ${PLUGIN}
-  PUBLIC
-  FLUID_DECOMPOSITION
-  FLUID_SC_WRAPPER
   PRIVATE
-  FFTLIB
+  FLUID_DECOMPOSITION
+  # FLUID_MANIP
+  FLUID_SC_WRAPPER  
+  HISSTools_FFT
 )
-
 
 target_include_directories(
   ${PLUGIN}
@@ -47,56 +72,32 @@ target_include_directories(
 )
 
 get_property(HEADERS TARGET FLUID_DECOMPOSITION PROPERTY INTERFACE_SOURCES)
-source_group(TREE "${FLUID_PATH}/include" FILES ${HEADERS})
+source_group(TREE "${fluid_decomposition_SOURCE_DIR}/include" FILES ${HEADERS})
 
-
-if (SUPERNOVA)
-    target_include_directories(
-      ${PLUGIN}
-      SYSTEM PRIVATE
-      "${SC_PATH}/external_libraries/nova-tt"
-      "${SC_PATH}/external_libraries/boost_lockfree"
-      "${SC_PATH}/external_libraries/boost-lockfree"
-    )
-endif()
-
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
-    target_compile_options(${PLUGIN} PRIVATE -fvisibility=hidden)
-
-    include (CheckCXXCompilerFlag)
-
-    # CHECK_CXX_COMPILER_FLAG(-msse HAS_CXX_SSE)
-    # CHECK_CXX_COMPILER_FLAG(-msse2 HAS_CXX_SSE2)
-    # CHECK_CXX_COMPILER_FLAG(-mfpmath=sse HAS_CXX_FPMATH_SSE)
-    # CHECK_CXX_COMPILER_FLAG(-mavx HAS_AVX)
-    # CHECK_CXX_COMPILER_FLAG(-mavx2 HAS_AVX2)
-
-    target_compile_options(
-        ${PLUGIN}
-        PRIVATE
-        $<$<NOT:$<CONFIG:DEBUG>>: -mavx -msse -msse2 -msse3 -msse4>
-    )
-endif()
-
-
+# get_property(HEADERS TARGET FLUID_MANIP PROPERTY INTERFACE_SOURCES)
+# source_group(TREE "${fluid_manipulation_SOURCE_DIR}/include" FILES ${HEADERS})
+# 
+# if (SUPERNOVA)
+#     target_include_directories(
+#       ${PLUGIN}
+#       SYSTEM PRIVATE
+#       "${SC_PATH}/external_libraries/nova-tt"
+#       "${SC_PATH}/external_libraries/boost_lockfree"
+#       "${SC_PATH}/external_libraries/boost-lockfree"
+#     )
+# endif()
 
 if(MINGW)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mstackrealign")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mstackrealign")
 endif()
 
+if(DEFINED FLUID_ARCH)
+  target_compile_options(${PLUGIN} PRIVATE ${FLUID_ARCH})
+endif()
+
 if(MSVC)
-  target_compile_options(${PLUGIN} PRIVATE /arch:AVX -D_USE_MATH_DEFINES)
-else(MSVC)
-target_compile_options(
-   ${PLUGIN} PRIVATE $<$<NOT:$<CONFIG:DEBUG>>: -mavx -msse -msse2 -msse3 -msse4>
-)
-endif(MSVC)
-
-####### added the fluid_decomposition
-
-if(SUPERNOVA)
-    add_library(${PLUGIN}_supernova MODULE ${FILENAME})
-    set_property(TARGET ${PROJECT}_supernova
-                 PROPERTY COMPILE_DEFINITIONS SUPERNOVA)
+  target_compile_options(${PLUGIN} PRIVATE -D_USE_MATH_DEFINES)
+else()
+  target_compile_options(${PLUGIN} PRIVATE -fvisibility=hidden)
 endif()

@@ -4,14 +4,13 @@ CATEGORIES:: Libraries>FluidDecomposition
 RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
 
 DESCRIPTION::
-This class applies a real-time transient extractor on its input. It implements declicking algorithm from chapter 5 of the classic Digital Audio Restoration by Godsill, Simon J., Rayner, Peter J.W. with some bespoke improvements on the detection function tracking. It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
-This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899). ::
+This class applies a real-time transient extractor on its input. It implements declicking algorithm from chapter 5 of the classic Digital Audio Restoration by Godsill, Simon J., Rayner, Peter J.W. with some bespoke improvements on the detection function tracking. It is part of the LINK:: Guides/FluidDecomposition:: of LINK:: Guides/FluCoMa::. For more explanations, learning material, and discussions on its musicianly uses, visit http://www.flucoma.org/
 
 		The algorithm will take an audio in, and will divide it in two outputs: LIST::
 	## the transients, estimated from the signal and extracted from it;
 	## the remainder of the material, as estimated by the algorithm. ::
 
-	The whole process is based on the assumption that a transient is an element that is deviating from the surrounding material, as sort of click or anomaly. The algorithm then estimates what should have happened if the signal had followed its normal path, and resynthesises this estimate, removing the anomaly which is considered as the transient. More information on signal estimation, and on its musicianly usage, are availabe in LINK::Guides/FluCoMa:: overview file.
+	The whole process is based on the assumption that a transient is an element that is deviating from the surrounding material, as sort of click or anomaly. The algorithm then estimates what should have happened if the signal had followed its normal path, and resynthesises this estimate, removing the anomaly which is considered as the transient.
 
 CLASSMETHODS::
 

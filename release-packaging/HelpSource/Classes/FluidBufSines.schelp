@@ -5,13 +5,13 @@ RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreadi
 
 
 DESCRIPTION::
-This class triggers a Sinusoidal Modelling process on buffers on the non-real-time thread of the server. It implements a mix and match algorithms taken from classic papers. It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote:: This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+This class triggers a Sinusoidal Modelling process on buffers on the non-real-time thread of the server. It implements a mix of algorithms taken from classic papers. It is part of the LINK:: Guides/FluidDecomposition:: of LINK:: Guides/FluCoMa::. For more explanations, learning material, and discussions on its musicianly uses, visit http://www.flucoma.org/
 
 	The algorithm will take a buffer in, and will divide it in two parts: LIST::
 	## a reconstruction of what it detects as sinusoidal;
 	## a residual derived from the previous buffer to allow null-summing::
 
-	The whole process is based on the assumption that signal is made of pitched steady components that have a long-enough duration and are periodic enough to be perceived as such, that can be tracked, resynthesised and removed from the original, leaving behind what is considered as non-pitched, noisy, and/or transient. It first tracks the peaks, then checks if they are the continuation of a peak in previous spectral frames, by assigning them a track. More information on this model, and on how it links to musicianly thinking, are availabe in LINK::Guides/FluCoMa:: overview file.
+	The whole process is based on the assumption that signal is made of pitched steady components that have a long-enough duration and are periodic enough to be perceived as such, that can be tracked, resynthesised and removed from the original, leaving behind what is considered as non-pitched, noisy, and/or transient. It first tracks the peaks, then checks if they are the continuation of a peak in previous spectral frames, by assigning them a track.
 
 STRONG::Threading::
 
@@ -47,28 +47,40 @@ ARGUMENT:: residual
 	The index of the buffer where the residual of the sinusoidal component will be reconstructed.
 
 ARGUMENT:: bandwidth
-	The width in bins of the fragment of the fft window that is considered a normal deviation for a potential continuous sinusoidal track. It has an effect on CPU cost: the widest is more accurate but more computationally expensive.  It is capped at (fftSize / 2) + 1.
+	The number of bins used to resynthesises a peak. It has an effect on CPU cost: the widest is more accurate but more computationally expensive. It is capped at (fftSize / 2) + 1.
 
-ARGUMENT:: threshold
-	The normalised threshold, between 0 an 1, to consider a peak as a sinusoidal component from the normalized cross-correlation.
+ARGUMENT:: detectionThreshold
+	The threshold in dB above which a magnitude peak is considered to be a sinusoidal component.
+
+ARGUMENT:: birthLowThreshold
+	The threshold in dB above which to consider a peak to start a sinusoidal component tracking, for the low end of the spectrum. It is interpolated across the spectrum until birthHighThreshold at half-Nyquist.
+
+ARGUMENT:: birthHighThreshold
+	The threshold in dB above which to consider a peak to start a sinusoidal component tracking, for the high end of the spectrum. It is interpolated across the spectrum until birthLowThreshold at DC.
 
 ARGUMENT:: minTrackLen
-	The minimum duration, in spectral frames, for a sinusoidal track to be accepted as a partial. It allows to remove space-monkeys, but is more CPU intensive and might reject quick pitch material.
+	The minimum duration, in spectral frames, for a sinusoidal track to be accepted as a partial. It allows to remove bubbly pitchy artefacts, but is more CPU intensive and might reject quick pitch material.
 
-ARGUMENT:: magWeight
-	The weight of the magnitude proximity of a peak when trying to associate it to an existing track (relative to freqWeight - suggested between 0 to 1)
+ARGUMENT:: trackingMethod
+	The algorithm used to track the sinusoidal continuity between spectral frames. 0 is the default, "Greedy", and 1 is a more expensive "Hungarian" one. footnote::Neri, J., and Depalle, P., "Fast Partial Tracking of Audio with Real-Time Capability through Linear Programming". Proceedings of DAFx-2018.::
 
-ARGUMENT:: freqWeight
-	The weight of the frequency proximity of a peak when trying to associate it to an existing track (relative to magWeight - suggested between 0 to 1)
+ARGUMENT:: trackMagRange
+	The amplitude difference allowed for a track to diverge between frames, in dB.
+
+ARGUMENT:: trackFreqRange
+	The frequency difference allowed for a track to diverge between frames, in Hertz.
+
+ARGUMENT:: trackProb
+	The probability of the tracking algorithm to find a track.
 
 ARGUMENT:: windowSize
-	The window size. As sinusoidal estimation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
+	The window size. As spectral differencing relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
 ARGUMENT:: hopSize
-	The window hop size. As sinusoidal estimation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts.
+	The window hop size. As sinusoidal estimation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of windowSize (overlap of 2).
 
 ARGUMENT:: fftSize
-	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will default to the highest of windowSize and (bandwidth - 1) * 2.
+	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will use the next power of 2 equal or above the highest of windowSize and (bandwidth - 1) * 2.
 
 ARGUMENT:: action
 	A Function to be evaluated once the offline process has finished and all Buffer's instance variables have been updated on the client side. The function will be passed [sines, residual] as an argument.
@@ -123,7 +135,7 @@ d = Buffer.new(s); e = Buffer.new(s);
 (
 Routine{
     t = Main.elapsedTime;
-    FluidBufSines.process(s, b, sines: d, residual:e, threshold:0.3);
+    FluidBufSines.process(s, b, sines: d, residual:e, windowSize: 2048, hopSize: 256, fftSize: 16384);
     (Main.elapsedTime - t).postln;
 }.play
 )

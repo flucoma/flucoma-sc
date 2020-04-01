@@ -4,7 +4,7 @@ CATEGORIES:: Libraries>FluidDecomposition, UGens>Buffer
 RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreading
 
 DESCRIPTION::
-This class implements a non-real-time slicer using an algorithm assessing novelty in the signal to estimate the slicing points. A novelty curve is being derived from running a kernel across the diagonal of the similarity matrix, and looking for peak of changes. It implements the seminal results published in  'Automatic Audio Segmentation Using a Measure of Audio Novelty' by J Foote.  It is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::This  was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+This class implements a non-real-time slicer using an algorithm assessing novelty in the signal to estimate the slicing points. A novelty curve is being derived from running a kernel across the diagonal of the similarity matrix, and looking for peak of changes. It implements the seminal results published in  'Automatic Audio Segmentation Using a Measure of Audio Novelty' by J Foote.  It is part of the LINK:: Guides/FluidDecomposition:: of LINK:: Guides/FluCoMa::. For more explanations, learning material, and discussions on its musicianly uses, visit http://www.flucoma.org/
 
 The process will return a buffer which contains indices (in sample) of estimated starting points of different slices.
 
@@ -55,14 +55,17 @@ ARGUMENT:: threshold
 ARGUMENT:: filterSize
 	The size of a smoothing filter that is applied on the novelty curve. A larger filter filter size allows for cleaner cuts on very sharp changes.
 
+ARGUMENT:: minSliceLength
+	The minimum duration of a slice in number of hopSize.
+
 ARGUMENT:: windowSize
 	The window size. As novelty estimation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
 ARGUMENT:: hopSize
-	The window hop size. As novelty estimation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts.
+	The window hop size. As novelty estimation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of windowSize (overlap of 2).
 
 ARGUMENT:: fftSize
-	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision.
+	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will use the next power of 2 equal or above the windowSize.
 
 ARGUMENT:: action
 		A Function to be evaluated once the offline process has finished and indices instance variables have been updated on the client side. The function will be passed indices as an argument.
@@ -81,10 +84,10 @@ c = Buffer.new(s);
 )
 
 (
-// with basic params
+// with basic params, with a minimum slight length to avoid over
 Routine{
 	t = Main.elapsedTime;
-	FluidBufNoveltySlice.process(s,b, indices: c, threshold:0.45);
+	FluidBufNoveltySlice.process(s,b, indices: c, threshold:0.4,filterSize: 4, minSliceLength: 8);
 	(Main.elapsedTime - t).postln;
 }.play
 )
@@ -122,15 +125,15 @@ FluidBufNoveltySlice.process(s,b, indices: c, kernelSize:31, threshold:0.1, filt
 //check the number of slices: it is the number of frames in the transBuf minus the boundary index.
 c.query;
 
-//play slice number 2
+//play slice number 3
 (
 {
-	BufRd.ar(1, b,
-		Line.ar(
-			BufRd.kr(1, c, DC.kr(2), 0, 1),
-			BufRd.kr(1, c, DC.kr(3), 0, 1),
-			(BufRd.kr(1, c, DC.kr(3)) - BufRd.kr(1, c, DC.kr(2), 0, 1) + 1) / s.sampleRate),
-		0,1);
+    BufRd.ar(1, b,
+        Line.ar(
+            BufRd.kr(1, c, DC.kr(3), 0, 1),
+            BufRd.kr(1, c, DC.kr(4), 0, 1),
+            (BufRd.kr(1, c, DC.kr(4)) - BufRd.kr(1, c, DC.kr(3), 0, 1) + 1) / s.sampleRate),
+        0,1);
 }.play;
 )
 
@@ -167,5 +170,5 @@ Routine{
 )
 
 // list the indicies of detected attacks - the two input channels have been summed
-c.getn(0,c.numFrames,{|item|item.postln;})
+c.getn(0,c.numFrames,{|item|(item * 2).postln;})
 ::

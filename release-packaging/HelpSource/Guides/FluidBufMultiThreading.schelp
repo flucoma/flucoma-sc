@@ -81,7 +81,7 @@ d = Bus.control(s,1);
 )
 
 // start a very long job
-e = {Out.kr(d,FluidBufNMF.kr(b, destination:c, components:50, iterations:1000, windowSize:8192, hopSize:256))}.play
+e = {Out.kr(d,FluidBufNMF.kr(b, resynth:c, components:50, iterations:1000, windowSize:8192, hopSize:256))}.play
 
 // make a dummy synth to look at the progress
 f = {In.kr(d).poll}.play
@@ -160,5 +160,3 @@ Routine{
 }.play;
 )
 ::
-
-

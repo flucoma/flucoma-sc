@@ -5,3 +5,7 @@ release-packaging/Plugins
 release-packaging/AudioFiles
 *.scx
 .vs/
+Darwin/*
+Linux/*
+Windows/*
+install/

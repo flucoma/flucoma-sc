@@ -1,6 +1,6 @@
 FluidSines : MultiOutUGen {
-	*ar { arg in = 0, bandwidth = 76, threshold = 0.7, minTrackLen = 15, magWeight = 0.1, freqWeight = 1.0, windowSize= 1024, hopSize= -1, fftSize= -1, maxFFTSize=16384;
-		^this.multiNew('audio', in.asAudioRateInput(this), bandwidth, threshold, minTrackLen, magWeight, freqWeight ,windowSize, hopSize, fftSize, maxFFTSize)
+	*ar { arg in = 0, bandwidth = 76, detectionThreshold = -96, birthLowThreshold = -24, birthHighThreshold = -60, minTrackLen = 15, trackingMethod = 0, trackMagRange = 15, trackFreqRange = 50, trackProb = 0.5, windowSize= 1024, hopSize= -1, fftSize= -1, maxFFTSize=16384;
+		^this.multiNew('audio', in.asAudioRateInput(this), bandwidth, detectionThreshold,birthLowThreshold, birthHighThreshold, minTrackLen, trackingMethod, trackMagRange, trackFreqRange, trackProb, windowSize, hopSize, fftSize, maxFFTSize)
 	}
 	init { arg ... theInputs;
 		inputs = theInputs;
@@ -11,7 +11,7 @@ FluidSines : MultiOutUGen {
 		^channels
 	}
 	checkInputs {
-		if(inputs.at(9).rate != 'scalar') {
+		if(inputs.at(13).rate != 'scalar') {
 			^(": maxFFTSize cannot be modulated.");
 			};
 		^this.checkNInputs(1)

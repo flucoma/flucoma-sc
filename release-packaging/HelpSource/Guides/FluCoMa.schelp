@@ -4,8 +4,8 @@ categories:: Libraries>FluidDecomposition
 related:: Classes/FluidBufNMF
 
 description::
-This is my description of the FluCoMa project. footnote::
-This  was made possible thanks to the FluCoMa project (http://www.flucoma.org/) funded by the European Research Council (https://erc.europa.eu/) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+The Fluid Corpus Manipulation project (FluCoMA) instigates new musical ways of exploiting ever-growing banks of sound and gestures within the digital composition process, by bringing breakthroughs of signal decomposition DSP and machine learning to the toolset of techno-fluent computer composers, creative coders and digital artists. The first set of tools  released is the LINK:: Guides/FluidDecomposition::
 
-subsection:: stuff
-This is my subsection
+This was made possible thanks to a grant by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).
+
+For more information, including a forum and learning material, please visit the FluCoMa project website at http://www.flucoma.org/

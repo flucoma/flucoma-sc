@@ -1,0 +1,196 @@
+TITLE:: FluidBufAmpGate
+SUMMARY:: Amplitude-based Gating Slicer for Buffers
+CATEGORIES:: Libraries>FluidDecomposition
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreading
+
+DESCRIPTION::
+This class implements an amplitude-based slicer, with various customisable options and conditions to detect absolute amplitude changes as onsets and offsets. It is part of the LINK:: Guides/FluidDecomposition:: of LINK:: Guides/FluCoMa::. For more explanations, learning material, and discussions on its musicianly uses, visit http://www.flucoma.org/
+
+FluidBufAmpGate is based on an envelop follower on a highpassed version of the signal, which is then going through a Schmidt trigger and state-aware time contraints. The example code below is unfolding the various possibilites in order of complexity.
+
+The process will return a two-channel buffer with the addresses of the onset on the first channel, and the address of the offset on the second channel.
+
+STRONG::Threading::
+
+By default, this UGen spawns a new thread to avoid blocking the server command queue, so it is free to go about with its business. For a more detailed discussion of the available threading and monitoring options, including the two undocumented Class Methods below (.processBlocking and .kr) please read the guide LINK::Guides/FluidBufMultiThreading::.
+
+CLASSMETHODS::
+
+METHOD:: process
+	This is the method that calls for the slicing to be calculated on a given source buffer.
+
+ARGUMENT:: server
+	The server on which the buffers to be processed are allocated.
+
+ARGUMENT:: source
+	The index of the buffer to use as the source material to be sliced through novelty identification. The different channels of multichannel buffers will be summed.
+
+ARGUMENT:: startFrame
+	Where in the srcBuf should the slicing process start, in sample.
+
+ARGUMENT:: numFrames
+	How many frames should be processed.
+
+ARGUMENT:: startChan
+	For multichannel sources, which channel should be processed.
+
+ARGUMENT:: numChans
+	For multichannel sources, how many channel should be summed.
+
+ARGUMENT:: indices
+	The index of the buffer where the indices (in sample) of the estimated starting points of slices will be written. The first and last points are always the boundary points of the analysis.
+
+ARGUMENT:: rampUp
+	The number of samples the absolute envelope follower will take to reach the next value when raising.
+
+ARGUMENT:: rampDown
+	The number of samples the absolute envelope follower will take to reach the next value when falling.
+
+ARGUMENT:: onThreshold
+	The threshold in dB of the absolute envelope follower to trigger an onset, aka to go ON when in OFF state.
+
+ARGUMENT:: offThreshold
+	The threshold in dB of the absolute envelope follower to trigger an offset, , aka to go ON when in OFF state.
+
+ARGUMENT:: minSliceLength
+	The length in samples that the Slice will stay ON. Changes of states during that period will be ignored.
+
+ARGUMENT:: minSilenceLength
+	The length in samples that the Slice will stay OFF. Changes of states during that period will be ignored.
+
+ARGUMENT:: minLengthAbove
+	The length in samples that the absolute envelope have to be above the threshold to consider it a valid transition to ON. The Slice will start at the first sample when the condition is met. Therefore, this affects the latency.
+
+ARGUMENT:: minLengthBelow
+	The length in samples that the absolute envelope have to be below the threshold to consider it a valid transition to OFF. The Slice will end at the first sample when the condition is met. Therefore, this affects the latency.
+
+ARGUMENT:: lookBack
+	The length of the buffer kept before an onset to allow the algorithm, once a new Slice is detected, to go back in time (up to that many samples) to find the minimum amplitude as the Slice onset point. This affects the latency of the algorithm.
+
+ARGUMENT:: lookAhead
+	The length of the buffer kept after an offset to allow the algorithm, once the Slice is considered finished, to wait further in time (up to that many samples) to find a minimum amplitude as the Slice offset point. This affects the latency of the algorithm.
+
+ARGUMENT:: highPassFreq
+	The frequency of the fourth-order Linkwitz–Riley high-pass filter (https://en.wikipedia.org/wiki/Linkwitz%E2%80%93Riley_filter). This is done first on the signal to minimise low frequency intermodulation with very fast ramp lengths.
+
+ARGUMENT:: action
+	A Function to be evaluated once the offline process has finished and indices instance variables have been updated on the client side. The metric will be passed indices as an argument.
+
+RETURNS::
+	Nothing, as the destination buffer is declared in the function call.
+
+EXAMPLES::
+
+code::
+// define a test signal and a destination buffer
+(
+b = Buffer.sendCollection(s, Array.fill(44100,{|i| sin(i*pi/ (44100/640)) * (sin(i*pi/ 22050)).abs}));
+c = Buffer.new(s);
+)
+b.play
+b.plot
+
+//basic tests: absThresh sanity
+FluidBufAmpGate.process(s, b, indices:c, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12)
+c.query
+c.getn(0,c.numFrames*2,{|item|item.postln;})
+
+//basic tests: absThresh hysteresis
+FluidBufAmpGate.process(s, b, indices:c, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -16)
+c.query
+c.getn(0,c.numFrames*2,{|item|item.postln;})
+
+//basic tests: absThresh min slice
+FluidBufAmpGate.process(s, b, indices:c, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12, minSliceLength:441)
+c.query
+c.getn(0,c.numFrames*2,{|item|item.postln;})
+
+//basic tests: absThresh min silence
+FluidBufAmpGate.process(s, b, indices:c, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12, minSilenceLength:441)
+c.query
+c.getn(0,c.numFrames*2,{|item|item.postln;})
+
+//mid tests: absThresh time hysteresis on
+FluidBufAmpGate.process(s, b, indices:c, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12, minLengthAbove:441)
+c.query
+c.getn(0,c.numFrames*2,{|item|item.postln;})
+
+//mid tests: absThresh time hysteresis off
+FluidBufAmpGate.process(s, b, indices:c, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12, minLengthBelow:441)
+c.query
+c.getn(0,c.numFrames*2,{|item|item.postln;})
+
+//mid tests: absThresh with lookBack
+FluidBufAmpGate.process(s, b, indices:c, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12, lookBack:441)
+c.query
+c.getn(0,c.numFrames*2,{|item|item.postln;})
+
+//mid tests: absThresh with lookAhead
+FluidBufAmpGate.process(s, b, indices:c, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12, lookAhead:441)
+c.query
+c.getn(0,c.numFrames*2,{|item|item.postln;})
+
+//mid tests: absThresh with asymetrical lookBack and lookAhead
+FluidBufAmpGate.process(s, b, indices:c, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12, lookBack:221, lookAhead:441)
+c.query
+c.getn(0,c.numFrames*2,{|item|item.postln;})
+::
+
+STRONG::A musical example.::
+CODE::
+//load a buffer
+(
+b = Buffer.read(s,File.realpath(FluidBufAmpGate.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
+c = Buffer.new(s);
+)
+
+// slice the samples
+FluidBufAmpGate.process(s, b, indices:c, rampUp:110, rampDown:2205, onThreshold:-27, offThreshold: -31, minSilenceLength:1100, lookBack:441, highPassFreq:40)
+c.query
+c.getn(0,c.numFrames*2,{|item|item.postln;})
+//reformatting to read the onsets and offsets as pairs
+c.getn(0,c.numFrames*2,{|items|items.reshape(c.numFrames,2).do({|x| x.postln});})
+
+//loops over a splice with the MouseX, taking the respective onset and offset of a given slice
+(
+{
+	BufRd.ar(1, b,
+		Phasor.ar(0,1,
+			BufRd.kr(2, c,
+				MouseX.kr(0, BufFrames.kr(c)), 0, 1)[0],
+			BufRd.kr(2, c,
+				MouseX.kr(1, BufFrames.kr(c)), 0, 1)[1],
+			BufRd.kr(2,c,
+				MouseX.kr(0, BufFrames.kr(c)), 0, 1)[0]
+	), 0, 1);
+}.play;
+)
+::
+
+STRONG::A stereo buffer example.::
+CODE::
+// make a stereo buffer
+b = Buffer.alloc(s,88200,2);
+
+// add some stereo clicks and listen to them
+((0..3)*22050+11025).do({|item,index| b.set(item+(index%2), 1.0)})
+b.play
+
+// create a new buffer as destinations
+c = Buffer.new(s);
+
+//run the process on them
+(
+// with basic params
+Routine{
+	t = Main.elapsedTime;
+	FluidBufAmpGate.process(s, b, indices: c, rampUp:1, rampDown:10, onThreshold: -30);
+	(Main.elapsedTime - t).postln;
+}.play
+)
+
+// list the indicies of detected attacks - the two input channels have been summed. The two channels of the output, respectively onset and offset indices, are interleaved as this is the SuperCollider buffer data formatting
+c.getn(0,c.numFrames*2,{|item|(item*2).postln;})
+// a more readable version: deinterleave onsetand offset
+c.getn(0,c.numFrames*2,{|items|items.reshape(c.numFrames,2).do({|x| (x*2).postln});})
+::

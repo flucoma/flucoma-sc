@@ -10,6 +10,9 @@ subsection:: Slices
 LINK:: Classes/FluidAmpSlice:: &
 LINK:: Classes/FluidBufAmpSlice::
 
+LINK:: Classes/FluidAmpGate:: &
+LINK:: Classes/FluidBufAmpGate::
+
 Slice by amplitude envelope
 
 LINK:: Classes/FluidOnsetSlice:: &

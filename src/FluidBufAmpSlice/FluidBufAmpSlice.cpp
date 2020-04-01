@@ -1,8 +1,15 @@
+/*
+Part of the Fluid Corpus Manipulation Project (http://www.flucoma.org/)
+Copyright 2017-2019 University of Huddersfield.
+Licensed under the BSD-3 License.
+See license.md file in the project root for full license information.
+This project has received funding from the European Research Council (ERC)
+under the European Union’s Horizon 2020 research and innovation programme
+(grant agreement No 725899).
+*/
 
-// FD_BufHPSS, an NRT buffer HPSS Processor
-// A tool from the FluCoMa project, funded by the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899)
+#include <clients/rt/AmpSliceClient.hpp>
 
-#include <clients/rt/AmpSlice.hpp>
 #include <FluidSCWrapper.hpp>
 
 static InterfaceTable *ft;
@@ -11,5 +18,5 @@ PluginLoad(OfflineFluidDecompositionUGens)
 {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<NRTThreadedAmpSlice>("FluidBufAmpSlice", ft);
+  makeSCWrapper<NRTThreadedAmpSliceClient>("FluidBufAmpSlice", ft);
 }

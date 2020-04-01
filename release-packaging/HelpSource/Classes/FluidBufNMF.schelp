@@ -27,10 +27,7 @@ In this implementation, the components are reconstructed by masking the original
 
 The whole process can be related to a channel vocoder where, instead of fixed bandpass filters, we get more complex filter shapes that are learned from the data, and the activations correspond to channel envelopes.
 
-More information on possible musicianly uses of NMF are availabe in LINK::Guides/FluCoMa:: overview file.
-
-FluidBufNMF is part of the Fluid Decomposition Toolkit of the FluCoMa project. footnote::
-This was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899). ::
+FluidBufNMF is part of the LINK:: Guides/FluidDecomposition:: of LINK:: Guides/FluCoMa::. For more explanations, learning material, and discussions on its musicianly uses, visit http://www.flucoma.org/
 
 STRONG::Threading::
 
@@ -59,7 +56,7 @@ ARGUMENT:: startChan
 ARGUMENT:: numChans
 	For multichannel srcBuf, how many channel should be processed.
 
-ARGUMENT:: destination
+ARGUMENT:: resynth
 	The index of the buffer where the different reconstructed components will be reconstructed. The buffer will be resized to STRONG::components * numChannelsProcessed:: channels and STRONG::sourceDuration:: lenght. If STRONG::nil:: is provided, the reconstruction will not happen.
 
 ARGUMENT:: bases
@@ -94,10 +91,10 @@ ARGUMENT:: windowSize
 	The window size. As NMF relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
 ARGUMENT:: hopSize
-	The window hop size. As NMF relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts.
+	The window hop size. As NMF relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of windowSize (overlap of 2).
 
 ARGUMENT:: fftSize
-	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision.
+	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will use the next power of 2 equal or above the windowSize.
 
 ARGUMENT:: windowType
 	The inner FFT/IFFT windowing type (not implemented yet)
@@ -106,7 +103,7 @@ ARGUMENT:: randomSeed
 	The NMF process needs to seed its starting point. If specified, the same values will be used. The default of -1 will randomly assign them. (not implemented yet)
 
 ARGUMENT:: action
-	A Function to be evaluated once the offline process has finished and all Buffer's instance variables have been updated on the client side. The function will be passed [destination, bases, activations] as an argument.
+	A Function to be evaluated once the offline process has finished and all Buffer's instance variables have been updated on the client side. The function will be passed [resynth, bases, activations] as an argument.
 
 RETURNS::
 	Nothing, as the various destination buffers are declared in the function call.
@@ -145,7 +142,7 @@ d.play //////(beware !!!! loud!!!)
 (
 // separate them in 2 components
 Routine {
-	FluidBufNMF.process(s, d, destination:e, bases: f, activations:g, components:2);
+	FluidBufNMF.process(s, d, resynth:e, bases: f, activations:g, components:2);
 	e.query;
 	f.query;
 	g.query;
@@ -299,7 +296,7 @@ z.do({|chan| FluidBufCompose.process(s, ~bases, startChan:chan, numChans: 1, des
 //process the whole file, splitting it with the 2 trained bases
 (
 Routine{
-	FluidBufNMF.process(s, b, destination: ~sortedNMF, bases: ~trainedBases, basesMode: 2, components:2);
+	FluidBufNMF.process(s, b, resynth: ~sortedNMF, bases: ~trainedBases, basesMode: 2, components:2);
 	~originalNMF.query;
 }.play;
 )
@@ -357,7 +354,7 @@ e.query
 (
 // use the seeding basis, without updating
 Routine {
-	FluidBufNMF.process(s, d, destination:f, bases: e, basesMode: 2, activations:g, components:3);
+	FluidBufNMF.process(s, d, resynth:f, bases: e, basesMode: 2, activations:g, components:3);
 	e.query;
 	f.query;
 	g.query;
@@ -376,7 +373,7 @@ g.plot;
 (
 // use the seeding bases, with updating this time
 Routine {
-	FluidBufNMF.process(s, d, destination:f, bases: e, basesMode: 1, activations:g, components:3);
+	FluidBufNMF.process(s, d, resynth:f, bases: e, basesMode: 1, activations:g, components:3);
 	e.query;
 	f.query;
 	g.query;

@@ -1,14 +1,14 @@
 TITLE:: FluidBufAmpSlice
-SUMMARY:: Amplitude-based Slicer for Buffers
+SUMMARY:: Amplitude-based Detrending Slicer for Buffers
 CATEGORIES:: Libraries>FluidDecomposition
 RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreading
 
 DESCRIPTION::
-This class implements an amplitude-based slicer, with various customisable options and conditions to detect absolute and relative amplitude changes as onsets and offsets. It is part of the Fluid Decomposition Toolkit of the FluCoMa project.footnote::This was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+This class implements an amplitude-based slicer,with various customisable options and conditions to detect relative amplitude changes as onsets. It is part of the LINK:: Guides/FluidDecomposition:: of LINK:: Guides/FluCoMa::. For more explanations, learning material, and discussions on its musicianly uses, visit http://www.flucoma.org/
 
-FluidAmpSlice is based on two envelop followers on a highpassed version of the signal: one absolute, and one relative. Each have features that will interact, including independent Schmidt triggers and state-aware time contraints. The example code below is unfolding the various possibilites in order of complexity.
+FluidBufAmpSlice is based on two envelop followers on a highpassed version of the signal: one slow that gives the trend, and one fast. Each have features that will interact. The example code below is unfolding the various possibilites in order of complexity.
 
-The process will return a two-channel buffer with the addresses of the onset on the first channel, and the address of the offset on the second channel.
+The process will return a buffer which contains indices (in sample) of estimated starting points of different slices.
 
 STRONG::Threading::
 
@@ -40,47 +40,29 @@ ARGUMENT:: numChans
 ARGUMENT:: indices
 	The index of the buffer where the indices (in sample) of the estimated starting points of slices will be written. The first and last points are always the boundary points of the analysis.
 
-ARGUMENT:: absRampUp
+ARGUMENT:: fastRampUp
+	The number of samples the fast envelope follower will take to reach the next value when raising. Typically, this will be faster than slowRampUp.
+
+ARGUMENT:: fastRampDown
+	The number of samples the fast envelope follower will take to reach the next value when falling. Typically, this will be faster than slowRampDown.
+
+ARGUMENT:: slowRampUp
 	The number of samples the absolute envelope follower will take to reach the next value when raising.
 
-ARGUMENT:: absRampDown
+ARGUMENT:: slowRampDown
 	The number of samples the absolute envelope follower will take to reach the next value when falling.
 
-ARGUMENT:: absThreshOn
-	The threshold in dB of the absolute envelope follower to trigger an onset, aka to go ON when in OFF state.
+ARGUMENT:: onThreshold
+	The threshold in dB of the relative envelope follower to trigger an onset, aka to go ON when in OFF state. It is computed on the difference between the two envelope followers.
 
-ARGUMENT:: absThreshOff
-	The threshold in dB of the absolute envelope follower to trigger an offset, , aka to go ON when in OFF state.
+ARGUMENT:: offThreshold
+	The threshold in dB of the relative envelope follower to reset, aka to allow the differential envelop to trigger again.
+
+ARGUMENT:: floor
+	The level in dB the slowRamp needs to be above to consider a detected difference valid, allowing to ignore the slices in the noise floor.
 
 ARGUMENT:: minSliceLength
 	The length in samples that the Slice will stay ON. Changes of states during that period will be ignored.
-
-ARGUMENT:: minSilenceLength
-	The length in samples that the Slice will stay OFF. Changes of states during that period will be ignored.
-
-ARGUMENT:: minLengthAbove
-	The length in samples that the absolute envelope have to be above the threshold to consider it a valid transition to ON. The Slice will start at the first sample when the condition is met. Therefore, this affects the latency.
-
-ARGUMENT:: minLengthBelow
-	The length in samples that the absolute envelope have to be below the threshold to consider it a valid transition to OFF. The Slice will end at the first sample when the condition is met. Therefore, this affects the latency.
-
-ARGUMENT:: lookBack
-	The length of the buffer kept before an onset to allow the algorithm, once a new Slice is detected, to go back in time (up to that many samples) to find the minimum amplitude as the Slice onset point. This affects the latency of the algorithm.
-
-ARGUMENT:: lookAhead
-	The length of the buffer kept after an offset to allow the algorithm, once the Slice is considered finished, to wait further in time (up to that many samples) to find a minimum amplitude as the Slice offset point. This affects the latency of the algorithm.
-
-ARGUMENT:: relRampUp
-	The number of samples the relative envelope follower will take to reach the next value when raising. Typically, this will be faster than absRampUp.
-
-ARGUMENT:: relRampDown
-	The number of samples the relative envelope follower will take to reach the next value when falling. Typically, this will be faster than absRampDown.
-
-ARGUMENT:: relThreshOn
-	The threshold in dB of the relative envelope follower to trigger an onset, aka to go ON when in OFF state. It is computed on the difference between the two envelope followers.
-
-ARGUMENT:: relThreshOff
-	The threshold in dB of the relative envelope follower to reset, aka to allow the differential envelop to trigger again.
 
 ARGUMENT:: highPassFreq
 	The frequency of the fourth-order Linkwitz–Riley high-pass filter (https://en.wikipedia.org/wiki/Linkwitz%E2%80%93Riley_filter). This is done first on the signal to minimise low frequency intermodulation with very fast ramp lengths.
@@ -94,73 +76,30 @@ RETURNS::
 EXAMPLES::
 
 code::
+// detrending explained
 // define a test signal and a destination buffer
 (
-b = Buffer.sendCollection(s, Array.fill(44100,{|i| sin(i*pi/ (44100/640)) * (sin(i*pi/ 22050)).abs}));
+b = Buffer.sendCollection(s, Array.fill(44100,{|i| sin(i*pi/ (44100/640)) * ((((79000-i) % 22050).abs / 28000.0) + 0.2)}));
 c = Buffer.new(s);
 )
+// the source is a sinewave that does not go to silence and has sharp-ish amplitude bumps as onsets we try to track
 b.play
 b.plot
 
-//basic tests: absThresh sanity
-FluidBufAmpSlice.process(s,b,indices:c, absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12)
+//
+FluidBufAmpSlice.process(s, b,indices: c,fastRampUp: 5,fastRampDown: 50,slowRampUp: 220,slowRampDown: 220, onThreshold: 10, offThreshold: 10,floor: -60);
 c.query
-c.getn(0,c.numFrames*2,{|item|item.postln;})
+c.getn(0,c.numFrames,{|item|item.postln;})
 
-//basic tests: absThresh hysteresis
-FluidBufAmpSlice.process(s,b,indices:c, absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -16)
+//beware of multiple triggers at the begining of the 2nd cycle above). A solution: Schmidth triggers
+FluidBufAmpSlice.process(s, b,indices: c,fastRampUp: 5,fastRampDown: 50,slowRampUp: 220,slowRampDown: 220, onThreshold: 10, offThreshold: 7,floor: -60);
 c.query
-c.getn(0,c.numFrames*2,{|item|item.postln;})
+c.getn(0,c.numFrames,{|item|item.postln;})
 
-//basic tests: absThresh min slice
-FluidBufAmpSlice.process(s,b,indices:c, absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12, minSliceLength:441)
+// we got most of them sorted, but there is another solution: minslicelength
+FluidBufAmpSlice.process(s, b,indices: c,fastRampUp: 5,fastRampDown: 50,slowRampUp: 220,slowRampDown: 220, onThreshold: 10, offThreshold: 7,floor: -60, minSliceLength: 500);
 c.query
-c.getn(0,c.numFrames*2,{|item|item.postln;})
-
-//basic tests: absThresh min silence
-FluidBufAmpSlice.process(s,b,indices:c, absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12, minSilenceLength:441)
-c.query
-c.getn(0,c.numFrames*2,{|item|item.postln;})
-
-//mid tests: absThresh time hysteresis on
-FluidBufAmpSlice.process(s,b,indices:c, absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12, minLengthAbove:441)
-c.query
-c.getn(0,c.numFrames*2,{|item|item.postln;})
-
-//mid tests: absThresh time hysteresis off
-FluidBufAmpSlice.process(s,b,indices:c, absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12, minLengthBelow:441)
-c.query
-c.getn(0,c.numFrames*2,{|item|item.postln;})
-
-//mid tests: absThresh with lookBack
-FluidBufAmpSlice.process(s,b,indices:c, absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12, lookBack:441)
-c.query
-c.getn(0,c.numFrames*2,{|item|item.postln;})
-
-//mid tests: absThresh with lookAhead
-FluidBufAmpSlice.process(s,b,indices:c, absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12, lookAhead:441)
-c.query
-c.getn(0,c.numFrames*2,{|item|item.postln;})
-
-//mid tests: absThresh with asymetrical lookBack and lookAhead
-FluidBufAmpSlice.process(s,b,indices:c, absRampUp:10, absRampDown:100, absThreshOn:-12, absThreshOff: -12, lookBack:221, lookAhead:441)
-c.query
-c.getn(0,c.numFrames*2,{|item|item.postln;})
-
-//advanced tests: absThresh hysteresis, long tail
-FluidBufAmpSlice.process(s,b,indices:c, absRampUp:2205, absRampDown:2205, absThreshOn:-60, absThreshOff: -60)
-c.query
-c.getn(0,c.numFrames*2,{|item|item.postln;})
-
-//solution: have to recut with relThresh
-FluidBufAmpSlice.process(s,b,indices:c, absRampUp:2205, absRampDown:2205, absThreshOn:-60, absThreshOff: -60, relRampUp:5, relRampDown:220, relThreshOn:2, relThreshOff:1)
-c.query
-c.getn(0,c.numFrames*2,{|item|item.postln;})
-
-//beware of double trig. a solution: minSliceLength
-FluidBufAmpSlice.process(s,b,indices:c, absRampUp:2205, absRampDown:2205, absThreshOn:-60, absThreshOff: -60, relRampUp:5, relRampDown:220, relThreshOn:2, relThreshOff:1, minSliceLength:4410)
-c.query
-c.getn(0,c.numFrames*2,{|item|item.postln;})
+c.getn(0,c.numFrames,{|item|item.postln;})
 ::
 
 STRONG::A musical example.::
@@ -172,25 +111,22 @@ c = Buffer.new(s);
 )
 
 // slice the samples
-FluidBufAmpSlice.process(s,b,indices:c, absRampUp:2205, absRampDown:2205, absThreshOn:-70, absThreshOff: -80, relRampUp:10, relRampDown:441, relThreshOn:14, relThreshOff:12, minSliceLength:4410)
+FluidBufAmpSlice.process(s,b,indices:c,fastRampUp: 10,fastRampDown: 2205,slowRampUp: 4410,slowRampDown: 4410,onThreshold: 10,offThreshold: 5,floor: -40,minSliceLength: 4410,highPassFreq: 20);
 c.query
-c.getn(0,c.numFrames*2,{|item|item.postln;})
-//reformatting to read the onsets and offsets as pairs
-c.getn(0,c.numFrames*2,{|items|items.reshape(c.numFrames,2).do({|x| x.postln});})
+c.getn(0,c.numFrames,{|item|item.postln;})
 
 //loops over a splice with the MouseX, taking the respective onset and offset of a given slice
 (
 {
-	BufRd.ar(1, b,
-		Phasor.ar(0,1,
-			BufRd.kr(2, c,
-				MouseX.kr(0, BufFrames.kr(c)), 0, 1)[0],
-			BufRd.kr(2, c,
-				MouseX.kr(1, BufFrames.kr(c)), 0, 1)[1],
-			BufRd.kr(2,c,
-				MouseX.kr(0, BufFrames.kr(c)), 0, 1)[0]
-	), 0, 1);
-}.play;
+    BufRd.ar(1, b,
+        Phasor.ar(0,1,
+            BufRd.kr(1, c,
+                MouseX.kr(0, BufFrames.kr(c) - 1), 0, 1),
+            BufRd.kr(1, c,
+                MouseX.kr(1, BufFrames.kr(c)), 0, 1),
+            BufRd.kr(1,c,
+                MouseX.kr(0, BufFrames.kr(c) - 1), 0, 1)), 0, 1);
+        }.play;
 )
 ::
 
@@ -211,11 +147,11 @@ c = Buffer.new(s);
 // with basic params
 Routine{
 	t = Main.elapsedTime;
-	FluidBufAmpSlice.process(s,b, indices: c, absRampUp:1, absRampDown:1, absThreshOn:-60, absThreshOff:-60);
+	FluidBufAmpSlice.process(s,b, indices: c, fastRampUp: 10,fastRampDown: 2205,slowRampUp: 4410,slowRampDown: 4410, onThreshold: 10,offThreshold: 5);
 	(Main.elapsedTime - t).postln;
 }.play
 )
 
-// list the indicies of detected attacks - the two input channels have been summed. The two channels of the output, respectively onset and offset indices, are interleaved as this is the SuperCollider buffer data formatting
-c.getn(0,c.numFrames*2,{|item|item.postln;})
+// list the indicies of detected attacks - the two input channels have been summed.
+c.getn(0,c.numFrames,{|item|(item * 2).postln;})
 ::

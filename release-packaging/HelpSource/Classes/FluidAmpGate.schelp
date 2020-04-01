@@ -1,0 +1,136 @@
+TITLE:: FluidAmpGate
+SUMMARY:: Amplitude-based Gating Slicer
+CATEGORIES:: Libraries>FluidDecomposition
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
+
+DESCRIPTION::
+This class implements an amplitude-based slicer, with various customisable options and conditions to detect absolute amplitude changes as onsets and offsets. It is part of the LINK:: Guides/FluidDecomposition:: of LINK:: Guides/FluCoMa::. For more explanations, learning material, and discussions on its musicianly uses, visit http://www.flucoma.org/
+
+FluidAmpSlice is based on an envelop follower on a highpassed version of the signal, which is then going through a Schmidt trigger and state-aware time contraints. The example code below is unfolding the various possibilites in order of complexity.
+
+The process will return an audio steam with square envelopes around detected slices the different slices, where 1s means in slice and 0s mean in silence.
+
+CLASSMETHODS::
+
+METHOD:: ar
+	The audio rate version of the object.
+
+ARGUMENT:: in
+	The audio to be processed.
+
+ARGUMENT:: rampUp
+	The number of samples the absolute envelope follower will take to reach the next value when raising.
+
+ARGUMENT:: rampDown
+	The number of samples the absolute envelope follower will take to reach the next value when falling.
+
+ARGUMENT:: onThreshold
+	The threshold in dB of the absolute envelope follower to trigger an onset, aka to go ON when in OFF state.
+
+ARGUMENT:: offThreshold
+	The threshold in dB of the absolute envelope follower to trigger an offset, , aka to go ON when in OFF state.
+
+ARGUMENT:: minSliceLength
+	The length in samples that the Slice will stay ON. Changes of states during that period will be ignored.
+
+ARGUMENT:: minSilenceLength
+	The length in samples that the Slice will stay OFF. Changes of states during that period will be ignored.
+
+ARGUMENT:: minLengthAbove
+	The length in samples that the absolute envelope have to be above the threshold to consider it a valid transition to ON. The Slice will start at the first sample when the condition is met. Therefore, this affects the latency.
+
+ARGUMENT:: minLengthBelow
+	The length in samples that the absolute envelope have to be below the threshold to consider it a valid transition to OFF. The Slice will end at the first sample when the condition is met. Therefore, this affects the latency.
+
+ARGUMENT:: lookBack
+	The length of the buffer kept before an onset to allow the algorithm, once a new Slice is detected, to go back in time (up to that many samples) to find the minimum amplitude as the Slice onset point. This affects the latency of the algorithm.
+
+ARGUMENT:: lookAhead
+	The length of the buffer kept after an offset to allow the algorithm, once the Slice is considered finished, to wait further in time (up to that many samples) to find a minimum amplitude as the Slice offset point. This affects the latency of the algorithm.
+
+ARGUMENT:: highPassFreq
+	The frequency of the fourth-order Linkwitz–Riley high-pass filter (https://en.wikipedia.org/wiki/Linkwitz%E2%80%93Riley_filter). This is done first on the signal to minimise low frequency intermodulation with very fast ramp lengths.
+
+ARGUMENT:: maxSize
+	How large can the buffer be for time-critical conditions, by allocating memory at instantiation time. This cannot be modulated.
+
+RETURNS::
+	An audio stream with square envelopes around the slices. The latency between the input and the output is STRONG::max(minLengthAbove + lookBack, max(minLengthBelow,lookAhead))::.
+
+EXAMPLES::
+
+code::
+//basic tests: absThresh sanity
+(
+{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
+	env = FluidAmpGate.ar(source, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12);
+	[source, env]
+}.plot(0.1);
+)
+//basic tests: absThresh hysteresis
+(
+{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
+	env = FluidAmpGate.ar(source, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -16);
+	[source, env]
+}.plot(0.1);
+)
+//basic tests: absThresh min slice
+(
+{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
+	env = FluidAmpGate.ar(source, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12, minSliceLength:441);
+	[source, env]
+}.plot(0.1);
+)
+//basic tests: absThresh min silence
+(
+{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
+	env = FluidAmpGate.ar(source, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12, minSilenceLength:441);
+	[source, env]
+}.plot(0.1);
+)
+//mid tests: absThresh time hysteresis on
+(
+{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
+	env = FluidAmpGate.ar(source, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12, minLengthAbove:441);
+	[DelayN.ar(source,0.1,441/44100), env]
+}.plot(0.1);
+)
+//mid tests: absThresh time hysteresis off
+(
+{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
+	env = FluidAmpGate.ar(source, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12, minLengthBelow:441);
+	[DelayN.ar(source,0.1,441/44100), env]
+}.plot(0.1);
+)
+//mid tests: absThresh with lookBack
+(
+{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
+	env = FluidAmpGate.ar(source, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12, lookBack:441);
+	[DelayN.ar(source,0.1,441/44100), env]
+}.plot(0.1);
+)
+//mid tests: absThresh with lookAhead
+(
+{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
+	env = FluidAmpGate.ar(source, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12, lookAhead:441);
+	[DelayN.ar(source,0.1,441/44100), env]
+}.plot(0.1);
+)
+//mid tests: absThresh with asymetrical lookBack and lookAhead
+(
+{var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
+	env = FluidAmpGate.ar(source, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12, lookBack:221, lookAhead:441);
+	[DelayN.ar(source,0.1,441/44100), env]
+}.plot(0.1);
+)
+//drum slicing, many ways
+//load a buffer
+b = Buffer.read(s,File.realpath(FluidAmpGate.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
+//have fun with a gate (explore lookahead and lookback, but correct for latency, which will be the greatest of the lookahead and lookback)
+(
+{var env, source = PlayBuf.ar(1,b);
+	env = FluidAmpGate.ar(source, rampUp:441, rampDown:2205, onThreshold:-27, offThreshold: -31, minSilenceLength:1100, lookBack:441, highPassFreq:20);
+	[DelayN.ar(source,delaytime:441/44100), env]
+}.plot(2, separately:true);
+)
+::
