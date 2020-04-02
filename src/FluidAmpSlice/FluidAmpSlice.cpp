@@ -18,5 +18,5 @@ PluginLoad(FluidSTFTUGen)
 {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<AmpSliceClient>("FluidAmpSlice", ft);
+  makeSCWrapper<RTAmpSliceClient>("FluidAmpSlice", ft);
 }

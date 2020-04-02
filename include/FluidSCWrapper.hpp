@@ -66,8 +66,8 @@ struct FloatControlsIter
     mCount = 0;
   }
     
-  size_t size() const noexcept { return mSize; }
-  size_t remain()
+  index size() const noexcept { return mSize; }
+  index remain()
   {
     return mSize - mCount;
   }
@@ -493,8 +493,8 @@ class FluidSCWrapperImpl<Client, Wrapper, std::false_type, std::true_type>
 // Make base class(es), full of CRTP mixin goodness
 template <typename Client>
 using FluidSCWrapperBase =
-    FluidSCWrapperImpl<Client, FluidSCWrapper<Client>, isNonRealTime<Client>,
-                       isRealTime<Client>>;
+    FluidSCWrapperImpl<Client, FluidSCWrapper<Client>, typename Client::isNonRealTime,
+                       typename Client::isRealTime>;
 
 } // namespace impl
 
@@ -521,7 +521,7 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
     static auto fromArgs(World *w, FloatControlsIter& args, std::string, int)
     {
         //first is string size, then chars
-        index size = args.next();
+        index size = static_cast<index>(args.next());
         char* chunk =  static_cast<char*>(FluidSCWrapper::getInterfaceTable()->fRTAlloc(w,size + 1));
       
         if (!chunk) {
@@ -540,7 +540,7 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
     
     template<typename T>
     static std::enable_if_t<std::is_integral<T>::value,T>
-    fromArgs(World *, FloatControlsIter& args, T, int) { return args.next(); }
+    fromArgs(World *, FloatControlsIter& args, T, int) { return static_cast<index>(args.next()); }
     
     template<typename T>
     static std::enable_if_t<std::is_floating_point<T>::value,T>
@@ -626,27 +626,27 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
     static std::enable_if_t<std::is_integral<T>::value||std::is_floating_point<T>::value,size_t>
     allocSize(T){ return 1; }
     
-    static size_t allocSize(std::string s){ return s.size() + 1; } //put null char at end when we send
+    static index allocSize(std::string s){ return asSigned(s.size()) + 1; } //put null char at end when we send
     
-    static size_t allocSize(FluidTensor<std::string,1> s)
+    static index allocSize(FluidTensor<std::string,1> s)
     {
-      size_t count = 0;
+      index count = 0;
       for(auto& str: s) count += (str.size() + 1);
       return count;
     }
     template<typename T>
-    static size_t allocSize(FluidTensor<T,1> s) { return s.size() ; }
+    static index allocSize(FluidTensor<T,1> s) { return asSigned(s.size()); }
     
     template<typename...Ts>
-    static std::tuple<std::array<size_t,sizeof...(Ts)>,size_t> allocSize(std::tuple<Ts...>&& t)
+    static std::tuple<std::array<size_t,sizeof...(Ts)>,index> allocSize(std::tuple<Ts...>&& t)
     {
       return allocSizeImpl(std::forward<decltype(t)>(t), std::index_sequence_for<Ts...>());
     };
     
     template<typename...Ts, size_t...Is>
-    static std::tuple<std::array<size_t,sizeof...(Ts)>,size_t> allocSizeImpl(std::tuple<Ts...>&& t,std::index_sequence<Is...>)
+    static std::tuple<std::array<size_t,sizeof...(Ts)>,index> allocSizeImpl(std::tuple<Ts...>&& t,std::index_sequence<Is...>)
     {
-      size_t size{0};
+      index size{0};
       std::array<size_t,sizeof...(Ts)> res;
       (void)std::initializer_list<int>{(res[Is] = size,size += ToFloatArray::allocSize(std::get<Is>(t)),0)...};
       return std::make_tuple(res,size); //array of offsets into allocated buffer & total number of floats to alloc

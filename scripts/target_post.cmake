@@ -52,6 +52,7 @@ target_include_directories(
   ${PLUGIN}
   PRIVATE
   "${LOCAL_INCLUDES}"
+  "${FLUID_VERSION_PATH}"
   "${FLUID_M_PATH}/include/"
   "${FLUID_M_PATH}/thirdparty"
 )
