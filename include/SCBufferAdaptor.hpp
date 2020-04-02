@@ -68,9 +68,7 @@ public:
   SCBufferAdaptor& operator=(const SCBufferAdaptor&) = delete;
 
   SCBufferAdaptor(SCBufferAdaptor&&) = default;
-  SCBufferAdaptor& operator=(SCBufferAdaptor&&) = default;
-
-
+  
   SCBufferAdaptor(index bufnum, World* world, bool rt = false)
       : NRTBuf(world, bufnum, rt), mBufnum(bufnum), mWorld(world)
   {}
