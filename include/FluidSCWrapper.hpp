@@ -914,19 +914,21 @@ public:
   static auto& setParams(ParameterSetType& p, bool verbose, World* world,
                          FloatControlsIter& inputs, bool constrain = false)
   {
+      //TODO: Regain this robustness if possible? 
+      
     // We won't even try and set params if the arguments don't match
-    if (inputs.size() == C::getParameterDescriptors().count())
-    {
+    // if (inputs.size() == C::getParameterDescriptors().count())
+    // {
       p.template setParameterValues<ControlSetter>(verbose, world, inputs);
       if (constrain) p.constrainParameterValues();
-    }
-    else
-    {
-      std::cout << "ERROR: " << getName()
-                << ": parameter count mismatch. Perhaps your binary plugins "
-                   "and SC sources are different versions"
-                << std::endl;
-    }
+    // }
+    // else
+    // {
+    //   std::cout << "ERROR: " << getName()
+    //             << ": parameter count mismatch. Perhaps your binary plugins "
+    //                "and SC sources are different versions"
+    //             << std::endl;
+    // }
 
     return p;
   }
