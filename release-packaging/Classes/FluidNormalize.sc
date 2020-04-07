@@ -25,11 +25,11 @@ FluidNormalize : FluidManipulationClient {
     }
 
     read{|filename,action|
-        this.pr_sendMsg(\read,[filename],action);
+        this.pr_sendMsg(\read,[filename.asString],action);
     }
 
     write{|filename,action|
-        this.pr_sendMsg(\write,[filename],action);
+        this.pr_sendMsg(\write,[filename.asString],action);
     }
 
 }   

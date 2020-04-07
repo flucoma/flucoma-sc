@@ -22,19 +22,19 @@ FluidDataSet : FluidManipulationClient {
     }
 
     addPoint{|label, buffer, action|
-        this.pr_sendMsg(\addPoint,[label,buffer.asUGenInput],action);
+        this.pr_sendMsg(\addPoint,[label.asString,buffer.asUGenInput],action);
     }
 
     getPoint{|label, buffer, action|
-        this.pr_sendMsg(\getPoint,[label,buffer.asUGenInput],action);
+        this.pr_sendMsg(\getPoint,[label.asString,buffer.asUGenInput],action);
     }
 
     updatePoint{|label, buffer, action|
-        this.pr_sendMsg(\updatePoint,[label,buffer.asUGenInput],action);
+        this.pr_sendMsg(\updatePoint,[label.asString,buffer.asUGenInput],action);
     }
 
     deletePoint{|label, action|
-        this.pr_sendMsg(\deletePoint,[label],action);
+        this.pr_sendMsg(\deletePoint,[label.asString],action);
     }
 
     cols {|action|
@@ -42,11 +42,11 @@ FluidDataSet : FluidManipulationClient {
     }
 
     read{|filename,action|
-        this.pr_sendMsg(\read,[filename],action);
+        this.pr_sendMsg(\read,[filename.asString],action);
     }
 
     write{|filename,action|
-        this.pr_sendMsg(\write,[filename],action);
+        this.pr_sendMsg(\write,[filename.asString],action);
     }
 
     size { |action|

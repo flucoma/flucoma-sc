@@ -22,15 +22,15 @@ FluidLabelSet : FluidManipulationClient {
     }
 
     addLabel{|id, label, action|
-        this.pr_sendMsg(\addLabel,[id, label],action);
+        this.pr_sendMsg(\addLabel,[id.asString, label.asString],action);
     }
 
     getLabel{|id, action|
-        this.pr_sendMsg(\getLabel,[id],action,[string(FluidMessageResponse,_,_)]);
+        this.pr_sendMsg(\getLabel,[id.asString],action,[string(FluidMessageResponse,_,_)]);
     }
 
     deleteLabel{|id, action|
-        this.pr_sendMsg(\deleteLabel,[id],action);
+        this.pr_sendMsg(\deleteLabel,[id.asString],action);
     }
 
     cols {|action|
@@ -38,11 +38,11 @@ FluidLabelSet : FluidManipulationClient {
     }
 
     read{|filename,action|
-        this.pr_sendMsg(\read,[filename],action);
+        this.pr_sendMsg(\read,[filename.asString],action);
     }
 
     write{|filename,action|
-        this.pr_sendMsg(\write,[filename],action);
+        this.pr_sendMsg(\write,[filename.asString],action);
     }
 
     size { |action|
