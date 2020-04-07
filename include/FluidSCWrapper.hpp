@@ -510,6 +510,86 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
   struct ParamReader
   {
 
+    static const char* oscTagToString(char tag)
+    {
+      switch (tag)
+      {
+        case 'i': return "integer"; break;
+        case 'f': return "float"; break;
+        case 'd': return "double"; break;
+        case 's': return "string"; break;
+        case 'b': return "blob"; break;
+        case 't': return "time tag"; break;
+        default: return "unknown type";
+      }
+    }
+    
+    static const char* argTypeToString(std::string&)
+    {
+      return "string";
+    }
+    
+    template <typename T>
+    static std::enable_if_t<std::is_integral<T>::value, const char*>
+    argTypeToString(T&)
+    {
+      return "integer";
+    }
+
+    template <typename T>
+    static std::enable_if_t<std::is_floating_point<T>::value, const char*>
+    argTypeToString(T&)
+    {
+      return "float";
+    }
+
+    static const char* argTypeToString(BufferT::type&)
+    {
+      return "buffer";
+    }
+    
+    static const char* argTypeToString(InputBufferT::type&)
+    {
+      return "buffer";
+    }
+    
+    template <typename P>
+    static std::enable_if_t<IsSharedClient<P>::value,const char*>
+    argTypeToString(P&)
+    {
+      return "shared_object"; //not ideal
+    }
+
+    static bool argTypeOK(std::string&, char tag)
+    {
+      return tag == 's';
+    }
+    
+    template <typename T>
+    static std::enable_if_t<std::is_integral<T>::value
+                            || std::is_floating_point<T>::value, bool>
+    argTypeOK(T&, char tag)
+    {
+      return tag == 'i' || tag == 'f' || tag == 'd';
+    }
+
+    static bool argTypeOK(BufferT::type&, char tag)
+    {
+      return tag == 'i';
+    }
+    
+    static bool argTypeOK(InputBufferT::type&, char tag)
+    {
+      return tag == 'i';
+    }
+    
+    template <typename P>
+    static std::enable_if_t<IsSharedClient<P>::value,bool>
+    argTypeOK(P&, char tag)
+    {
+      return tag == 's';
+    }
+    
     static auto fromArgs(World*, sc_msg_iter* args, std::string, int)
     {
       const char* recv = args->gets("");
@@ -785,14 +865,81 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
     auto         ft = getInterfaceTable();
     void*        msgptr = ft->fRTAlloc(x->mWorld, sizeof(MessageData));
     MessageData* msg = new (msgptr) MessageData;
+    msg->name = '/' + Client::getMessageDescriptors().template name<N>();
+    msg->wrapper = x;
     ArgTuple&    args = msg->args;
+    
+    // type check OSC message
+    
+    std::string tags(inArgs->tags + inArgs->count);
+    bool willContinue = true;
+    bool typesMatch = true;
+    
+    constexpr size_t expectedArgCount = std::tuple_size<ArgTuple>::value;
+    
+    if(tags.size() > expectedArgCount)
+    {
+      std::cout << "WARNING: " << msg->name << " received more arguments than expected (got "
+                << tags.size() << ", expect " << expectedArgCount << ")\n";
+    }
+    
+    if(tags.size() < expectedArgCount)
+    {
+      std::cout << "ERROR: " << msg->name << " received fewer arguments than expected (got "
+                << tags.size() << ", expect " << expectedArgCount << ")\n";
+      willContinue = false;
+    }
+
+    auto tagsIter = tags.begin();
+    auto tagsEnd  = tags.end();
+    ForEach(args,[&typesMatch,&tagsIter,&tagsEnd](auto& x){
+       if(tagsIter == tagsEnd)
+       {
+          typesMatch = false;
+          return;
+       }
+       char t = *(tagsIter++);
+       typesMatch = typesMatch && ParamReader<sc_msg_iter*>::argTypeOK(x,t);
+    });
+    
+   willContinue = willContinue && typesMatch;
+   
+   if(!typesMatch)
+   {
+      auto& report = std::cout;
+      report << "ERROR: " << msg->name << " type signature incorrect.\nExpect: (";
+      size_t i{0};
+      ForEach(args, [&i](auto& x){
+        report << ParamReader<sc_msg_iter*>::argTypeToString(x);
+        if(i < ( expectedArgCount - 1 ) )
+        {
+          report << " ,";
+        }
+        i++;
+      });
+      report << ")\nReceived: (";
+      i = 0;
+      for(auto t: tags)
+      {
+        report << ParamReader<sc_msg_iter*>::oscTagToString(t);
+        if( i < ( tags.size() - 1 ) )
+        {
+          report << ", ";
+        }
+        i++;
+      }
+      report << ")\n";
+   }
+   
+  if(!willContinue) return;
+ 
+    ///
     (void) std::initializer_list<int>{
         (std::get<Is>(args) = ParamReader<sc_msg_iter*>::fromArgs(
              x->mWorld, inArgs, std::get<Is>(args), 0),
          0)...};
 
-    msg->name = '/' + Client::getMessageDescriptors().template name<N>();
-    msg->wrapper = x;
+
     x->mDone = false;
     ft->fDoAsynchronousCommand(
         x->mWorld, nullptr, getName(), msg,
