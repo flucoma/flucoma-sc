@@ -2,12 +2,12 @@ FluidDataSet : FluidManipulationClient {
 
     var <>synth, <>server, <>id;
 
-    *kr{ |name, dims|
-        ^this.new1('control',name, dims);
+    *kr{ |name|
+        ^this.new1('control',name);
 	}
 
-    *new { |server,name,dims|
-        ^super.new(server,name,dims);
+    *new { |server,name|
+        ^super.new(server,name);
     }
 
     init { |name, dims|
