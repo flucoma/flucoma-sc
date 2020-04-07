@@ -99,10 +99,10 @@ public:
   // knows about
   bool valid() const override
   {
-    return (mBuffer && mBufnum >= 0 && mBufnum < asSigned(mWorld->mNumSndBufs));
+    return (exists() && mBufnum >= 0 && mBufnum < asSigned(mWorld->mNumSndBufs));
   }
 
-  bool exists() const override { return true; }
+  bool exists() const override { return mBuffer && mBuffer->data; }
 
   FluidTensorView<float, 1> samps(index channel) override
   {
