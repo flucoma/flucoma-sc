@@ -950,10 +950,8 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
               ReturnType{invokeImpl<N>(m->wrapper, m->args, IndexList{})};
 
           if (!m->result.ok())
-          {
             printResult(m->wrapper, m->result);
-            return false;
-          }
+
           return true;
         },
         [](World* world, void* data) // RT thread:  response
@@ -962,7 +960,15 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
           MessageDescriptor::template forEachArg<typename BufferT::type,
                                                  impl::AssignBuffer>(m->args,
                                                                      world);
-          messageOutput(m->wrapper, m->name, m->result);
+         
+          if(m->result.status() != Result::Status::kError)
+            messageOutput(m->wrapper, m->name, m->result);
+          else
+          {
+             auto ft = getInterfaceTable(); 
+             ft->fSendNodeReply(&m->wrapper->mParent->mNode,
+                        -1, m->name.c_str(),0, nullptr);
+          }
           return true;
         },
         nullptr,                 // NRT Thread: No-op
@@ -977,6 +983,8 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
   {
     return x->mClient.template invoke<N>(x->mClient, std::get<Is>(args)...);
   }
+  
+  
 
   template <typename T> // call from RT
   static void messageOutput(FluidSCWrapper* x, const std::string& s,
