@@ -143,7 +143,7 @@ c = Buffer.new(s);
 (
 Routine{
 	t = Main.elapsedTime;
-	FluidBufPitch.process(s, b, features: c,action:{c.loadToFloatArray(action: {|x| d = x.reshape((x.size()/2).asInt, 2)})});
+	FluidBufPitch.process(s, b, features: c,action:{c.loadToFloatArray(action: {|x| d = x.reshape((x.size()/2).asInteger, 2)})});
 	(Main.elapsedTime - t).postln;
 }.play
 )
