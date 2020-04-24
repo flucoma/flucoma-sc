@@ -69,6 +69,8 @@ public:
 
   SCBufferAdaptor(SCBufferAdaptor&&) = default;
   
+
+
   SCBufferAdaptor(index bufnum, World* world, bool rt = false)
       : NRTBuf(world, bufnum, rt), mBufnum(bufnum), mWorld(world)
   {}
