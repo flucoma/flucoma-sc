@@ -1,6 +1,6 @@
 # Fluid Corpus Manipulation: SuperCollider Objects Library
 
-This repository hosts code for generating the SC objects and documentation resources for the Fluid Corpus Manipulation Project. Much of the actual code that does the exciting stuff lives in this repository's principal dependency, the [Fluid Corpus Manipulation Library]().
+This repository hosts code for generating the SC objects and documentation resources for the Fluid Corpus Manipulation Project. Much of the actual code that does the exciting stuff lives in this repository's principal dependency, the [Fluid Corpus Manipulation Library](https://github.com/flucoma/flucoma-core).
 
 ## Pre-requisites
 
@@ -13,7 +13,7 @@ This repository hosts code for generating the SC objects and documentation resou
 
 These will be downloaded and configured automatically, unless you pass CMake a source code location on disk for each (see below):
 
-- [Fluid Corpus Manipulation Library]()
+- [Fluid Corpus Manipulation Library](https://github.com/flucoma/flucoma-core)
 - [Eigen](https://gitlab.com/libeigen/eigen) (3.3.5)
 - [HISSTools Library](https://github.com/AlexHarker/HISSTools_Library)
 
