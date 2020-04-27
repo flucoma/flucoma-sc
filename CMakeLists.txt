@@ -29,7 +29,7 @@ endif()
 
 ################################################################################
 # Main project
-project (fluid_decomposition_supercollider LANGUAGES CXX)
+project (flucoma-sc LANGUAGES CXX)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(CMAKE_XCODE_GENERATE_TOP_LEVEL_PROJECT_ONLY ON)
 
