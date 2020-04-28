@@ -65,7 +65,7 @@ target_include_directories(
 )
 
 get_property(HEADERS TARGET FLUID_DECOMPOSITION PROPERTY INTERFACE_SOURCES)
-source_group(TREE "${fluid_decomposition_SOURCE_DIR}/include" FILES ${HEADERS})
+source_group(TREE "${flucoma-core_SOURCE_DIR}/include" FILES ${HEADERS})
 
 # get_property(HEADERS TARGET FLUID_MANIP PROPERTY INTERFACE_SOURCES)
 # source_group(TREE "${fluid_manipulation_SOURCE_DIR}/include" FILES ${HEADERS})
