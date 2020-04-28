@@ -24,12 +24,12 @@ set(FLUID_PATH "" CACHE PATH "Optional path to the Fluid Decomposition repo")
 if (APPLE)
 	set(CMAKE_OSX_ARCHITECTURES x86_64)
   set(CMAKE_XCODE_GENERATE_SCHEME ON)
-  set(CMAKE_OSX_DEPLOYMENT_TARGET 10.7)
+  set(CMAKE_OSX_DEPLOYMENT_TARGET 10.8)
 endif()
 
 ################################################################################
 # Main project
-project (fluid_decomposition_supercollider LANGUAGES CXX)
+project (flucoma-sc LANGUAGES CXX)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(CMAKE_XCODE_GENERATE_TOP_LEVEL_PROJECT_ONLY ON)
 
@@ -118,4 +118,4 @@ endforeach()
 install(DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/ DESTINATION ${SC_PACKAGE_ROOT}/plugins PATTERN "*.ilk" EXCLUDE PATTERN "*.PDB" EXCLUDE)
 install(DIRECTORY "${fluid_decomposition_SOURCE_DIR}/AudioFiles" DESTINATION ${SC_PACKAGE_ROOT})
 install(FILES QuickStart.md DESTINATION ${SC_PACKAGE_ROOT})
-install(FILES ${fluid_decomposition_SOURCE_DIR}/license-executableform.md DESTINATION ${SC_PACKAGE_ROOT} RENAME license.md)
+install(FILES ${fluid_decomposition_SOURCE_DIR}/distribution.lic DESTINATION ${SC_PACKAGE_ROOT} RENAME LICENSE.md)
