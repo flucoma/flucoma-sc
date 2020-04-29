@@ -11,15 +11,14 @@ cmake_minimum_required(VERSION 3.11)
 # Paths
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/install" CACHE PATH "")
 
-set(SC_LIBRARY_OUTPUT_PREFIX "release-packaging" CACHE STRING "Where in the hierarchy to write sc plugins (different for superbuild)")
+set(SC_LIBRARY_OUTPUT_PREFIX "release-packaging" CACHE STRING "Where in the hierarchy to write sc plugins")
 
 set(SC_PATH "" CACHE PATH "Path to the top of SuperCollider source tree")
 if(NOT SC_PATH)
   message(FATAL_ERROR "SuperCollider source path is not set")
 endif()
 
-set(FLUID_PATH "" CACHE PATH "Optional path to the Fluid Decomposition repo")
-# set(FLUID_M_PATH "" CACHE PATH "Optional path to the Fluid fluid_manipulation repo")
+set(FLUID_PATH "" CACHE PATH "Optional path to the flucoma-core repo")
 
 if (APPLE)
 	set(CMAKE_OSX_ARCHITECTURES x86_64)
@@ -49,21 +48,21 @@ include(FetchContent)
 set(FETCHCONTENT_QUIET FALSE)
 
 FetchContent_Declare(
-  fluid_decomposition
-  GIT_REPOSITORY https://bitbucket.org/flucoma/fluid_decomposition.git
+  flucoma-core
+  GIT_REPOSITORY https://github.com/flucoma/flucoma-core.git
   GIT_PROGRESS TRUE
 )
 
 if(FLUID_PATH)
   get_filename_component(
-    FETCHCONTENT_SOURCE_DIR_FLUID_DECOMPOSITION ${FLUID_PATH} ABSOLUTE
+    FETCHCONTENT_SOURCE_DIR_FLUCOMA-CORE ${FLUID_PATH} ABSOLUTE
   )
 endif()
 
-FetchContent_GetProperties(fluid_decomposition)
-if(NOT fluid_decomposition_POPULATED)
-  FetchContent_Populate(fluid_decomposition)
-  add_subdirectory(${fluid_decomposition_SOURCE_DIR} ${fluid_decomposition_BINARY_DIR})
+FetchContent_GetProperties(flucoma-core)
+if(NOT flucoma-core_POPULATED)
+  FetchContent_Populate(flucoma-core)
+  add_subdirectory(${flucoma-core_SOURCE_DIR} ${flucoma-core_BINARY_DIR})
   include(flucoma_version)
   include(flucoma-buildtools)
 endif()
@@ -112,10 +111,18 @@ set(FLUID_PACKAGE_NAME FluidCorpusManipulation CACHE STRING "Name for published 
 set(SC_PACKAGE_ROOT ${SC_INSTALL_PREFIX}/${FLUID_PACKAGE_NAME})
 
 foreach(PACKAGE_DIRECTORY Classes;HelpSource;Examples)
-  install(DIRECTORY "release-packaging/${PACKAGE_DIRECTORY}" DESTINATION ${SC_PACKAGE_ROOT})
+  install(DIRECTORY "release-packaging/${PACKAGE_DIRECTORY}" 
+          DESTINATION ${SC_PACKAGE_ROOT})
 endforeach()
 
-install(DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/ DESTINATION ${SC_PACKAGE_ROOT}/plugins PATTERN "*.ilk" EXCLUDE PATTERN "*.PDB" EXCLUDE)
-install(DIRECTORY "${fluid_decomposition_SOURCE_DIR}/AudioFiles" DESTINATION ${SC_PACKAGE_ROOT})
-install(FILES QuickStart.md DESTINATION ${SC_PACKAGE_ROOT})
-install(FILES ${fluid_decomposition_SOURCE_DIR}/distribution.lic DESTINATION ${SC_PACKAGE_ROOT} RENAME LICENSE.md)
+install(DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/ 
+        DESTINATION ${SC_PACKAGE_ROOT}/plugins 
+        PATTERN "*.ilk" EXCLUDE 
+        PATTERN "*.PDB" EXCLUDE)
+install(DIRECTORY "${flucoma-core_SOURCE_DIR}/AudioFiles" 
+        DESTINATION ${SC_PACKAGE_ROOT})
+install(FILES QuickStart.md 
+        DESTINATION ${SC_PACKAGE_ROOT})
+install(FILES ${flucoma-core_SOURCE_DIR}/distribution.lic 
+        DESTINATION ${SC_PACKAGE_ROOT} 
+        RENAME LICENSE.md)
