@@ -163,7 +163,7 @@ public:
   {
     mControlsIterator.reset(mInBuf + mSpecialIndex +
                             1); // mClient.audioChannelsIn());
-    Wrapper::setParams(
+    Wrapper::setParams(static_cast<Wrapper*>(this), 
         mParams, mWorld->mVerbosity > 0, mWorld,
         mControlsIterator); // forward on inputs N + audio inputs as params
     mParams.constrainParameterValues();
@@ -682,9 +682,9 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
 
     template <typename P>
     static std::enable_if_t<IsSharedClient<P>::value, P>
-    fromArgs(FluidSCWrapper*,World* w, ArgType args, P&, int)
+    fromArgs(FluidSCWrapper* x,World* w, ArgType args, P&, int)
     {
-      return {fromArgs(w, args, std::string{}, 0).c_str()};
+      return {fromArgs(x, w, args, std::string{}, 0).c_str()};
     }
   };
 
@@ -951,7 +951,7 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
     ///
     (void) std::initializer_list<int>{
         (std::get<Is>(args) = ParamReader<sc_msg_iter*>::fromArgs(
-             x->mWorld, inArgs, std::get<Is>(args), 0),
+             x, x->mWorld, inArgs, std::get<Is>(args), 0),
          0)...};
 
 
