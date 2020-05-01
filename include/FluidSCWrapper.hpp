@@ -12,6 +12,7 @@ under the European Union’s Horizon 2020 research and innovation programme
 
 #include "SCBufferAdaptor.hpp"
 #include <clients/common/FluidBaseClient.hpp>
+#include <clients/nrt/FluidSharedInstanceAdaptor.hpp>
 #include <clients/common/Result.hpp>
 #include <data/FluidTensor.hpp>
 #include <data/TensorTypes.hpp>
@@ -21,6 +22,7 @@ under the European Union’s Horizon 2020 research and innovation programme
 #include <string>
 #include <tuple>
 #include <type_traits>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -186,6 +188,11 @@ public:
       mOutputs[asUnsigned(i)].reset(out(static_cast<int>(i)), 0, 1);
     }
     mClient.process(mAudioInputs, mOutputs, mContext);
+  }
+
+  ParamSetType& params()
+  {
+    return mParams;
   }
 
 private:
@@ -392,6 +399,11 @@ public:
     static_cast<Wrapper*>(unit)->mClient.cancel();
   }
 
+  ParamSetType& params()
+  {
+    return mParams;
+  }
+
 private:
   static Result validateParameters(NonRealTime* w)
   {
@@ -473,6 +485,75 @@ class NonRealTimeAndRealTime : public RealTime<Client, Wrapper>,
 
 ////////////////////////////////////////////////////////////////////////////////
 
+//Discovery for clients that need persistent storage (Dataset and friends)
+
+template <typename T>
+struct IsPersistent : std::false_type
+{};
+
+//TODO: make less tied to current implementation
+template <typename T>
+struct IsPersistent<NRTThreadingAdaptor<NRTSharedInstanceAdaptor<T>>>
+    : std::true_type
+{};
+
+
+template<typename,typename, bool>
+struct ObjectPersistance;
+
+template<typename Client, typename Wrapper>
+struct ObjectPersistance<Client, Wrapper, false>{
+  void init(){}
+  static void setup(InterfaceTable*, const char*){}
+};
+
+template<typename Client, typename Wrapper>
+struct ObjectPersistance<Client,Wrapper, true>
+{
+
+  template<typename> struct GetSharedType;
+  
+  template<typename T>
+  struct GetSharedType<NRTThreadingAdaptor<NRTSharedInstanceAdaptor<T>>>
+  {
+    using type = NRTSharedInstanceAdaptor<T>;
+  };
+  
+  using SharedType = typename GetSharedType<Client>::type;
+  using ClientPointer = typename SharedType::ClientPointer;
+
+  void init()
+  {
+    auto clientRef = getClientPointer(static_cast<Wrapper*>(this));
+    auto pos = mRegistry.find(clientRef);
+    if(pos == mRegistry.end()) mRegistry.emplace(clientRef);
+  }
+  
+  static void setup(InterfaceTable* ft, const char* name)
+  {
+      ft->fDefineUnitCmd(name, "free", [](Unit* unit, sc_msg_iter*)
+      {
+          auto clientRef = getClientPointer(static_cast<Wrapper*>(unit));
+          auto pos = mRegistry.find(clientRef);
+          if(pos != mRegistry.end()) mRegistry.erase(clientRef);
+      });
+  }
+
+private:
+
+  static  ClientPointer getClientPointer(Wrapper* wrapper)
+  {
+    auto& params = wrapper->params();
+    auto name = params.template get<0>();
+    return  SharedType::lookup(name);
+  }
+
+  static std::unordered_set<ClientPointer> mRegistry;
+};
+
+template<typename Client, typename Wrapper>
+std::unordered_set<typename ObjectPersistance<Client,Wrapper, true>::ClientPointer>
+  ObjectPersistance<Client,Wrapper, true>::mRegistry; 
 // Template Specialisations for NRT/RT
 
 template <typename Client, typename Wrapper, typename NRT, typename RT>
@@ -480,13 +561,33 @@ class FluidSCWrapperImpl;
 
 template <typename Client, typename Wrapper>
 class FluidSCWrapperImpl<Client, Wrapper, std::true_type, std::false_type>
-    : public NonRealTime<Client, Wrapper>
-{};
+    : public NonRealTime<Client, Wrapper>, public ObjectPersistance<Client,Wrapper,IsPersistent<Client>::value>
+{
+public:
+  void init(){
+    NonRealTime<Client,Wrapper>::init();
+    ObjectPersistance<Client,Wrapper,IsPersistent<Client>::value>::init();
+  }
+  static void setup(InterfaceTable* ft, const char* name){
+    NonRealTime<Client,Wrapper>::setup(ft,name);
+    ObjectPersistance<Client,Wrapper,IsPersistent<Client>::value>::setup(ft,name);
+  }
+};
 
 template <typename Client, typename Wrapper>
 class FluidSCWrapperImpl<Client, Wrapper, std::false_type, std::true_type>
-    : public RealTime<Client, Wrapper>
-{};
+    : public RealTime<Client, Wrapper>, public ObjectPersistance<Client,Wrapper,IsPersistent<Client>::value>
+{
+public:
+  void init(){
+    RealTime<Client,Wrapper>::init();
+    ObjectPersistance<Client,Wrapper,IsPersistent<Client>::value>::init();
+  }
+  static void setup(InterfaceTable* ft, const char* name){
+    RealTime<Client,Wrapper>::setup(ft,name);
+    ObjectPersistance<Client,Wrapper,IsPersistent<Client>::value>::setup(ft,name);
+  }
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 

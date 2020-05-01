@@ -57,4 +57,8 @@ FluidDataSet : FluidManipulationClient {
         this.pr_sendMsg(\clear,[],action);
     }
 
+	free { |action|
+		this.pr_sendMsg(\free,[],action);
+	}
+
 }   
