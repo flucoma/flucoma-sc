@@ -107,7 +107,8 @@ public:
       : mControlsIterator{mInBuf + mSpecialIndex + 1,
                           static_cast<index>(mNumInputs) - mSpecialIndex - 1},
         mParams{Wrapper::Client::getParameterDescriptors()},
-        mClient{Wrapper::setParams(mParams, mWorld->mVerbosity > 0, mWorld,
+        mClient{Wrapper::setParams(static_cast<Wrapper*>(this),
+                                    mParams, mWorld->mVerbosity > 0, mWorld,
                                    mControlsIterator, true)}
   {}
 
@@ -249,7 +250,7 @@ public:
   NonRealTime()
       : mControlsIterator{mInBuf, index(mNumInputs) - mSpecialIndex - 2},
         mParams{Wrapper::Client::getParameterDescriptors()},
-        mClient{Wrapper::setParams(mParams, mWorld->mVerbosity > 0, mWorld,
+        mClient{Wrapper::setParams(static_cast<Wrapper*>(this), mParams, mWorld->mVerbosity > 0, mWorld,
                                    mControlsIterator, true)},
         mSynchronous{mNumInputs > 2 ? (in0(int(mNumInputs) - 1) > 0) : false}
   {}
@@ -590,14 +591,14 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
       return tag == 's';
     }
     
-    static auto fromArgs(World*, sc_msg_iter* args, std::string, int)
+    static auto fromArgs(FluidSCWrapper*, World*, sc_msg_iter* args, std::string, int)
     {
       const char* recv = args->gets("");
 
       return std::string(recv ? recv : "");
     }
 
-    static auto fromArgs(World* w, FloatControlsIter& args, std::string, int)
+    static auto fromArgs(FluidSCWrapper*,World* w, FloatControlsIter& args, std::string, int)
     {
       // first is string size, then chars
       index size = static_cast<index>(args.next());
@@ -623,21 +624,21 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
 
     template <typename T>
     static std::enable_if_t<std::is_integral<T>::value, T>
-    fromArgs(World*, FloatControlsIter& args, T, int)
+    fromArgs(FluidSCWrapper*,World*, FloatControlsIter& args, T, int)
     {
       return static_cast<index>(args.next());
     }
 
     template <typename T>
     static std::enable_if_t<std::is_floating_point<T>::value, T>
-    fromArgs(World*, FloatControlsIter& args, T, int)
+    fromArgs(FluidSCWrapper*,World*, FloatControlsIter& args, T, int)
     {
       return args.next();
     }
 
     template <typename T>
     static std::enable_if_t<std::is_integral<T>::value, T>
-    fromArgs(World*, sc_msg_iter* args, T, int defVal)
+    fromArgs(FluidSCWrapper*,World*, sc_msg_iter* args, T, int defVal)
     {
       return args->geti(defVal);
     }
@@ -649,25 +650,39 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
       return args->getf();
     }
 
-    static auto fromArgs(World* w, ArgType args, BufferT::type&, int)
+    static SCBufferAdaptor* fetchBuffer(FluidSCWrapper* x, World* w, index bufnum)
     {
-      typename LongT::type bufnum = static_cast<typename LongT::type>(
-          ParamReader::fromArgs(w, args, typename LongT::type(), -1));
-      return BufferT::type(bufnum >= 0 ? new SCBufferAdaptor(bufnum, w)
-                                       : nullptr);
+      if(bufnum >= w->mNumSndBufs)
+      {
+        index localBufNum = bufnum - w->mNumSndBufs;
+        
+        Graph* parent = static_cast<Unit*>(x)->mParent;
+        
+        return localBufNum <= parent -> localMaxBufNum ?
+                                  new SCBufferAdaptor(parent->mLocalSndBufs + localBufNum,w,true)
+                                  : nullptr;
+      }
+      else
+        return bufnum >= 0 ? new SCBufferAdaptor(bufnum, w) : nullptr;
     }
 
-    static auto fromArgs(World* w, ArgType args, InputBufferT::type&, int)
+    static auto fromArgs(FluidSCWrapper* x,World* w, ArgType args, BufferT::type&, int)
+    {
+      typename LongT::type bufnum = static_cast<typename LongT::type>(
+          ParamReader::fromArgs(x, w, args, typename LongT::type(), -1));
+      return BufferT::type(fetchBuffer(x,w,bufnum));
+    }
+
+    static auto fromArgs(FluidSCWrapper* x,World* w, ArgType args, InputBufferT::type&, int)
     {
       typename LongT::type bufnum =
-          static_cast<LongT::type>(fromArgs(w, args, LongT::type(), -1));
-      return InputBufferT::type(bufnum >= 0 ? new SCBufferAdaptor(bufnum, w)
-                                            : nullptr);
+          static_cast<LongT::type>(fromArgs(x, w, args, LongT::type(), -1));
+      return InputBufferT::type(fetchBuffer(x,w,bufnum));
     }
 
     template <typename P>
     static std::enable_if_t<IsSharedClient<P>::value, P>
-    fromArgs(World* w, ArgType args, P&, int)
+    fromArgs(FluidSCWrapper*,World* w, ArgType args, P&, int)
     {
       return {fromArgs(w, args, std::string{}, 0).c_str()};
     }
@@ -681,7 +696,7 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
     static constexpr index argSize =
         C::getParameterDescriptors().template get<N>().fixedSize;
 
-    typename T::type operator()(World* w, ArgType args)
+    typename T::type operator()(FluidSCWrapper* x, World* w, ArgType args)
     {
       // Just return default if there's nothing left to grab
       if (args.remain() == 0)
@@ -697,7 +712,7 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
 
       for (index i = 0; i < argSize; i++)
         a[i] = static_cast<LiteralType>(
-            ParamReader<ArgType>::fromArgs(w, args, a[0], 0));
+            ParamReader<ArgType>::fromArgs(x, w, args, a[0], 0));
 
       return a.value();
     }
@@ -1066,7 +1081,7 @@ public:
     ft->fDefineUnitCmd(name, "version", doVersion);
   }
 
-  static auto& setParams(ParameterSetType& p, bool verbose, World* world,
+  static auto& setParams(FluidSCWrapper* x, ParameterSetType& p, bool verbose, World* world,
                          FloatControlsIter& inputs, bool constrain = false)
   {
       //TODO: Regain this robustness if possible? 
@@ -1074,7 +1089,7 @@ public:
     // We won't even try and set params if the arguments don't match
     // if (inputs.size() == C::getParameterDescriptors().count())
     // {
-      p.template setParameterValues<ControlSetter>(verbose, world, inputs);
+      p.template setParameterValues<ControlSetter>(verbose, x, world, inputs);
       if (constrain) p.constrainParameterValues();
     // }
     // else

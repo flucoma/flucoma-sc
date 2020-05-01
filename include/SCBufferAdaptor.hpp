@@ -69,7 +69,9 @@ public:
 
   SCBufferAdaptor(SCBufferAdaptor&&) = default;
   
-
+  SCBufferAdaptor(SndBuf* buf, World* world, bool local)
+      : NRTBuf{buf}, mWorld{world}, mLocal{local}
+  {}
 
   SCBufferAdaptor(index bufnum, World* world, bool rt = false)
       : NRTBuf(world, bufnum, rt), mBufnum(bufnum), mWorld(world)
@@ -79,6 +81,8 @@ public:
 
   void assignToRT(World* rtWorld)
   {
+    if(mLocal) return;
+    
     SndBuf* rtBuf = World_GetBuf(rtWorld, static_cast<uint32>(mBufnum));
     *rtBuf = *mBuffer;
     rtWorld->mSndBufUpdates[mBufnum].writes++;
@@ -101,7 +105,7 @@ public:
   // knows about
   bool valid() const override
   {
-    return (exists() && mBufnum >= 0 && mBufnum < asSigned(mWorld->mNumSndBufs));
+    return (exists() && (mLocal ? true : mBufnum >= 0 && mBufnum < asSigned(mWorld->mNumSndBufs)));
   }
 
   bool exists() const override { return mBuffer && mBuffer->data; }
@@ -161,6 +165,17 @@ public:
   const Result resize(index frames, index channels, double sampleRate) override
   {
     SndBuf* thisThing = mBuffer;
+    
+    if(mLocal) // don't try and resize
+    {
+      if(frames > thisThing->frames || channels > thisThing->channels)
+      {
+        return {Result::Status::kError, "Local buffer must be presized adequetly, need",
+                                                        frames, "frames", channels, "channels." };
+      }
+      else return {};
+    }
+    
     mOldData = thisThing->data;
     int allocResult =
         mWorld->ft->fBufAlloc(mBuffer, static_cast<int>(channels),
@@ -184,6 +199,7 @@ protected:
   float* mOldData{0};
   index  mBufnum;
   World* mWorld;
+  bool   mLocal{false};
 };
 
 std::ostream& operator<<(std::ostream& os, SCBufferAdaptor& b)
