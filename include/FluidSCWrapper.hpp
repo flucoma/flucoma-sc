@@ -1093,7 +1093,11 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
         },
         nullptr,                 // NRT Thread: No-op
         [](World* w, void* data) // RT thread: clean up
-        { getInterfaceTable()->fRTFree(w, data); },
+        {
+          MessageData* m = static_cast<MessageData*>(data);
+          m->~MessageData();
+          getInterfaceTable()->fRTFree(w, data);
+        },
         0, nullptr);
   }
 
