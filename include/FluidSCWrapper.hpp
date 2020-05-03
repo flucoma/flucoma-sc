@@ -1047,7 +1047,12 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
       report << ")\n";
    }
    
-  if(!willContinue) return;
+    if(!willContinue)
+    {
+        msg->~MessageData();
+        ft->fRTFree(x->mWorld, msgptr);
+        return;
+    }
  
     ///
     (void) std::initializer_list<int>{
