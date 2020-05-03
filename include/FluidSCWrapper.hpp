@@ -1055,11 +1055,10 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
     }
  
     ///
-    (void) std::initializer_list<int>{
-        (std::get<Is>(args) = ParamReader<sc_msg_iter*>::fromArgs(
-             x, x->mWorld, inArgs, std::get<Is>(args), 0),
-         0)...};
-
+    ForEach(args,[x,&inArgs](auto& arg){
+      arg = ParamReader<sc_msg_iter*>::fromArgs(x,x->mWorld,inArgs,arg,0);
+    });
+    
 
     x->mDone = false;
     ft->fDoAsynchronousCommand(
