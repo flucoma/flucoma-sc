@@ -1,27 +1,36 @@
 FluidStandardize : FluidManipulationClient {
 
+  *new {|server|
+		var uid = UniqueID.next;
+		^super.new(server,uid).init(uid);
+	}
+
+	init {|uid|
+		id = uid;
+	}
+  
     fit{|dataset, action|
-        this.pr_sendMsg(\fit,[dataset.asString],action);
+        this.prSendMsg(\fit,[dataset.asString],action);
     }
 
     standardize{|sourceDataset, destDataset, action|
-        this.pr_sendMsg(\standardize,[sourceDataset.asString, destDataset.asString],action);
+        this.prSendMsg(\standardize,[sourceDataset.asString, destDataset.asString],action);
     }
 
     standardizePoint{|sourceBuffer, destBuffer, action|
-        this.pr_sendMsg(\standardizePoint,[sourceBuffer.asUGenInput, destBuffer.asUGenInput],action);
+        this.prSendMsg(\standardizePoint,[sourceBuffer.asUGenInput, destBuffer.asUGenInput],action);
     }
 
     cols {|action|
-        this.pr_sendMsg(\cols,[],action,[numbers(FluidMessageResponse,_,1,_)]);
+        this.prSendMsg(\cols,[],action,[numbers(FluidMessageResponse,_,1,_)]);
     }
 
     read{|filename,action|
-        this.pr_sendMsg(\read,[filename.asString],action);
+        this.prSendMsg(\read,[filename.asString],action);
     }
 
     write{|filename,action|
-        this.pr_sendMsg(\write,[filename.asString],action);
+        this.prSendMsg(\write,[filename.asString],action);
     }
 
 }   

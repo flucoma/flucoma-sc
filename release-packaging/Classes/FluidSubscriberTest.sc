@@ -21,11 +21,11 @@ FluidSubscriberTest : UGen {
     }
 
     providerLookup { |server, nodeID, label, action|
-        this.pr_sendMsg(server, nodeID, 'providerLookup', label, action,
+        this.prSendMsg(server, nodeID, 'providerLookup', label, action,
             [string(FluidMessageResponse,_,_),numbers(FluidMessageResponse,_,2,_)] );
     }
 
-    pr_sendMsg { |server, nodeID, msg, args, action,parser|
+    prSendMsg { |server, nodeID, msg, args, action,parser|
 
         server = server ? Server.default;
 

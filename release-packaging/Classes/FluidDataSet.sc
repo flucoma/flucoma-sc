@@ -1,64 +1,88 @@
+
+FluidDataSetExistsError : Exception{
+}
+
 FluidDataSet : FluidManipulationClient {
 
-    var <>synth, <>server, <>id;
+  var <id;
+	classvar serverCaches;
 
-    *kr{ |name|
-        ^this.new1('control',name);
+	*initClass {
+		serverCaches = FluidServerCache.new;
 	}
 
-    *new { |server,name|
-        ^super.new(server,name);
-    }
+	*at{ |server, id|
+		^serverCaches.tryPerform(\at, server,id)
+	}
 
-    init { |name, dims|
-        var ascii = name.ascii;
-        this.id = name;
-        // specialIndex = -1;
-        inputs = [ascii.size].addAll(ascii)++dims++Done.none++FluidManipulationClient.nonBlocking;
-    }
+  *new { |server,name|
+		if(this.at(server,name).notNil){
+			FluidDataSetExistsError("A FluidDataset called % already exists.".format(name)).throw;
+		}
+		{^super.new(server,*FluidManipulationClient.prServerString(name)).init(name)}
+  }
 
-    asString {
-        ^id.asString;
-    }
+	init {|name|
+		id = name;
+		this.cache;
+	}
 
-    addPoint{|label, buffer, action|
-        this.pr_sendMsg(\addPoint,[label.asString,buffer.asUGenInput],action);
-    }
+	cache {
+		serverCaches.initCache(server);
+		serverCaches.put(server,id,this);
+	}
 
-    getPoint{|label, buffer, action|
-        this.pr_sendMsg(\getPoint,[label.asString,buffer.asUGenInput],action);
-    }
+  asString {
+		^"FluidDataSet(%)".format(id).asString;
+  }
 
-    updatePoint{|label, buffer, action|
-        this.pr_sendMsg(\updatePoint,[label.asString,buffer.asUGenInput],action);
-    }
+	asUGenInput {
+		^id.asString;
+	}
 
-    deletePoint{|label, action|
-        this.pr_sendMsg(\deletePoint,[label.asString],action);
-    }
+  addPoint{|label, buffer, action|
+      this.prSendMsg(\addPoint,[label.asString,buffer.asUGenInput],action);
+  }
 
-    cols {|action|
-        this.pr_sendMsg(\cols,[],action,[numbers(FluidMessageResponse,_,1,_)]);
-    }
+  getPoint{|label, buffer, action|
+      this.prSendMsg(\getPoint,[label.asString,buffer.asUGenInput],action);
+  }
 
-    read{|filename,action|
-        this.pr_sendMsg(\read,[filename.asString],action);
-    }
+  updatePoint{|label, buffer, action|
+      this.prSendMsg(\updatePoint,[label.asString,buffer.asUGenInput],action);
+  }
 
-    write{|filename,action|
-        this.pr_sendMsg(\write,[filename.asString],action);
-    }
+  deletePoint{|label, action|
+      this.prSendMsg(\deletePoint,[label.asString],action);
+  }
 
-    size { |action|
-        this.pr_sendMsg(\size,[],action,[numbers(FluidMessageResponse,_,1,_)]);
-    }
+  cols {|action|
+      this.prSendMsg(\cols,[],action,[numbers(FluidMessageResponse,_,1,_)]);
+  }
 
-    clear { |action|
-        this.pr_sendMsg(\clear,[],action);
-    }
+  read{|filename,action|
+      this.prSendMsg(\read,[filename.asString],action);
+  }
+
+  write{|filename,action|
+      this.prSendMsg(\write,[filename.asString],action);
+  }
+
+  size { |action|
+      this.prSendMsg(\size,[],action,[numbers(FluidMessageResponse,_,1,_)]);
+  }
+
+  clear { |action|
+      this.prSendMsg(\clear,[],action);
+  }
 
 	free { |action|
-		this.pr_sendMsg(\free,[],action);
+		serverCaches.remove(server,id);
+		if(server.serverRunning){this.prSendMsg(\free,[],action)};
+		super.free;
 	}
 
+	*freeAll { |server|
+		serverCaches.tryPerform(\clearCache,server);
+	}
 }   

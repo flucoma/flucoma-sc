@@ -26,18 +26,18 @@ FluidProviderTest : UGen {
     }
 
     addPoint{|server, nodeID, args, action|
-        this.pr_sendMsg(server, nodeID, 'addPoint',args,action);
+        this.prSendMsg(server, nodeID, 'addPoint',args,action);
     }
 
     updatePoint{|server, nodeID, args, action|
-        this.pr_sendMsg(server, nodeID, 'updatePoint',args,action);
+        this.prSendMsg(server, nodeID, 'updatePoint',args,action);
     }
 
     deletePoint{|server, nodeID, args, action|
-        this.pr_sendMsg(server,nodeID,  'deletePoint',args,action);
+        this.prSendMsg(server,nodeID,  'deletePoint',args,action);
     }
 
-    pr_sendMsg { |server, nodeID, msg, args, action,parser|
+    prSendMsg { |server, nodeID, msg, args, action,parser|
 
         server = server ? Server.default;
 

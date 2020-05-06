@@ -1,27 +1,42 @@
 FluidKDTree : FluidManipulationClient {
 
-    fit{|dataset,action|
-       this.pr_sendMsg(\fit,[dataset.asString],action);
-    }
+	var id;
 
-    kNearest{ |buffer, k,action|
-        this.pr_sendMsg(\kNearest,[buffer.asUGenInput,k],action,k.collect{string(FluidMessageResponse,_,_)});
-    }
+	*new {|server|
+		var uid = UniqueID.next;
+		^super.new(server,uid).init(uid);
+	}
 
-    kNearestDist { |buffer, k,action|
-        this.pr_sendMsg(\kNearestDist,[buffer.asUGenInput,k],action,[numbers(FluidMessageResponse,_,k,_)]);
-    }
+	init {|uid|
+		id = uid;
+	}
 
-    cols { |action|
-        this.pr_sendMsg(\cols,[],action,[numbers(FluidMessageResponse,_,1,_)]);
-    }
+  fit{|dataset,action|
+     this.prSendMsg(\fit,[dataset.asUGenInput],action);
+  }
 
-    read{ |filename,action|
-        this.pr_sendMsg(\read,[filename.asString],action);
-    }
+  kNearest{ |buffer, k,action|
+      this.prSendMsg(\kNearest,[buffer.asUGenInput,k],action,k.collect{string(FluidMessageResponse,_,_)});
+  }
 
-    write{ |filename,action|
-        this.pr_sendMsg(\write,[filename.asString],action);
-    }
+  kNearestDist { |buffer, k,action|
+      this.prSendMsg(\kNearestDist,[buffer.asUGenInput,k],action,[numbers(FluidMessageResponse,_,k,_)]);
+  }
 
+  cols { |action|
+      this.prSendMsg(\cols,[],action,[numbers(FluidMessageResponse,_,1,_)]);
+  }
+
+  read{ |filename,action|
+      this.prSendMsg(\read,[filename.asString],action);
+  }
+
+  write{ |filename,action|
+      this.prSendMsg(\write,[filename.asString],action);
+  }
+
+	free { |action|
+		if(server.serverRunning){this.prSendMsg(\free,[],action)};
+		super.free;
+	}
 }

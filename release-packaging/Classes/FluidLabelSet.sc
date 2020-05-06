@@ -1,55 +1,83 @@
+FluidLabelSetExistsError : Exception{
+}
+
 FluidLabelSet : FluidManipulationClient {
 
-   var  <> synth, <> server, <>id;
+	var  <id;
+	classvar serverCaches;
 
-    *kr{ |name|
-        ^this.multiNew('control',name);
+	*initClass {
+		serverCaches = FluidServerCache.new;
 	}
 
+	*at{ |server, id|
+		^serverCaches.tryPerform(\at, server,id)
+	}
 
-    *new { |server,name|
-        ^super.new(server,name);
-    }
+  *new { |server,name|
+		serverCaches.at(server,name) !? {
+			FluidLabelSetExistsError("A FluidLabelSet called % already exists.".format(name)).throw;
+		};
+		^super.new(server,*FluidManipulationClient.prServerString(name)).init(name)
+  }
 
-    init { |name|
-        var ascii = name.ascii;
-        this.id = name;
-        inputs = [ascii.size].addAll(ascii)++Done.none++FluidManipulationClient.nonBlocking;
-    }
+  init { |name|
+    this.id = name;
+		this.cache;
+  }
 
-    asString {
-        ^id.asString;
-    }
+	cache {
+		serverCaches.initCache(server);
+		serverCaches.put(server,id,this);
+	}
 
-    addLabel{|id, label, action|
-        this.pr_sendMsg(\addLabel,[id.asString, label.asString],action);
-    }
+  asString {
+     	^"FluidLabelSet(%)".format(id).asString;
+  }
 
-    getLabel{|id, action|
-        this.pr_sendMsg(\getLabel,[id.asString],action,[string(FluidMessageResponse,_,_)]);
-    }
+	asUGenInput{
+		^id.asString;
+	}
 
-    deleteLabel{|id, action|
-        this.pr_sendMsg(\deleteLabel,[id.asString],action);
-    }
+  addLabel{|id, label, action|
+      this.prSendMsg(\addLabel,[id.asString, label.asString],action);
+  }
 
-    cols {|action|
-        this.pr_sendMsg(\cols,[],action,[number(FluidMessageResponse,_,_)]);
-    }
+  getLabel{|id, action|
+      this.prSendMsg(\getLabel,[id.asString],action,[string(FluidMessageResponse,_,_)]);
+  }
 
-    read{|filename,action|
-        this.pr_sendMsg(\read,[filename.asString],action);
-    }
+  deleteLabel{|id, action|
+      this.prSendMsg(\deleteLabel,[id.asString],action);
+  }
 
-    write{|filename,action|
-        this.pr_sendMsg(\write,[filename.asString],action);
-    }
+  cols {|action|
+      this.prSendMsg(\cols,[],action,[number(FluidMessageResponse,_,_)]);
+  }
 
-    size { |action|
-        this.pr_sendMsg(\size,[],action,[number(FluidMessageResponse,_,_)]);
-    }
+  read{|filename,action|
+      this.prSendMsg(\read,[filename.asString],action);
+  }
 
-    clear { |action|
-        this.pr_sendMsg(\clear,[],action);
-    }
+  write{|filename,action|
+      this.prSendMsg(\write,[filename.asString],action);
+  }
+
+  size { |action|
+      this.prSendMsg(\size,[],action,[number(FluidMessageResponse,_,_)]);
+  }
+
+  clear { |action|
+      this.prSendMsg(\clear,[],action);
+  }
+
+	free { |action|
+		serverCaches.remove(server,id);
+		if(server.serverRunning){this.prSendMsg(\free,[],action)};
+		super.free;
+	}
+	
+	*freeAll { |server|
+		serverCaches.tryPerform(\clearCache,server);
+	}
 }   
