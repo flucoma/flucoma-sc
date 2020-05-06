@@ -13,6 +13,7 @@ under the European Union’s Horizon 2020 research and innovation programme
 #include "SCBufferAdaptor.hpp"
 #include <clients/common/FluidBaseClient.hpp>
 #include <clients/nrt/FluidSharedInstanceAdaptor.hpp>
+#include <clients/common/FluidNRTClientWrapper.hpp>
 #include <clients/common/Result.hpp>
 #include <data/FluidTensor.hpp>
 #include <data/TensorTypes.hpp>
@@ -87,16 +88,20 @@ class RealTime : public SCUnit
   using ParamSetType = typename Client::ParamSetType;
 
 public:
+
+  static index ControlOffset(Unit* unit) { return unit->mSpecialIndex + 1; }
+  static index ControlSize(Unit* unit) { return static_cast<index>(unit->mNumInputs) - unit->mSpecialIndex - 1; }
+
   static void setup(InterfaceTable* ft, const char* name)
   {
-    registerUnit<Wrapper>(ft, name);
     ft->fDefineUnitCmd(name, "latency", doLatency);
   }
 
   static void doLatency(Unit* unit, sc_msg_iter*)
   {
     float l[]{
-        static_cast<float>(static_cast<Wrapper*>(unit)->mClient.latency())};
+        static_cast<float>(static_cast<Wrapper*>(unit)->mClient.latency())
+    };
     auto ft = Wrapper::getInterfaceTable();
 
     std::stringstream ss;
@@ -106,55 +111,51 @@ public:
   }
 
   RealTime()
-      : mControlsIterator{mInBuf + mSpecialIndex + 1,
-                          static_cast<index>(mNumInputs) - mSpecialIndex - 1},
-        mParams{Wrapper::Client::getParameterDescriptors()},
-        mClient{Wrapper::setParams(static_cast<Wrapper*>(this),
-                                    mParams, mWorld->mVerbosity > 0, mWorld,
-                                   mControlsIterator, true)}
   {}
 
   void init()
   {
+    
+    auto& client =static_cast<Wrapper*>(this)->mClient;
     assert(
-        !(mClient.audioChannelsOut() > 0 && mClient.controlChannelsOut() > 0) &&
+        !(client.audioChannelsOut() > 0 && client.controlChannelsOut() > 0) &&
         "Client can't have both audio and control outputs");
 
     // If we don't the number of arguments we expect, the language side code is
     // probably the wrong version set plugin to no-op, squawk, and bail;
-    if (mControlsIterator.size() != Client::getParameterDescriptors().count())
+    if (static_cast<Wrapper*>(this)->mControlsIterator.size() != Client::getParameterDescriptors().count())
     {
       mCalcFunc = Wrapper::getInterfaceTable()->fClearUnitOutputs;
       std::cout
           << "ERROR: " << Wrapper::getName()
           << " wrong number of arguments. Expected "
           << Client::getParameterDescriptors().count() << ", got "
-          << mControlsIterator.size()
+          << static_cast<Wrapper*>(this)->mControlsIterator.size()
           << ". Your .sc file and binary plugin might be different versions."
           << std::endl;
       return;
     }
 
-    mClient.sampleRate(fullSampleRate());
-    mInputConnections.reserve(asUnsigned(mClient.audioChannelsIn()));
-    mOutputConnections.reserve(asUnsigned(mClient.audioChannelsOut()));
-    mAudioInputs.reserve(asUnsigned(mClient.audioChannelsIn()));
+    client.sampleRate(fullSampleRate());
+    mInputConnections.reserve(asUnsigned(client.audioChannelsIn()));
+    mOutputConnections.reserve(asUnsigned(client.audioChannelsOut()));
+    mAudioInputs.reserve(asUnsigned(client.audioChannelsIn()));
     mOutputs.reserve(asUnsigned(
-        std::max(mClient.audioChannelsOut(), mClient.controlChannelsOut())));
+        std::max(client.audioChannelsOut(), client.controlChannelsOut())));
 
-    for (index i = 0; i < mClient.audioChannelsIn(); ++i)
+    for (index i = 0; i < client.audioChannelsIn(); ++i)
     {
       mInputConnections.emplace_back(isAudioRateIn(static_cast<int>(i)));
       mAudioInputs.emplace_back(nullptr, 0, 0);
     }
 
-    for (index i = 0; i < mClient.audioChannelsOut(); ++i)
+    for (index i = 0; i < client.audioChannelsOut(); ++i)
     {
       mOutputConnections.emplace_back(true);
       mOutputs.emplace_back(nullptr, 0, 0);
     }
 
-    for (index i = 0; i < mClient.controlChannelsOut(); ++i)
+    for (index i = 0; i < client.controlChannelsOut(); ++i)
     { mOutputs.emplace_back(nullptr, 0, 0); }
 
     mCalcFunc = make_calc_function<RealTime, &RealTime::next>();
@@ -163,49 +164,41 @@ public:
 
   void next(int)
   {
-    mControlsIterator.reset(mInBuf + mSpecialIndex +
+  
+    auto& client = static_cast<Wrapper*>(this)->mClient;
+    auto& params = static_cast<Wrapper*>(this)->mParams;
+
+    static_cast<Wrapper*>(this)->mControlsIterator.reset(mInBuf + mSpecialIndex +
                             1); // mClient.audioChannelsIn());
     Wrapper::setParams(static_cast<Wrapper*>(this), 
-        mParams, mWorld->mVerbosity > 0, mWorld,
-        mControlsIterator); // forward on inputs N + audio inputs as params
-    mParams.constrainParameterValues();
+        params, static_cast<Wrapper*>(this)->mControlsIterator); // forward on inputs N + audio inputs as params
+    params.constrainParameterValues();
     const Unit* unit = this;
-    for (index i = 0; i < mClient.audioChannelsIn(); ++i)
+    for (index i = 0; i < client.audioChannelsIn(); ++i)
     {
       if (mInputConnections[asUnsigned(i)])
       { mAudioInputs[asUnsigned(i)].reset(IN(i), 0, fullBufferSize()); }
     }
-    for (index i = 0; i < mClient.audioChannelsOut(); ++i)
+    for (index i = 0; i < client.audioChannelsOut(); ++i)
     {
       assert(i <= std::numeric_limits<int>::max());
       if (mOutputConnections[asUnsigned(i)])
         mOutputs[asUnsigned(i)].reset(out(static_cast<int>(i)), 0,
                                       fullBufferSize());
     }
-    for (index i = 0; i < mClient.controlChannelsOut(); ++i)
+    for (index i = 0; i < client.controlChannelsOut(); ++i)
     {
       assert(i <= std::numeric_limits<int>::max());
       mOutputs[asUnsigned(i)].reset(out(static_cast<int>(i)), 0, 1);
     }
-    mClient.process(mAudioInputs, mOutputs, mContext);
+    client.process(mAudioInputs, mOutputs, mContext);
   }
-
-  ParamSetType& params()
-  {
-    return mParams;
-  }
-
 private:
   std::vector<bool>       mInputConnections;
   std::vector<bool>       mOutputConnections;
   std::vector<HostVector> mAudioInputs;
   std::vector<HostVector> mOutputs;
-  FloatControlsIter       mControlsIterator;
   FluidContext            mContext;
-
-protected:
-  ParamSetType mParams;
-  Client       mClient;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -220,9 +213,12 @@ class NonRealTime : public SCUnit
   using ParamSetType = typename Client::ParamSetType;
 
 public:
+
+  static index ControlOffset(Unit*) { return 0; }
+  static index ControlSize(Unit* unit) { return index(unit->mNumInputs) - unit->mSpecialIndex - 2; }
+
   static void setup(InterfaceTable* ft, const char* name)
   {
-    registerUnit<Wrapper>(ft, name);
     ft->fDefineUnitCmd(name, "cancel", doCancel);
     ft->fDefineUnitCmd(
         name, "queue_enabled", [](struct Unit* unit, struct sc_msg_iter* args) {
@@ -253,18 +249,14 @@ public:
   }
 
   /// Penultimate input is the doneAction, final is blocking mode. Neither are
-  /// params, so we skip them in the controlsIterator
+  /// params, so we skip them in the controlsIterator. We may also have an ID for Model objects
   NonRealTime()
-      : mControlsIterator{mInBuf, index(mNumInputs) - mSpecialIndex - 2},
-        mParams{Wrapper::Client::getParameterDescriptors()},
-        mClient{Wrapper::setParams(static_cast<Wrapper*>(this), mParams, mWorld->mVerbosity > 0, mWorld,
-                                   mControlsIterator, true)},
-        mSynchronous{mNumInputs > 2 ? (in0(int(mNumInputs) - 1) > 0) : false}
+       : mSynchronous{mNumInputs > 2 ? (in0(int(mNumInputs) - 1) > 0) : false}
   {}
 
   ~NonRealTime()
   {
-    if (mClient.state() == ProcessState::kProcessing)
+    if (client().state() == ProcessState::kProcessing)
     {
       std::cout << Wrapper::getName() << ": Processing cancelled" << std::endl;
       Wrapper::getInterfaceTable()->fSendNodeReply(&mParent->mNode, 1, "/done",
@@ -290,7 +282,7 @@ public:
   /// launches tidy up when complete
   void poll(int)
   {
-    out0(0) = mDone ? 1.0f : static_cast<float>(mClient.progress());
+    out0(0) = mDone ? 1.0f : static_cast<float>(client().progress());
 
     if (0 == pollCounter++ && !mCheckingForDone)
     {
@@ -399,15 +391,13 @@ public:
     static_cast<Wrapper*>(unit)->mClient.cancel();
   }
 
-  ParamSetType& params()
-  {
-    return mParams;
-  }
+  ParamSetType& params() { return mWrapper->mParams; }
+  Client& client() { return mWrapper->mClient; }
 
 private:
-  static Result validateParameters(NonRealTime* w)
+  static Result validateParameters(NonRealTime* nrt)
   {
-    auto results = w->mParams.constrainParameterValues();
+    auto results = nrt->params().constrainParameterValues();
     for (auto& r : results)
     {
       if (!r.ok()) return r;
@@ -417,7 +407,7 @@ private:
 
   bool exchangeBuffers(World* world) // RT thread
   {
-    mParams.template forEachParamType<BufferT, AssignBuffer>(world);
+    params().template forEachParamType<BufferT, AssignBuffer>(world);
     // At this point, we can see if we're finished and let the language know (or
     // it can wait for the doneAction, but that takes extra time) use replyID to
     // convey status (0 = normal completion, 1 = cancelled)
@@ -430,7 +420,7 @@ private:
 
   bool tidyUp(World*) // NRT thread
   {
-    mParams.template forEachParamType<BufferT, impl::CleanUpBuffer>();
+    params().template forEachParamType<BufferT, impl::CleanUpBuffer>();
     return true;
   }
 
@@ -452,7 +442,6 @@ private:
     }
   };
 
-  FloatControlsIter mControlsIterator;
   FifoMsg           mFifoMsg;
   char*             mCompletionMessage = nullptr;
   void*             mReplyAddr = nullptr;
@@ -461,12 +450,12 @@ private:
   index             pollCounter{0};
 
 protected:
-  ParamSetType mParams;
-  Client       mClient;
-  bool         mSynchronous{true};
-  bool         mQueueEnabled{false};
+  bool mSynchronous{true};
+  bool mQueueEnabled{false};
   bool mCheckingForDone{false}; // only write to this from RT thread kthx
   bool mCancelled{false};
+private:
+  Wrapper* mWrapper{static_cast<Wrapper*>(this)};
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -487,48 +476,169 @@ class NonRealTimeAndRealTime : public RealTime<Client, Wrapper>,
 
 //Discovery for clients that need persistent storage (Dataset and friends)
 
+/// Named, shared clients already have a lookup table in their adaptor class
 template <typename T>
-struct IsPersistent : std::false_type
-{};
+struct IsPersistent
+{
+  using type = std::false_type;
+};
 
 //TODO: make less tied to current implementation
 template <typename T>
 struct IsPersistent<NRTThreadingAdaptor<NRTSharedInstanceAdaptor<T>>>
-    : std::true_type
-{};
+{
+  using type = std::true_type;
+};
 
+template<typename T>
+using IsPersistent_t = typename IsPersistent<T>::type;
 
-template<typename,typename, bool>
-struct ObjectPersistance;
+/// Models don't, but still need to survive CMD-.
+template<typename T>
+struct IsModel
+{
+  using type = std::false_type;
+};
 
+template<typename T>
+struct IsModel<NRTThreadingAdaptor<ClientWrapper<T>>>
+{
+  using type = typename ClientWrapper<T>::isModelObject;
+};
+
+template<typename T>
+using IsModel_t = typename IsModel<T>::type;
+
+template<typename,typename,typename, typename>
+struct LifetimePolicy;
+
+//template<typename Client, typename Wrapper>
+//struct LifetimePolicy<Client, Wrapper,std::true_type, std::true_type>
+//{
+////  static_assert(false,"Shared Objecthood and Model Objecthood are not compatible");
+//};
+
+/// Default policy
 template<typename Client, typename Wrapper>
-struct ObjectPersistance<Client, Wrapper, false>{
-  void init(){}
+struct LifetimePolicy<Client, Wrapper,std::false_type, std::false_type>
+{
+  static void constructClass(Unit* unit)
+  {
+      FloatControlsIter controlsReader{unit->mInBuf + Wrapper::ControlOffset(unit),Wrapper::ControlSize(unit)};
+      auto params = typename Wrapper::ParamSetType{Client::getParameterDescriptors()};
+      Wrapper::setParams(unit, params, controlsReader);
+      Client client{params};
+      new (static_cast<Wrapper*>(unit)) Wrapper(std::move(controlsReader), std::move(client), std::move(params));
+  }
+  static void destroyClass(Unit* unit) { static_cast<Wrapper*>(unit)->~Wrapper(); }
   static void setup(InterfaceTable*, const char*){}
 };
 
+/// Model objects
 template<typename Client, typename Wrapper>
-struct ObjectPersistance<Client,Wrapper, true>
+struct LifetimePolicy<Client, Wrapper,std::true_type, std::false_type>
+{
+
+  index uid;
+
+  struct CacheRecord
+  {
+   typename Client::ParamSetType params{Client::getParameterDescriptors()};
+   Client client{params};
+   bool leased{false};
+  };
+
+  using Cache = std::unordered_map<index,CacheRecord>;
+
+  static void constructClass(Unit* unit)
+  {
+      index uid  = static_cast<index>(unit->mInBuf[Wrapper::ControlOffset(unit)][0]);
+      FloatControlsIter controlsReader{unit->mInBuf + 1 + Wrapper::ControlOffset(unit),Wrapper::ControlSize(unit)};
+      auto& entry = mRegistry[uid];
+      auto& client = entry.client;
+      auto& params = entry.params;
+      if(entry.leased) //if this happens, then the client has probably messed up
+      {
+        std::cout << "ERROR: ID " << uid << "is already being used by the cache" << std::endl;
+        return;
+      }
+      Wrapper::setParams(unit, entry.params,controlsReader);
+      new (static_cast<Wrapper*>(unit)) Wrapper{std::move(controlsReader),std::move(client),std::move(params)};
+      static_cast<Wrapper*>(unit)->uid = uid;
+      entry.leased = true;
+  }
+
+  static void destroyClass(Unit* unit)
+  {
+    auto wrapper = static_cast<Wrapper*>(unit);
+    index uid = wrapper->uid;
+    auto pos = mRegistry.find(uid);
+    if( pos != mRegistry.end() )
+    {
+      //on cmd-. live to fight another day
+      auto& entry = *pos;
+      entry.second.client = std::move(wrapper->client());
+      entry.second.params = std::move(wrapper->params());
+      entry.second.leased = false;
+    }
+    wrapper->~Wrapper();
+  }
+
+  static void setup(InterfaceTable* ft, const char* name)
+  {
+      ft->fDefineUnitCmd(name, "free", [](Unit* unit, sc_msg_iter*)
+      {
+        //This ABSOLUTELY ASSUMES the client is going to also delete
+        //the Unit by calling Synth.free.
+        auto wrapper = static_cast<Wrapper*>(unit);
+        mRegistry.erase(wrapper->uid);
+      });
+  }
+
+private:
+  static std::unordered_map<index,CacheRecord> mRegistry;
+};
+
+template<typename Client, typename Wrapper>
+typename LifetimePolicy<Client, Wrapper, std::true_type, std::false_type>::Cache
+                LifetimePolicy<Client, Wrapper, std::true_type, std::false_type>::mRegistry{};
+
+
+/// Shared objects
+template<typename Client, typename Wrapper>
+struct LifetimePolicy<Client, Wrapper,std::false_type, std::true_type>
 {
 
   template<typename> struct GetSharedType;
-  
+
   template<typename T>
   struct GetSharedType<NRTThreadingAdaptor<NRTSharedInstanceAdaptor<T>>>
   {
     using type = NRTSharedInstanceAdaptor<T>;
   };
-  
+
   using SharedType = typename GetSharedType<Client>::type;
   using ClientPointer = typename SharedType::ClientPointer;
 
-  void init()
+  static void constructClass(Unit* unit)
   {
-    auto clientRef = getClientPointer(static_cast<Wrapper*>(this));
+
+    FloatControlsIter controlsReader{unit->mInBuf + Wrapper::ControlOffset(unit),Wrapper::ControlSize(unit)};
+
+    auto params = typename Client::ParamSetType{Client::getParameterDescriptors()};
+    Wrapper::setParams(unit, params,controlsReader);
+    auto& name = params.template get<0>();
+    auto client = Client{params};
+    auto clientRef = SharedType::lookup(name);
+
     auto pos = mRegistry.find(clientRef);
     if(pos == mRegistry.end()) mRegistry.emplace(clientRef);
+
+    new (static_cast<Wrapper*>(unit)) Wrapper(std::move(controlsReader),std::move(client),std::move(params));
+
   }
-  
+  static void destroyClass(Unit* unit) { static_cast<Wrapper*>(unit)->~Wrapper(); }
+
   static void setup(InterfaceTable* ft, const char* name)
   {
       ft->fDefineUnitCmd(name, "free", [](Unit* unit, sc_msg_iter*)
@@ -538,9 +648,7 @@ struct ObjectPersistance<Client,Wrapper, true>
           if(pos != mRegistry.end()) mRegistry.erase(clientRef);
       });
   }
-
 private:
-
   static  ClientPointer getClientPointer(Wrapper* wrapper)
   {
     auto& params = wrapper->params();
@@ -552,40 +660,44 @@ private:
 };
 
 template<typename Client, typename Wrapper>
-std::unordered_set<typename ObjectPersistance<Client,Wrapper, true>::ClientPointer>
-  ObjectPersistance<Client,Wrapper, true>::mRegistry; 
-// Template Specialisations for NRT/RT
+std::unordered_set<typename LifetimePolicy<Client, Wrapper, std::false_type, std::true_type>::ClientPointer>
+                LifetimePolicy<Client, Wrapper, std::false_type, std::true_type>::mRegistry{};
+
+
+//// Template Specialisations for NRT/RT
 
 template <typename Client, typename Wrapper, typename NRT, typename RT>
 class FluidSCWrapperImpl;
 
 template <typename Client, typename Wrapper>
 class FluidSCWrapperImpl<Client, Wrapper, std::true_type, std::false_type>
-    : public NonRealTime<Client, Wrapper>, public ObjectPersistance<Client,Wrapper,IsPersistent<Client>::value>
+    : public NonRealTime<Client, Wrapper>,
+      public LifetimePolicy<Client,Wrapper,IsModel_t<Client>, IsPersistent_t<Client>>
 {
 public:
   void init(){
     NonRealTime<Client,Wrapper>::init();
-    ObjectPersistance<Client,Wrapper,IsPersistent<Client>::value>::init();
   }
-  static void setup(InterfaceTable* ft, const char* name){
+  static void setup(InterfaceTable* ft, const char* name)
+  {
     NonRealTime<Client,Wrapper>::setup(ft,name);
-    ObjectPersistance<Client,Wrapper,IsPersistent<Client>::value>::setup(ft,name);
+    LifetimePolicy<Client,Wrapper,IsModel_t<Client>, IsPersistent_t<Client>>::setup(ft,name);
   }
 };
 
 template <typename Client, typename Wrapper>
 class FluidSCWrapperImpl<Client, Wrapper, std::false_type, std::true_type>
-    : public RealTime<Client, Wrapper>, public ObjectPersistance<Client,Wrapper,IsPersistent<Client>::value>
+    : public RealTime<Client, Wrapper>,
+      public LifetimePolicy<Client,Wrapper,IsModel_t<Client>, IsPersistent_t<Client>>
 {
 public:
   void init(){
     RealTime<Client,Wrapper>::init();
-    ObjectPersistance<Client,Wrapper,IsPersistent<Client>::value>::init();
   }
-  static void setup(InterfaceTable* ft, const char* name){
+  static void setup(InterfaceTable* ft, const char* name)
+  {
     RealTime<Client,Wrapper>::setup(ft,name);
-    ObjectPersistance<Client,Wrapper,IsPersistent<Client>::value>::setup(ft,name);
+    LifetimePolicy<Client,Wrapper,IsModel_t<Client>, IsPersistent_t<Client>>::setup(ft,name);
   }
 };
 
@@ -607,6 +719,10 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
 {
 
   using FloatControlsIter = impl::FloatControlsIter;
+
+  //I would like to template these to something more scaleable, but baby steps
+  friend class impl::RealTime<C,FluidSCWrapper>;
+  friend class impl::NonRealTime<C,FluidSCWrapper>;
 
   template <typename ArgType>
   struct ParamReader
@@ -692,20 +808,20 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
       return tag == 's';
     }
     
-    static auto fromArgs(FluidSCWrapper*, World*, sc_msg_iter* args, std::string, int)
+    static auto fromArgs(Unit*, sc_msg_iter* args, std::string, int)
     {
       const char* recv = args->gets("");
 
       return std::string(recv ? recv : "");
     }
 
-    static auto fromArgs(FluidSCWrapper*,World* w, FloatControlsIter& args, std::string, int)
+    static auto fromArgs(Unit* x, FloatControlsIter& args, std::string, int)
     {
       // first is string size, then chars
       index size = static_cast<index>(args.next());
       char* chunk =
           static_cast<char*>(FluidSCWrapper::getInterfaceTable()->fRTAlloc(
-              w, asUnsigned(size + 1)));
+              x->mWorld, asUnsigned(size + 1)));
 
       if (!chunk)
       {
@@ -718,74 +834,74 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
         chunk[i] = static_cast<char>(args.next());
 
       chunk[size] = 0; // terminate string
-
+      //todo: Did I check that this is getting cleaned up somewhere? It doesn't
+      //look like it is
       return std::string{chunk};
     }
 
-
     template <typename T>
     static std::enable_if_t<std::is_integral<T>::value, T>
-    fromArgs(FluidSCWrapper*,World*, FloatControlsIter& args, T, int)
+    fromArgs(Unit*, FloatControlsIter& args, T, int)
     {
       return static_cast<index>(args.next());
     }
 
     template <typename T>
     static std::enable_if_t<std::is_floating_point<T>::value, T>
-    fromArgs(FluidSCWrapper*,World*, FloatControlsIter& args, T, int)
+    fromArgs(Unit*, FloatControlsIter& args, T, int)
     {
       return args.next();
     }
 
     template <typename T>
     static std::enable_if_t<std::is_integral<T>::value, T>
-    fromArgs(FluidSCWrapper*,World*, sc_msg_iter* args, T, int defVal)
+    fromArgs(Unit*, sc_msg_iter* args, T, int defVal)
     {
       return args->geti(defVal);
     }
 
     template <typename T>
     static std::enable_if_t<std::is_floating_point<T>::value, T>
-    fromArgs(World*, sc_msg_iter* args, T, int)
+    fromArgs(Unit*, sc_msg_iter* args, T, int)
     {
       return args->getf();
     }
 
-    static SCBufferAdaptor* fetchBuffer(FluidSCWrapper* x, World* w, index bufnum)
+    static SCBufferAdaptor* fetchBuffer(Unit* x, index bufnum)
     {
-      if(bufnum >= w->mNumSndBufs)
+      if(bufnum >= x->mWorld->mNumSndBufs)
       {
-        index localBufNum = bufnum - w->mNumSndBufs;
+        index localBufNum = bufnum - x->mWorld->mNumSndBufs;
         
-        Graph* parent = static_cast<Unit*>(x)->mParent;
+        Graph* parent = x->mParent;
         
-        return localBufNum <= parent -> localMaxBufNum ?
-                                  new SCBufferAdaptor(parent->mLocalSndBufs + localBufNum,w,true)
+        return localBufNum <= parent->localMaxBufNum ?
+                                  new SCBufferAdaptor(parent->mLocalSndBufs + localBufNum,x->mWorld,true)
                                   : nullptr;
       }
       else
-        return bufnum >= 0 ? new SCBufferAdaptor(bufnum, w) : nullptr;
+        return bufnum >= 0 ? new SCBufferAdaptor(bufnum, x->mWorld) : nullptr;
     }
 
-    static auto fromArgs(FluidSCWrapper* x,World* w, ArgType args, BufferT::type&, int)
+    static auto fromArgs(Unit* x, ArgType args, BufferT::type&, int)
     {
       typename LongT::type bufnum = static_cast<typename LongT::type>(
-          ParamReader::fromArgs(x, w, args, typename LongT::type(), -1));
-      return BufferT::type(fetchBuffer(x,w,bufnum));
+          ParamReader::fromArgs(x, args, typename LongT::type(), -1));
+      return BufferT::type(fetchBuffer(x, bufnum));
     }
 
-    static auto fromArgs(FluidSCWrapper* x,World* w, ArgType args, InputBufferT::type&, int)
+    static auto fromArgs(Unit* x, ArgType args, InputBufferT::type&, int)
     {
       typename LongT::type bufnum =
-          static_cast<LongT::type>(fromArgs(x, w, args, LongT::type(), -1));
-      return InputBufferT::type(fetchBuffer(x,w,bufnum));
+          static_cast<LongT::type>(fromArgs(x, args, LongT::type(), -1));
+      return InputBufferT::type(fetchBuffer(x, bufnum));
     }
 
     template <typename P>
     static std::enable_if_t<IsSharedClient<P>::value, P>
-    fromArgs(FluidSCWrapper* x,World* w, ArgType args, P&, int)
+    fromArgs(Unit* x, ArgType args, P&, int)
     {
-      return {fromArgs(x, w, args, std::string{}, 0).c_str()};
+      return {fromArgs(x, args, std::string{}, 0).c_str()};
     }
   };
 
@@ -797,7 +913,7 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
     static constexpr index argSize =
         C::getParameterDescriptors().template get<N>().fixedSize;
 
-    typename T::type operator()(FluidSCWrapper* x, World* w, ArgType args)
+    typename T::type operator()(Unit* x, ArgType args)
     {
       // Just return default if there's nothing left to grab
       if (args.remain() == 0)
@@ -813,7 +929,7 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
 
       for (index i = 0; i < argSize; i++)
         a[i] = static_cast<LiteralType>(
-            ParamReader<ArgType>::fromArgs(x, w, args, a[0], 0));
+            ParamReader<ArgType>::fromArgs(x, args, a[0], 0));
 
       return a.value();
     }
@@ -977,14 +1093,12 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
     using ReturnType = typename MessageDescriptor::ReturnType;
     using IndexList = typename MessageDescriptor::IndexList;
     using MessageData = MessageDispatch<N, ReturnType, ArgTuple>;
-
     auto         ft = getInterfaceTable();
     void*        msgptr = ft->fRTAlloc(x->mWorld, sizeof(MessageData));
     MessageData* msg = new (msgptr) MessageData;
     msg->name = '/' + Client::getMessageDescriptors().template name<N>();
     msg->wrapper = x;
     ArgTuple&    args = msg->args;
-    
     // type check OSC message
     
     std::string tags(inArgs->tags + inArgs->count);
@@ -1008,14 +1122,14 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
 
     auto tagsIter = tags.begin();
     auto tagsEnd  = tags.end();
-    ForEach(args,[&typesMatch,&tagsIter,&tagsEnd](auto& x){
+    ForEach(args,[&typesMatch,&tagsIter,&tagsEnd](auto& arg){
        if(tagsIter == tagsEnd)
        {
           typesMatch = false;
           return;
        }
        char t = *(tagsIter++);
-       typesMatch = typesMatch && ParamReader<sc_msg_iter*>::argTypeOK(x,t);
+       typesMatch = typesMatch && ParamReader<sc_msg_iter*>::argTypeOK(arg,t);
     });
     
    willContinue = willContinue && typesMatch;
@@ -1056,7 +1170,7 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
  
     ///
     ForEach(args,[x,&inArgs](auto& arg){
-      arg = ParamReader<sc_msg_iter*>::fromArgs(x,x->mWorld,inArgs,arg,0);
+      arg = ParamReader<sc_msg_iter*>::fromArgs(x, inArgs,arg,0);
     });
     
 
@@ -1108,8 +1222,6 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
     return x->mClient.template invoke<N>(x->mClient, std::get<Is>(args)...);
   }
   
-  
-
   template <typename T> // call from RT
   static void messageOutput(FluidSCWrapper* x, const std::string& s,
                             MessageResult<T>& result)
@@ -1165,9 +1277,17 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
 
 public:
   using Client = C;
-  using ParameterSetType = typename C::ParamSetType;
+  using ParamSetType = typename C::ParamSetType;
 
-  FluidSCWrapper() { impl::FluidSCWrapperBase<Client>::init(); }
+
+
+  FluidSCWrapper(FloatControlsIter&& i, Client&& c, ParamSetType&& p):
+          mControlsIterator{std::move(i)},
+          mParams{std::move(p)}, mClient{std::move(c)}
+  {
+    mClient.setParams(mParams); //<-IMPORTANT: client's ref to params is by address, and this has just changed
+    impl::FluidSCWrapperBase<Client>::init();
+  }
 
   static const char* getName(const char* setName = nullptr)
   {
@@ -1185,20 +1305,20 @@ public:
   {
     getName(name);
     getInterfaceTable(ft);
+    registerUnit(ft, name);
     impl::FluidSCWrapperBase<Client>::setup(ft, name);
     Client::getMessageDescriptors().template iterate<SetupMessage>();
     ft->fDefineUnitCmd(name, "version", doVersion);
   }
 
-  static auto& setParams(FluidSCWrapper* x, ParameterSetType& p, bool verbose, World* world,
+  static auto& setParams(Unit* x, ParamSetType& p,
                          FloatControlsIter& inputs, bool constrain = false)
   {
       //TODO: Regain this robustness if possible? 
-      
     // We won't even try and set params if the arguments don't match
     // if (inputs.size() == C::getParameterDescriptors().count())
     // {
-      p.template setParameterValues<ControlSetter>(verbose, x, world, inputs);
+      p.template setParameterValues<ControlSetter>(x->mWorld->mVerbosity > 0, x, inputs);
       if (constrain) p.constrainParameterValues();
     // }
     // else
@@ -1235,6 +1355,21 @@ public:
     }
     }
   }
+  
+  auto& client() { return mClient; }
+  auto& params() { return mParams; }
+  
+  private:
+  
+  static void registerUnit(InterfaceTable* ft, const char* name) {
+    UnitCtorFunc ctor =impl::FluidSCWrapperBase<Client>::constructClass;
+    UnitDtorFunc dtor = impl::FluidSCWrapperBase<Client>::destroyClass;
+    (*ft->fDefineUnit)(name, sizeof(FluidSCWrapper), ctor, dtor, 0);
+  }
+  
+    FloatControlsIter mControlsIterator;
+    ParamSetType mParams;
+    Client mClient;
 };
 
 template <typename Client>
