@@ -27,7 +27,7 @@ FluidNRTProcess : Object{
         var c = Condition.new(false);
 
 		synth = {
-            ugen.performList(\new1,\control, ugenArgs.collect{|a| a.asUGenInput} ++ Done.freeSelf ++ blocking);
+            FreeSelfWhenDone.kr(ugen.performList(\new1,\control, ugenArgs.collect{|a| a.asUGenInput} ++ 1 ++ blocking));
 		}.play(server);
 		synth.postln;
 

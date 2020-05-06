@@ -1,14 +1,14 @@
 FluidBufThreadDemo : UGen{
 
-    *new1 {|rate, result, time, doneAction = 0, blocking = 0 |
+    *new1 {|rate, result, time, trig = 1, blocking = 0 |
 		result = result.asUGenInput;
 		result.isNil.if {this.class.name+":  Invalid output buffer".throw};
-        ^super.new1(rate, result, time, doneAction, blocking);
+        ^super.new1(rate, result, time, trig, blocking);
 	 }
 
 
-	*kr {|result, time, doneAction = 0|
-        ^this.new1(\control, result, time, doneAction);
+	*kr {|result, time, trig = 1|
+        ^this.new1(\control, result, time, trig);
 	 }
 
     *process { |server, result, time = 1000, action|

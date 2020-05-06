@@ -1,5 +1,5 @@
 FluidBufNoveltySlice : UGen {
-		*new1 { |rate, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, feature = 0, kernelSize = 3, threshold = 0.5, filterSize = 1, minSliceLength = 2, windowSize = 1024, hopSize = -1, fftSize = -1, doneAction = 0, blocking = 0 |
+		*new1 { |rate, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, feature = 0, kernelSize = 3, threshold = 0.5, filterSize = 1, minSliceLength = 2, windowSize = 1024, hopSize = -1, fftSize = -1, trig = 1, blocking = 0 |
 
 		var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};
 
@@ -9,13 +9,13 @@ FluidBufNoveltySlice : UGen {
 		source.isNil.if {"FluidBufNoveltySlice:  Invalid source buffer".throw};
 		indices.isNil.if {"FluidBufNoveltySlice:  Invalid features buffer".throw};
 
-		^super.new1(rate, source, startFrame, numFrames, startChan, numChans, indices, feature, kernelSize, threshold, filterSize, minSliceLength, windowSize, hopSize, fftSize, maxFFTSize, kernelSize, filterSize, doneAction, blocking);
+		^super.new1(rate, source, startFrame, numFrames, startChan, numChans, indices, feature, kernelSize, threshold, filterSize, minSliceLength, windowSize, hopSize, fftSize, maxFFTSize, kernelSize, filterSize, trig, blocking);
 
 	}
 
-    *kr { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, feature = 0, kernelSize = 3, threshold = 0.5, filterSize = 1, minSliceLength = 2, windowSize = 1024, hopSize = -1, fftSize = -1, doneAction = 0 |
+    *kr { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, feature = 0, kernelSize = 3, threshold = 0.5, filterSize = 1, minSliceLength = 2, windowSize = 1024, hopSize = -1, fftSize = -1, trig = 1 |
 
-		^this.multiNew(\control, source, startFrame, numFrames, startChan, numChans, indices, feature, kernelSize, threshold, filterSize, minSliceLength, windowSize, hopSize, fftSize, doneAction);
+		^this.multiNew(\control, source, startFrame, numFrames, startChan, numChans, indices, feature, kernelSize, threshold, filterSize, minSliceLength, windowSize, hopSize, fftSize, trig);
 
 	}
 

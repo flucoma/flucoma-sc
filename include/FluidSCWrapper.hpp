@@ -248,8 +248,8 @@ public:
         });
   }
 
-  /// Penultimate input is the doneAction, final is blocking mode. Neither are
-  /// params, so we skip them in the controlsIterator. We may also have an ID for Model objects
+  /// Penultimate input is the trigger, final is blocking mode. Neither are
+  /// params, so we skip them in the controlsIterator
   NonRealTime()
        : mSynchronous{mNumInputs > 2 ? (in0(int(mNumInputs) - 1) > 0) : false}
   {}
@@ -272,7 +272,7 @@ public:
   void init()
   {
     mFifoMsg.Set(mWorld, initNRTJob, nullptr, this);
-    mWorld->ft->fSendMsgFromRT(mWorld, mFifoMsg);
+    
     // we want to poll thread roughly every 20ms
     checkThreadInterval = static_cast<index>(0.02 / controlDur());
     set_calc_function<NonRealTime, &NonRealTime::poll>();
@@ -285,6 +285,12 @@ public:
   {
     out0(0) = mDone ? 1.0f : static_cast<float>(client().progress());
 
+    index triggerInput = mInBuf[mNumInputs - mSpecialIndex - 2][0]; 
+    bool  trigger = (mPreviousTrigger <= 0) && triggerInput > 0; 
+    mPreviousTrigger = triggerInput;
+    
+    if(trigger) mWorld->ft->fSendMsgFromRT(mWorld, mFifoMsg);
+    
     if (0 == pollCounter++ && !mCheckingForDone)
     {
       mCheckingForDone = true;
@@ -302,6 +308,7 @@ public:
   {
     auto w = static_cast<Wrapper*>(f->mData);
     w->mDone = false;
+    w->mJobDone = false;
     w->mCancelled = false;
 
     Result result = validateParameters(w);
@@ -353,7 +360,7 @@ public:
         return false;
       }
 
-      w->mDone = true;
+      w->mJobDone = true;
       return true;
     }
     return false;
@@ -375,17 +382,7 @@ public:
   static void destroy(World* world, void* data)
   {
     auto w = static_cast<Wrapper*>(data);
-    if (w->mDone &&
-        w->mNumInputs >
-            2) // don't check for doneAction if UGen has no ins (there should be
-               // 3 minimum -> sig, doneAction, blocking mode)
-    {
-      int doneAction = static_cast<int>(
-          w->in0(int(w->mNumInputs) -
-                 2)); // doneAction is penultimate input; THIS IS THE LAW
-      world->ft->fDoneAction(doneAction, w);
-      return;
-    }
+    w->mDone = w->mJobDone; 
     w->mCheckingForDone = false;
   }
 
@@ -414,7 +411,7 @@ private:
     // At this point, we can see if we're finished and let the language know (or
     // it can wait for the doneAction, but that takes extra time) use replyID to
     // convey status (0 = normal completion, 1 = cancelled)
-    if (mDone)
+    if (mJobDone)
       world->ft->fSendNodeReply(&mParent->mNode, 0, "/done", 0, nullptr);
     if (mCancelled)
       world->ft->fSendNodeReply(&mParent->mNode, 1, "/done", 0, nullptr);
@@ -451,15 +448,15 @@ private:
   const char*       mName = nullptr;
   index             checkThreadInterval;
   index             pollCounter{0};
-
+  index             mPreviousTrigger{0};  
 protected:
-  bool mSynchronous{true};
-  bool mQueueEnabled{false};
-  bool mCheckingForDone{false}; // only write to this from RT thread kthx
-  bool mCancelled{false};
-private:
-  Wrapper* mWrapper{static_cast<Wrapper*>(this)};
-  Result mResult;
+  bool         mSynchronous{true};
+  bool         mQueueEnabled{false};
+  bool         mCheckingForDone{false}; // only write to this from RT thread kthx
+  bool         mCancelled{false};
+  bool         mJobDone{false};
+  Wrapper*     mWrapper{static_cast<Wrapper*>(this)};
+  Result       mResult; 
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1190,7 +1187,7 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
     });
     
 
-    x->mDone = false;
+//    x->mDone = false;
     ft->fDoAsynchronousCommand(
         x->mWorld, nullptr, getName(), msg,
         [](World*, void* data) // NRT thread: invocation

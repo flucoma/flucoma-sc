@@ -1,6 +1,6 @@
 FluidBufNMFCross : UGen{
 
-    *new1 { |rate, source, target, output , timeSparsity = 10, polyphony = 7, iterations = 50, windowSize = 1024, hopSize = -1, fftSize = -1, doneAction = 0, blocking = 0|
+    *new1 { |rate, source, target, output , timeSparsity = 10, polyphony = 7, iterations = 50, windowSize = 1024, hopSize = -1, fftSize = -1, trig = 1, blocking = 0|
 
         source = source.asUGenInput;
 		target = target.asUGenInput;
@@ -9,11 +9,11 @@ FluidBufNMFCross : UGen{
 		target.isNil.if {"FluidBufNMFCross:  Invalid target buffer".throw};
         output.isNil.if {"FluidBufNMFCross:  Invalid output buffer".throw};
 
-		^super.new1(rate, source, target, output, timeSparsity, polyphony, iterations,  windowSize, hopSize, fftSize, doneAction, blocking);
+		^super.new1(rate, source, target, output, timeSparsity, polyphony, iterations,  windowSize, hopSize, fftSize, trig, blocking);
 	}
 
-    *kr { |source, target, output , timeSparsity = 10, polyphony = 7, iterations = 50, windowSize = 1024, hopSize = -1, fftSize = -1, doneAction = 0|
-		^this.multiNew(\control, source, target, output, timeSparsity, polyphony, iterations,  windowSize, hopSize, fftSize, doneAction);
+    *kr { |source, target, output , timeSparsity = 10, polyphony = 7, iterations = 50, windowSize = 1024, hopSize = -1, fftSize = -1, trig = 1|
+		^this.multiNew(\control, source, target, output, timeSparsity, polyphony, iterations,  windowSize, hopSize, fftSize, trig);
 	}
 
     *process { |server, source, target, output , timeSparsity = 10, polyphony = 7, iterations = 50, windowSize = 1024, hopSize = -1, fftSize = -1, action|

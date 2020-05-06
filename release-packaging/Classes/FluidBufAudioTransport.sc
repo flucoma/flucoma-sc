@@ -2,7 +2,7 @@ FluidBufAudioTransport : UGen{
 
     var <>synth, <>server;
 
-    *kr { |source1, startFrame1 = 0, numFrames1 = -1, startChan1 = 0, numChans1 = -1, source2, startFrame2 = 0, numFrames2 = -1, startChan2 = 0, numChans2 = -1, destination, interpolation=0.0, bandwidth=255, windowSize = 1024, hopSize = -1, fftSize = -1, doneAction = 0|
+    *kr { |source1, startFrame1 = 0, numFrames1 = -1, startChan1 = 0, numChans1 = -1, source2, startFrame2 = 0, numFrames2 = -1, startChan2 = 0, numChans2 = -1, destination, interpolation=0.0, bandwidth=255, windowSize = 1024, hopSize = -1, fftSize = -1, trig = 1|
 
 		var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};
         var blocking = 0;
@@ -17,7 +17,7 @@ FluidBufAudioTransport : UGen{
 		//NB For wrapped versions of NRT classes, we set the params for maxima to
 		//whatever has been passed in language-side (e.g maxFFTSize still exists as a parameter for the server plugin, but makes less sense here: it just needs to be set to a legal value)
 
-		^this.multiNew(\control, source1, startFrame1, numFrames1, startChan1, numChans1, source2, startFrame1, numFrames1, startChan2, numChans2, destination, interpolation, bandwidth, windowSize, hopSize, fftSize,maxFFTSize, doneAction,blocking);
+		^this.multiNew(\control, source1, startFrame1, numFrames1, startChan1, numChans1, source2, startFrame1, numFrames1, startChan2, numChans2, destination, interpolation, bandwidth, windowSize, hopSize, fftSize,maxFFTSize, trig,blocking);
 	}
 
 
@@ -40,7 +40,7 @@ FluidBufAudioTransport : UGen{
             "WARNING: Server not running".postln;
             ^nil;
         });
-        synth = { instance = FluidBufAudioTransport.kr(source1, startFrame1, numFrames1, startChan1, numChans1, source2, startFrame1, numFrames1, startChan2, numChans2, destination, interpolation, bandwidth, windowSize, hopSize, fftSize, doneAction:Done.freeSelf)}.play(server);
+		synth = { instance = FluidBufAudioTransport.kr(source1, startFrame1, numFrames1, startChan1, numChans1, source2, startFrame1, numFrames1, startChan2, numChans2, destination, interpolation, bandwidth, windowSize, hopSize, fftSize, trig:1)}.play(server);
 		forkIfNeeded{
 			synth.waitForFree;
 			server.sync;

@@ -1,6 +1,6 @@
 FluidBufCompose : UGen {
 
-    *new1 { |rate, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, gain = 1, destination, destStartFrame = 0, destStartChan = 0, destGain = 0, doneAction = 0, blocking|
+    *new1 { |rate, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, gain = 1, destination, destStartFrame = 0, destStartChan = 0, destGain = 0, trig = 1, blocking|
 
 		source = source.asUGenInput;
 		destination = destination.asUGenInput;
@@ -8,12 +8,12 @@ FluidBufCompose : UGen {
 		source.isNil.if {"FluidBufCompose:  Invalid source buffer".throw};
 		destination.isNil.if {"FluidBufCompose:  Invalid destination buffer".throw};
 
-        ^super.new1(rate, source, startFrame, numFrames, startChan, numChans, gain, destination, destStartFrame, destStartChan, destGain, doneAction, blocking);
+        ^super.new1(rate, source, startFrame, numFrames, startChan, numChans, gain, destination, destStartFrame, destStartChan, destGain, trig, blocking);
 	}
 
-/*    *kr { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, gain = 1, destination, destStartFrame = 0, destStartChan = 0, destGain = 0, doneAction = 0|
+/*    *kr { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, gain = 1, destination, destStartFrame = 0, destStartChan = 0, destGain = 0, trig = 1|
 
-        ^this.multiNew('control', source, startFrame, numFrames, startChan, numChans, gain, destination, destStartFrame, destStartChan, destGain, doneAction, blocking:1);
+        ^this.multiNew('control', source, startFrame, numFrames, startChan, numChans, gain, destination, destStartFrame, destStartChan, destGain, trig, blocking:1);
 	}*/
 
 
