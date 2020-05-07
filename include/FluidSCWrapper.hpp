@@ -586,13 +586,16 @@ struct LifetimePolicy<Client, Wrapper,std::true_type, std::false_type>
 
   static void setup(InterfaceTable* ft, const char* name)
   {
-      ft->fDefineUnitCmd(name, "free", [](Unit* unit, sc_msg_iter*)
-      {
-        //This ABSOLUTELY ASSUMES the client is going to also delete
-        //the Unit by calling Synth.free.
-        auto wrapper = static_cast<Wrapper*>(unit);
-        mRegistry.erase(wrapper->uid);
-      });
+      auto freeName = std::stringstream();
+      freeName << "free" << name;
+    
+      ft->fDefinePlugInCmd(freeName.str().c_str(),
+       [](World*,void*,sc_msg_iter* args, void*/*replyAddr*/)
+       {
+          auto objectID = args->geti();
+          auto pos = mRegistry.find(objectID);
+          if(pos != mRegistry.end()) mRegistry.erase(objectID);
+       }, &mRegistry);
   }
 
 private:
@@ -641,12 +644,19 @@ struct LifetimePolicy<Client, Wrapper,std::false_type, std::true_type>
 
   static void setup(InterfaceTable* ft, const char* name)
   {
-      ft->fDefineUnitCmd(name, "free", [](Unit* unit, sc_msg_iter*)
-      {
-          auto clientRef = getClientPointer(static_cast<Wrapper*>(unit));
+
+      auto freeName = std::stringstream();
+      freeName << "free" << name;
+    
+      ft->fDefinePlugInCmd(freeName.str().c_str(),
+       [](World*,void*,sc_msg_iter* args, void* /*replyAddr*/)
+       {
+          auto objectName = std::string(args->gets());
+          auto clientRef = SharedType::lookup(objectName);
           auto pos = mRegistry.find(clientRef);
           if(pos != mRegistry.end()) mRegistry.erase(clientRef);
-      });
+       }, &mRegistry);
+    
   }
 private:
   static  ClientPointer getClientPointer(Wrapper* wrapper)
