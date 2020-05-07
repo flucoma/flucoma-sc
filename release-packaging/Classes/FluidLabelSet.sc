@@ -18,7 +18,7 @@ FluidLabelSet : FluidManipulationClient {
 		serverCaches.at(server,name) !? {
 			FluidLabelSetExistsError("A FluidLabelSet called % already exists.".format(name)).throw;
 		};
-		^super.new(server,*FluidManipulationClient.prServerString(name)).init(name)
+		^super.new(server,*FluidManipulationClient.prServerString(name))!?{|inst|inst.init(name);inst}
   }
 
   init { |name|
@@ -73,11 +73,10 @@ FluidLabelSet : FluidManipulationClient {
 
 	free { |action|
 		serverCaches.remove(server,id);
-		if(server.serverRunning){this.prSendMsg(\free,[],action)};
 		super.free;
 	}
 	
 	*freeAll { |server|
-		serverCaches.tryPerform(\clearCache,server);
+		serverCaches.do(server,{|x|x.free;});
 	}
 }   

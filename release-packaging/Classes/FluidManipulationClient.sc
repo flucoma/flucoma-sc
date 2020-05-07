@@ -37,7 +37,7 @@ FluidManipulationClient {
 	*new{ |server...args|
 		server = server ? Server.default;
 		if(server.serverRunning.not,{
-			(this.asString + "– server not running").warn;
+			(this.asString + "– server not running").error; ^nil
 		});
 		^super.newCopyArgs(server ?? {Server.default}).baseinit(*args)
 	}
@@ -72,6 +72,7 @@ FluidManipulationClient {
 
 	free{
 		persist = false;
+		if(server.serverRunning){server.sendMsg("/cmd","free"++this.class.name,id)};
 		synth.tryPerform(\free);
 		^nil
 	}
@@ -102,6 +103,10 @@ FluidServerCache {
 		cache = IdentityDictionary.new;
 	}
 
+	do { |server, func|
+		cache[server]!?{cache[server].do{|x|func.value(x)}}
+	}
+
 	at { |server,id|
 		^cache[server].tryPerform(\at,id)
 	}
@@ -121,15 +126,16 @@ FluidServerCache {
 	initCache {|server|
 		cache[server] ?? {
 			cache[server] = IdentityDictionary.new;
-			ServerQuit.add({this.clearCache(server)},server);
-			NotificationCenter.register(server,\newAllocators,this, {
-				this.clearCache(server);
+			NotificationCenter.register(server,\newAllocators,this,
+			{
+					this.clearCache(server);
 			});
 		}
 	}
 
 	clearCache { |server|
-		cache[server] !? { cache.removeAt(server) !? {|x| x.tryPerform(\free) } };
+		cache.postln;
+		cache[server] !? { cache.removeAt(server) };
 	}
 }
 

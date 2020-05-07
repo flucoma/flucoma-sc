@@ -18,8 +18,9 @@ FluidDataSet : FluidManipulationClient {
   *new { |server,name|
 		if(this.at(server,name).notNil){
 			FluidDataSetExistsError("A FluidDataset called % already exists.".format(name)).throw;
+			^nil
 		}
-		{^super.new(server,*FluidManipulationClient.prServerString(name)).init(name)}
+		^super.new(server,*FluidManipulationClient.prServerString(name))!?{|inst|inst.init(name);inst}
   }
 
 	init {|name|
@@ -76,16 +77,12 @@ FluidDataSet : FluidManipulationClient {
       this.prSendMsg(\clear,[],action);
   }
 
-	free { |action|
+	free {
 		serverCaches.remove(server,id);
-		fork{
-			if(server.serverRunning){this.prSendMsg(\free,[],action)};
-			server.sync;
-			super.free;
-		}
+		super.free;
 	}
 
 	*freeAll { |server|
-		serverCaches.tryPerform(\clearCache,server);
+		serverCaches.do(server,{|x|x.free;});
 	}
 }

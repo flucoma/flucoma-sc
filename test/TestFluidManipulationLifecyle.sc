@@ -21,26 +21,23 @@ TestFluidCorpusManipulationServer : UnitTest
 
 	test_DataSetPersistence{
 		var foo, bar, tree, testPoint;
-
-		foo = FluidDataSet(Server.default,\foo);
+		//No server on? You get nothing
+		this.assertEquals(nil,FluidDataSet(Server.default,\foo));
 
 		this.bootServer(Server.default);
-		while {Server.default.serverRunning.not}{0.2.wait};
+		// while {Server.default.serverRunning.not}{0.2.wait};
+
 		waitForCounts.test = false;
+		Server.default.doWhenBooted{foo=FluidDataSet(Server.default,\foo)};
 		waitForCounts.wait;
-
 		this.assertEquals(Server.default.numSynths,1,"Dataset: One Synth present after deferred boot");
-
 		waitForCounts.test = false;
 		foo.free;
-		Server.default.freeAll;
 		waitForCounts.wait;
-
-		this.assertEquals(Server.default.numSynths,0,"Dataset: One Synth present via cretation after boot");
-
+		this.assertEquals(Server.default.numSynths,0,"Dataset: No synth present via cretation after free");
+		foo=FluidDataSet(Server.default,\foo);
 		//Uniqueness test (difficult to run with previous instance of foo, because
 		//UnitTest.bootServer messes with Server alloctors and screws up the ID cache
-		foo = FluidDataSet(Server.default,\foo);
 		this.assertException({
 			bar = FluidDataSet(Server.default,\foo);
 		},FluidDataSetExistsError,"DataSetDuplicateError on reused name", onFailure:{
@@ -50,8 +47,7 @@ TestFluidCorpusManipulationServer : UnitTest
 		waitForCounts.test = false;
 		bar = FluidDataSet(Server.default,\bar);
 		waitForCounts.wait;
-
-		this.assertEquals(Server.default.numSynths,2,"Dataset: Two Synths present after new Dataset added");
+		this.assertEquals(Server.default.numSynths,2,"Dataset: Two Synths present after new valid Dataset added");
 
 		testPoint = Buffer.alloc(Server.default,8);
 		Server.default.sync;

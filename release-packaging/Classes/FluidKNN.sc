@@ -2,7 +2,7 @@ FluidKNN : FluidManipulationClient {
 
   *new {|server|
 		var uid = UniqueID.next;
-		^super.new(server,uid).init(uid);
+		^super.new(server,uid)!?{|inst|inst.init(uid);inst}
 	}
 
 	init {|uid|
