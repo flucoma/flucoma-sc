@@ -19,105 +19,64 @@ FluidProxyUgen : UGen {
 FluidManipulationClient {
 
 	var <server;
-
-    var  <synth,gen;
-	var  bootFunc;
-	var  synthDefLoaded,id, defName, <>ugen, updateFunc;
-	var  nodeResponder;
-
-	var initTreeCondition;
-	var synthBeenSet = false;
-	var serverListener;
+	var  <synth,<>ugen;
+	var  id;
+	var defName, def;
+	var onSynthFree, persist;
 
 	*prServerString{ |s|
 		var ascii = s.ascii;
 		^[ascii.size].addAll(ascii)
 	}
 
-	sendSynthDef { |...args|
-		var plugin = this.class.name.asSymbol;
-		if(server.hasBooted)
-		{
-			fork{
-				SynthDef(defName.asSymbol,{
-					var  ugen = FluidProxyUgen.kr(plugin, *args);
-					this.ugen = ugen;
-					ugen
-				}).send(server);
-
-				server.sync;
-
-				synthDefLoaded = true;
-				updateFunc = {
-					//Sometimes Server.initTree seems to get called a bunch of
-					//times during boot: we can't be having extra instances
-					//However, once boot has finished, ending up here means cmd-. or server.freeAll
-					//has happened, and we just need to run
-
-					var shouldRun = (synthBeenSet.not.and(server.serverBooting))
-					.or(server.serverRunning.and(server.serverBooting.not));
-
-					if(shouldRun) {
-						synthBeenSet = true;
-						synth = nil;
-						this.updateSynth;
-					}
-				};
-				updateFunc.value;
-				ServerTree.add(updateFunc, server);
-			};
-		};
-	}
-
-	updateSynth {
-		if(server.hasBooted){
-			if(synthDefLoaded){
-				if(synth.isNil){
-					synth = Synth.after(server.defaultGroup,defName.asSymbol);
-					synth.register;
-				}
-			}
-		}{
-			synth !? {synth.free};
-		}
-	}
-
-    *new{ |server...args|
-        server = server ? Server.default;
+	*new{ |server...args|
+		server = server ? Server.default;
 		if(server.serverRunning.not,{
 			(this.asString + "– server not running").warn;
-
 		});
 		^super.newCopyArgs(server ?? {Server.default}).baseinit(*args)
-    }
+	}
 
 	baseinit { |...args|
-
+		var makeFirstSynth;
 		id = UniqueID.next;
-		synthDefLoaded = false;
-		defName = (this.class.name.asString ++ id);
+		defName = (this.class.name.asString ++ id).asSymbol;
 
-		if(server.serverRunning){ this.sendSynthDef(*args);};
+		def = SynthDef(defName,{
+			var  ugen = FluidProxyUgen.kr(this.class.name, *args);
+			this.ugen = ugen;
+			ugen
+		});
 
-		bootFunc = {
-			ServerBoot.remove(bootFunc,server);
-			synth = nil;
-			this.sendSynthDef(*args);
+		synth = Synth.basicNew(defName,server);
+		persist = true;
+		onSynthFree = {
+			if(persist){
+				synth = Synth.after(server.defaultGroup,defName);
+				synth.onFree(onSynthFree);
+			}
 		};
 
-		ServerBoot.add(bootFunc,server);
-		ServerQuit.add({this.free;},server);
+		synth.onFree(onSynthFree);
+		CmdPeriod.add(onSynthFree);
+
+		makeFirstSynth ={
+			var synthMsg= synth.newMsg(server.defaultGroup,\addAfter);
+			def.send(server,synthMsg);
+		};
+
+		if(server.serverRunning)
+		{ makeFirstSynth.value}
+		{server.doWhenBooted(makeFirstSynth)};
 	}
 
 	free{
-		ServerTree.remove(updateFunc,server);
-		ServerBoot.remove(bootFunc, server);
-		updateFunc = nil;
-		// synth !? {synth.tryPerform(\free)};//
+		persist = false;
+		CmdPeriod.remove(onSynthFree);
 		synth = nil;
 	}
 
-    prSendMsg { |msg, args, action,parser|
+	prSendMsg { |msg, args, action,parser|
 		if(this.server.serverRunning.not,{(this.asString + "– server not running").error; ^nil});
 		synth !? {
 			OSCFunc(
@@ -130,7 +89,7 @@ FluidManipulationClient {
 			},'/'++msg, server.addr, nil,[synth.nodeID]).oneShot;
 			server.listSendMsg(['/u_cmd',synth.nodeID,ugen.synthIndex,msg].addAll(args));
 		}
-    }
+	}
 }
 
 FluidServerCache {
