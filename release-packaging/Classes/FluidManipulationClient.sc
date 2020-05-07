@@ -29,6 +29,11 @@ FluidManipulationClient {
 		^[ascii.size].addAll(ascii)
 	}
 
+	*newFromDesc { arg rate, numOutputs, inputs, specialIndex;
+		^FluidProxyUgen.newFromDesc(rate, numOutputs, inputs, specialIndex)
+	}
+
+
 	*new{ |server...args|
 		server = server ? Server.default;
 		if(server.serverRunning.not,{
@@ -46,34 +51,29 @@ FluidManipulationClient {
 			var  ugen = FluidProxyUgen.kr(this.class.name, *args);
 			this.ugen = ugen;
 			ugen
-		});
+		}).add;
 
-		synth = Synth.basicNew(defName,server);
+
 		persist = true;
 		onSynthFree = {
+			synth = nil;
 			if(persist){
-				synth = Synth.after(server.defaultGroup,defName);
-				synth.onFree(onSynthFree);
+				//If we don't sync here, cmd-. doesn't reset properly (but server.freeAll does)
+				fork {
+					server.sync;
+					synth = Synth(defName,target: RootNode(server));
+					synth.onFree{onSynthFree.value};
+				}
 			}
 		};
 
-		synth.onFree(onSynthFree);
-		CmdPeriod.add(onSynthFree);
-
-		makeFirstSynth ={
-			var synthMsg= synth.newMsg(server.defaultGroup,\addAfter);
-			def.send(server,synthMsg);
-		};
-
-		if(server.serverRunning)
-		{ makeFirstSynth.value}
-		{server.doWhenBooted(makeFirstSynth)};
+		server.doWhenBooted{onSynthFree.value};
 	}
 
 	free{
 		persist = false;
-		CmdPeriod.remove(onSynthFree);
-		synth = nil;
+		synth.tryPerform(\free);
+		^nil
 	}
 
 	prSendMsg { |msg, args, action,parser|

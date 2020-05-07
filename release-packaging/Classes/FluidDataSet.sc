@@ -78,11 +78,14 @@ FluidDataSet : FluidManipulationClient {
 
 	free { |action|
 		serverCaches.remove(server,id);
-		if(server.serverRunning){this.prSendMsg(\free,[],action)};
-		super.free;
+		fork{
+			if(server.serverRunning){this.prSendMsg(\free,[],action)};
+			server.sync;
+			super.free;
+		}
 	}
 
 	*freeAll { |server|
 		serverCaches.tryPerform(\clearCache,server);
 	}
-}   
+}
