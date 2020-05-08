@@ -313,7 +313,7 @@ public:
     }
     w->mClient.setSynchronous(w->mSynchronous);
     w->mClient.enqueue(w->mParams);
-    w->mClient.process();
+    w->mResult = w->mClient.process();
   }
 
   /// Check result and report if bad
@@ -322,6 +322,8 @@ public:
     auto         w = static_cast<Wrapper*>(data);
     Result       r;
     ProcessState s = w->mClient.checkProgress(r);
+
+    if(w->mSynchronous) r = w->mResult;
 
     if ((s == ProcessState::kDone || s == ProcessState::kDoneStillProcessing) ||
         (w->mSynchronous &&
@@ -454,6 +456,7 @@ protected:
   bool         mQueueEnabled{false};
   bool mCheckingForDone{false}; // only write to this from RT thread kthx
   bool mCancelled{false};
+  Result mResult; 
 };
 
 ////////////////////////////////////////////////////////////////////////////////
