@@ -9,6 +9,7 @@
 #include <clients/nrt/NormalizeClient.hpp>
 #include <clients/nrt/StandardizeClient.hpp>
 #include <clients/nrt/PCAClient.hpp>
+#include <clients/nrt/MDSClient.hpp>
 #include <clients/rt/AudioTransportClient.hpp>
 #include <FluidSCWrapper.hpp>
 
@@ -26,6 +27,7 @@ PluginLoad(FluidSTFTUGen)
   makeSCWrapper<NRTThreadedNormalizeClient>("FluidNormalize",ft);
   makeSCWrapper<NRTThreadedStandardizeClient>("FluidStandardize",ft);
   makeSCWrapper<NRTThreadedPCAClient>("FluidPCA",ft);
+  makeSCWrapper<NRTThreadedMDSClient>("FluidMDS",ft);
   makeSCWrapper<RTAudioTransportClient>("FluidAudioTransport",ft);
   makeSCWrapper<NRTThreadedAudioTransportClient>("FluidBufAudioTransport",ft);
 }
