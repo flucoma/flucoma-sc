@@ -15,6 +15,7 @@ under the European Union’s Horizon 2020 research and innovation programme
 #include <clients/nrt/FluidSharedInstanceAdaptor.hpp>
 #include <clients/common/FluidNRTClientWrapper.hpp>
 #include <clients/common/Result.hpp>
+#include <clients/common/SharedClientUtils.hpp>
 #include <data/FluidTensor.hpp>
 #include <data/TensorTypes.hpp>
 #include <FluidVersion.hpp>
@@ -87,6 +88,74 @@ class RealTime : public SCUnit
   using HostVector = FluidTensorView<float, 1>;
   using ParamSetType = typename Client::ParamSetType;
 
+  template<typename T, bool>
+  struct doExpectedCount;
+  
+  template<typename T>
+  struct doExpectedCount<T, false>
+  {
+    static void count(const T& d,FloatControlsIter& c,Result& status)
+    {
+      if(!status.ok()) return;
+      
+      if(c.remain())
+      {
+        index statedSize = d.fixedSize;
+        
+        if(c.remain() < statedSize)
+            status =  {Result::Status::kError,"Ran out of arguments at ", d.name};
+        
+        //fastforward
+        for(index i=0; i < statedSize; ++i) c.next();
+        
+      }
+    }
+  };
+
+  template<typename T>
+  struct doExpectedCount<T, true>
+  {
+    static void count(const T& d,FloatControlsIter& c,Result& status)
+    {
+      if(!status.ok()) return;
+      
+      if(c.remain())
+      {
+        index statedSize = static_cast<index>(c.next());
+      
+        if(c.remain() < statedSize)
+            status =  {Result::Status::kError,"Ran out of arguments at ", d.name};
+        
+        //fastforward
+        for(index i=0; i < statedSize; ++i) c.next();
+        
+      }
+    }
+  };
+
+
+  template<size_t N, typename T>
+  struct ExpectedCount{
+    void operator ()(const T& descriptor,FloatControlsIter& c, Result& status)
+    {
+      doExpectedCount<T,IsSharedClientRef<typename T::type>::value>::count(descriptor,c,status);
+    }
+  };
+  
+  Result expectedSize(FloatControlsIter& controls)
+  {
+    if(controls.size() < Client::getParameterDescriptors().count())
+    {
+      return {Result::Status::kError,"Fewer parameters than exepected. Got ", controls.size(), "expect at least", Client::getParameterDescriptors().count()};
+    }
+    
+    Result countScan;
+    Client::getParameterDescriptors().template iterate<ExpectedCount>(
+        std::forward<FloatControlsIter&>(mControlsIterator),
+        std::forward<Result&>(countScan));
+    return countScan;
+  }
+
 public:
 
   static index ControlOffset(Unit* unit) { return unit->mSpecialIndex + 1; }
@@ -121,20 +190,19 @@ public:
         !(client.audioChannelsOut() > 0 && client.controlChannelsOut() > 0) &&
         "Client can't have both audio and control outputs");
 
-    // If we don't the number of arguments we expect, the language side code is
-    // probably the wrong version set plugin to no-op, squawk, and bail;
-    if (static_cast<Wrapper*>(this)->mControlsIterator.size() != Client::getParameterDescriptors().count())
+    Result r;
+    if(!(r = expectedSize(mControlsIterator)).ok())
     {
       mCalcFunc = Wrapper::getInterfaceTable()->fClearUnitOutputs;
       std::cout
           << "ERROR: " << Wrapper::getName()
-          << " wrong number of arguments. Expected "
-          << Client::getParameterDescriptors().count() << ", got "
-          << static_cast<Wrapper*>(this)->mControlsIterator.size()
-          << ". Your .sc file and binary plugin might be different versions."
+          << " wrong number of arguments."
+          << r.message()
           << std::endl;
       return;
     }
+    
+    mControlsIterator.reset(mInBuf + mSpecialIndex + 1);
 
     client.sampleRate(fullSampleRate());
     mInputConnections.reserve(asUnsigned(client.audioChannelsIn()));
