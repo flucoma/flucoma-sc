@@ -106,6 +106,21 @@ public:
 
   bool exists() const override { return mBuffer && mBuffer->data; }
 
+  FluidTensorView<float, 2> allFrames() override
+  {
+  
+    FluidTensorView<float, 2> v{mBuffer->data, 0, mBuffer->frames,
+                                mBuffer->channels};
+    return v.transpose();
+  }
+
+  FluidTensorView<const float, 2> allFrames() const override
+  {
+    FluidTensorView<const float, 2> v{mBuffer->data, 0, mBuffer->frames,
+                                mBuffer->channels};
+    return v.transpose();
+  }
+
   FluidTensorView<float, 1> samps(index channel) override
   {
     FluidTensorView<float, 2> v{mBuffer->data, 0, mBuffer->frames,
