@@ -276,6 +276,7 @@ public:
     // we want to poll thread roughly every 20ms
     checkThreadInterval = static_cast<index>(0.02 / controlDur());
     set_calc_function<NonRealTime, &NonRealTime::poll>();
+    Wrapper::getInterfaceTable()->fClearUnitOutputs(this, 1);
   };
 
   /// The calc function. Checks to see if we've cancelled, spits out progress,
@@ -452,7 +453,7 @@ private:
 protected:
   ParamSetType mParams;
   Client       mClient;
-  bool         mSynchronous{true};
+  bool         mSynchronous{false};
   bool         mQueueEnabled{false};
   bool mCheckingForDone{false}; // only write to this from RT thread kthx
   bool mCancelled{false};
@@ -604,9 +605,11 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
     {
       // first is string size, then chars
       index size = static_cast<index>(args.next());
+      
+      auto ft = FluidSCWrapper::getInterfaceTable();
+      
       char* chunk =
-          static_cast<char*>(FluidSCWrapper::getInterfaceTable()->fRTAlloc(
-              w, asUnsigned(size + 1)));
+          static_cast<char*>(ft->fRTAlloc(w, asUnsigned(size + 1)));
 
       if (!chunk)
       {
@@ -619,8 +622,9 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
         chunk[i] = static_cast<char>(args.next());
 
       chunk[size] = 0; // terminate string
-
-      return std::string{chunk};
+      auto res =  std::string{chunk};
+      ft->fRTFree(w,chunk);
+      return res;
     }
 
 
