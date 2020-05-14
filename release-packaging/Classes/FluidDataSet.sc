@@ -31,15 +31,17 @@ FluidDataSet : FluidManipulationClient {
 	cache {
 		serverCaches.initCache(server);
 		serverCaches.put(server,id,this);
-	}
+  }
+  
+  *asUGenInput { |input|
+    var ascii = input.asString.ascii;
+    ^[ascii.size].addAll(ascii)
+  }
+
 
   asString {
 		^"FluidDataSet(%)".format(id).asString;
   }
-
-	asUGenInput {
-		^id.asString;
-	}
 
   addPoint{|label, buffer, action|
       this.prSendMsg(\addPoint,[label.asString,buffer.asUGenInput],action);

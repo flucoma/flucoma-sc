@@ -276,6 +276,7 @@ public:
     // we want to poll thread roughly every 20ms
     checkThreadInterval = static_cast<index>(0.02 / controlDur());
     set_calc_function<NonRealTime, &NonRealTime::poll>();
+    Wrapper::getInterfaceTable()->fClearUnitOutputs(this, 1);
   };
 
   /// The calc function. Checks to see if we've cancelled, spits out progress,
@@ -313,7 +314,7 @@ public:
     }
     w->mClient.setSynchronous(w->mSynchronous);
     w->mClient.enqueue(w->mParams);
-    w->mClient.process();
+    w->mResult = w->mClient.process();
   }
 
   /// Check result and report if bad
@@ -322,6 +323,8 @@ public:
     auto         w = static_cast<Wrapper*>(data);
     Result       r;
     ProcessState s = w->mClient.checkProgress(r);
+
+    if(w->mSynchronous) r = w->mResult;
 
     if ((s == ProcessState::kDone || s == ProcessState::kDoneStillProcessing) ||
         (w->mSynchronous &&
@@ -456,6 +459,7 @@ protected:
   bool mCancelled{false};
 private:
   Wrapper* mWrapper{static_cast<Wrapper*>(this)};
+  Result mResult;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -829,9 +833,11 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
     {
       // first is string size, then chars
       index size = static_cast<index>(args.next());
+      
+      auto ft = FluidSCWrapper::getInterfaceTable();
+      
       char* chunk =
-          static_cast<char*>(FluidSCWrapper::getInterfaceTable()->fRTAlloc(
-              x->mWorld, asUnsigned(size + 1)));
+          static_cast<char*>(ft->fRTAlloc(w, asUnsigned(size + 1)));
 
       if (!chunk)
       {
@@ -844,9 +850,9 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
         chunk[i] = static_cast<char>(args.next());
 
       chunk[size] = 0; // terminate string
-      //todo: Did I check that this is getting cleaned up somewhere? It doesn't
-      //look like it is
-      return std::string{chunk};
+      auto res =  std::string{chunk};
+      ft->fRTFree(w,chunk);
+      return res;
     }
 
     template <typename T>

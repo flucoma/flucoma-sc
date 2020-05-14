@@ -35,9 +35,11 @@ FluidLabelSet : FluidManipulationClient {
      	^"FluidLabelSet(%)".format(id).asString;
   }
 
-	asUGenInput{
-		^id.asString;
-	}
+  
+  *asUGenInput { |input|
+      var ascii = input.asString.ascii;
+      ^[ascii.size].addAll(ascii)
+  }
 
   addLabel{|id, label, action|
       this.prSendMsg(\addLabel,[id.asString, label.asString],action);
