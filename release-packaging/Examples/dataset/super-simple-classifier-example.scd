@@ -2,7 +2,7 @@
 ~simpleInput = FluidDataSet(s,\simpleInput,2);
 ~simpleOutput = FluidLabelSet(s,\simpleOutput,2);
 b = Buffer.alloc(s,2);
-~knn = FluidKNN(s);
+~knn = FluidKNNClassifier(s);
 k = 3
 )
 
@@ -23,7 +23,7 @@ v.mouseDownAction = {|view, x, y|myx=x;myy=y;w.refresh;
 	Routine{
 		b.setn(0,[myx,myy]);
 		s.sync;
-		~knn.classifyPoint(b, ~simpleOutput, k, {|x|x.postln;});
+		~knn.predictPoint(b, k, {|x|x.postln;});
 }.play;};
 
 //custom redraw function
@@ -58,6 +58,6 @@ Routine{
 )
 
 // fit the dataset
-~knn.fit(~simpleInput,action:{"fitting done".postln})
+~knn.fit(~simpleInput,~simpleOutput, action:{"fitting done".postln})
 
 // now click on the grid and read the estimated class according to the nearest K neighbours.
