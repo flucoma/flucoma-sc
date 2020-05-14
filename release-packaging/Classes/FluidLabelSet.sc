@@ -21,6 +21,12 @@ FluidLabelSet : FluidManipulationClient {
         ^id.asString;
     }
 
+  
+    *asUGenInput { |input|
+      var ascii = input.asString.ascii;
+      ^[ascii.size].addAll(ascii)
+    }
+
     addLabel{|id, label, action|
         this.pr_sendMsg(\addLabel,[id.asString, label.asString],action);
     }

@@ -16,7 +16,7 @@ FluidBufMFCC : UGen{
     }
 
     *kr { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, features, numCoeffs = 13, numBands = 40, minFreq = 20, maxFreq = 20000, windowSize = 1024, hopSize = -1, fftSize = -1, doneAction = 0|
-        ^this.multiNew(\control, source, startFrame, numFrames, startChan, numChans, features, numCoeffs, numBands, minFreq, maxFreq,  numCoeffs, windowSize, hopSize, fftSize, doneAction);
+        ^this.multiNew(\control, source, startFrame, numFrames, startChan, numChans, features, numCoeffs, numBands, minFreq, maxFreq, windowSize, hopSize, fftSize, doneAction);
     }
 
     *process { |server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, features, numCoeffs = 13, numBands = 40, minFreq = 20, maxFreq = 20000, windowSize = 1024, hopSize = -1, fftSize = -1, action |

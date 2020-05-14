@@ -2,6 +2,12 @@ FluidDataSet : FluidManipulationClient {
 
     var <>synth, <>server, <>id;
 
+    *asUGenInput { |input|
+      var ascii = input.asString.ascii;
+      ^[ascii.size].addAll(ascii)
+    }
+
+
     *kr{ |name|
         ^this.new1('control',name);
 	}
