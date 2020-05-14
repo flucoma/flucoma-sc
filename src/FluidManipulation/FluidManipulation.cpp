@@ -5,7 +5,8 @@
 #include <clients/nrt/LabelSetClient.hpp>
 #include <clients/nrt/KDTreeClient.hpp>
 #include <clients/nrt/KMeansClient.hpp>
-#include <clients/nrt/KNNClient.hpp>
+#include <clients/nrt/KNNClassifierClient.hpp>
+#include <clients/nrt/KNNRegressorClient.hpp>
 #include <clients/nrt/NormalizeClient.hpp>
 #include <clients/nrt/StandardizeClient.hpp>
 #include <clients/nrt/PCAClient.hpp>
@@ -23,7 +24,8 @@ PluginLoad(FluidSTFTUGen)
   makeSCWrapper<NRTThreadedLabelSetClient>("FluidLabelSet",ft);
   makeSCWrapper<NRTThreadedKDTreeClient>("FluidKDTree",ft);
   makeSCWrapper<NRTThreadedKMeansClient>("FluidKMeans",ft);
-  makeSCWrapper<NRTThreadedKNNClient>("FluidKNN",ft);
+  makeSCWrapper<NRTThreadedKNNClassifierClient>("FluidKNNClassifier",ft);
+  makeSCWrapper<NRTThreadedKNNRegressorClient>("FluidKNNRegressor",ft);
   makeSCWrapper<NRTThreadedNormalizeClient>("FluidNormalize",ft);
   makeSCWrapper<NRTThreadedStandardizeClient>("FluidStandardize",ft);
   makeSCWrapper<NRTThreadedPCAClient>("FluidPCA",ft);

@@ -17,6 +17,11 @@ FluidKMeans : FluidManipulationClient {
         this.prSendMsg(\fit,[dataset.asString, k,maxIter, buffer.asUGenInput],action,[numbers(FluidMessageResponse,_,k,_)]);
     }
 
+    fitPredict{|dataset,labelset, k, maxIter = 100, action|
+        this.k = k;
+		this.pr_sendMsg(\fitPredict,[dataset.asString,labelset.asString,  k,maxIter],action,[numbers(FluidMessageResponse,_,k,_)]);
+    }
+
     predict{ |dataset, labelset,action|
         this.prSendMsg(\predict,[dataset.asString, labelset.asString],action,[numbers(FluidMessageResponse,_,this.k,_)]);
     }
