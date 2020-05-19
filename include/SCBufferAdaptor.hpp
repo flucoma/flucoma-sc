@@ -105,10 +105,10 @@ public:
   // knows about
   bool valid() const override
   {
-    return (exists() && (mLocal ? true : mBufnum >= 0 && mBufnum < asSigned(mWorld->mNumSndBufs)));
+    return (mLocal ? true : mBufnum >= 0 && mBufnum < asSigned(mWorld->mNumSndBufs));
   }
 
-  bool exists() const override { return mBuffer && mBuffer->data; }
+  bool exists() const override { return true; }
 
   FluidTensorView<float, 2> allFrames() override
   {
