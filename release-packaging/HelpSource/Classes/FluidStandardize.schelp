@@ -1,7 +1,7 @@
 TITLE:: FluidStandardize
 summary:: Standardize a FluidDataSet
 categories:: FluidManipulation
-related:: Classes/FluidDataSet, Classes/FluidNormalize
+related:: Classes/FluidDataSet, Classes/FluidStandardize
 
 DESCRIPTION::
 Standardize a link::Classes/FluidDataSet::, i.e. rescale using its mean(s) and standard deviation(s) in each dimension.
@@ -10,68 +10,132 @@ See http://www.faqs.org/faqs/ai-faq/neural-nets/part2/section-16.html
 
 CLASSMETHODS::
 
+METHOD:: new
+Create a new instance
+ARGUMENT:: server
+The server for this model
 
 INSTANCEMETHODS::
 
 METHOD:: fit
-Standardize a link::Classes/FluidDataSet:: strong::in-place::
-
+Fit model to a dataset without applying scaling
 ARGUMENT:: dataset
 The link::Classes/FluidDataSet:: to standardize
-
 ARGUMENT:: action
 A function to run when processing is complete
 
-METHOD:: standardize
+METHOD:: transform
 Standrdize a link::Classes/FluidDataSet:: non-destructively into another link::Classes/FluidDataSet::
-
 ARGUMENT:: sourceDataset
 The link::Classes/FluidDataSet:: to standardize
-
 ARGUMENT:: destDataset
 The link::Classes/FluidDataSet:: to populate with standardized data
-
 ARGUMENT:: action
 A function to run when processing is complete
 
-METHOD:: standardizePoint
-Standardize a new data point, using the learned statistics from a previous link::Classes/FluidStandardize#fit::ting
+METHOD:: fitTransform
+Standrdize a link::Classes/FluidDataSet:: fit and scale a link::Classes/FluidDataSet:: in-place
+ARGUMENT:: sourceDataset
+The link::Classes/FluidDataSet:: to standardize
+ARGUMENT:: action
+A function to run when processing is complete
 
+METHOD:: transformPoint
+Standardize a new data point, using the learned statistics from a previous link::Classes/FluidStandardize#fit::ting
 ARGUMENT:: sourceBuffer
 A link::Classes/Buffer:: with the new data point
-
 ARGUMENT:: destBuffer
 A link::Classes/Buffer:: to contain the standardize value
-
 ARGUMENT:: action
 A function to run when processing is complete
+
+METHOD:: cols
+Retreive the dimensionality of the data set we have fitted on
+ARGUMENT:: action
+A function to run when the server responds, taking the dimensions as its argument. Will print to post window by default
 
 METHOD:: read
 Load internal state (dimensionality, means, deviations) from a JSON file
-
 ARGUMENT:: filename
 Absolute path to the JSON file
-
 ARGUMENT:: action
 A function to run when file is loaded
 
 METHOD:: write
-Store the internal state of object on disk as a JSON file. Will not overwrite existing files
-
+Store the internal state of object on disk as a JSON file.
 ARGUMENT:: filename
 Absolute path of file to write
-
 ARGUMENT:: action
 A function to run when file is written
 
-METHOD:: cols
-Retreive the dimensionality of the data set we have fitted on
-
-ARGUMENT:: action
-A function to run when the server responds, taking the dimensions as its argument
-
 EXAMPLES::
-
 code::
-(some example code)
+s.boot;
+//Preliminaries: we want some audio, a couple of FluidDataSets, some Buffers and a FluidStandardize
+(
+~audiofile = File.realpath(FluidBufPitch.class.filenameSymbol).dirname +/+ "../AudioFiles/Tremblay-ASWINE-ScratchySynth-M.wav";
+~raw = FluidDataSet(s,\stand_help_raw);
+~stand = FluidDataSet(s,\stand_help_standd);
+~audio = Buffer.read(s,~audiofile);
+~pitch_feature = Buffer.new(s);
+~stats = Buffer.new(s);
+~datapoint = Buffer.alloc(s,2);
+~standardizer = FluidStandardize(s);
+)
+
+// Do a pitch analysis on the audio, which gives us pitch and pitch confidence (so a 2D datum)
+// Divide the time series in to 10, and take the mean of each segment and add this as a point to
+// the 'raw' FluidDataSet
+(
+~raw.clear;
+~stand.clear;
+FluidBufPitch.process(s,~audio,features:~pitch_feature,action:{
+	"Pitch analysis.complete. Doing stats".postln;
+	fork{
+		var chunkLen = (~pitch_feature.numFrames / 10).asInteger;
+		10.do{ |i|
+			s.sync;	FluidBufStats.process(s,~pitch_feature,startFrame:i*chunkLen,numFrames:chunkLen,stats:~stats, action:{
+			~stats.loadToFloatArray(action:{ |statsdata|
+					[statsdata[0],statsdata[1]].postln;
+					~datapoint.setn(0,[statsdata[0],statsdata[1]]);
+					s.sync;
+					("Adding point" ++ i).postln;
+					~raw.addPoint(i,~datapoint);
+				})
+			});
+			if(i == 9) {"Analysis done, dataset ready".postln}
+		}
+	}
+});
+)
+
+//Fit the FluidStandardizer to the raw data, and then apply the scaling out of place into
+//our second FluidDataSet, so we can compare.
+//Download the dataset contents into arrays for plotting
+(
+~standardizer.fit(~raw);
+~standardizer.transform(~raw,~stand);
+~rawarray = Array.new(10);
+~stdarray= Array.new(10);
+fork{
+	10.do{|i|
+		~raw.getPoint(i,~datapoint,{
+			~datapoint.loadToFloatArray(action:{|a| ~rawarray.add(Array.newFrom(a))})
+		});
+		s.sync;
+		~stand.getPoint(i,~datapoint,{
+
+			~datapoint.loadToFloatArray(action:{|a| ~stdarray.add(Array.newFrom(a))})
+		});
+		s.sync;
+		if(i==9){"Data downloaded".postln};
+	}
+}
+)
+//Plot side by side. Before standardization the two dimensions have radically different scales
+//which can be unhelpful in many cases. Now they are zero-centered, and comparable
+(
+~rawarray.flatten(1).unlace.plot("Unstandardized",Rect(0,0,400,400),minval:0,maxval:[5000,1]).plotMode=\bars;
+~plot2 = ~stdarray.flatten(1).unlace.plot("Standardized",Rect(410,0,400,400)).plotMode=\bars;
+)
 ::

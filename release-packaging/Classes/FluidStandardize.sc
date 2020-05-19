@@ -8,20 +8,25 @@ FluidStandardize : FluidManipulationClient {
 	init {|uid|
 		id = uid;
 	}
-  
+
     fit{|dataset, action|
-        this.prSendMsg(\fit,[dataset.asString],action);
+        this.prSendMsg(\fit,[dataset.asSymbol],action);
     }
 
-    standardize{|sourceDataset, destDataset, action|
-        this.prSendMsg(\standardize,[sourceDataset.asString, destDataset.asString],action);
+    transform{|sourceDataset, destDataset, action|
+        this.prSendMsg(\transform,[sourceDataset.asSymbol, destDataset.asSymbol],action);
     }
 
-    standardizePoint{|sourceBuffer, destBuffer, action|
-        this.prSendMsg(\standardizePoint,[sourceBuffer.asUGenInput, destBuffer.asUGenInput],action);
+	fitTransform{|dataset, action|
+        this.prSendMsg(\fitTransform,[dataset.asSymbol],action);
+    }
+
+    transformPoint{|sourceBuffer, destBuffer, action|
+        this.prSendMsg(\transformPoint,[sourceBuffer.asUGenInput, destBuffer.asUGenInput],action);
     }
 
     cols {|action|
+		action ?? {action = postit};
         this.prSendMsg(\cols,[],action,[numbers(FluidMessageResponse,_,1,_)]);
     }
 
@@ -33,4 +38,4 @@ FluidStandardize : FluidManipulationClient {
         this.prSendMsg(\write,[filename.asString],action);
     }
 
-}   
+}

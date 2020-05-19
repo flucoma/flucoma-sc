@@ -1,8 +1,8 @@
 FluidNormalize : FluidManipulationClient {
 
-  *new {|server|
+  *new {|server, min = 0, max = 1|
 		var uid = UniqueID.next;
-		^super.new(server,uid)!?{|inst|inst.init(uid);inst}
+		^super.new(server,uid,min,max)!?{|inst|inst.init(uid);inst}
 	}
 
 	init {|uid|
@@ -10,18 +10,23 @@ FluidNormalize : FluidManipulationClient {
 	}
 
     fit{|dataset, action|
-        this.prSendMsg(\fit,[dataset.asString],action);
+        this.prSendMsg(\fit,[dataset.asSymbol],action);
     }
 
-    normalize{|sourceDataset, destDataset, action|
-        this.prSendMsg(\normalize,[sourceDataset.asString, destDataset.asString],action);
+	fitTransform{|dataset, action|
+        this.prSendMsg(\fit,[dataset.asSymbol],action);
     }
 
-    normalizePoint{|sourceBuffer, destBuffer, action|
-        this.prSendMsg(\normalizePoint,[sourceBuffer.asUGenInput, destBuffer.asUGenInput],action);
+    transform{|sourceDataset, destDataset, action|
+        this.prSendMsg(\transform,[sourceDataset.asSymbol, destDataset.asSymbol],action);
+    }
+
+    transformPoint{|sourceBuffer, destBuffer, action|
+        this.prSendMsg(\transformPoint,[sourceBuffer.asUGenInput, destBuffer.asUGenInput],action);
     }
 
     cols {|action|
+		action ?? {action = postit};
         this.prSendMsg(\cols,[],action,[numbers(FluidMessageResponse,_,1,_)]);
     }
 
@@ -33,4 +38,4 @@ FluidNormalize : FluidManipulationClient {
         this.prSendMsg(\write,[filename.asString],action);
     }
 
-}   
+}
