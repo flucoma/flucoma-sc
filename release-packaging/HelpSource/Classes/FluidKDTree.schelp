@@ -4,20 +4,41 @@ categories:: FluidManipulation
 related:: Classes/FluidDataSet
 
 DESCRIPTION::
-A server-side K-Dimensional tree for efficient neighbourhood searches of multi-dimensional data. See https://scikit-learn.org/stable/modules/neighbors.html#nearest-neighbor-algorithms for more on KD Trees
+A server-side K-Dimensional tree for efficient neighbourhood searches of multi-dimensional data.
+
+See https://scikit-learn.org/stable/modules/neighbors.html#nearest-neighbor-algorithms for more on KD Trees
 
 CLASSMETHODS::
 
+METHOD:: new
+Make a new KDTree model for the given server
+ARGUMENT:: server
+The server on which to make the model
+
 INSTANCEMETHODS::
 
-METHOD:: read
-Set the object's state from a JSON file
+METHOD:: fit
+Build the tree by scanning the points of a LINK::Classes/FluidDataSet::
 
-ARGUMENT:: filename
-The location of a JSON file on disk
+ARGUMENT:: dataset
+The LINK::Classes/FluidDataSet:: of interest. This can either be a data set object itself, or the name of one.
 
 ARGUMENT:: action
-function to run when the data is loaded
+A function to run when indexing is complete
+
+
+METHOD:: kNearest
+Returns the IDs of the CODE::k:: points nearest to the one passed
+
+ARGUMENT:: buffer
+A LINK::Classes/Buffer:: containing a data point to match against. The number of frames in the buffer must match the dimensionality of the LINK::Classes/FluidDataSet:: the tree was fitted to.
+
+ARGUMENT:: k
+The number of neighbours to return
+
+
+ARGUMENT:: action
+A function that will run when the query returns, whose argument is an array of point IDs from the tree's LINK::Classes/FluidDataSet::
 
 METHOD:: kNearestDist
 Get the distances of the K nearest neighbours to a point
@@ -31,16 +52,22 @@ The number of neighbours to search
 ARGUMENT:: action
 A function that will run when the query returns, whose argument is an array of distances
 
-returns:: nothing, but could return an array if you like
-
-METHOD:: fit
-Build the tree by scanning the points of a LINK::Classes/FluidDataSet::
-
-ARGUMENT:: dataset
-The LINK::Classes/FluidDataSet:: of interest. This can either be a data set object itself, or the name of one.
+METHOD:: cols
+Get the dimensionality of the data that the tree is indexed against
 
 ARGUMENT:: action
-A function to run when indexing is complete
+A function that runs when the query returns, whose argument is the dimensionality
+
+
+METHOD:: read
+Set the object's state from a JSON file
+
+ARGUMENT:: filename
+The location of a JSON file on disk
+
+ARGUMENT:: action
+function to run when the data is loaded
+
 
 METHOD:: write
 Write the index of the tree to disk. Currently this will not overwrite extant files.
@@ -51,28 +78,50 @@ The path of a JSON file to write
 ARGUMENT:: action
 A function to run when writing is complete
 
-METHOD:: kNearest
-Returns the IDs of the CODE::k:: points nearest to the one passed
-
-ARGUMENT:: buffer
-A LINK::Classes/Buffer:: containing a data point to match against. The number of frames in the buffer must match the dimensionality of the LINK::Classes/FluidDataSet:: the tree was fitted to.
-
-ARGUMENT:: k
-The number of neighbours to return
-
-ARGUMENT:: action
-A function that will run when the query returns, whose argument is an array of point IDs from the tree's LINK::Classes/FluidDataSet::
-
-returns:: Nothing, but could return an array of IDs if you like
-
-METHOD:: cols
-Get the dimensionality of the data that the tree is indexed against
-
-ARGUMENT:: action
-A function that runs when the query returns, whose argument is the dimensionality
 
 EXAMPLES::
 
 code::
-(some example code)
+//Make some 2D points and place into a dataset
+(
+~points = 100.collect{ [ 1.0.linrand,1.0.linrand] };
+~dataset= FluidDataSet(s,\kdtree_help_rand2d);
+~dataset.free
+~tmpbuf = Buffer.alloc(s,2) ;
+fork{
+	~dataset.ready.wait;
+	~points.do{|x,i|
+		(""++(i+1)++"/100").postln;
+		~tmpbuf.setn(0,x);
+		~dataset.addPoint(i,~tmpbuf);
+		s.sync
+	}
+}
+)
+
+
+
+
+
+//Make a new tree, and fit it to the dataset
+(
+fork{
+	~tree = FluidKDTree(s);
+	~tree.ready.wait;
+	s.sync;
+	~tree.fit(~dataset);
+}
+)
+
+//Dims of tree should match dataset
+~tree.cols
+
+//Return labels of k nearest points to new data
+(
+~tmpbuf.setn(0,[ 1.0.linrand,1.0.linrand ]);
+~tree.kNearest(~tmpbuf,5, { |a| a.postln });
+)
+
+//or the distances
+~tree.kNearestDist(~tmpbuf,5, { |a| a.postln });
 ::
