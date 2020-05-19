@@ -12,7 +12,8 @@ FluidKDTree : FluidManipulationClient {
     }
 
     fit{|dataset,action|
-        this.prSendMsg(\fit,[dataset.asUGenInput],action);
+		dataset.asSymbol.postln;
+		this.prSendMsg(\fit,[dataset.asSymbol],action);
     }
 
     kNearest{ |buffer, k,action|
@@ -24,6 +25,9 @@ FluidKDTree : FluidManipulationClient {
     }
 
     cols { |action|
+
+		action ?? {action = postit};
+
         this.prSendMsg(\cols,[],action,[numbers(FluidMessageResponse,_,1,_)]);
     }
 

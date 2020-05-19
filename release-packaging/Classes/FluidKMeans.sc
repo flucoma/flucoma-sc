@@ -1,7 +1,7 @@
 FluidKMeans : FluidManipulationClient {
 
     var <>k;
-    
+
     *new {|server|
   		var uid = UniqueID.next;
   		^super.new(server,uid)!?{|inst|inst.init(uid);inst}
@@ -10,24 +10,20 @@ FluidKMeans : FluidManipulationClient {
   	init {|uid|
   		id = uid;
   	}
-    
+
     fit{|dataset,k, maxIter = 100, buffer, action|
        buffer = buffer ? -1;
         this.k = k;
-        this.prSendMsg(\fit,[dataset.asString, k,maxIter, buffer.asUGenInput],action,[numbers(FluidMessageResponse,_,k,_)]);
+        this.prSendMsg(\fit,[dataset.asSymbol, k,maxIter, buffer.asUGenInput],action,[numbers(FluidMessageResponse,_,k,_)]);
     }
 
     fitPredict{|dataset,labelset, k, maxIter = 100, action|
         this.k = k;
-		this.pr_sendMsg(\fitPredict,[dataset.asString,labelset.asString,  k,maxIter],action,[numbers(FluidMessageResponse,_,k,_)]);
+		this.prSendMsg(\fitPredict,[dataset.asSymbol,labelset.asSymbol,  k,maxIter],action,[numbers(FluidMessageResponse,_,k,_)]);
     }
 
     predict{ |dataset, labelset,action|
-        this.prSendMsg(\predict,[dataset.asString, labelset.asString],action,[numbers(FluidMessageResponse,_,this.k,_)]);
-    }
-
-    getClusters{ |dataset, labelset,action|
-        this.prSendMsg(\getClusters,[dataset.asString, labelset.asString],action);
+        this.prSendMsg(\predict,[dataset.asSymbol, labelset.asSymbol],action,[numbers(FluidMessageResponse,_,this.k,_)]);
     }
 
     predictPoint { |buffer, action|
@@ -35,6 +31,7 @@ FluidKMeans : FluidManipulationClient {
     }
 
     cols { |action|
+		action ?? action = postit;
         this.prSendMsg(\cols,[],action,[number(FluidMessageResponse,_,_)]);
     }
 

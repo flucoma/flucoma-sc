@@ -32,7 +32,7 @@ FluidDataSet : FluidManipulationClient {
 		serverCaches.initCache(server);
 		serverCaches.put(server,id,this);
   }
-  
+
   *asUGenInput { |input|
     var ascii = input.asString.ascii;
     ^[ascii.size].addAll(ascii)
@@ -43,23 +43,28 @@ FluidDataSet : FluidManipulationClient {
 		^"FluidDataSet(%)".format(id).asString;
   }
 
+	asSymbol {
+		^id.asSymbol
+	}
+
   addPoint{|label, buffer, action|
-      this.prSendMsg(\addPoint,[label.asString,buffer.asUGenInput],action);
+      this.prSendMsg(\addPoint,[label.asSymbol,buffer.asUGenInput],action);
   }
 
   getPoint{|label, buffer, action|
-      this.prSendMsg(\getPoint,[label.asString,buffer.asUGenInput],action);
+      this.prSendMsg(\getPoint,[label.asSymbol,buffer.asUGenInput],action);
   }
 
   updatePoint{|label, buffer, action|
-      this.prSendMsg(\updatePoint,[label.asString,buffer.asUGenInput],action);
+      this.prSendMsg(\updatePoint,[label.asSymbol,buffer.asUGenInput],action);
   }
 
   deletePoint{|label, action|
-      this.prSendMsg(\deletePoint,[label.asString],action);
+      this.prSendMsg(\deletePoint,[label.asSymbol],action);
   }
 
   cols {|action|
+		action ?? {action = postit};
       this.prSendMsg(\cols,[],action,[numbers(FluidMessageResponse,_,1,_)]);
   }
 
@@ -72,6 +77,7 @@ FluidDataSet : FluidManipulationClient {
   }
 
   size { |action|
+		action ?? {action = postit};
       this.prSendMsg(\size,[],action,[numbers(FluidMessageResponse,_,1,_)]);
   }
 

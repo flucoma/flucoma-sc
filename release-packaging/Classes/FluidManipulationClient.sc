@@ -24,6 +24,9 @@ FluidManipulationClient {
 	var defName, def;
 	var onSynthFree, persist;
 
+	var postit;
+	var < ready;
+
 	*prServerString{ |s|
 		var ascii = s.ascii;
 		^[ascii.size].addAll(ascii)
@@ -45,29 +48,35 @@ FluidManipulationClient {
 	baseinit { |...args|
 		var makeFirstSynth;
 		id = UniqueID.next;
+		postit = {|x| x.postln;};
 		defName = (this.class.name.asString ++ id).asSymbol;
-
+		ready = Condition(false);
 		def = SynthDef(defName,{
 			var  ugen = FluidProxyUgen.kr(this.class.name, *args);
 			this.ugen = ugen;
 			ugen
-		}).add;
-
+		});
 
 		persist = true;
 		onSynthFree = {
+			ready.test = false;
 			synth = nil;
 			if(persist){
 				//If we don't sync here, cmd-. doesn't reset properly (but server.freeAll does)
-				fork {
+				forkIfNeeded {
 					server.sync;
 					synth = Synth(defName,target: RootNode(server));
 					synth.onFree{onSynthFree.value};
+					ready.test = true;
+					ready.signal;
 				}
 			}
 		};
-
-		server.doWhenBooted{onSynthFree.value};
+		forkIfNeeded{
+			def.add;
+			server.sync;
+			onSynthFree.value;
+		}
 	}
 
 	free{
@@ -79,6 +88,7 @@ FluidManipulationClient {
 
 	prSendMsg { |msg, args, action,parser|
 		if(this.server.serverRunning.not,{(this.asString + "– server not running").error; ^nil});
+		synth ?? {"Not ready".warn};
 		synth !? {
 			OSCFunc(
 				{ |msg|
@@ -134,8 +144,8 @@ FluidServerCache {
 	}
 
 	clearCache { |server|
-		cache.postln;
 		cache[server] !? { cache.removeAt(server) };
 	}
+
 }
 

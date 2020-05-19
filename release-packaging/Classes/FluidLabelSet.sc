@@ -22,7 +22,7 @@ FluidLabelSet : FluidManipulationClient {
   }
 
   init { |name|
-    this.id = name;
+		id = name;
 		this.cache;
   }
 
@@ -35,7 +35,12 @@ FluidLabelSet : FluidManipulationClient {
      	^"FluidLabelSet(%)".format(id).asString;
   }
 
-  
+	asSymbol {
+		^id
+	}
+
+
+
   *asUGenInput { |input|
       var ascii = input.asString.ascii;
       ^[ascii.size].addAll(ascii)
@@ -44,6 +49,11 @@ FluidLabelSet : FluidManipulationClient {
   addLabel{|id, label, action|
       this.prSendMsg(\addLabel,[id.asString, label.asString],action);
   }
+
+	updateLabel{|id, label, action|
+		this.prSendMsg(\updateLabel,[id.asString, label.asString],action);
+	}
+
 
   getLabel{|id, action|
       this.prSendMsg(\getLabel,[id.asString],action,[string(FluidMessageResponse,_,_)]);
@@ -54,6 +64,7 @@ FluidLabelSet : FluidManipulationClient {
   }
 
   cols {|action|
+		action ?? {action = postit};
       this.prSendMsg(\cols,[],action,[number(FluidMessageResponse,_,_)]);
   }
 
@@ -66,6 +77,7 @@ FluidLabelSet : FluidManipulationClient {
   }
 
   size { |action|
+		action ?? {action = postit};
       this.prSendMsg(\size,[],action,[number(FluidMessageResponse,_,_)]);
   }
 
@@ -77,8 +89,8 @@ FluidLabelSet : FluidManipulationClient {
 		serverCaches.remove(server,id);
 		super.free;
 	}
-	
+
 	*freeAll { |server|
 		serverCaches.do(server,{|x|x.free;});
 	}
-}   
+}
