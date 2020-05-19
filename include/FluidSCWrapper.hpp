@@ -835,7 +835,7 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
       index size = static_cast<index>(args.next());
       
       auto ft = FluidSCWrapper::getInterfaceTable();
-      
+      auto w = x->mWorld;
       char* chunk =
           static_cast<char*>(ft->fRTAlloc(w, asUnsigned(size + 1)));
 
@@ -1117,7 +1117,7 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
     ArgTuple&    args = msg->args;
     // type check OSC message
     
-    std::string tags(inArgs->tags + inArgs->count);
+    std::string tags(inArgs->tags + inArgs->count);//evidently this needs commenting: construct string at pointer offset by tag count, to pick up args
     bool willContinue = true;
     bool typesMatch = true;
     
