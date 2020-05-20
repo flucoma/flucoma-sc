@@ -22,7 +22,7 @@ FluidKNNClassifier : FluidManipulationClient {
     predictPoint { |buffer, k, uniform = 0, action|
         this.prSendMsg(\predictPoint,
 			[buffer.asUGenInput, k,uniform], action,
-			[number(FluidMessageResponse,_,_)]
+			[string(FluidMessageResponse,_,_)]
 		);
 	}
 }
