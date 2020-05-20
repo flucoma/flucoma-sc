@@ -1,0 +1,140 @@
+TITLE:: FluidDataSetQuery
+summary:: Query a FluidDataSet
+categories:: UGens>FluidManipulation
+related:: Classes/FluidDataSet
+
+DESCRIPTION::
+A selection of columns and a set of conditions that match rows of a FluidDataSet.
+Use to filter and search in a database of descriptors.
+
+CLASSMETHODS::
+
+METHOD:: new
+Make a new instance
+ARGUMENT:: server
+The server on which to run this object
+
+INSTANCEMETHODS::
+
+PRIVATE:: init
+
+METHOD:: addColumn
+Add a column to the query
+ARGUMENT:: column
+Column index
+ARGUMENT:: action
+Run when done
+
+METHOD:: addRange
+Add a range of columns to the query
+ARGUMENT:: start
+First index
+ARGUMENT:: count
+Number of columns
+ARGUMENT:: action
+Run when done
+
+METHOD:: filter
+Filter rows according to some condition.
+
+Example: (3, ">", 0.5) filters rows where the value of the 4th column (starting at 0) is larger than 0.5.
+ARGUMENT:: column
+Column index
+ARGUMENT:: condition
+Condition string. Possible values: "==", "!=", "<", "<=", ">", ">="
+ARGUMENT:: value
+Condition value
+ARGUMENT:: action
+Run when done
+
+METHOD:: and
+Add a condition to an existing filter with an "and" connector.
+ARGUMENT:: column
+Column index
+ARGUMENT:: condition
+Condition string. Possible values: "==", "!=", "<", "<=", ">", ">="
+ARGUMENT:: value
+Condition value
+ARGUMENT:: action
+Run when done
+
+
+METHOD:: or
+Add a condition to an existing filter with an "or" connector.
+ARGUMENT:: column
+Column index
+ARGUMENT:: condition
+Condition string. Possible values: "==", "!=", "<", "<=", ">", ">="
+ARGUMENT:: value
+Condition value
+ARGUMENT:: action
+Run when done
+
+METHOD:: limit
+Limit the number of resulting rows.
+ARGUMENT:: rows
+Maximum number of rows
+ARGUMENT:: action
+Run when done
+
+METHOD:: reset
+Clear the query, remove all columns, filters and limit.
+ARGUMENT:: action
+Run when done
+
+METHOD:: transform
+Apply the query to a source link::Classes/FluidDataSet:: and write to a destination. Can be the same.
+ARGUMENT:: sourceDataset
+Source data, or the dataset name
+ARGUMENT:: destDataset
+Destination data, or the dataset name
+ARGUMENT:: action
+Run when done
+
+
+EXAMPLES::
+
+code::
+
+s.boot;
+
+
+// Create a dataset with random data
+~dataset= FluidDataSet(s,\help_fluid_dataset_query);
+
+(
+~points = 100.collect{24.collect{100.rand}};
+~dataset.clear;
+~tmpbuf = Buffer.alloc(s,24);
+
+fork{
+    s.sync;
+    ~points.do{|x,i|
+        ~tmpbuf.setn(0,x);
+        ~dataset.addPoint(i,~tmpbuf);
+        s.sync
+    }
+}
+)
+
+// Prepare a FluidDataSetQuery object
+~query = FluidDataSetQuery.new;
+~query.reset;
+~query.addColumn(5);
+~query.addRange(0,2);
+
+~query.filter(0,"<",50);
+~query.and(1,"<",50);
+~query.and(2,"<",50);
+~query.limit(10);
+
+// Create an output dataset and run the query
+~out = FluidDataSet(s,\help_fluid_dataset_query_out);
+~query.transform(~dataset, ~out);
+
+// Check the results
+~dataset.print;
+~out.print;
+
+
+::
