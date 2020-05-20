@@ -1,0 +1,108 @@
+TITLE:: FluidKNNRegressor
+summary:: Regression with K Nearest Neighbours
+categories:: Regression
+related:: Classes/FluidKNNClassifier, Classes/FluidDataSet
+
+DESCRIPTION::
+
+CLASSMETHODS::
+
+METHOD:: new
+Create a new KNN regressor on the server
+ARGUMENT:: server
+The server to run this model on.
+
+INSTANCEMETHODS::
+
+METHOD:: fit
+Map a source link::Classes/FluidDataSet:: to a target; they must be the same size, but can have different dimesionality
+ARGUMENT:: sourceDataset
+Source data
+ARGUMENT:: targetDataset
+Target data
+ARGUMENT:: action
+Run when done
+
+
+METHOD:: predict
+Apply learned mapping to a link::Classes/FluidDataSet:: and write to an output dataset
+ARGUMENT:: sourceDataset
+data to regress
+ARGUMENT:: targetDataset
+output data
+ARGUMENT:: k
+number of neigbours to consider in mapping, min 1
+ARGUMENT:: uniform
+Whether to weight neighbours by distance when producing new point
+ARGUMENT:: action
+Run when done
+
+METHOD:: predictPoint
+Apply learned mapping to a data point in a link::Classes/Buffer::
+ARGUMENT:: buffer
+data point
+ARGUMENT:: k
+number of neigbours to consider in mapping, min 1
+ARGUMENT:: uniform
+Whether to weight neighbours by distance when producing new point
+ARGUMENT:: action
+Run when done
+
+EXAMPLES::
+
+code::
+
+//Make a simple mapping between a ramp and a sine cycle, test with an exponentional ramp
+(
+~source = FluidDataSet(s,\knn_regress_src);
+~target = FluidDataSet(s,\knn_regress_tgt);
+~test = FluidDataSet(s,\knn_regress_test);
+~output = FluidDataSet(s,\knn_regress_out);
+~tmpbuf = Buffer.alloc(s,1);
+)
+
+//Make source, target and test data
+(
+~sourcedata = 128.collect{|i|i/128};
+~targetdata = 128.collect{|i| sin(2*pi*i/128) };
+fork{
+	128.do{ |i|
+		((i + 1).asString ++ "/128").postln;
+		~tmpbuf.setn(0,i/128);
+		~source.addPoint(i,~tmpbuf);
+		s.sync;
+		~tmpbuf.setn(0,sin(2*pi*i/128));
+		~target.addPoint(i,~tmpbuf);
+		s.sync;
+		~tmpbuf.setn(0,(i/128)**2);
+		~test.addPoint(i,~tmpbuf);
+		s.sync;
+		if(i==127){"Source, target and test generated".postln};
+	}
+}
+)
+
+// Now make a regressor and fit it to the source and target, and predict against test
+//grab the output data whilst we're at it, so we can inspect
+(
+~outputdata = Array(128);
+fork{
+	~regressor = FluidKNNRegressor(s);
+	s.sync;
+	~regressor.fit(~source,~target);
+	~regressor.predict(~test,~output,1);
+	s.sync;
+	128.do{|i|
+		~output.getPoint(i,~tmpbuf,{
+			~tmpbuf.loadToFloatArray(action:{|x|
+				~outputdata.addAll(x)
+			})
+		});
+		s.sync;
+		if(i==127){"Model fitted, output generated".postln};
+	}
+}
+)
+//We should see a single cycle of a chirp
+~outputdata.plot;
+::

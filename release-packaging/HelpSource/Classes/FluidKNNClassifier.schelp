@@ -1,0 +1,161 @@
+TITLE:: FluidKNNClassifier
+summary:: Classify data with K Nearest Neighbours
+categories:: Classification, KNN
+related:: Classes/FluidKNNRegressor, Classes/FluidDataSet, Classes/FluidLabelSet
+
+DESCRIPTION::
+
+CLASSMETHODS::
+
+METHOD:: new
+Create a new KNNClassifier
+ARGUMENT:: server
+The server to make the model on
+
+INSTANCEMETHODS::
+
+METHOD:: fit
+Fit the model to a source link::Classes/FluidDataSet:: and a target link::Classes/FluidLabelSet:: . These need to be the sime size
+ARGUMENT:: dataset
+Source data
+ARGUMENT:: labelset
+Labels for the source data
+ARGUMENT:: action
+Run when done
+
+METHOD:: predict
+Given a fitted model, predict labels for a link::Classes/FluidDataSet:: and write these to a link::Classes/FluidLabelSet::
+ARGUMENT:: dataset
+data to predict labels for
+ARGUMENT:: labelset
+place to write labels
+ARGUMENT:: k
+the number of neighours to consider
+ARGUMENT:: uniform
+true / false: whether the neighbours shold be weighted by distance
+ARGUMENT:: action
+Run when done
+
+METHOD:: predictPoint
+Given a fitted model, predict labels for a data point in a link::Classes/Buffer:: and return these to the caller
+ARGUMENT:: buffer
+A data point
+ARGUMENT:: k
+Number of neighbours to consider
+ARGUMENT:: uniform
+true / false: whether the neighbours shold be weighted by distance
+ARGUMENT:: action
+Run when done, passes predicted label as argument
+
+EXAMPLES::
+
+code::
+//A dataset of example points, and a label set of corresponding labels
+//+
+//A dataset of test data and a labelset for predicted labels
+(
+~source= FluidDataSet(s,\knnclassify_help_examples);
+~labels = FluidLabelSet(s,\knnclassify_help_labels);
+~test = FluidDataSet(s,\knnclassify_help_test);
+~mapping = FluidLabelSet(s,\knnclassify_help_mapping);
+)
+
+//Make some clumped 2D points and place into a dataset
+(
+~examplepoints = [[0.5,0.5],[-0.5,0.5],[0.5,-0.5],[-0.5,-0.5]];
+~examplelabels = [\red,\orange,\green,\blue];
+~source.clear;
+~labels.clear;
+~tmpbuf = Buffer.alloc(s,2);
+fork{
+    s.sync;
+    ~examplepoints.do{|x,i|
+        (""++(i+1)++"/4").postln;
+        ~tmpbuf.setn(0,x);
+        ~source.addPoint(i,~tmpbuf);
+		~labels.addLabel(i,~examplelabels[i]);
+        s.sync
+    }
+}
+)
+
+//Make some random, but clustered test points
+(
+~testpoints = (4.collect{64.collect{(1.sum3rand) + [1,-1].choose}.clump(2)}).flatten(1) * 0.5;
+~test.clear;
+fork {
+	s.sync;
+	~testpoints.do{|x,i|
+		~tmpbuf.setn(0,x);
+		~test.addPoint(i,~tmpbuf);
+		s.sync;
+		if(i==(~testpoints.size - 1)){"Generated test data".postln;}
+	}
+}
+)
+
+//Make a new KNN classifier model, fit it to the example dataset and labels, and then run preduction on the test data into our mapping label set
+(
+fork{
+	~classifier = FluidKNNClassifier(s);
+	s.sync;
+	~classifier.fit(~source,~labels);
+	~classifier.predict(~test, ~mapping, 1);
+    s.sync;
+}
+)
+
+//Dims of kmeans should match dataset
+~kmeans.cols
+
+//Return labels of clustered points
+(
+~assignments = Array.new(~testpoints.size);
+fork{
+	~testpoints.do{|x,i|
+		~mapping.getLabel(i,action:{|l|
+			~assignments.add(l);
+		});
+		s.sync;
+		if(i==(~testpoints.size - 1)){"Got assignments".postln;}
+	};
+	~assignments.postln;
+}
+)
+
+//Visualise: we're hoping to see colours neatly mapped to quandrants...
+(
+c = IdentityDictionary();
+
+c.add(\red->Color.red);
+c.add(\blue->Color.blue);
+c.add(\green->Color.green);
+c.add(\orange-> Color.new255(255, 127, 0));
+
+e = 200 * ((~examplepoints + 1) * 0.5).flatten(1).unlace;
+d = ((~testpoints + 1) * 0.5).flatten(1).unlace;
+// d = [20.collect{1.0.rand}, 20.collect{1.0.rand}];
+w = Window("scatter", Rect(128, 64, 200, 200));
+~colours = [Color.blue,Color.red,Color.green,Color.magenta];
+w.drawFunc = {
+	Pen.use {
+		e[0].size.do{|i|
+			var r = Rect(e[0][i],e[1][i],10,10);
+			Pen.fillColor = c[~examplelabels[i]];
+			Pen.fillOval(r);
+		};
+		d[0].size.do{|i|
+			var x = (d[0][i]*200);
+			var y = (d[1][i]*200);
+			var r = Rect(x,y,5,5);
+			Pen.fillColor = c[~assignments[i].asSymbol].alpha_(0.3);
+			Pen.fillOval(r);
+		}
+	}
+};
+w.refresh;
+w.front;
+)
+
+
+::
