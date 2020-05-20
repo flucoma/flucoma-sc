@@ -105,6 +105,12 @@ ARGUMENT:: filename
 Absolute path for the new file
 ARGUMENT:: action
 A function to run when the file has been written
+
+METHOD:: dump
+(buggy, please use Print for now) Post the content of the dataset in JSON format in the window by default, but you can supply a custom action instead;
+
+METHOD:: print
+Post an abbreviated content of the dataset in the window by default, but you can supply a custom action instead;
 ​​
 METHOD:: asString
 ​Responds with the name of the data set as a pretty(ish) string
@@ -150,9 +156,11 @@ Routine{
 ~ds.print //to post window by default, but you can supply a custom action instead
 ~ds.dump //likewise
 //for example
+(
 ~ds.dump{|j|
 	~dict = j.parseJSON
 }
+)
 //Now we have a Dictionary of our data and IDs
 ~dict.postcs
 

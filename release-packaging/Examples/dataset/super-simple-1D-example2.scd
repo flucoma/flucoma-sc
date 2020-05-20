@@ -39,9 +39,9 @@ Routine{
 (
 Routine{
     10.do{|i|
-        ~point.set(0,i * 10);
+        ~point.set(0,i);
         s.sync;
-        ~kmeans.predictPoint(~point,{|x| ("Predicted Cluster for point" + (i * 10) ++ ":" + x).postln})
+        ~kmeans.predictPoint(~point,{|x| ("Predicted Cluster for point" + i ++ ":" + x).postln})
     }
 }.play
 )
@@ -50,12 +50,13 @@ Routine{
 
 ~kmeans.predict(~ds,~labels, {|x| ("Size of each cluster" +  x).postln})
 
-s(
+(
 Routine{
     var n;
     ~labels.size({|x|
 		x.asInteger.do{|i|
         ~labels.getLabel(i.asString,action: {|l|("Label for" + i ++ ":" + l).postln});
+		s.sync;
 	};});
 }.play
 )
