@@ -22,14 +22,14 @@ FileDialog.new(fileMode:2,okFunc:{|x| ~path = x[0];
 )
 
 //STEP 2: Make a FluidDataSet
-~dataset = FluidDataSet.new(s,"mfccs", 96) //12 dims * 4 stats * 2 derivatives
+~dataset = FluidDataSet.new(s,"mfccs");
 
 //STEP 3A: EITHER populate the dataset like so (and cry about how long the data point assembly takes)
 (
 Routine{
 	var tmpMFCCs = Buffer.new(s);
 	var tmpStats = Buffer.new(s);
-	var tmpFlat = Buffer.alloc(s,12 * 4 * 2, 1);
+	var tmpFlat = Buffer.alloc(s,12 * 4 * 2, 1);//12 dims * 4 stats * 2 derivatives
 	s.sync;
 	~audioBuffers.do{|b|
 		("Analyzing" + b.path).postln;
@@ -61,7 +61,7 @@ Routine{
 	var tmpStats = Buffer.new(s);
 	var langStats;
 	var langFlat;
-	var tmpFlat = Buffer.alloc(s,12 * 4 * 2, 1);
+	var tmpFlat = Buffer.alloc(s,12 * 4 * 2, 1); //12 dims * 4 stats * 2 derivatives
 	s.sync;
 	~audioBuffers.do{|b|
 		("Analyzing" + b.path).postln;

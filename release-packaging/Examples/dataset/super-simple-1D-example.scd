@@ -1,5 +1,5 @@
 s.reboot
-~ds = FluidDataSet.new(s,\simple1data,1)
+~ds = FluidDataSet.new(s,\simple1data)
 ~point = Buffer.alloc(s,1,1)
 (
 Routine{
@@ -50,8 +50,9 @@ Routine{
 (
 Routine{
     var n;
-    ~labels.size({|x| n = x.asInt});
-    n.asInt.do{|i|
+    ~labels.size({|x| n = x.asInteger;});
+	n.postln;
+    n.do{|i|
         ~labels.getLabel(i.asString,action: {|l|("Label for" + i ++ ":" + l).postln});
     }
 }.play
