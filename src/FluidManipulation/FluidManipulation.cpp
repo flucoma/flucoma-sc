@@ -2,6 +2,7 @@
 // A tool from the FluCoMa project, funded by the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899)
 
 #include <clients/nrt/DataSetClient.hpp>
+#include <clients/nrt/DataSetQueryClient.hpp>
 #include <clients/nrt/LabelSetClient.hpp>
 #include <clients/nrt/KDTreeClient.hpp>
 #include <clients/nrt/KMeansClient.hpp>
@@ -21,6 +22,7 @@ PluginLoad(FluidSTFTUGen)
   ft = inTable;
   using namespace fluid::client;
   makeSCWrapper<NRTThreadedDataSetClient>("FluidDataSet",ft);
+  makeSCWrapper<NRTThreadedDataSetQueryClient>("FluidDataSetQuery",ft);
   makeSCWrapper<NRTThreadedLabelSetClient>("FluidLabelSet",ft);
   makeSCWrapper<NRTThreadedKDTreeClient>("FluidKDTree",ft);
   makeSCWrapper<NRTThreadedKMeansClient>("FluidKMeans",ft);
