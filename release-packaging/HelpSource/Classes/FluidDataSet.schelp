@@ -125,13 +125,18 @@ returns:: A link::Classes/Server::
 EXAMPLES::
 
 CODE::
-(
 // Make a one-dimensional data set called 'simple1data'
-~ds = FluidDataSet.new(s,\simple1data,1)
-// Make a buffer to use for adding points
-~point = Buffer.alloc(s,1,1)
-//Add 10 points, using the index as a label.
+(
+~ds = FluidDataSet.new(s,\simple1data,1);
+)
+
+(
 Routine{
+~ds.clear;
+// Make a buffer to use for adding points
+~point = Buffer.alloc(s,1,1);
+//Add 10 points, using the index as a label.
+	s.sync;
     10.do{|i|
         ~point.set(0,i);
         ~ds.addPoint(i.asString,~point,{("addPoint"+i).postln});
