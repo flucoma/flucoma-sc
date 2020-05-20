@@ -1,6 +1,6 @@
 (
-~simpleInput = FluidDataSet(s,\simpleInput,2);
-~simpleOutput = FluidLabelSet(s,\simpleOutput,2);
+~simpleInput = FluidDataSet(s,\simpleInput);
+~simpleOutput = FluidLabelSet(s,\simpleOutput);
 b = Buffer.alloc(s,2);
 ~knn = FluidKNNClassifier(s);
 k = 3
@@ -23,7 +23,7 @@ v.mouseDownAction = {|view, x, y|myx=x;myy=y;w.refresh;
 	Routine{
 		b.setn(0,[myx,myy]);
 		s.sync;
-		~knn.predictPoint(b, k, {|x|x.postln;});
+		~knn.predictPoint(b, k, action: {|x|x.postln;});
 }.play;};
 
 //custom redraw function

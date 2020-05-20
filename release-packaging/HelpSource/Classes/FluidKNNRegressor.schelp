@@ -15,7 +15,7 @@ The server to run this model on.
 INSTANCEMETHODS::
 
 METHOD:: fit
-Map a source link::Classes/FluidDataSet:: to a target; they must be the same size, but can have different dimesionality
+Map a source link::Classes/FluidDataSet:: to a target; they must be the same size, but can have different dimensionality
 ARGUMENT:: sourceDataset
 Source data
 ARGUMENT:: targetDataset

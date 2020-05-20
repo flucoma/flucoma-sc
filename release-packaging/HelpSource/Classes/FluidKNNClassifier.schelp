@@ -105,9 +105,6 @@ fork{
 }
 )
 
-//Dims of kmeans should match dataset
-~kmeans.cols
-
 //Return labels of clustered points
 (
 ~assignments = Array.new(~testpoints.size);

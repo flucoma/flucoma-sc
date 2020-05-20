@@ -39,7 +39,7 @@
 ~normed_dataset = FluidDataSet(s,\normed,~nb_of_dim);
 
 // normalize the full dataset
-~normalize.normalize(~dataset,~normed_dataset,{"done".postln;});
+~normalize.transform(~dataset,~normed_dataset,{"done".postln;});
 
 // look at a point to see that it has points in it
 ~normed_dataset.getPoint("point-0",~query_buf,{~query_buf.getn(0,~nb_of_dim,{|x|x.postln;});});
@@ -54,7 +54,7 @@
 
 // standardize the full dataset
 ~standardized_dataset = FluidDataSet(s,\standardized,~nb_of_dim);
-~standardize.standardize(~dataset,~standardized_dataset,{"done".postln;});
+~standardize.transform(~dataset,~standardized_dataset,{"done".postln;});
 
 // look at a point to see that it has points in it
 ~standardized_dataset.getPoint("point-0",~query_buf,{~query_buf.getn(0,~nb_of_dim,{|x|x.postln;});});
@@ -79,7 +79,7 @@
 
 // normalise that point (~query_buf) to be at the right scale
 ~normbuf = Buffer.alloc(s,~nb_of_dim);
-~normalize.normalizePoint(~query_buf,~normbuf);
+~normalize.transformPoint(~query_buf,~normbuf);
 ~normbuf.getn(0,~nb_of_dim,{arg vec;vec.postln;});
 
 // make a tree of the normalized database and query with the normalize buffer
@@ -91,7 +91,7 @@
 
 // standardize that same point (~query_buf) to be at the right scale
 ~stdbuf = Buffer.alloc(s,~nb_of_dim);
-~standardize.standardizePoint(~query_buf,~stdbuf);
+~standardize.transformPoint(~query_buf,~stdbuf);
 ~stdbuf.getn(0,~nb_of_dim,{arg vec;vec.postln;});
 
 // make a tree of the standardized database and query with the normalize buffer
@@ -107,8 +107,8 @@
 ~query_buf.fill(0,~nb_of_dim,50);
 
 // normalize and standardize the query buffer. Note that we do not need to fit since we have not added a point to our reference dataset
-~normalize.normalizePoint(~query_buf,~normbuf);
-~standardize.standardizePoint(~query_buf,~stdbuf);
+~normalize.transformPoint(~query_buf,~normbuf);
+~standardize.transformPoint(~query_buf,~stdbuf);
 
 //query the single nearest neighbourg via 3 different data scaling. Depending on the random source at the begining, you will get small to large differences between the 3 answers!
 ~tree.kNearest(~query_buf,1, {|x| ("Original:" + x).post;~tree.kNearestDist(~query_buf,1, {|x| (" with a distance of " + x).postln});});

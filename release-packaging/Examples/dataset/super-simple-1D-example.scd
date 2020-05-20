@@ -1,5 +1,5 @@
 s.reboot
-~ds = FluidDataSet.new(s,\simple1data,1)
+~ds = FluidDataSet.new(s,\simple1data)
 ~point = Buffer.alloc(s,1,1)
 (
 Routine{
@@ -30,8 +30,8 @@ Routine{
 /*** KMEANS ***/
 
 ~kmeans = FluidKMeans.new(s)
-~nClusters = 4; //play with this
-~kmeans.fit(~ds,~nClusters,100,action:{"Done fitting".postln})
+~nClusters = 2; //play with this
+~kmeans.fit(~ds,~nClusters,100,action:{|x| "Done fitting with these number of items per cluster ".post;x.postln;})
 
 (
 Routine{
@@ -50,11 +50,9 @@ Routine{
 (
 Routine{
     var n;
-    ~labels.size({|x| n = x.asInt});
-    n.asInt.do{|i|
+    ~labels.size({|x|
+		x.asInteger.do{|i|
         ~labels.getLabel(i.asString,action: {|l|("Label for" + i ++ ":" + l).postln});
-    }
+	};});
 }.play
 )
-
-
