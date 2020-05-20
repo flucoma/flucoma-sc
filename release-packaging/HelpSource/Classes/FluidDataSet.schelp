@@ -144,4 +144,16 @@ Routine{
     }
 }.play
 )
+
+//Inspect the dataset using print (abbreviated output) or dump (JSON output)
+
+~ds.print //to post window by default, but you can supply a custom action instead
+~ds.dump //likewise
+//for example
+~ds.dump{|j|
+	~dict = j.parseJSON
+}
+//Now we have a Dictionary of our data and IDs
+~dict.postcs
+
 ::
