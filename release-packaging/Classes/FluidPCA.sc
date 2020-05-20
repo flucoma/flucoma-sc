@@ -11,15 +11,15 @@ FluidPCA : FluidManipulationClient {
 	}
 
     fit{|dataset, k, action|
-        this.prSendMsg(\fit,[dataset.asString, k],action);
+        this.prSendMsg(\fit,[dataset.asSymbol, k],action);
     }
 
     transform{|sourceDataset, destDataset, action|
-        this.prSendMsg(\transform,[sourceDataset.asString, destDataset.asString],action);
+        this.prSendMsg(\transform,[sourceDataset.asSymbol, destDataset.asSymbol],action);
     }
 
-    fitTransform{|sourceDataset, k, destDataset, action|
-        this.prSendMsg(\fitTransform,[sourceDataset.asString,k,  destDataset.asString],action);
+    fitTransform{|sourceDataset, destDataset, k, action|
+        this.prSendMsg(\fitTransform,[sourceDataset.asSymbol, destDataset.asSymbol, k],action);
     }
 
 
@@ -28,11 +28,10 @@ FluidPCA : FluidManipulationClient {
     }
 
     cols {|action|
-        this.prSendMsg(\cols,[],action,[numbers(FluidMessageResponse,_,1,_)]);
-    }
 
-	rows {|action|
-        this.prSendMsg(\rows,[],action,[numbers(FluidMessageResponse,_,1,_)]);
+		action ?? {action = postit};
+
+        this.prSendMsg(\cols,[],action,[numbers(FluidMessageResponse,_,1,_)]);
     }
 
     read{|filename,action|
@@ -43,4 +42,4 @@ FluidPCA : FluidManipulationClient {
         this.prSendMsg(\write,[filename],action);
     }
 
-}   
+}

@@ -1,17 +1,23 @@
 FluidMDS : FluidManipulationClient {
-	var id;
+	classvar < manhattan = 0;
+	classvar < euclidean = 1;
+	classvar < sqeuclidean = 2;
+	classvar < max = 3;
+	classvar < min = 4;
+	classvar < kl = 5;
+	classvar < cosine = 5;
 
-  *new {|server|
+	*new {|server|
 		var uid = UniqueID.next;
-		^super.new(server,uid).init(uid);
+		^super.new(server,uid)!?{|inst|inst.init(uid);inst}
 	}
 
 	init {|uid|
 		id = uid;
 	}
 
-    fitTransform{|sourceDataset, k, dist, destDataset, action|
-		this.pr_sendMsg(\fitTransform,[sourceDataset.asString, k, dist,  destDataset.asString],action);
-    }
+	fitTransform{|sourceDataset, destDataset, k, dist, action|
+		this.prSendMsg(\fitTransform,[sourceDataset.asSymbol,  destDataset.asSymbol, k, dist],action);
+	}
 
 }

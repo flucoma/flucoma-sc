@@ -1,0 +1,139 @@
+TITLE:: FluidMDS
+summary:: Dimensionality Reduction with Multidimensional Scaling
+categories:: Dimensionality Reduction, Data Processing
+related:: Classes/FluidMDS, Classes/FluidDataSet
+
+DESCRIPTION::
+
+https://scikit-learn.org/stable/modules/manifold.html#multi-dimensional-scaling-mds
+
+
+CLASSMETHODS::
+
+
+METHOD:: new
+Make a new instance
+ARGUMENT:: server
+The server on which to run this model
+
+METHOD:: euclidean
+Euclidean distance (default)
+
+METHOD:: sqeuclidean
+Squared Euclidean distance
+
+METHOD:: manhattan
+Manhattan distance
+
+METHOD:: max
+Minowski max
+
+METHOD:: min
+Minowski max
+
+METHOD:: kl
+Symmetric Kulback Leiber divergance (only makes sense with non-negative data)
+
+METHOD:: cosine
+Cosine distance
+
+INSTANCEMETHODS::
+
+PRIVATE:: init
+
+METHOD:: fitTransform
+Fit the model to a link::Classes/FluidDataSet:: and write the new projected data to a destination FluidDataSet.
+ARGUMENT:: sourceDataset
+Source data, or the dataset name
+ARGUMENT:: destDataset
+Destination data, or the dataset name
+ARGUMENT:: k
+The number of dimensions to reduce to
+ARGUMENT:: dist
+The distance metric to use (integer, 0-6, see flags above)
+ARGUMENT:: action
+Run when done
+
+EXAMPLES::
+
+code::
+//Preliminaries: we want some audio, a couple of FluidDataSets, some Buffers, a FluidStandardize and a FluidMDS
+(
+~audiofile = File.realpath(FluidBufPitch.class.filenameSymbol).dirname +/+ "../AudioFiles/Tremblay-ASWINE-ScratchySynth-M.wav";
+~raw = FluidDataSet(s,\mds_help_12D);
+~reduced = FluidDataSet(s,\mds_help_2D);
+~audio = Buffer.read(s,~audiofile);
+~mfcc_feature = Buffer.new(s);
+~stats = Buffer.new(s);
+~datapoint = Buffer.alloc(s,12);
+~standardizer  = FluidStandardize(s);
+~mds = FluidMDS(s);
+)
+
+// Do a mfcc analysis on the audio, which gives us 13 points, and we'll throw the 0th away
+// Divide the time series in to 100, and take the mean of each segment and add this as a point to
+// the 'raw' FluidDataSet
+(
+~raw.clear;
+~norm.clear;
+FluidBufMFCC.process(s,~audio,features:~mfcc_feature,action:{
+    "MFCC analysis.complete. Doing stats".postln;
+    fork{
+        var chunkLen = (~mfcc_feature.numFrames / 100).asInteger;
+        100.do{ |i|
+            s.sync;    FluidBufStats.process(s,~mfcc_feature,startFrame:i*chunkLen,numFrames:chunkLen,startChan:1, stats:~stats, action:{
+            ~stats.loadToFloatArray(action:{ |statsdata|
+                    [statsdata[0],statsdata[1]].postln;
+                    ~datapoint.setn(0,[statsdata[0],statsdata[1]]);
+                    s.sync;
+                    ("Adding point" ++ i).postln;
+                    ~raw.addPoint(i,~datapoint);
+                })
+            });
+            if(i == 99) {"Analysis done, dataset ready".postln}
+        }
+    }
+});
+)
+
+//First standardize our dataset, so that the MFCC dimensions are on comensurate scales
+//Then apply the MDS in-place on the standardized data to get 2 dimensions, using a Euclidean distance metric
+//Download the dataset contents into an array for plotting
+(
+~standardizer.fit(~raw);
+~standardizer.transform(~raw, ~reduced);
+~mds.fitTransform(~raw,~reduced,2, FluidMDS.euclidean);
+~reducedarray= Array.new(100);
+fork{
+    100.do{|i|
+        ~reduced.getPoint(i,~datapoint,{
+
+            ~datapoint.loadToFloatArray(action:{|a| ~reducedarray.add(Array.newFrom(a))})
+        });
+        s.sync;
+        if(i==99){"Data downloaded".postln};
+    }
+}
+)
+
+//Visualise the 2D projection of our original 12D data
+(
+d = ~reducedarray.flatten(1).unlace.deepCollect(1, { |x| x.normalize});
+// d = [20.collect{1.0.rand}, 20.collect{1.0.rand}];
+w = Window("scatter", Rect(128, 64, 200, 200));
+w.drawFunc = {
+    Pen.use {
+        d[0].size.do{|i|
+            var x = (d[0][i]*200);
+            var y = (d[1][i]*200);
+            var r = Rect(x,y,5,5);
+            Pen.fillColor = Color.blue;
+            Pen.fillOval(r);
+        }
+    }
+};
+w.refresh;
+w.front;
+)
+
+::
