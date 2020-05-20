@@ -14,8 +14,9 @@ FluidKMeans : FluidManipulationClient {
     fit{|dataset,k, maxIter = 100, buffer, action|
        buffer = buffer ? -1;
         this.k = k;
-        this.prSendMsg(\fit,[dataset.asSymbol, k,maxIter, buffer.asUGenInput],action,[numbers(FluidMessageResponse,_,k,_)]);
-    }
+		// this.prSendMsg(\fit,[dataset.asSymbol, k,maxIter, buffer.asUGenInput],action,[numbers(FluidMessageResponse,_,k,_)]);
+	    this.prSendMsg(\fit,[dataset.asSymbol, k,maxIter],action,[numbers(FluidMessageResponse,_,k,_)]);
+	}
 
     fitPredict{|dataset,labelset, k, maxIter = 100, action|
         this.k = k;
