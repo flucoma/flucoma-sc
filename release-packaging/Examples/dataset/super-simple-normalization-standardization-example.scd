@@ -1,7 +1,6 @@
 (
 // set some variables
 ~nb_of_dim = 10;
-~dataset.clear;
 ~dataset = FluidDataSet(s,\test,~nb_of_dim);
 )
 
@@ -16,6 +15,8 @@
 	});
 });
 )
+
+~dataset.print;
 
 // make a buf for getting points back
 ~query_buf = Buffer.alloc(s,~nb_of_dim);

@@ -9,25 +9,28 @@ n = 200
 
 // creates the dataset with these associated indices and values
 (
-~simpleInput = FluidDataSet(s,\simpleInput,1);
-~simpleOutput = FluidDataSet(s,\simpleOutput,1);
+~simpleInput = FluidDataSet(s,\simpleInput);
+~simpleOutput = FluidDataSet(s,\simpleOutput);
 b = Buffer.alloc(s,1,1);
 ~mappingviz = Buffer.alloc(s,512);
 )
 
 (
 Routine{
-	n.do{|i|
-		b.set(0,~idx[i]);
-		s.sync;
-		~simpleInput.addPoint(i.asString,b,{("Added Input" + i).postln});
-		b.set(0,~data[i]);
-		s.sync;
-		~simpleOutput.addPoint(i.asString,b,{("Added Output" + i).postln});
-		~mappingviz.set((~idx[i]/61).asInt,~data[i])
-	}
+    n.do{|i|
+        b.set(0,~idx[i]);
+        ~simpleInput.addPoint(i.asString,b,{("Added Input" + i).postln});
+        s.sync;
+        b.set(0,~data[i]);
+        ~simpleOutput.addPoint(i.asString,b,{("Added Output" + i).postln});
+        s.sync;
+        ~mappingviz.set((~idx[i]/61).asInteger,~data[i])
+    }
 }.play
 )
+
+~simpleInput.print
+~simpleOutput.print
 
 //look at the seeing material
 ~mappingviz.plot(minval:-1,maxval:1)
@@ -45,7 +48,6 @@ k = 1; // change to see how many points the system uses to regress
 Routine{
 	512.do{|i|
 		b.set(0,i*61);
-		s.sync;
 		~knn.predictPoint(b,k,action:{|d|~mappingresult.set(i,d);});
 		s.sync;
 		i.postln;
@@ -55,9 +57,3 @@ Routine{
 
 // look at the interpolated values
 ~mappingresult.plot
-
-// clears both datasets
-(
-~simpleInput.clear;
-~simpleOutput.clear;
-)
