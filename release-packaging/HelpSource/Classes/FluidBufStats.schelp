@@ -134,10 +134,10 @@ g= Array.new;
 Routine({
 	e.doAdjacentPairs({
 		arg start,end;
-		FluidBufStats.processBlocking(s,c,(start/512).asInt,((end-start)/512).max(2).asInt,0,1,d,1, action: {d.loadToFloatArray(action: {
+		FluidBufStats.processBlocking(s,c,(start/512).asInteger,((end-start)/512).max(2).asInteger,0,1,d,1, action: {d.loadToFloatArray(action: {
 			arg array;
 			g = g.add(array[12]);
-			"% % %\n".postf((start/512).asInt,((end-start)/512).max(2).asInt, array[12]);
+			"% % %\n".postf((start/512).asInteger,((end-start)/512).max(2).asInteger, array[12]);
 		})});
 });
 	"Done".postln;

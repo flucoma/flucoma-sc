@@ -17,7 +17,7 @@ FluidSubscriberTest : UGen {
         //so server plugin knows what's going on
         specialIndex = -1;
         inputs = [size].addAll(chars);
-        providerName = chars.collectAs({|x|x.asInt.asAscii}, String);
+        providerName = chars.collectAs({|x|x.asInteger.asAscii}, String);
     }
 
     providerLookup { |server, nodeID, label, action|
