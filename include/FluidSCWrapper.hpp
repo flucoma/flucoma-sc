@@ -151,7 +151,7 @@ class RealTime : public SCUnit
     
     Result countScan;
     Client::getParameterDescriptors().template iterate<ExpectedCount>(
-        std::forward<FloatControlsIter&>(mControlsIterator),
+        std::forward<FloatControlsIter&>(mWrapper->mControlsIterator),
         std::forward<Result&>(countScan));
     return countScan;
   }
@@ -191,7 +191,7 @@ public:
         "Client can't have both audio and control outputs");
 
     Result r;
-    if(!(r = expectedSize(mControlsIterator)).ok())
+    if(!(r = expectedSize(mWrapper->mControlsIterator)).ok())
     {
       mCalcFunc = Wrapper::getInterfaceTable()->fClearUnitOutputs;
       std::cout
@@ -202,7 +202,7 @@ public:
       return;
     }
     
-    mControlsIterator.reset(mInBuf + mSpecialIndex + 1);
+    mWrapper->mControlsIterator.reset(mInBuf + mSpecialIndex + 1);
 
     client.sampleRate(fullSampleRate());
     mInputConnections.reserve(asUnsigned(client.audioChannelsIn()));
@@ -267,6 +267,7 @@ private:
   std::vector<HostVector> mAudioInputs;
   std::vector<HostVector> mOutputs;
   FluidContext            mContext;
+  Wrapper*                mWrapper{static_cast<Wrapper*>(this)};
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -353,7 +354,7 @@ public:
   {
     out0(0) = mDone ? 1.0f : static_cast<float>(client().progress());
 
-    index triggerInput = mInBuf[mNumInputs - mSpecialIndex - 2][0]; 
+    index triggerInput = static_cast<index>(mInBuf[static_cast<index>(mNumInputs) - mSpecialIndex - 2][0]);
     bool  trigger = (mPreviousTrigger <= 0) && triggerInput > 0; 
     mPreviousTrigger = triggerInput;
     
@@ -445,9 +446,8 @@ public:
     return static_cast<Wrapper*>(data)->tidyUp(world);
   }
 
-  /// Now we're actually properly done, call the UGen's done action (possibly
-  /// destroying this instance)
-  static void destroy(World* world, void* data)
+  /// if we're properly done set the Unit done flag
+  static void destroy(World*, void* data)
   {
     auto w = static_cast<Wrapper*>(data);
     w->mDone = w->mJobDone; 
@@ -517,7 +517,7 @@ private:
   index             checkThreadInterval;
   index             pollCounter{0};
   index             mPreviousTrigger{0};  
-protected:
+
   bool         mSynchronous{true};
   bool         mQueueEnabled{false};
   bool         mCheckingForDone{false}; // only write to this from RT thread kthx
