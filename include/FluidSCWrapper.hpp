@@ -595,7 +595,7 @@ struct LifetimePolicy<Client, Wrapper,std::false_type, std::false_type>
   {
       FloatControlsIter controlsReader{unit->mInBuf + Wrapper::ControlOffset(unit),Wrapper::ControlSize(unit)};
       auto params = typename Wrapper::ParamSetType{Client::getParameterDescriptors()};
-      Wrapper::setParams(unit, params, controlsReader);
+      Wrapper::setParams(unit, params, controlsReader,true);
       Client client{params};
       new (static_cast<Wrapper*>(unit)) Wrapper(std::move(controlsReader), std::move(client), std::move(params));
   }
@@ -631,7 +631,7 @@ struct LifetimePolicy<Client, Wrapper,std::true_type, std::false_type>
         std::cout << "ERROR: ID " << uid << "is already being used by the cache" << std::endl;
         return;
       }
-      Wrapper::setParams(unit, entry.params,controlsReader);
+      Wrapper::setParams(unit, entry.params,controlsReader,true);
       new (static_cast<Wrapper*>(unit)) Wrapper{std::move(controlsReader),std::move(client),std::move(params)};
       static_cast<Wrapper*>(unit)->uid = uid;
       entry.leased = true;
@@ -698,8 +698,10 @@ struct LifetimePolicy<Client, Wrapper,std::false_type, std::true_type>
     FloatControlsIter controlsReader{unit->mInBuf + Wrapper::ControlOffset(unit),Wrapper::ControlSize(unit)};
 
     auto params = typename Client::ParamSetType{Client::getParameterDescriptors()};
-    Wrapper::setParams(unit, params,controlsReader);
+    Wrapper::setParams(unit, params,controlsReader,true);
+    
     auto& name = params.template get<0>();
+    
     auto client = Client{params};
     auto clientRef = SharedType::lookup(name);
 
