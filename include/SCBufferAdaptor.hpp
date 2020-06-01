@@ -185,8 +185,8 @@ public:
     {
       if(frames > thisThing->frames || channels > thisThing->channels)
       {
-        return {Result::Status::kError, "Local buffer must be presized adequetly, need",
-                                                        frames, "frames", channels, "channels." };
+        return {Result::Status::kError, "Local buffer must be presized adequetly, need ",
+                                                        frames, "frames, ", channels, " channels." };
       }
       else return {};
     }
