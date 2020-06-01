@@ -13,6 +13,7 @@
 #include <clients/nrt/PCAClient.hpp>
 #include <clients/nrt/MDSClient.hpp>
 #include <clients/rt/AudioTransportClient.hpp>
+#include <clients/rt/FluidDataSetWr.hpp>
 #include <FluidSCWrapper.hpp>
 
 static InterfaceTable *ft;
@@ -34,4 +35,5 @@ PluginLoad(FluidSTFTUGen)
   makeSCWrapper<NRTThreadedMDSClient>("FluidMDS",ft);
   makeSCWrapper<RTAudioTransportClient>("FluidAudioTransport",ft);
   makeSCWrapper<NRTThreadedAudioTransportClient>("FluidBufAudioTransport",ft);
+  makeSCWrapper<NRTThreadedDataSetWriter>("FluidDataSetWr", ft);
 }
