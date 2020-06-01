@@ -358,9 +358,12 @@ public:
     bool  trigger = (mPreviousTrigger <= 0) && triggerInput > 0; 
     mPreviousTrigger = triggerInput;
     
-    if(trigger) mWorld->ft->fSendMsgFromRT(mWorld, mFifoMsg);
+    if(trigger)
+    {
+      mWorld->ft->fSendMsgFromRT(mWorld, mFifoMsg);
+    }
     
-    if (0 == pollCounter++ && !mCheckingForDone)
+    if (0 == pollCounter++ && !mCheckingForDone && mHasTriggered)
     {
       mCheckingForDone = true;
       mWorld->ft->fDoAsynchronousCommand(mWorld, nullptr, Wrapper::getName(),
@@ -391,6 +394,7 @@ public:
     w->mClient.setSynchronous(w->mSynchronous);
     w->mClient.enqueue(w->mParams);
     w->mResult = w->mClient.process();
+    w->mHasTriggered = true;
   }
 
   /// Check result and report if bad
@@ -419,16 +423,21 @@ public:
         std::cout << Wrapper::getName() << ": Processing cancelled"
                   << std::endl;
         w->mCancelled = true;
+        w->mHasTriggered = false;
+        w->mJobDone = true;
         return false;
       }
 
       if (!r.ok())
       {
-        std::cout << "ERROR: " << Wrapper::getName() << ": "
+        if(!w->mDone)
+            std::cout << "ERROR: " << Wrapper::getName() << ": "
                   << r.message().c_str() << std::endl;
+         w->mJobDone = true;
+         w->mHasTriggered = false;
         return false;
       }
-
+      w->mHasTriggered = false;
       w->mJobDone = true;
       return true;
     }
@@ -523,6 +532,7 @@ private:
   bool         mCheckingForDone{false}; // only write to this from RT thread kthx
   bool         mCancelled{false};
   bool         mJobDone{false};
+  bool         mHasTriggered{false};
   Wrapper*     mWrapper{static_cast<Wrapper*>(this)};
   Result       mResult; 
 };
