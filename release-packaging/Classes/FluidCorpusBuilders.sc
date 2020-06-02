@@ -19,7 +19,7 @@ FluidLoadFolder {
 		counter = 0;
 		index = IdentityDictionary();
 		files.postln;
-		server.bind{
+		forkIfNeeded{
 			buffer = Buffer.alloc(server,sizes.reduce('+'),maxChan);
 			server.sync;
 			buffer.updateInfo;
