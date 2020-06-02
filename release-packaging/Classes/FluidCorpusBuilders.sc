@@ -67,8 +67,7 @@ FluidSliceCorpus {
 		counter = 0;
 		jobs = List.newFrom(bufIdx.keys);
 		total = jobs.size;
-		tmpIndices = Buffer.new;
-		perf = {
+		perf = { |tmpIndices|
 			var v,k = jobs.pop;
 			v = bufIdx[k];
 			OSCFunc({
@@ -85,11 +84,8 @@ FluidSliceCorpus {
 					}{
 						index.put((k++ '0').asSymbol->IdentityDictionary(proto:v));
 					};
-					if(jobs.size > 0){perf.value}
-					{
-						tmpIndices.free;
-						action !? action.value(index);
-					};
+					if(jobs.size > 0){perf.value(tmpIndices)}{ tmpIndices.free };
+					if(counter == total) {action !? action.value(index)};
 				})
 			},'/doneslice' ++ uid ++ counter,server.addr).oneShot;
 
@@ -101,7 +97,7 @@ FluidSliceCorpus {
 				FreeSelfWhenDone.kr(onsets);
 			}.play;
 		};
-		perf.value;
+		4.do{perf.value(Buffer.new)};
 	}
 }
 
