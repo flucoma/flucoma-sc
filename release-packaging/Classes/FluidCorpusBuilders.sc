@@ -58,34 +58,37 @@ FluidSliceCorpus {
 	}
 
 	play{ |server,sourceBuffer,bufIdx, action|
-		var counter, tmpIndices,perf,jobs,total,uid;
+		var counter, tmpIndices,perf,jobs,total,uid, completed;
 		uid = UniqueID.next;
 		sourceBuffer ?? {"No buffer to slice".error; ^nil};
 		bufIdx ?? {"No slice point dictionary passed".error;^nil};
 		server ?? {server = Server.default};
 		index = IdentityDictionary();
 		counter = 0;
+		completed = 0;
 		jobs = List.newFrom(bufIdx.keys);
 		total = jobs.size;
 		perf = { |tmpIndices|
-			var v,k = jobs.pop;
+			var idx,v,k = jobs.pop;
 			v = bufIdx[k];
+			counter = counter + 1;
+			idx = counter;
 			OSCFunc({
 				tmpIndices.loadToFloatArray(action:{ |a|
-					counter = counter + 1;
-					("FluidSliceCorpus:" + ( counter.asString ++ "/" ++ total)).postln;
+					completed =  completed + 1;
+					("FluidSliceCorpus:" + ( completed.asString ++ "/" ++ total)).postln;
 					if(a[0] != -1){
 						var slicePoints = Array.newFrom(a).slide(2).clump(2);
 						slicePoints.do{|s,j|
 							var label = (k ++ j).asSymbol;
 							index.add(label->IdentityDictionary(proto:v));
-							index.at(label).put(\points,s);
+							index.at(label).add(\points->s);
 						}
 					}{
-						index.put((k++ '0').asSymbol->IdentityDictionary(proto:v));
+						index.add((k ++ '0').asSymbol->IdentityDictionary(proto:v));
 					};
 					if(jobs.size > 0){perf.value(tmpIndices)}{ tmpIndices.free };
-					if(counter == total) {action !? action.value(index)};
+					if(completed == total) {action !? action.value(index)};
 				})
 			},'/doneslice' ++ uid ++ counter,server.addr).oneShot;
 
@@ -93,7 +96,7 @@ FluidSliceCorpus {
 				var numframes,onsets;
 				numframes = v[\points].reverse.reduce('-');
 				onsets = sliceFunc.value(sourceBuffer, v[\points][0],numframes,tmpIndices);
-				SendReply.kr(Done.kr(onsets),'/doneslice' ++ uid ++ counter);
+				SendReply.kr(Done.kr(onsets),'/doneslice' ++ uid ++ idx);
 				FreeSelfWhenDone.kr(onsets);
 			}.play;
 		};
@@ -110,7 +113,7 @@ FluidProcessSlices{
 	}
 
 	play{ |server,sourceBuffer,bufIdx, action|
-		var counter, tmpIndices,perf,jobs,total,uid;
+		var counter,perf,jobs,total,uid, completed;
 
 		sourceBuffer ?? {"No buffer to slice".error; ^nil};
 		bufIdx ?? {"No slice point dictionary passed".error;^nil};
@@ -121,28 +124,27 @@ FluidProcessSlices{
 		jobs = List.newFrom(bufIdx.keys);
 		total = jobs.size;
 		counter = 0;
-
+		completed = 0;
 		perf = {
-			var v, k = jobs.pop;
+			var idx,v, k = jobs.pop;
 			v = bufIdx[k];
+			counter = counter + 1;
+			idx = counter;
 			OSCFunc({
-				counter = counter + 1;
-				("FluidProcessSlices:" + (counter.asString ++ "/" ++ total)).postln;
-				if(jobs.size > 0){perf.value}
-				{
-					tmpIndices.free;
-					action !? action.value(index);
-				};
+				completed = completed + 1;
+				("FluidProcessSlices:" + (completed.asString ++ "/" ++ total)).postln;
+				if(jobs.size > 0){perf.value};
+				if(completed == total){action !? action.value(index);};
 			},"/doneFeature" ++ uid ++ counter,server.addr).oneShot;
 
 			{
 				var numframes,feature;
 				numframes = v[\points].reverse.reduce('-');
-				feature = featureFunc.value(sourceBuffer, v[\points][0],numframes,counter);
-				SendReply.kr(Done.kr(feature),'/doneFeature' ++ uid ++ counter);
+				feature = featureFunc.value(sourceBuffer, v[\points][0],numframes,idx);
+				SendReply.kr(Done.kr(feature),'/doneFeature' ++ uid ++ idx);
 				FreeSelfWhenDone.kr(feature);
 			}.play(server);
 		};
-		perf.value;
+		4.do{perf.value};
 	}
 }
