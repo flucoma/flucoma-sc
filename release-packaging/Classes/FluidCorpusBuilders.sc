@@ -9,39 +9,42 @@ FluidLoadFolder {
 	}
 
 	play { |server, action|
-		var sizes,channels,maxChan, startEnd;
+		var sizes,channels,maxChan, startEnd,counter;
 		server ?? server = Server.default;
 		files = SoundFile.collect(path +/+ '*');
 		sizes = files.collect{|f|f.numFrames()};
 		channels = files.collect{|f| f.numChannels()};
 		startEnd = sizes.inject([0],{|a,b| a ++ (b + a[a.size - 1])}).slide(2).clump(2);
 		maxChan = channels[channels.maxIndex];
-
+		counter = 0;
 		index = IdentityDictionary();
-		fork{
+		files.postln;
+		server.bind{
 			buffer = Buffer.alloc(server,sizes.reduce('+'),maxChan);
-			buffer.updateInfo;
 			server.sync;
+			buffer.updateInfo;
 			buffer.query;
+			server.sync;
 			this.files.do{|f,i|
 				var channelMap,label,entry;
+				OSCFunc({
+					if(labelFunc.notNil)
+					{ label = labelFunc.value(path,i) }
+					{ label = (f.path.basename).asSymbol };
+					entry = IdentityDictionary();
+					entry.add(\points->startEnd[i]);
+					entry.add(\channels->f.numChannels);
+					entry.add(\sampleRate->f.sampleRate);
+					index.add(label->entry);
+					counter = counter + 1;
+					if(counter == (files.size)) {action !? action.value(index)};
+				},"/done",server.addr,argTemplate:["/b_readChannel"]).oneShot;
 				if(channelFunc.notNil)
 				{  channelMap = channelFunc.value(channels[i],maxChan,i) }
 				{  channelMap = Array.series(channels[i]).wrapExtend(maxChan) };
 				buffer.readChannel(f.path,bufStartFrame:sizes[0..i].sum(), channels:channelMap);
-				server.sync;
-
-				if(labelFunc.notNil)
-				{ label = labelFunc.value(path,i) }
-				{ label = (f.path.basename).asSymbol };
-				entry = IdentityDictionary();
-				entry.add(\points->startEnd[i]);
-				entry.add(\channels->f.numChannels);
-				entry.add(\sampleRate->f.sampleRate);
-				index.add(label->entry);
-				if(i == (files.size - 1)) {action !? action.value(index)};
 			}
-		}
+		};
 	}
 }
 
