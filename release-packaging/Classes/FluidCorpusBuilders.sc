@@ -42,7 +42,7 @@ FluidLoadFolder {
 				if(channelFunc.notNil)
 				{  channelMap = channelFunc.value(channels[i],maxChan,i) }
 				{  channelMap = Array.series(channels[i]).wrapExtend(maxChan) };
-				buffer.readChannel(f.path,bufStartFrame:sizes[0..i].sum(), channels:channelMap);
+				buffer.readChannel(f.path,bufStartFrame:startEnd[i][0], channels:channelMap);
 			}
 		};
 	}
