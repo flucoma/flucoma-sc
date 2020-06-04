@@ -18,7 +18,6 @@ FluidLoadFolder {
 		maxChan = channels[channels.maxIndex];
 		counter = 0;
 		index = IdentityDictionary();
-		files.postln;
 		forkIfNeeded{
 			buffer = Buffer.alloc(server,sizes.reduce('+'),maxChan);
 			server.sync;
@@ -32,9 +31,9 @@ FluidLoadFolder {
 					{ label = labelFunc.value(path,i) }
 					{ label = (f.path.basename).asSymbol };
 					entry = IdentityDictionary();
-					entry.add(\points->startEnd[i]);
-					entry.add(\channels->f.numChannels);
-					entry.add(\sampleRate->f.sampleRate);
+					entry.add(\bounds->startEnd[i]);
+					entry.add(\numchans->f.numChannels);
+					entry.add(\sr->f.sampleRate);
 					index.add(label->entry);
 					counter = counter + 1;
 					if(counter == (files.size)) {action !? action.value(index)};
@@ -58,7 +57,7 @@ FluidSliceCorpus {
 	}
 
 	play{ |server,sourceBuffer,bufIdx, action|
-		var counter, tmpIndices,perf,jobs,total,uid, completed;
+		var counter, tmpIndices,perf,jobs,total,uid, completed, pointstotal;
 		uid = UniqueID.next;
 		sourceBuffer ?? {"No buffer to slice".error; ^nil};
 		bufIdx ?? {"No slice point dictionary passed".error;^nil};
@@ -68,6 +67,7 @@ FluidSliceCorpus {
 		completed = 0;
 		jobs = List.newFrom(bufIdx.keys);
 		total = jobs.size;
+		pointstotal = 0;
 		perf = { |tmpIndices|
 			var idx,v,k = jobs.pop;
 			v = bufIdx[k];
@@ -78,24 +78,32 @@ FluidSliceCorpus {
 					completed =  completed + 1;
 					("FluidSliceCorpus:" + ( completed.asString ++ "/" ++ total)).postln;
 					if(a[0] != -1){
-						var slicePoints = Array.newFrom(a).slide(2).clump(2);
+						var rawPoints,slicePoints;
+						rawPoints = Array.newFrom(a).asInteger;
+						if(rawPoints[0] != [v[\bounds][0]]){rawPoints = [v[\bounds][0]] ++ rawPoints};
+						if(rawPoints.last != [v[\bounds][1]]){rawPoints=rawPoints ++ [v[\bounds][1]]};
+
+						slicePoints = Array.newFrom(rawPoints).slide(2).clump(2);
 						slicePoints.do{|s,j|
-							var label = (k ++ j).asSymbol;
-							index.add(label->IdentityDictionary(proto:v));
-							index.at(label).add(\points->s);
+							var dict,label = (k ++ j).asSymbol;
+							dict = IdentityDictionary();
+							dict.putAll(v);
+							dict[\bounds] = s;
+							index.add(label->dict);
 						}
 					}{
-						index.add((k ++ '0').asSymbol->IdentityDictionary(proto:v));
+						var dict = IdentityDictionary();
+						dict.putAll(v);
+						index.add((k ++ '0').asSymbol->dict);
 					};
 					if(jobs.size > 0){perf.value(tmpIndices)}{ tmpIndices.free };
 					if(completed == total) {action !? action.value(index)};
 				})
 			},'/doneslice' ++ uid ++ counter,server.addr).oneShot;
-
 			{
 				var numframes,onsets;
-				numframes = v[\points].reverse.reduce('-');
-				onsets = sliceFunc.value(sourceBuffer, v[\points][0],numframes,tmpIndices);
+				numframes = v[\bounds].reverse.reduce('-');
+				onsets = sliceFunc.value(sourceBuffer, v[\bounds][0],numframes,tmpIndices);
 				SendReply.kr(Done.kr(onsets),'/doneslice' ++ uid ++ idx);
 				FreeSelfWhenDone.kr(onsets);
 			}.play;
@@ -139,8 +147,8 @@ FluidProcessSlices{
 
 			{
 				var numframes,feature;
-				numframes = v[\points].reverse.reduce('-');
-				feature = featureFunc.value(sourceBuffer, v[\points][0],numframes,idx);
+				numframes = v[\bounds].reverse.reduce('-');
+				feature = featureFunc.value(sourceBuffer, v[\bounds][0],numframes,idx);
 				SendReply.kr(Done.kr(feature),'/doneFeature' ++ uid ++ idx);
 				FreeSelfWhenDone.kr(feature);
 			}.play(server);
