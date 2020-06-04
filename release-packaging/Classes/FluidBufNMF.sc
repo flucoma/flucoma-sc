@@ -18,7 +18,7 @@ FluidBufNMF : UGen {
     }
 
     *kr {|source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, resynth, bases, basesMode = 0, activations, actMode = 0, components = 1, iterations = 100, windowSize = 1024, hopSize = -1, fftSize = -1, windowType = 0, randomSeed = -1, trig = 1|
-        ^this.multiNew(\control,source, startFrame, numFrames, startChan, numChans, resynth, bases, basesMode, activations, actMode, components, iterations, windowSize, hopSize, fftSize, trig);
+        ^this.new1(\control,source, startFrame, numFrames, startChan, numChans, resynth, bases, basesMode, activations, actMode, components, iterations, windowSize, hopSize, fftSize, trig:trig);
 
     }
 
