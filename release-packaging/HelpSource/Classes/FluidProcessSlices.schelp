@@ -1,0 +1,96 @@
+TITLE:: FluidProcessSlices
+summary:: Utility for batch processing slices
+categories:: FluidManipulation
+related:: Classes/FluidLoadFolder, Classes/FluidSliceCorpus,Guides/FluidDecomposition
+
+DESCRIPTION::
+This class abstracts some of the boilerplate involved in batch processing a sequence of segments in a link::Classes/Buffer:: on the server. It does this by iteratively running a user supplied function and using slice point information passed as an link::Classes/IdentityDictionary:: (see link::Classes/FluidLoadFolder#-index:: for details on the format of this).
+
+
+CLASSMETHODS::
+
+METHOD:: new
+Creates a new instance
+
+ARGUMENT:: featureFunc
+ANCHOR::featureFunction::
+A function that will perform some processing on a section of a buffer. It is passed the following arguments
+definitionlist::
+##src
+|| The source link::Classes/Buffer:: containing the audio to process
+##start
+|| The start frame of the section to process, in samples
+##num
+|| The number of frames to process, in samples
+##label
+|| The label for the segment from the supplied dictionary to link::#-play::
+::
+
+warning::
+This function strong::must:: return a link::Classes/UGen:: that sets a code::done:: flag (see link::Classes/Done::), in order for the iteration and housekeeping to work. All code::FluidBuf*:: objects do this.
+::
+
+An example function that records statistics about the pitch of a segment in to a link::Classes/FluidDataSet:: could look like
+
+code::
+~avgPitch = { |src,start,num,label|
+	var pitch, stats,statsbuf;
+	statsbuf = LocalBuf(7);
+	pitch = FluidBufPitch.kr(src,start,num,features:~someotherbuffer);
+	stats = FluidBufStats.kr(~someotherbuffer,stats:statsbuf,trig:Done.kr(pitch));
+	FluidDataSetWr.kr(label,statsbuf,~mydataset,Done.kr(stats))
+}
+::
+
+INSTANCEMETHODS::
+
+METHOD:: play
+Run the link::#featureFunction:: iteratively over segments of a link::Classes/Buffer::, specified by an link::Classes/IdentityDictionary::
+
+ARGUMENT:: server
+The link::Classes/Server:: on which to process
+
+ARGUMENT:: sourceBuffer
+ The source link::Classes/Buffer:: containing the audio to process
+
+ARGUMENT:: bufIdx
+An link::Classes/IdentityDictionary:: specifying labels, boundaries, sample rate and channel count for the segment. See link::Classes/FluidLoadFolder#-index:: for details.
+
+ARGUMENT:: action
+A function to run when processing is complete
+
+METHOD:: featureFunc
+Return the function uses by this instance.
+
+EXAMPLES::
+
+code::
+s.reboot;
+//Load all the Fluid Corpus Manipulation audio f
+(
+~path = File.realpath(FluidLoadFolder.class.filenameSymbol).dirname +/+ "../AudioFiles";
+~loader = FluidLoadFolder(~path);
+~loader.play(s,action:{ |dataDictionary| "Done loading".postln});
+~slicer = FluidSliceCorpus({ |src,start,num,dest|
+		FluidBufOnsetSlice.kr(src,start,num,indices:dest, threshold:2)
+});
+~pitchdata = FluidDataSet(s,\FluidProcessSlicesHelp);
+~pitchbufs = 4.collect{Buffer.new};
+~statsbufs = 4.collect{Buffer.new};
+)
+//segment
+~slicer.play(s,~loader.buffer,~loader.index,{|dataDictionary| "Slicing done".postln;});
+
+//In the interests of brevity, let's just take a subset of the slices and process these
+~subset = IdentityDictionary.newFrom(~slicer.index.asSortedArray[0..3].flatten(1));
+//write pitch statistics into a dataset
+~extractor = FluidProcessSlices({|src,start,num,label,data,i|
+	var pitch, stats;
+	pitch = FluidBufPitch.kr(src,start,num,features:~pitchbufs[i]);
+	stats = FluidBufStats.kr(~pitchbufs[i],stats:~statsbufs[i],trig:Done.kr(pitch));
+	FluidDataSetWr.kr(label,~statsbufs[i],~pitchdata,Done.kr(stats))
+});
+~extractor.play(s,~loader.buffer,~subset,{"Feature extraction done".postln});
+//view the data
+~pitchdata.print
+::
