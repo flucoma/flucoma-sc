@@ -83,25 +83,24 @@ EXAMPLES::
 
 code::
 //Make some 2D points and place into a dataset
+s.reboot;
 (
 ~points = 100.collect{ [ 1.0.linrand,1.0.linrand] };
 ~dataset= FluidDataSet(s,\kdtree_help_rand2d);
-~dataset.free
-~tmpbuf = Buffer.alloc(s,2) ;
+~tmpbuf = Buffer.alloc(s,2);
 fork{
-	~dataset.ready.wait;
-	~points.do{|x,i|
-		(""++(i+1)++"/100").postln;
-		~tmpbuf.setn(0,x);
-		~dataset.addPoint(i,~tmpbuf);
-		s.sync
+	s.bind{
+		~dataset.ready.wait;
+		~points.do{|x,i|
+			(""++(i+1)++"/100").postln;
+			~tmpbuf.setn(0,x);
+			~dataset.addPoint(i,~tmpbuf);
+			s.sync
+		};
+		"Data loaded".postln;
 	}
 }
 )
-
-
-
-
 
 //Make a new tree, and fit it to the dataset
 (
