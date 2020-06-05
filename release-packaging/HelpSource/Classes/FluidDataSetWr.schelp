@@ -1,0 +1,43 @@
+TITLE:: FluidDataSetWr
+summary:: Write to FluidDataSet on the server
+categories:: FluidManipulation
+related:: Classes/FLuidDataSet
+
+DESCRIPTION::
+A UGen that writes to a link::Classes/FluidDataSet::
+
+CLASSMETHODS::
+
+private:: *new1
+
+METHOD:: kr
+The equivalent of calling link::Classes/FluidDataSet#-addPoint::, but within a link::Classes/Synth::
+
+ARGUMENT:: label
+A symbol for the label of the new point
+
+ARGUMENT:: buf
+The link::Classes/Buffer:: containing the data point.
+
+ARGUMENT:: dataset
+An instance of link::Classes/FluidDataSet:: or an instance's name.
+
+ARGUMENT:: trig
+A kr trigger signal
+
+EXAMPLES::
+
+code::
+s.reboot;
+(
+~ds = FluidDataSet(s,\FluidDataSetWr);
+)
+
+{
+	var b = LocalBuf.newFrom([0,1,2,3]);
+	FreeSelfWhenDone.kr(FluidDataSetWr.kr("help_data_point",b,~ds));
+}.play(s);
+
+~ds.print;
+
+::
