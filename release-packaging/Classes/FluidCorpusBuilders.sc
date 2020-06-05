@@ -83,7 +83,6 @@ FluidSliceCorpus {
 						if(rawPoints[0] != [v[\bounds][0]]){rawPoints = [v[\bounds][0]] ++ rawPoints};
 						if(rawPoints.last != [v[\bounds][1]]){rawPoints=rawPoints ++ [v[\bounds][1]]};
 
-						rawPoints.postln;
 						rawPoints.doAdjacentPairs{|a,b|
 							var dict;
 							if ((b - a) >= 1){
