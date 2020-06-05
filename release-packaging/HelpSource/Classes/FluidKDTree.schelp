@@ -117,8 +117,23 @@ fork{
 
 //Return labels of k nearest points to new data
 (
-~tmpbuf.setn(0,[ 1.0.linrand,1.0.linrand ]);
-~tree.kNearest(~tmpbuf,5, { |a| a.postln });
+~testpoint = [ 1.0.linrand,1.0.linrand ];
+("\n\nTest point:" + ~testpoint).postln;
+~tmpbuf.setn(0,~testpoint);
+fork{
+	~tree.kNearest(~tmpbuf,5, { |a|
+		("Labels of nearest points" + a).postln;
+		"Nearest points".postln;
+		a.do{|l|
+			~dataset.getPoint(l,~tmpbuf,action:{
+				~tmpbuf.loadToFloatArray(action:{ |point|
+					point.postln;
+				})
+			});
+			s.sync;
+		}
+	});
+}
 )
 
 //or the distances
