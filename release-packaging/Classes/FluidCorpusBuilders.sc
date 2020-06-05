@@ -75,26 +75,29 @@ FluidSliceCorpus {
 			idx = counter;
 			OSCFunc({
 				tmpIndices.loadToFloatArray(action:{ |a|
+					var sliceindex = 1;
 					completed =  completed + 1;
 					("FluidSliceCorpus:" + ( completed.asString ++ "/" ++ total)).postln;
 					if(a[0] != -1){
-						var rawPoints,slicePoints;
-						rawPoints = Array.newFrom(a).asInteger;
+						var rawPoints = Array.newFrom(a).asInteger;
 						if(rawPoints[0] != [v[\bounds][0]]){rawPoints = [v[\bounds][0]] ++ rawPoints};
 						if(rawPoints.last != [v[\bounds][1]]){rawPoints=rawPoints ++ [v[\bounds][1]]};
 
-						slicePoints = Array.newFrom(rawPoints).slide(2).clump(2);
-						slicePoints.do{|s,j|
-							var dict,label = (k ++ j).asSymbol;
-							dict = IdentityDictionary();
-							dict.putAll(v);
-							dict[\bounds] = s;
-							index.add(label->dict);
+						rawPoints.postln;
+						rawPoints.doAdjacentPairs{|a,b|
+							var dict;
+							if ((b - a) >= 1){
+								dict = IdentityDictionary();
+								dict.putAll(v);
+								dict[\bounds] = [a,b];
+								index.add(((k ++ "-" ++sliceindex).asSymbol)->dict);
+								sliceindex = sliceindex + 1;
+							}
 						}
 					}{
 						var dict = IdentityDictionary();
 						dict.putAll(v);
-						index.add((k ++ '0').asSymbol->dict);
+						index.add((k ++ "-1").asSymbol->dict);
 					};
 					if(jobs.size > 0){perf.value(tmpIndices)}{ tmpIndices.free };
 					if(completed == total) {action !? action.value(index)};
