@@ -19,13 +19,11 @@ FluidProxyUgen : UGen {
 FluidManipulationClient {
 
 	var <server;
-	var  <synth,<>ugen;
-	var  id;
+	var <synth,<>ugen;
+	var id;
 	var defName, def;
-	var onSynthFree, persist;
-
+	var onSynthFree, keepAlive;
 	var postit;
-	var < ready;
 
 	*prServerString{ |s|
 		var ascii = s.ascii;
@@ -36,7 +34,6 @@ FluidManipulationClient {
 		^FluidProxyUgen.newFromDesc(rate, numOutputs, inputs, specialIndex)
 	}
 
-
 	*new{ |server...args|
 		server = server ? Server.default;
 		if(server.serverRunning.not,{
@@ -46,41 +43,36 @@ FluidManipulationClient {
 	}
 
 	baseinit { |...args|
-		var makeFirstSynth;
+		var makeFirstSynth,synthMsg;
 		id = UniqueID.next;
 		postit = {|x| x.postln;};
+		keepAlive = true;
 		defName = (this.class.name.asString ++ id).asSymbol;
-		ready = Condition(false);
 		def = SynthDef(defName,{
 			var  ugen = FluidProxyUgen.kr(this.class.name, *args);
 			this.ugen = ugen;
 			ugen
 		});
+		synth = Synth.basicNew(def.name, server);
+		synthMsg = synth.newMsg(RootNode(server));
+		def.doSend(server,synthMsg);
 
-		persist = true;
 		onSynthFree = {
-			ready.test = false;
 			synth = nil;
-			if(persist){
+			if(keepAlive){
 				//If we don't sync here, cmd-. doesn't reset properly (but server.freeAll does)
 				forkIfNeeded {
 					server.sync;
 					synth = Synth(defName,target: RootNode(server));
 					synth.onFree{onSynthFree.value};
-					ready.test = true;
-					ready.signal;
 				}
 			}
 		};
-		forkIfNeeded{
-			def.add;
-			server.sync;
-			onSynthFree.value;
-		}
+		synth.onFree{onSynthFree.value};
 	}
 
 	free{
-		persist = false;
+		keepAlive = false;
 		if(server.serverRunning){server.sendMsg("/cmd","free"++this.class.name,id)};
 		synth.tryPerform(\free);
 		^nil
@@ -88,7 +80,6 @@ FluidManipulationClient {
 
 	prSendMsg { |msg, args, action,parser|
 		if(this.server.serverRunning.not,{(this.asString + "– server not running").error; ^nil});
-		synth ?? {"Not ready".warn};
 		synth !? {
 			OSCFunc(
 				{ |msg|
