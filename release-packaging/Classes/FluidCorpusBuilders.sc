@@ -135,7 +135,7 @@ FluidProcessSlices{
 		total = jobs.size;
 		counter = 0;
 		completed = 0;
-		perf = {
+		perf = {|jobID|
 			var idx,v, k = jobs.pop;
 			v = bufIdx[k];
 			counter = counter + 1;
@@ -150,11 +150,12 @@ FluidProcessSlices{
 			{
 				var numframes,feature;
 				numframes = v[\bounds].reverse.reduce('-');
-				feature = featureFunc.value(sourceBuffer, v[\bounds][0],numframes,k,v,counter-1);
+				jobID.postln;
+				feature = featureFunc.value(sourceBuffer, v[\bounds][0], numframes, k, v, counter-1, jobID);
 				SendReply.kr(Done.kr(feature),'/doneFeature' ++ uid ++ idx);
 				FreeSelfWhenDone.kr(feature);
 			}.play(server);
 		};
-		4.do{perf.value};
+		4.do{|jobIDs|perf.value(jobIDs)};
 	}
 }

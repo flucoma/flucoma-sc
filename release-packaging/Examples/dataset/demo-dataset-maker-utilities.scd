@@ -1,9 +1,9 @@
 // define a few processes
 (
 ~ds = FluidDataSet(s,\test); // still need a name on the server to make sure we do not forget it exists. it is now permanent aka will resist cmd+.
-~mfccbuf = Buffer.new;
-~statsbuf = Buffer.new;
-~flatbuf = Buffer.new;
+~mfccbuf = Buffer.allocConsecutive(4,s,1);
+~statsbuf = Buffer.allocConsecutive(4,s,1);
+~flatbuf = Buffer.allocConsecutive(4,s,1);
 
 // here we instantiate a loader which creates a single large buffer with a dictionary of what was included in it
 // ~loader = FluidLoadFolder("/Volumes/machins/projets/newsfeed/smallnum/");
@@ -15,12 +15,13 @@
 });
 
 // here we instantiate a process of description and dataset writing, which will run each slice of the previous slice and write the entry. Note the chain of Done.kr triggers.
-~extractor = FluidProcessSlices({|src,start, num, idx|
+~extractor = FluidProcessSlices({|src,start, num, idx, a, b, i|
 	var mfcc, stats, writer, flatten,mfccBuf, statsBuf, flatBuf;
-	mfcc = FluidBufMFCC.kr(src,startFrame:start,numFrames:num,numChans:1,features:~mfccbuf,trig:1);
-	stats = FluidBufStats.kr(~mfccbuf,stats:~statsbuf,trig:Done.kr(mfcc));
-	flatten = FluidBufFlatten.kr(~statsbuf,~flatbuf,trig:Done.kr(stats));
-	writer = FluidDataSetWr.kr(idx,~flatbuf,~ds,trig:Done.kr(flatten))
+	[src,start, num, idx, a, b, i].postln;
+	mfcc = FluidBufMFCC.kr(src,startFrame:start,numFrames:num,numChans:1,features:~mfccbuf[i],trig:1);
+	stats = FluidBufStats.kr(~mfccbuf[i],stats:~statsbuf[i],trig:Done.kr(mfcc));
+	flatten = FluidBufFlatten.kr(~statsbuf[i],~flatbuf[i],trig:Done.kr(stats));
+	writer = FluidDataSetWr.kr(idx,~flatbuf[i],~ds,trig:Done.kr(flatten))
 });
 )
 
@@ -140,15 +141,15 @@ FluidBufCompose.process(s,~loader.buffer,a,(b-a),numChans: 1, destination: ~targ
 (
 {
 	var mfcc, stats, flatten;
-	mfcc = FluidBufMFCC.kr(~targetsound,features:~mfccbuf,trig:1);
-	stats = FluidBufStats.kr(~mfccbuf,stats:~statsbuf,trig:Done.kr(mfcc));
-	flatten = FluidBufFlatten.kr(~statsbuf,~flatbuf,trig:Done.kr(stats));
+	mfcc = FluidBufMFCC.kr(~targetsound,features:~mfccbuf[0],trig:1);
+	stats = FluidBufStats.kr(~mfccbuf[0],stats:~statsbuf[0],trig:Done.kr(mfcc));
+	flatten = FluidBufFlatten.kr(~statsbuf[0],~flatbuf[0],trig:Done.kr(stats));
 }.play;
 )
 
 //find its nearest neighbours
 ~friends = Array;
-~tree.kNearest(~flatbuf,5,{|x| ~friends = x.postln;})
+~tree.kNearest(~flatbuf[0],5,{|x| ~friends = x.postln;})
 
 // play them in a row
 (
