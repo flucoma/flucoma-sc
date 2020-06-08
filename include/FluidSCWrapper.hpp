@@ -1354,10 +1354,16 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
                             MessageResult<T>& result)
   {
     auto ft = getInterfaceTable();
+    if(!x->mNodeAlive) return;
+    
     // allocate return values
     index  numArgs = ToFloatArray::allocSize(static_cast<T>(result));
-    
-    if(!x->mNodeAlive) return;
+
+    if(numArgs > 2048)
+    {
+      std::cout << "ERROR: Message response too big to send (" << asUnsigned(numArgs) * sizeof(float) << " bytes)." << std::endl;
+      return;
+    }
     
     float* values = static_cast<float*>(
         ft->fRTAlloc(x->mNode->mWorld, asUnsigned(numArgs) * sizeof(float)));
@@ -1388,6 +1394,12 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
     
     std::tie(offsets, numArgs) =
         ToFloatArray::allocSize(static_cast<std::tuple<Ts...>>(result));
+    
+    if(numArgs > 2048)
+    {
+      std::cout << "ERROR: Message response too big to send (" << asUnsigned(numArgs) * sizeof(float) << " bytes)." << std::endl;
+      return;
+    }
     
     float* values = static_cast<float*>(
         ft->fRTAlloc(x->mNode->mWorld, asUnsigned(numArgs) * sizeof(float)));
