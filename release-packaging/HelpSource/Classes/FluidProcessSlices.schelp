@@ -49,9 +49,9 @@ code::
 	var pitch, stats,statsbuf,label,voice;
 	label = data.key;
 	voice = data.value[\voice];
-	statsbuf = LocalBuf(7,4);
-	pitch = FluidBufPitch.kr(src,start,num,features:~featurebuffers[voice]);
-	stats = FluidBufStats.kr(~featurebuffers[voice],stats:statsbuf,trig:Done.kr(pitch));
+	statsbuf = LocalBuf(7);
+	pitch = FluidBufPitch.kr(src,start,num,numChans:1,features:~featurebuffers[voice]);
+	stats = FluidBufStats.kr(~featurebuffers[voice],numChans:1, stats:statsbuf,trig:Done.kr(pitch));
 	FluidDataSetWr.kr(label,statsbuf,~mydataset,Done.kr(stats))
 };
 ::
