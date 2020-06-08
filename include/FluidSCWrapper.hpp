@@ -847,6 +847,7 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
 
   using FloatControlsIter = impl::FloatControlsIter;
 
+  using SharedState = std::shared_ptr<WrapperState<C>>;
   //I would like to template these to something more scaleable, but baby steps
   friend class impl::RealTime<C,FluidSCWrapper>;
   friend class impl::NonRealTime<C,FluidSCWrapper>;
@@ -1185,7 +1186,7 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
   struct MessageDispatch
   {
     static constexpr size_t Message = N;
-    FluidSCWrapper*         wrapper;
+    SharedState             state;
     ArgTuple                args;
     Ret                     result;
     std::string             name;
@@ -1226,7 +1227,7 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
     void*        msgptr = ft->fRTAlloc(x->mWorld, sizeof(MessageData));
     MessageData* msg = new (msgptr) MessageData;
     msg->name = '/' + Client::getMessageDescriptors().template name<N>();
-    msg->wrapper = x;
+    msg->state = x->state();
     ArgTuple&    args = msg->args;
     // type check OSC message
     
@@ -1306,10 +1307,10 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
         {
           MessageData* m = static_cast<MessageData*>(data);
           m->result =
-              ReturnType{invokeImpl<N>(m->wrapper, m->args, IndexList{})};
+              ReturnType{invokeImpl<N>(m->state, m->args, IndexList{})};
 
           if (!m->result.ok())
-            printResult(m->wrapper, m->result);
+            printResult(m->state, m->result);
 
           return true;
         },
@@ -1321,11 +1322,12 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
                                                                      world);
          
           if(m->result.status() != Result::Status::kError)
-            messageOutput(m->wrapper, m->name, m->result);
+            messageOutput(m->state, m->name, m->result);
           else
           {
-             auto ft = getInterfaceTable(); 
-             ft->fSendNodeReply(&m->wrapper->mParent->mNode,
+             auto ft = getInterfaceTable();
+            if(m->state->mNodeAlive)
+              ft->fSendNodeReply(m->state->mNode,
                         -1, m->name.c_str(),0, nullptr);
           }
           return true;
@@ -1341,54 +1343,59 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
   }
 
   template <size_t N, typename ArgsTuple, size_t... Is> // Call from NRT
-  static decltype(auto) invokeImpl(FluidSCWrapper* x, ArgsTuple& args,
+  static decltype(auto) invokeImpl(SharedState& x, ArgsTuple& args,
                                    std::index_sequence<Is...>)
   {
-    return x->client().template invoke<N>(x->client(), std::get<Is>(args)...);
+    return x->client.template invoke<N>(x->client, std::get<Is>(args)...);
   }
   
   template <typename T> // call from RT
-  static void messageOutput(FluidSCWrapper* x, const std::string& s,
+  static void messageOutput(SharedState& x, const std::string& s,
                             MessageResult<T>& result)
   {
     auto ft = getInterfaceTable();
     // allocate return values
     index  numArgs = ToFloatArray::allocSize(static_cast<T>(result));
     
+    if(!x->mNodeAlive) return;
+    
     float* values = static_cast<float*>(
-        ft->fRTAlloc(x->mWorld, asUnsigned(numArgs) * sizeof(float)));
+        ft->fRTAlloc(x->mNode->mWorld, asUnsigned(numArgs) * sizeof(float)));
     
     // copy return data
     ToFloatArray::convert(values, static_cast<T>(result));
     
-    ft->fSendNodeReply(&x->mParent->mNode, -1, s.c_str(),
+    ft->fSendNodeReply(x->mNode, -1, s.c_str(),
                        static_cast<int>(numArgs), values);
   }
 
-  static void messageOutput(FluidSCWrapper* x, const std::string& s,
+  static void messageOutput(SharedState& x, const std::string& s,
                             MessageResult<void>&)
   {
     auto ft = getInterfaceTable();
-    ft->fSendNodeReply(&x->mParent->mNode, -1, s.c_str(), 0, nullptr);
+    if(!x->mNodeAlive) return;
+    ft->fSendNodeReply(x->mNode, -1, s.c_str(), 0, nullptr);
   }
 
   template <typename... Ts>
-  static void messageOutput(FluidSCWrapper* x, const std::string& s,
+  static void messageOutput(SharedState& x, const std::string& s,
                             MessageResult<std::tuple<Ts...>>& result)
   {
     auto                             ft = getInterfaceTable();
     std::array<index, sizeof...(Ts)> offsets;
     index                            numArgs;
+    if(!x->mNodeAlive) return;
+    
     std::tie(offsets, numArgs) =
         ToFloatArray::allocSize(static_cast<std::tuple<Ts...>>(result));
     
     float* values = static_cast<float*>(
-        ft->fRTAlloc(x->mWorld, asUnsigned(numArgs) * sizeof(float)));
+        ft->fRTAlloc(x->mNode->mWorld, asUnsigned(numArgs) * sizeof(float)));
     
     ToFloatArray::convert(values, std::tuple<Ts...>(result), offsets,
                           std::index_sequence_for<Ts...>());
     
-    ft->fSendNodeReply(&x->mParent->mNode, -1, s.c_str(),
+    ft->fSendNodeReply(x->mNode, -1, s.c_str(),
                        static_cast<int>(numArgs), values);
   }
 
@@ -1464,14 +1471,14 @@ public:
     return p;
   }
 
-  static void printResult(FluidSCWrapper* x, Result& r)
+  static void printResult(SharedState& x, Result& r)
   {
-    if (!x) return;
+    if (!x.get() || !x->mNodeAlive) return;
 
     switch (r.status())
     {
     case Result::Status::kWarning: {
-      if (x->mWorld->mVerbosity > 0)
+      if (x->mNode->mWorld->mVerbosity > 0)
         std::cout << "WARNING: " << r.message().c_str() << '\n';
       break;
     }
