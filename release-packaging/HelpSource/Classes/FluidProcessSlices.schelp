@@ -49,7 +49,7 @@ code::
 	var pitch, stats,statsbuf,label,voice;
 	label = data.key;
 	voice = data.value[\voice];
-	statsbuf = LocalBuf(7);
+	statsbuf = LocalBuf(7,4);
 	pitch = FluidBufPitch.kr(src,start,num,features:~featurebuffers[voice]);
 	stats = FluidBufStats.kr(~featurebuffers[voice],stats:statsbuf,trig:Done.kr(pitch));
 	FluidDataSetWr.kr(label,statsbuf,~mydataset,Done.kr(stats))
@@ -84,7 +84,8 @@ EXAMPLES::
 
 code::
 s.reboot;
-//Load all the Fluid Corpus Manipulation audio f
+//Load all the Fluid Corpus Manipulation audio files
+
 (
 ~path = File.realpath(FluidLoadFolder.class.filenameSymbol).dirname +/+ "../AudioFiles";
 ~loader = FluidLoadFolder(~path);
@@ -96,12 +97,15 @@ s.reboot;
 ~pitchbufs = 4.collect{Buffer.new};
 ~statsbufs = 4.collect{Buffer.new};
 )
+
 //segment
 ~slicer.play(s,~loader.buffer,~loader.index,{|dataDictionary| "Slicing done".postln;});
 
 //In the interests of brevity, let's just take a subset of the slices and process these
-~subset = IdentityDictionary.newFrom(~slicer.index.asSortedArray[0..3].flatten(1));
+~subset = IdentityDictionary.newFrom(~slicer.index.asSortedArray[0..7].flatten(1));
+
 //write pitch statistics into a dataset
+(
 ~extractor = FluidProcessSlices({|src,start,num,data|
     var pitch, stats, label,i;
     i = data.value[\voice];
@@ -110,7 +114,10 @@ s.reboot;
     stats = FluidBufStats.kr(~pitchbufs[i],stats:~statsbufs[i],trig:Done.kr(pitch));
     FluidDataSetWr.kr(label,~statsbufs[i],~pitchdata,Done.kr(stats))
 });
+)
+
 ~extractor.play(s,~loader.buffer,~subset,{"Feature extraction done".postln});
+
 //view the data
 ~pitchdata.print
 ::
