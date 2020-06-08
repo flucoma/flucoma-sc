@@ -6,7 +6,6 @@ related:: Classes/FluidLoadFolder, Classes/FluidSliceCorpus,Guides/FluidDecompos
 DESCRIPTION::
 This class abstracts some of the boilerplate involved in batch processing a sequence of segments in a link::Classes/Buffer:: on the server. It does this by iteratively running a user supplied function and using slice point information passed as an link::Classes/IdentityDictionary:: (see link::Classes/FluidLoadFolder#-index:: for details on the format of this).
 
-
 CLASSMETHODS::
 
 METHOD:: new
@@ -14,7 +13,11 @@ Creates a new instance
 
 ARGUMENT:: featureFunc
 ANCHOR::featureFunction::
-A function that will perform some processing on a section of a buffer. It is passed the following arguments
+A function that will perform some processing on a section of a buffer.
+warning::
+This function strong::must:: return a link::Classes/UGen:: that sets a code::done:: flag (see link::Classes/Done::), in order for the iteration and housekeeping to work. All code::FluidBuf*:: objects do this.
+::
+The functions is passed the following arguments
 definitionlist::
 ##src
 || The source link::Classes/Buffer:: containing the audio to process
@@ -22,24 +25,35 @@ definitionlist::
 || The start frame of the section to process, in samples
 ##num
 || The number of frames to process, in samples
-##label
-|| The label for the segment from the supplied dictionary to link::#-play::
+##data
+|| anchor::datadict:: An link::Classes/Association:: of the label for this segment, with an link::Classes/IdentityDictionary:: of useful extra data:
+definitionlist::
+## sr
+|| The original sample rate of the segment
+## numchans
+|| The original channel count of the segment
+## voice
+|| By default link::#-play:: will run multiple jobs in parallel dependning on the link::#ntasks#tasks:: argument. This contains the task number, which allows you to maintain separate set of resources (e.g. temporary link::Classes/Buffer::s) for each task.
+## index
+|| The absolute count of slices processed.
 ::
-
-warning::
-This function strong::must:: return a link::Classes/UGen:: that sets a code::done:: flag (see link::Classes/Done::), in order for the iteration and housekeeping to work. All code::FluidBuf*:: objects do this.
 ::
 
 An example function that records statistics about the pitch of a segment in to a link::Classes/FluidDataSet:: could look like
 
 code::
-~avgPitch = { |src,start,num,label|
-	var pitch, stats,statsbuf;
+
+~featureBuffers = 4.do{Buffer.new};
+
+~avgPitch = { |src,start,num,data|
+	var pitch, stats,statsbuf,label,voice;
+	label = data.key;
+	voice = data.value[\voice];
 	statsbuf = LocalBuf(7);
-	pitch = FluidBufPitch.kr(src,start,num,features:~someotherbuffer);
-	stats = FluidBufStats.kr(~someotherbuffer,stats:statsbuf,trig:Done.kr(pitch));
+	pitch = FluidBufPitch.kr(src,start,num,features:~featurebuffers[voice]);
+	stats = FluidBufStats.kr(~featurebuffers[voice],stats:statsbuf,trig:Done.kr(pitch));
 	FluidDataSetWr.kr(label,statsbuf,~mydataset,Done.kr(stats))
-}
+};
 ::
 
 INSTANCEMETHODS::
@@ -57,7 +71,11 @@ ARGUMENT:: bufIdx
 An link::Classes/IdentityDictionary:: specifying labels, boundaries, sample rate and channel count for the segment. See link::Classes/FluidLoadFolder#-index:: for details.
 
 ARGUMENT:: action
-A function to run when processing is complete
+A function to run when processing is complete. This gets passed the same link::Classes/Association:: as link::#datadict#the processing function::
+
+ARGUMENT:: tasks
+ANCHOR::ntasks::
+The number of parallel processing tasks to run on the server. Default 4. This should probably never be greater than the number of available CPU cores.
 
 METHOD:: featureFunc
 Return the function uses by this instance.
@@ -84,11 +102,13 @@ s.reboot;
 //In the interests of brevity, let's just take a subset of the slices and process these
 ~subset = IdentityDictionary.newFrom(~slicer.index.asSortedArray[0..3].flatten(1));
 //write pitch statistics into a dataset
-~extractor = FluidProcessSlices({|src,start,num,label,data,i|
-	var pitch, stats;
-	pitch = FluidBufPitch.kr(src,start,num,features:~pitchbufs[i]);
-	stats = FluidBufStats.kr(~pitchbufs[i],stats:~statsbufs[i],trig:Done.kr(pitch));
-	FluidDataSetWr.kr(label,~statsbufs[i],~pitchdata,Done.kr(stats))
+~extractor = FluidProcessSlices({|src,start,num,data|
+    var pitch, stats, label,i;
+    i = data.value[\voice];
+    label = data.key;
+    pitch = FluidBufPitch.kr(src,start,num,features:~pitchbufs[i]);
+    stats = FluidBufStats.kr(~pitchbufs[i],stats:~statsbufs[i],trig:Done.kr(pitch));
+    FluidDataSetWr.kr(label,~statsbufs[i],~pitchdata,Done.kr(stats))
 });
 ~extractor.play(s,~loader.buffer,~subset,{"Feature extraction done".postln});
 //view the data
