@@ -1,9 +1,10 @@
 // define a few processes
 (
 ~ds = FluidDataSet(s,\test); // still need a name on the server to make sure we do not forget it exists. it is now permanent aka will resist cmd+.
-~mfccbuf = Buffer.allocConsecutive(4,s,1);
-~statsbuf = Buffer.allocConsecutive(4,s,1);
-~flatbuf = Buffer.allocConsecutive(4,s,1);
+//define as many buffers as we have parallel voices/threads in the extractor processing (default is 4)
+~mfccbuf = 4.collect{Buffer.new};
+~statsbuf = 4.collect{Buffer.new};
+~flatbuf = 4.collect{Buffer.new};
 
 // here we instantiate a loader which creates a single large buffer with a dictionary of what was included in it
 // ~loader = FluidLoadFolder("/Volumes/machins/projets/newsfeed/smallnum/");
@@ -15,13 +16,14 @@
 });
 
 // here we instantiate a process of description and dataset writing, which will run each slice of the previous slice and write the entry. Note the chain of Done.kr triggers.
-~extractor = FluidProcessSlices({|src,start, num, idx, a, b, i|
-	var mfcc, stats, writer, flatten,mfccBuf, statsBuf, flatBuf;
-	[src,start, num, idx, a, b, i].postln;
-	mfcc = FluidBufMFCC.kr(src,startFrame:start,numFrames:num,numChans:1,features:~mfccbuf[i],trig:1);
-	stats = FluidBufStats.kr(~mfccbuf[i],stats:~statsbuf[i],trig:Done.kr(mfcc));
-	flatten = FluidBufFlatten.kr(~statsbuf[i],~flatbuf[i],trig:Done.kr(stats));
-	writer = FluidDataSetWr.kr(idx,~flatbuf[i],~ds,trig:Done.kr(flatten))
+~extractor = FluidProcessSlices({|src,start,num,data|
+	var mfcc, stats, writer, flatten,mfccBuf, statsBuf, flatBuf, label, voice;
+	label = data.key;
+    voice = data.value[\voice];
+	mfcc = FluidBufMFCC.kr(src,startFrame:start,numFrames:num,numChans:1,features:~mfccbuf[voice],trig:1);
+	stats = FluidBufStats.kr(~mfccbuf[voice],stats:~statsbuf[voice],trig:Done.kr(mfcc));
+	flatten = FluidBufFlatten.kr(~statsbuf[voice],~flatbuf[voice],trig:Done.kr(stats));
+	writer = FluidDataSetWr.kr(label,~flatbuf[voice],~ds,trig:Done.kr(flatten))
 });
 )
 
@@ -119,9 +121,8 @@ t = Main.elapsedTime;
 
 // write the dataset to file with the native JSON
 ~ds.write("/tmp/sc-dataset.json")
-~ds.clear
 
-// open the file in your favourite json editor
+// open the file in your default json editor
 "open /tmp/sc-dataset.json".unixCmd
 
 //////////////////////////////////////////////////////////////////////////

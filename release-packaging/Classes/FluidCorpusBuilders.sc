@@ -150,7 +150,6 @@ FluidProcessSlices{
 			{
 				var numframes,feature;
 				numframes = v[\bounds].reverse.reduce('-');
-				jobID.postln;
 				feature = featureFunc.value(sourceBuffer, v[\bounds][0], numframes, k->v);
 				SendReply.kr(Done.kr(feature),'/doneFeature' ++ uid ++ idx);
 				FreeSelfWhenDone.kr(feature);
