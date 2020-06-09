@@ -156,11 +156,7 @@ Routine{
 ~ds.print //to post window by default, but you can supply a custom action instead
 ~ds.dump //likewise
 //for example
-(
-~ds.dump{|j|
-	~dict = j.parseJSON
-}
-)
+~ds.dump{ |d| ~dict = d }
 //Now we have a Dictionary of our data and IDs
 ~dict.postcs
 
