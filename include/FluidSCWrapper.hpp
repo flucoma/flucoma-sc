@@ -737,6 +737,7 @@ struct LifetimePolicy<Client, Wrapper,std::false_type, std::true_type>
 
   using SharedType = typename GetSharedType<Client>::type;
   using ClientPointer = typename SharedType::ClientPointer;
+  using ParamType = typename Client::ParamSetType;
 
   static void constructClass(Unit* unit)
   {
@@ -747,17 +748,19 @@ struct LifetimePolicy<Client, Wrapper,std::false_type, std::true_type>
     Wrapper::setParams(unit, params,controlsReader,true);
     
     auto& name = params.template get<0>();
-    
+   
+    mParamsRegistry.emplace(name, ParamType{params});
+    mClientRegistry.emplace(name, Client{params});
+  
     auto client = Client{params};
-    auto clientRef = SharedType::lookup(name);
-
-    auto pos = mRegistry.find(clientRef);
-    if(pos == mRegistry.end()) mRegistry.emplace(clientRef);
-
     new (static_cast<Wrapper*>(unit)) Wrapper(std::move(controlsReader),std::move(client),std::move(params));
 
   }
-  static void destroyClass(Unit* unit) { static_cast<Wrapper*>(unit)->~Wrapper(); }
+  static void destroyClass(Unit* unit) {
+  std::cout << "Regsitry size :" << mClientRegistry.size() << '\n';
+    static_cast<Wrapper*>(unit)->~Wrapper();
+    
+  }
 
   static void setup(InterfaceTable* ft, const char* name)
   {
@@ -769,10 +772,9 @@ struct LifetimePolicy<Client, Wrapper,std::false_type, std::true_type>
        [](World*,void*,sc_msg_iter* args, void* /*replyAddr*/)
        {
           auto objectName = std::string(args->gets());
-          auto clientRef = SharedType::lookup(objectName);
-          auto pos = mRegistry.find(clientRef);
-          if(pos != mRegistry.end()) mRegistry.erase(clientRef);
-       }, &mRegistry);
+          mClientRegistry.erase(objectName);
+          mParamsRegistry.erase(objectName);
+       }, &mClientRegistry);
     
   }
 private:
@@ -783,14 +785,17 @@ private:
     return  SharedType::lookup(name);
   }
 
-  static std::unordered_set<ClientPointer> mRegistry;
+  static std::unordered_map<std::string,Client> mClientRegistry;
+  static std::unordered_map<std::string,ParamType> mParamsRegistry;
 };
 
 template<typename Client, typename Wrapper>
-std::unordered_set<typename LifetimePolicy<Client, Wrapper, std::false_type, std::true_type>::ClientPointer>
-                LifetimePolicy<Client, Wrapper, std::false_type, std::true_type>::mRegistry{};
+std::unordered_map<std::string, Client>
+                LifetimePolicy<Client, Wrapper, std::false_type, std::true_type>::mClientRegistry{};
 
-
+template<typename Client, typename Wrapper>
+std::unordered_map<std::string, typename LifetimePolicy<Client, Wrapper, std::false_type, std::true_type>::ParamType>
+                  LifetimePolicy<Client, Wrapper, std::false_type, std::true_type>::mParamsRegistry{};
 //// Template Specialisations for NRT/RT
 
 template <typename Client, typename Wrapper, typename NRT, typename RT>
