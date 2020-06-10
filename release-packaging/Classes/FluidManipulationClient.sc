@@ -83,7 +83,7 @@ FluidManipulationClient {
 		synth !? {
 			OSCFunc(
 				{ |msg|
-					forkIfNeeded{
+					defer{
 						var result;
 						result = FluidMessageResponse.collectArgs(parser,msg.drop(3));
 						if(action.notNil){action.value(result)}{action.value};
