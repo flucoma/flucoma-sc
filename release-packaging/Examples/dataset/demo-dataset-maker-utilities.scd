@@ -1,9 +1,10 @@
 // define a few processes
 (
 ~ds = FluidDataSet(s,\test); // still need a name on the server to make sure we do not forget it exists. it is now permanent aka will resist cmd+.
-~mfccbuf = Buffer.new;
-~statsbuf = Buffer.new;
-~flatbuf = Buffer.new;
+//define as many buffers as we have parallel voices/threads in the extractor processing (default is 4)
+~mfccbuf = 4.collect{Buffer.new};
+~statsbuf = 4.collect{Buffer.new};
+~flatbuf = 4.collect{Buffer.new};
 
 // here we instantiate a loader which creates a single large buffer with a dictionary of what was included in it
 // ~loader = FluidLoadFolder("/Volumes/machins/projets/newsfeed/smallnum/");
@@ -15,12 +16,14 @@
 });
 
 // here we instantiate a process of description and dataset writing, which will run each slice of the previous slice and write the entry. Note the chain of Done.kr triggers.
-~extractor = FluidProcessSlices({|src,start, num, idx|
-	var mfcc, stats, writer, flatten,mfccBuf, statsBuf, flatBuf;
-	mfcc = FluidBufMFCC.kr(src,startFrame:start,numFrames:num,numChans:1,features:~mfccbuf,trig:1);
-	stats = FluidBufStats.kr(~mfccbuf,stats:~statsbuf,trig:Done.kr(mfcc));
-	flatten = FluidBufFlatten.kr(~statsbuf,~flatbuf,trig:Done.kr(stats));
-	writer = FluidDataSetWr.kr(idx,~flatbuf,~ds,trig:Done.kr(flatten))
+~extractor = FluidProcessSlices({|src,start,num,data|
+	var mfcc, stats, writer, flatten,mfccBuf, statsBuf, flatBuf, label, voice;
+	label = data.key;
+    voice = data.value[\voice];
+	mfcc = FluidBufMFCC.kr(src,startFrame:start,numFrames:num,numChans:1,features:~mfccbuf[voice],trig:1);
+	stats = FluidBufStats.kr(~mfccbuf[voice],stats:~statsbuf[voice],trig:Done.kr(mfcc));
+	flatten = FluidBufFlatten.kr(~statsbuf[voice],~flatbuf[voice],trig:Done.kr(stats));
+	writer = FluidDataSetWr.kr(label,~flatbuf[voice],~ds,trig:Done.kr(flatten))
 });
 )
 
@@ -118,9 +121,8 @@ t = Main.elapsedTime;
 
 // write the dataset to file with the native JSON
 ~ds.write("/tmp/sc-dataset.json")
-~ds.clear
 
-// open the file in your favourite json editor
+// open the file in your default json editor
 "open /tmp/sc-dataset.json".unixCmd
 
 //////////////////////////////////////////////////////////////////////////
@@ -140,15 +142,15 @@ FluidBufCompose.process(s,~loader.buffer,a,(b-a),numChans: 1, destination: ~targ
 (
 {
 	var mfcc, stats, flatten;
-	mfcc = FluidBufMFCC.kr(~targetsound,features:~mfccbuf,trig:1);
-	stats = FluidBufStats.kr(~mfccbuf,stats:~statsbuf,trig:Done.kr(mfcc));
-	flatten = FluidBufFlatten.kr(~statsbuf,~flatbuf,trig:Done.kr(stats));
+	mfcc = FluidBufMFCC.kr(~targetsound,features:~mfccbuf[0],trig:1);
+	stats = FluidBufStats.kr(~mfccbuf[0],stats:~statsbuf[0],trig:Done.kr(mfcc));
+	flatten = FluidBufFlatten.kr(~statsbuf[0],~flatbuf[0],trig:Done.kr(stats));
 }.play;
 )
 
 //find its nearest neighbours
 ~friends = Array;
-~tree.kNearest(~flatbuf,5,{|x| ~friends = x.postln;})
+~tree.kNearest(~flatbuf[0],5,{|x| ~friends = x.postln;})
 
 // play them in a row
 (

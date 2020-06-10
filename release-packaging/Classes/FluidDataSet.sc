@@ -90,11 +90,6 @@ FluidDataSet : FluidManipulationClient {
 		this.prSendMsg(\print,[],action,[string(FluidMessageResponse,_,_)]);
 	}
 
-	dump { |action|
-		action ?? {action = postit};
-		this.prSendMsg(\dump,[],action,[string(FluidMessageResponse,_,_)]);
-	}
-
 	free {
 		serverCaches.remove(server,id);
 		super.free;

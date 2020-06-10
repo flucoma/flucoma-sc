@@ -1,40 +1,67 @@
 + FluidManipulationClient {
 	tmpJSONFilename{
-		^Platform.defaultTempDir++"tmp_fluid_dataset_"++
-		Date.localtime.stamp++".json";
+		^Platform.defaultTempDir++"tmp_fluid_data_"++
+		Date.localtime.stamp++"_"++UniqueID.next++".json";
 	}
 
 	dump {|action|
 		var filename = this.tmpJSONFilename;
 		action ?? {action = postit};
-		this.write(filename, {
-			action.value(filename.parseYAMLFile);
-			File.delete(filename);
-		});
+			this.write(filename, {
+				action.value(this.parseJSON(File.readAllString(filename)));
+				File.delete(filename);
+			});
 	}
 
 	load{|dict, action|
 		var filename = this.tmpJSONFilename;
-		var str = this.asJSON(dict);
-		File.use(filename, "w", { |f| f.write(this.asJSON(dict));});
+		File.use(filename, "wt", { |f| f.write(this.asJSON(dict));});
 		this.read(filename, {
-			action.notNil.if{ action.value };
-			File.delete(filename);
+				action.notNil.if{ action.value; };
+				File.delete(filename);
 		});
 	}
 
+	toDict{|obj|
+		var converted;
+		if(obj.class === Event){
+			converted = obj.as(Dictionary);
+			converted.keysValuesChange{|k,v|this.toDict(v)}
+			^converted;
+		};
+		if(obj.class === Array){
+			converted = obj.collect{|v| this.toDict(v)};
+			^converted;
+		};
+		^obj;
+	}
+
+	parseJSON{|jsonStr|
+		var parsed = jsonStr;
+		jsonStr.do({|char,pos|
+			var inString = false;
+			char.switch(
+				$",{(jsonStr[pos-1]==$\ && inString).not.if({inString = inString.not})},
+				${,{ if(inString.not){parsed[pos] = $(} },
+				$},{ if(inString.not){parsed[pos] = $)} }
+			)
+		});
+		^this.toDict(parsed.interpret);
+	}
+
 	asJSON{|d|
-		if(d.isString || d.isNumber){^d};
-		if(d.isKindOf(Dictionary),
+		if(d.isNumber){^d};
+		if(d.isString){^d.asCompileString};
+		if(d.isKindOf(Dictionary))
 		{
 		  ^"{" ++ (
 			d.keys.asList.collect{|k|
 			k.asString.asCompileString ++ ":" + this.asJSON(d[k])
 			}).join(", ") ++ "}"
-		});
-		if(d.isKindOf(SequenceableCollection),
+		};
+		if(d.isKindOf(SequenceableCollection))
 		{
 			^"[" ++ d.collect({|x|this.asJSON(x)}).join(", ")++ "]";
-		});
+		};
 	}
 }

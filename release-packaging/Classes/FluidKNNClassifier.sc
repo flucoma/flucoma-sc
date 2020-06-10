@@ -25,4 +25,13 @@ FluidKNNClassifier : FluidManipulationClient {
 			[string(FluidMessageResponse,_,_)]
 		);
 	}
+
+	read{|filename,action|
+        this.prSendMsg(\read,[filename.asString],action);
+    }
+
+    write{|filename,action|
+        this.prSendMsg(\write,[filename.asString],action);
+    }
+
 }

@@ -115,46 +115,47 @@ FluidSliceCorpus {
 }
 
 FluidProcessSlices{
-	var < featureFunc, labelFunc;
-	var < index;
+	var < featureFunc;
 
-	*new { |featureFunc, labelFunc|
-		^super.newCopyArgs(featureFunc,labelFunc);
+	*new { |featureFunc|
+		^super.newCopyArgs(featureFunc);
 	}
 
-	play{ |server,sourceBuffer,bufIdx, action|
+	play{ |server, sourceBuffer, bufIdx, action, tasks = 4|
 		var counter,perf,jobs,total,uid, completed;
 
 		sourceBuffer ?? {"No buffer to slice".error; ^nil};
 		bufIdx ?? {"No slice point dictionary passed".error;^nil};
 		server ?? {server = Server.default};
-		index = IdentityDictionary();
 
 		uid = UniqueID.next;
 		jobs = List.newFrom(bufIdx.keys);
 		total = jobs.size;
 		counter = 0;
 		completed = 0;
-		perf = {
+		perf = {|jobID|
 			var idx,v, k = jobs.pop;
 			v = bufIdx[k];
 			counter = counter + 1;
 			idx = counter;
+			v[\index] = counter;
+			v[\voice] = jobID;
 			OSCFunc({
 				completed = completed + 1;
 				("FluidProcessSlices:" + (completed.asString ++ "/" ++ total)).postln;
-				if(jobs.size > 0){perf.value};
-				if(completed == total){action !? action.value(index);};
+				if(jobs.size > 0){perf.value(jobID)};
+				if(completed == total){action !? action.value(v);};
 			},"/doneFeature" ++ uid ++ counter,server.addr).oneShot;
 
 			{
 				var numframes,feature;
 				numframes = v[\bounds].reverse.reduce('-');
-				feature = featureFunc.value(sourceBuffer, v[\bounds][0],numframes,k,v,counter-1);
+				feature = featureFunc.value(sourceBuffer, v[\bounds][0], numframes, k->v);
 				SendReply.kr(Done.kr(feature),'/doneFeature' ++ uid ++ idx);
 				FreeSelfWhenDone.kr(feature);
 			}.play(server);
 		};
-		4.do{perf.value};
+		tasks ?? {tasks  = 4};
+		tasks.asInteger.min(jobs.size).do{|jobIDs|perf.value(jobIDs)};
 	}
 }

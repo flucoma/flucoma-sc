@@ -6,7 +6,7 @@ related:: Classes/FluidLoadFolder, Classes/FluidProcessSlices, Classes/FluidBufO
 DESCRIPTION::
 A utility class that abstracts the boiler plate code involved with batch slicing a buffer containing distinct chunks of audio (a 'corpus' for these purposes).
 
-Whilst this class is designed to be used most easily in conjunction with link::Classes/FluidLoadFolder::, it doesn't have to be. However, it does excpect to be passed an link::Classes/IdentityDictionary:: of a particular format (see link::#indexFormat#description below::).
+Whilst this class is designed to be used most easily in conjunction with link::Classes/FluidLoadFolder::, it doesn't have to be. However, it does expect to be passed an link::Classes/IdentityDictionary:: of a particular format (see link::#indexFormat#description below::).
 
 The actual mechanism for doing the slicing is provided by the user, in the form of a function that will form part of a larger link::Classes/Synth:: (see link::#sliceFuncDescription#below::).
 
@@ -88,10 +88,13 @@ s.reboot
 ~loader.play(s,action:{ |dataDictionary| "Done loading".postln});
 )
 
+(
 ~slicer = FluidSliceCorpus({ |src,start,num,dest|
 	FluidBufOnsetSlice.kr(src,start,num,indices:dest, threshold:0.7)
 });
+)
 
+(
 ~slicer.play(s,~loader.buffer,~loader.index,{|dataDictionary|
 	"Slicing done".postln;
 	//we get passed an IdentityDictionary of slice data, let's look at it
@@ -102,6 +105,5 @@ s.reboot
 		')'.postln;
 	}
 });
-
-
+)
 ::

@@ -82,10 +82,11 @@ b = Buffer.read(s,~randomsoundfile.path,action:{"Sound Loaded".postln});
 FluidBufPitch.process(s,b,numFrames:512 * 10,numChans:1,features:~pitchdata,action:{"Pitch Analysis Done".postln});
 
 // Flatten and print the flat buffer. We expect to see larger numbers (20-2000) interleaved with smaller (0-1)
+(
 FluidBufFlatten.process(s,~pitchdata,~flatdata,action:{
 	~flatdata.loadToFloatArray(action:{ |a|
 		a.postln;
 	})
 })
-
+)
 ::
