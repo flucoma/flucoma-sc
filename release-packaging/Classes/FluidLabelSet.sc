@@ -14,14 +14,14 @@ FluidLabelSet : FluidManipulationClient {
 		^serverCaches.tryPerform(\at, server,id)
 	}
 
-  *new { |server,name|
+  	*new { |server,name|
 		serverCaches.at(server,name) !? {
 			FluidLabelSetExistsError("A FluidLabelSet called % already exists.".format(name)).throw;
 		};
 		^super.new(server,*FluidManipulationClient.prServerString(name))!?{|inst|inst.init(name);inst}
-  }
+  	}
 
-  init { |name|
+  	init { |name|
 		id = name;
 		this.cache;
   }
@@ -93,4 +93,10 @@ FluidLabelSet : FluidManipulationClient {
 	*freeAll { |server|
 		serverCaches.do(server,{|x|x.free;});
 	}
+
+	print { |action|
+		action ?? {action = postit};
+		this.prSendMsg(\print,[],action,[string(FluidMessageResponse,_,_)]);
+	}
+
 }

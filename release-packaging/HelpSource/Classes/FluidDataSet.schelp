@@ -6,29 +6,27 @@ related:: Classes/FluidLabelSet, Classes/FluidKDTree, Classes/FluidKNN, Classes/
 DESCRIPTION::
 A server-side container associating labels with multi-dimensional data. FluidDataSet is identified by its name.
 
-
-​
 CLASSMETHODS::
 ​
 PRIVATE:: asUGenInput
 
 METHOD:: new
-Create a new instance of the dataset, with the given name. If a Dataset with this name already exists, an exception will be thrown (see link::Classes/FluidDataSet#at:: to access an extant Dataset)
+Create a new instance of the dataset, with the given name. If a Dataset with this name already exists, an exception will be thrown (see link::Classes/FluidDataSet#at:: to access an extant Dataset).
 
 ARGUMENT:: server
-The link::Classes/Server:: on which to create the data set
+The link::Classes/Server:: on which to create the data set.
 ARGUMENT:: name
-A symbol or string with the name of the dataset.
+A symbol with the name of the dataset.
 ​
 returns:: The new instance
 
 METHOD:: at
-Retreives a cached instance of a FluidDataSet with the given name, or returns nil if no such object exists.
+Retrieves a cached instance of a FluidDataSet with the given name, or returns nil if no such object exists.
 
 ARGUMENT:: server
-The server associated with this dataset instance
-ARGUMENT:: id
-The name of the Dataset to retreive from the cache
+The server associated with this dataset instance.
+ARGUMENT:: name
+The name of the Dataset to retrieve from the cache.
 
 
 INSTANCEMETHODS::
@@ -39,88 +37,51 @@ METHOD:: addPoint
 Add a new point to the data set. The dimensionality of the dataset is governed by the size of the first point added.
 Will report an error if the label already exists, or if the size of the data does not match the dimensionality of the dataset.
 ARGUMENT:: label
-A symbol or string with the label for the new point
+A symbol or string with the label for the new point.
 ARGUMENT:: buffer
-A link::Classes/Buffer:: with the new data point
+A link::Classes/Buffer:: with the new data point.
 ARGUMENT:: action
-A function to run when the point has been added
+A function to run when the point has been added.
 ​​
 METHOD:: updatePoint
 Update an existing label's data. Will report an error if the label doesn't exist, or if the size of the data does not match the given dimensionality of the dataset.
-ARGUMENT:: label
-symbol or string with the label
-ARGUMENT:: buffer
-A link::Classes/Buffer:: containing the updated data
-ARGUMENT:: action
-A function to run when the server has updated
-METHOD:: size
-Report the number of items currently in the data set
-​
-METHOD:: getPoint
-Retreive a point from the data set into a link::Classes/Buffer::. Will report an error if the label or buffer doesn't exist​
-ARGUMENT:: label
-symbol or string with the label to retreive
-ARGUMENT:: buffer
-link::Classes/Buffer:: to fill
-ARGUMENT:: action
-function to run when the point has been retreived
 
+METHOD:: getPoint
+Retrieve a point from the data set into a link::Classes/Buffer::. Will report an error if the label or buffer doesn't exist​.
 
 METHOD:: deletePoint
 Remove a point from the data set. Will report an error if the label doesn't exist.
-ARGUMENT:: label
-symbol or string with the label to remove
-ARGUMENT:: action
-Function to run when the point has been deleted
 ​​
 METHOD:: clear
-Empty the data set
-ARGUMENT:: action
-Function to run when the data set has been emptied
+Empty the data set.
 ​
 METHOD:: free
-Destroy the object on the server
-
-METHOD:: cols
-Report the dimensionality of the data set. If action is nil, will default to posting result.
-ARGUMENT:: action
-A function to run when the server responds, whose argument is the data set dimensionality. By default, the method will print the response to the post window.
-
-METHOD:: size
-Report the number of points in the data set. If action is nil, will default to posting result.
-ARGUMENT:: action
-A function to run when the server responds, whose argument is the data set size. By default, the method will print the response to the post window.
-
+Destroy the object on the server.
 
 METHOD:: read
-Read a data set from a JSON file on disk
-ARGUMENT:: filename
-The absolute path of the JSON file to read
-ARGUMENT:: action
-A function to run when the file has been read
+Read a data set from a JSON file on disk.
 ​
 METHOD:: write
 Write the data set to disk as a JSON file.
-ARGUMENT:: filename
-Absolute path for the new file
-ARGUMENT:: action
-A function to run when the file has been written
+
+METHOD:: size
+Report the number of items currently in the data set.
+
+METHOD:: cols
+Report the dimensionality of the data set. If action is nil, will default to posting result.
 
 METHOD:: dump
-(buggy, please use Print for now) Post the content of the dataset in JSON format in the window by default, but you can supply a custom action instead;
+Get the contents of the dataset as a Dictionary (note: uses a temporary file under the hood);
+
+METHOD:: load
+Fill the dataset with the contents of a dictionary, replacing its current contents (note: uses a temporary file under the hood).
 
 METHOD:: print
-Post an abbreviated content of the dataset in the window by default, but you can supply a custom action instead;
+Post an abbreviated content of the dataset in the window by default, but you can supply a custom action instead.
 ​​
-METHOD:: asString
-​Responds with the name of the data set as a pretty(ish) string
-
-METHOD:: asSymbol
-​Responds with the name of the data set as a symbol
-
 METHOD:: synth
 The internal synth the object uses to communicate with the server
-​
+
 returns:: A link::Classes/Synth::
 ​
 METHOD:: server
@@ -131,33 +92,46 @@ returns:: A link::Classes/Server::
 EXAMPLES::
 
 CODE::
-// Make a one-dimensional data set called 'simple1data'
+// Create a simple a one-dimensional data set, three ways
+// Using routine
+s.boot;
 (
-~ds = FluidDataSet.new(s,\simple1data,1);
-)
-
-(
-Routine{
-~ds.clear;
-// Make a buffer to use for adding points
-~point = Buffer.alloc(s,1,1);
-//Add 10 points, using the index as a label.
+fork{
+	~ds = FluidDataSet.new(s,\simple1d_1);
+	~point = Buffer.alloc(s,1,1);
 	s.sync;
-    10.do{|i|
+	10.do{|i|
         ~point.set(0,i);
         ~ds.addPoint(i.asString,~point,{("addPoint"+i).postln});
 		s.sync;
-    }
-}.play
+    };
+	~ds.dump; s.sync; ~ds.free;
+};
 )
 
-//Inspect the dataset using print (abbreviated output) or dump (JSON output)
+//Using Dictionary
+(
+d = Dictionary.new;
+d.add(\cols -> 1);
+d.add(\data -> Dictionary.newFrom(10.collect{|i|[i.asString, [i.asFloat]]}.flatten));
+fork{
+	~ds = FluidDataSet.new(s,\simple1d_2); s.sync;
+	~ds.load(d); s.sync;
+	~ds.dump; s.sync; ~ds.free;
+}
+);
 
-~ds.print //to post window by default, but you can supply a custom action instead
-~ds.dump //likewise
-//for example
-~ds.dump{ |d| ~dict = d }
-//Now we have a Dictionary of our data and IDs
-~dict.postcs
+// Using synth
+(
+~ds = FluidDataSet.new(s,\simple1d_3);
+{
+	var trig = Impulse.kr(10);
+	var count = PulseCount.kr(trig) - 1;
+	var buf = LocalBuf(1);
+	BufWr.kr(count, buf);
+	FluidDataSetWr.kr(\simple1d_3, buf: buf, trig: trig);
+	FreeSelf.kr(count - 8);
+}.play.onFree{~ds.dump{|o| o.postln; ~ds.free}}
+)
 
 ::
