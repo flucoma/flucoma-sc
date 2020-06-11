@@ -11,9 +11,9 @@ See https://scikit-learn.org/stable/modules/neighbors.html#nearest-neighbor-algo
 CLASSMETHODS::
 
 METHOD:: new
-Make a new KDTree model for the given server
+Make a new KDTree model for the given server.
 ARGUMENT:: server
-The server on which to make the model
+The server on which to make the model.
 
 INSTANCEMETHODS::
 
@@ -24,24 +24,24 @@ ARGUMENT:: dataset
 The LINK::Classes/FluidDataSet:: of interest. This can either be a data set object itself, or the name of one.
 
 ARGUMENT:: action
-A function to run when indexing is complete
+A function to run when indexing is complete.
 
 
 METHOD:: kNearest
-Returns the IDs of the CODE::k:: points nearest to the one passed
+Returns the IDs of the CODE::k:: points nearest to the one passed.
 
 ARGUMENT:: buffer
 A LINK::Classes/Buffer:: containing a data point to match against. The number of frames in the buffer must match the dimensionality of the LINK::Classes/FluidDataSet:: the tree was fitted to.
 
 ARGUMENT:: k
-The number of neighbours to return
+The number of neighbours to return.
 
 
 ARGUMENT:: action
 A function that will run when the query returns, whose argument is an array of point IDs from the tree's LINK::Classes/FluidDataSet::
 
 METHOD:: kNearestDist
-Get the distances of the K nearest neighbours to a point
+Get the distances of the K nearest neighbours to a point.
 
 ARGUMENT:: buffer
 A LINK::Classes/Buffer:: containing a data point to match against. The number of frames in the buffer must match the dimensionality of the LINK::Classes/FluidDataSet:: the tree was fitted to.
@@ -50,7 +50,7 @@ ARGUMENT:: k
 The number of neighbours to search
 
 ARGUMENT:: action
-A function that will run when the query returns, whose argument is an array of distances
+A function that will run when the query returns, whose argument is an array of distances.
 
 
 EXAMPLES::
