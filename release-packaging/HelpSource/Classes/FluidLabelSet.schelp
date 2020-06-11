@@ -20,7 +20,7 @@ METHOD:: at
 Retrieve a label set from the cache.
 ARGUMENT:: server
 The link::Classes/Server:: on which to create the label set.
-ARGUMENT:: id
+ARGUMENT:: name
 symbol or string with the label set's name.
 
 
@@ -49,23 +49,6 @@ Remove a id-label pair from the label set.
 METHOD:: clear
 Empty the label set.
 
-METHOD:: size
-Report the number of items in the label set.
-
-METHOD:: cols
-Report the number of labels per point (at the moment only 1 is supported).
-
-METHOD:: write
-Write this label set to disk as a JSON file.
-
-METHOD:: read
-Read a label set from a JSON file on disk, replacing the current contents.
-
-METHOD:: dump
-Get the contents of the label set as a Dictionary (note: uses a temporary file under the hood);
-
-METHOD:: load
-Fill the label set with the contents of a dictionary, replacing its current contents (note: uses a temporary file under the hood).
 
 METHOD:: print
 Post an abbreviated content of the label set in the window by default, but you can supply a custom action instead.

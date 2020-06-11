@@ -61,13 +61,6 @@ a link::Classes/Buffer:: containing a data point
 ARGUMENT:: action
 A function to run when the server responds, taking the ID of the cluser as its argument
 
-
-
-METHOD:: cols
-Retreive the dimentionality of the dataset this instance is trained on
-ARGUMENT:: action
-A function to run when the server responds, taking the dimensionality as its argument
-
 METHOD:: predict
 Report cluster assignments for previously unseen data
 ARGUMENT:: dataset
@@ -76,22 +69,6 @@ ARGUMENT:: labelset
 A link::Classes/FluidLabelSet:: to contain assigments
 ARGUMENT:: action
 A function to run when complete, taking an array of the counts for each catgegory as its argument
-
-
-
-METHOD:: write
-write learned clusters to disk as a JSON file. Will not overwrite existing files
-ARGUMENT:: filename
-Absolute path for file
-ARGUMENT:: action
-A function to run when the file is written
-
-METHOD:: read
-Read a learned clustering of a data set from a JSON file
-ARGUMENT:: filename
-Absolute path of the JSON file
-ARGUMENT:: action
-Function to run when the file has been read
 
 
 EXAMPLES::

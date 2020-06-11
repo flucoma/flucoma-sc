@@ -52,32 +52,6 @@ The number of neighbours to search
 ARGUMENT:: action
 A function that will run when the query returns, whose argument is an array of distances
 
-METHOD:: cols
-Get the dimensionality of the data that the tree is indexed against
-
-ARGUMENT:: action
-A function that runs when the query returns, whose argument is the dimensionality
-
-
-METHOD:: read
-Set the object's state from a JSON file
-
-ARGUMENT:: filename
-The location of a JSON file on disk
-
-ARGUMENT:: action
-function to run when the data is loaded
-
-
-METHOD:: write
-Write the index of the tree to disk. Currently this will not overwrite extant files.
-
-ARGUMENT:: filename
-The path of a JSON file to write
-
-ARGUMENT:: action
-A function to run when writing is complete
-
 
 EXAMPLES::
 

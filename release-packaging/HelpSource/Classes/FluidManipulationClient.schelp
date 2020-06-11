@@ -11,13 +11,6 @@ CLASSMETHODS::
 
 PRIVATE:: nonBlocking
 
-METHOD:: kr
-The kr of the underlying UGem, which will output progress readings once all messages can be asynchronous.
-
-If, for whatever reason, you create an instance of a client object using code::kr:: in your own synth, make sure to set the instance's link::Classes/FluidManipulationClient#synth:: and link::Classes/FluidManipulationClient#server::, or nothing will work.
-
-returns:: An instance
-
 METHOD:: new
 Language-side constructor. Internally, this creates a new synth around an instance of the sub-class being constructed, and maintains a variable pointing to the synth, so that it can be communicated with.
 
@@ -43,9 +36,20 @@ The link::Classes/Server:: that our instance's object is running on
 
 returns:: a link::Classes/Server::
 
+METHOD:: read
+Read the object's data from a JSON file on disk, replacing the current contents.
+​
+METHOD:: write
+Write the object's data to disk as a JSON file.
 
-EXAMPLES::
+METHOD:: size
+Report the number of items currently in the object's data.
 
-code::
-(some example code)
-::
+METHOD:: cols
+Report the dimensionality of the object's data. If action is nil, will default to posting result.
+
+METHOD:: dump
+Get the contents of the object's data as a Dictionary (note: uses a temporary file under the hood);
+
+METHOD:: load
+Fill the object with the contents of a dictionary, replacing its current contents (note: uses a temporary file under the hood).

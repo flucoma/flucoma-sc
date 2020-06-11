@@ -56,25 +56,6 @@ Output data
 ARGUMENT:: action
 Run when done
 
-METHOD:: cols
-Return the dimensionaliy of the data the model was trained on
-ARGUMENT:: action
-Run when done, taking the number of columns as an argument. If nil, defaults to posting to window
-
-METHOD:: read
-Read a data set from a JSON file on disk
-ARGUMENT:: filename
-The absolute path of the JSON file to read
-ARGUMENT:: action
-A function to run when the file has been read
-​
-METHOD:: write
-Write the data set to disk as a JSON file.
-ARGUMENT:: filename
-Absolute path for the new file
-ARGUMENT:: action
-A function to run when the file has been written
-
 EXAMPLES::
 
 code::

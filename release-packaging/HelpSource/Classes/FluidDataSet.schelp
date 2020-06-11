@@ -58,24 +58,6 @@ Empty the data set.
 METHOD:: free
 Destroy the object on the server.
 
-METHOD:: read
-Read a data set from a JSON file on disk, replacing the current contents.
-​
-METHOD:: write
-Write the data set to disk as a JSON file.
-
-METHOD:: size
-Report the number of items currently in the data set.
-
-METHOD:: cols
-Report the dimensionality of the data set. If action is nil, will default to posting result.
-
-METHOD:: dump
-Get the contents of the dataset as a Dictionary (note: uses a temporary file under the hood);
-
-METHOD:: load
-Fill the dataset with the contents of a dictionary, replacing its current contents (note: uses a temporary file under the hood).
-
 METHOD:: print
 Post an abbreviated content of the dataset in the window by default, but you can supply a custom action instead.
 ​​
