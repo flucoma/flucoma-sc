@@ -1,7 +1,7 @@
 TITLE:: FluidKMeans
 summary:: Cluster data points with K-Means
 categories:: FluidManipulation
-related:: Classes/FluidDataSet, Classes/FluidLabelSet, Classes/FluidKNN
+related:: Classes/FluidDataSet, Classes/FluidLabelSet, Classes/FluidKNNClassifier, Classes/FluidKNNRegressor
 
 DESCRIPTION::
 Uses the K-Means algorithm to learn clusters from a link::Classes/FluidDataSet::
@@ -11,9 +11,9 @@ https://scikit-learn.org/stable/tutorial/statistical_inference/unsupervised_lear
 CLASSMETHODS::
 
 METHOD:: new
-Construct a new K Means model on the passed server
+Construct a new K Means model on the passed server.
 ARGUMENT:: server
-If nil will use Server.default
+If nil will use Server.default.
 
 INSTANCEMETHODS::
 
@@ -22,118 +22,108 @@ PRIVATE::k
 METHOD:: fit
 Identify code::k:: clusters in a link::Classes/FluidDataSet::
 ARGUMENT:: dataset
-A link::Classes/FluidDataSet:: of data points
+A link::Classes/FluidDataSet:: of data points.
 ARGUMENT:: k
-The number of clusters to identify in the data set
+The number of clusters to identify in the data set.
 ARGUMENT:: maxIter
-Maximum number of iterations to use partitioning the data
-ARGUMENT:: buffer
-Seed centroids for clusters WARNING:: Not yet implemented ::
+Maximum number of iterations.
 ARGUMENT:: action
-A function to run when fitting is complete, taking as its argument an array with the number of data points for each cluster
+A function to run when fitting is complete, taking as its argument an array with the number of data points for each cluster.
 
 METHOD:: predict
 Given a trained object, return the cluster ID for each data point in a dataset to a label set.
 ARGUMENT:: dataset
-a link::Classes/FluidDataSet:: containing the data to predict
+a link::Classes/FluidDataSet:: containing the data to predict.
 ARGUMENT:: labelset
-a link::Classes/FluidLabelSet:: to reveive the predicted clusters
+a link::Classes/FluidLabelSet:: to retrieve the predicted clusters.
 ARGUMENT:: action
-A function to run when the server responds
+A function to run when the server responds.
 
 METHOD:: fitPredict
 Run link::Classes/FluidKMeans#*fit:: and link::Classes/FluidKMeans#*predict:: in a single pass: i.e. train the model on the incoming link::Classes/FluidDataSet:: and then return the learned clustering to the passed link::Classes/FluidLabelSet::
 ARGUMENT:: dataset
-a link::Classes/FluidDataSet:: containing the data to fit and predict
+a link::Classes/FluidDataSet:: containing the data to fit and predict.
 ARGUMENT:: labelset
-a link::Classes/FluidLabelSet:: to reveive the predicted clusters
+a link::Classes/FluidLabelSet:: to retrieve the predicted clusters.
 ARGUMENT:: k
-The number of clusters to identify in the data set
+The number of clusters.
 ARGUMENT:: maxIter
-Maximum number of iterations to use partitioning the data
+Maximum number of iterations.
 ARGUMENT:: action
 A function to run when the server responds
 
 METHOD:: predictPoint
 Given a trained object, return the cluster ID for a data point in a link::Classes/Buffer::
 ARGUMENT:: buffer
-a link::Classes/Buffer:: containing a data point
+a link::Classes/Buffer:: containing a data point.
 ARGUMENT:: action
-A function to run when the server responds, taking the ID of the cluser as its argument
+A function to run when the server responds, taking the ID of the cluster as its argument.
 
 METHOD:: predict
-Report cluster assignments for previously unseen data
+Report cluster assignments for previously unseen data.
 ARGUMENT:: dataset
-A link::Classes/FluidDataSet:: of data points
+A link::Classes/FluidDataSet:: of data points.
 ARGUMENT:: labelset
-A link::Classes/FluidLabelSet:: to contain assigments
+A link::Classes/FluidLabelSet:: to contain assignments.
 ARGUMENT:: action
-A function to run when complete, taking an array of the counts for each catgegory as its argument
+A function to run when complete, taking an array of the counts for each category as its argument.
 
 
 EXAMPLES::
 Server.default.options.outDevice = "Built-in Output"
 code::
 
-//A dataset for our points, a labelset for cluster labels
 (
-~dataset= FluidDataSet(s,\kdtree_help_rand2d);
-
-~clusters = FluidLabelSet(s,\kmeans_help_clusters);
-)
-
 //Make some clumped 2D points and place into a dataset
-(
-~points = (4.collect{64.collect{(1.sum3rand) + [1,-1].choose}.clump(2)}).flatten(1) * 0.5;
-~dataset.clear;
-~tmpbuf = Buffer.alloc(s,2);
+~points = (4.collect{
+		       64.collect{(1.sum3rand) + [1,-1].choose}.clump(2)
+	       }).flatten(1) * 0.5;
 fork{
+    ~dataset = FluidDataSet.new(s,\kmeans_help_rand2d);
+    d = Dictionary.with(
+        *[\cols -> 2,\data -> Dictionary.newFrom(
+			~points.collect{|x, i| [i, x]}.flatten)]);
     s.sync;
-    ~points.do{|x,i|
-        (""++(i+1)++"/128").postln;
-        ~tmpbuf.setn(0,x);
-        ~dataset.addPoint(i,~tmpbuf);
-        s.sync
-    }
+    ~dataset.load(d, {~dataset.print});
 }
 )
 
-//Make a new k means model, fit it to the dataset and return the discovered clusters to a labelset
-(
-fork{
-	~clusters.clear;
-	~kmeans = FluidKMeans(s);
-    s.sync;
-	~kmeans.fitPredict(~dataset,~clusters, 4,action: {|c|
+
+// Create a KMeans instance and a LabelSet for the cluster labels in the server
+~clusters = FluidLabelSet(s,\kmeans_help_clusters);
+~kmeans = FluidKMeans(s);
+
+// Fit into 4 clusters
+~kmeans.fitPredict(~dataset,~clusters, 4, action: {|c|
 		"Fitted.\n # Points in each cluster:".postln;
 		c.do{|x,i|
 			("Cluster" + i + "->" + x.asInteger + "points").postln;
 		}
 	});
-}
-)
 
-//Dims of kmeans should match dataset
-~kmeans.cols
 
-//Return labels of clustered points
+// Cols of kmeans should match dataset, size is the number of clusters
+~kmeans.cols;
+~kmeans.size;
+~kmeans.dump;
+
+// Retrieve labels of clustered points
 (
 ~assignments = Array.new(128);
 fork{
-	128.do{ |i|
-		~clusters.getLabel(i,{|clusterID|
-			(i.asString+clusterID).postln;
-			~assignments.add(clusterID)
-		});
-		s.sync;
-	}
+    128.do{ |i|
+        ~clusters.getLabel(i,{|clusterID|
+            (i.asString+clusterID).postln;
+            ~assignments.add(clusterID)
+        });
+        s.sync;
+    }
 }
 )
 
 //Visualise: we're hoping to see colours neatly mapped to quandrants...
 (
 d = ((~points + 1) * 0.5).flatten(1).unlace;
-// d = [20.collect{1.0.rand}, 20.collect{1.0.rand}];
 w = Window("scatter", Rect(128, 64, 200, 200));
 ~colours = [Color.blue,Color.red,Color.green,Color.magenta];
 w.drawFunc = {
