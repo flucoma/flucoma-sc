@@ -59,7 +59,7 @@ METHOD:: free
 Destroy the object on the server.
 
 METHOD:: read
-Read a data set from a JSON file on disk.
+Read a data set from a JSON file on disk, replacing the current contents.
 ​
 METHOD:: write
 Write the data set to disk as a JSON file.
