@@ -23,23 +23,32 @@ namespace client {
 class DataSetWriterClient : public FluidBaseClient, OfflineIn, OfflineOut
 {
 public:
-  FLUID_DECLARE_PARAMS(StringParam("label", "Label"),
-                       BufferParam("buf", "Data Buffer"),
-                       DataSetClientRef::makeParam("dataSet", "DataSet Name"));
+  FLUID_DECLARE_PARAMS(
+      DataSetClientRef::makeParam("dataSet", "DataSet Name"),
+      StringParam("labelPrefix","Label Prefix"),
+      LongParam("labelOffset", "Label Counter Offset", 0),
+      BufferParam("buf", "Data Buffer")
+ );
 
   DataSetWriterClient(ParamSetViewType& p) : mParams(p) {}
 
   template <typename T>
   Result process(FluidContext&)
   {
-    auto& idx = get<0>();
-    auto  buf = get<1>();
-    auto  dataset = get<2>().get();
+    auto  dataset = get<0>().get();
     if (auto datasetPtr = dataset.lock())
-      return datasetPtr->addPoint(idx, buf);
+    {
+      std::stringstream ss;
+      ss << get<1>() << get<2>() + (mCounter++);
+      auto  buf = get<3>();
+      return datasetPtr->addPoint(ss.str(), buf);
+    }
     else
       return {Result::Status::kError, "No dataset"};
   }
+  
+  private:
+    index mCounter{0};
 };
 
 using NRTThreadedDataSetWriter =

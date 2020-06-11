@@ -73,6 +73,7 @@ FluidSliceCorpus {
 			v = bufIdx[k];
 			counter = counter + 1;
 			idx = counter;
+			("Slicing" + counter ++ "/" ++ total).postln;
 			OSCFunc({
 				tmpIndices.loadToFloatArray(action:{ |a|
 					var sliceindex = 1;
@@ -82,13 +83,14 @@ FluidSliceCorpus {
 						var rawPoints = Array.newFrom(a).asInteger;
 						if(rawPoints[0] != [v[\bounds][0]]){rawPoints = [v[\bounds][0]] ++ rawPoints};
 						if(rawPoints.last != [v[\bounds][1]]){rawPoints=rawPoints ++ [v[\bounds][1]]};
-
 						rawPoints.doAdjacentPairs{|a,b|
 							var dict;
 							if ((b - a) >= 1){
 								dict = IdentityDictionary();
 								dict.putAll(v);
 								dict[\bounds] = [a,b];
+								dict[\prefix] = k;
+								dict[\index] = sliceindex;
 								index.add(((k ++ "-" ++sliceindex).asSymbol)->dict);
 								sliceindex = sliceindex + 1;
 							}
@@ -137,8 +139,9 @@ FluidProcessSlices{
 			var idx,v, k = jobs.pop;
 			v = bufIdx[k];
 			counter = counter + 1;
+			("Processing" + counter ++ "/" ++ total).postln;
 			idx = counter;
-			v[\index] = counter;
+			v[\allindex] = counter;
 			v[\voice] = jobID;
 			OSCFunc({
 				completed = completed + 1;
