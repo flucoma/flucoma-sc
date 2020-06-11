@@ -756,10 +756,8 @@ struct LifetimePolicy<Client, Wrapper,std::false_type, std::true_type>
     new (static_cast<Wrapper*>(unit)) Wrapper(std::move(controlsReader),std::move(client),std::move(params));
 
   }
-  static void destroyClass(Unit* unit) {
-  std::cout << "Regsitry size :" << mClientRegistry.size() << '\n';
-    static_cast<Wrapper*>(unit)->~Wrapper();
-    
+  static void destroyClass(Unit* unit) {  
+    static_cast<Wrapper*>(unit)->~Wrapper();    
   }
 
   static void setup(InterfaceTable* ft, const char* name)
