@@ -18,12 +18,20 @@ FluidProxyUgen : UGen {
 
 FluidManipulationClient {
 
+	classvar clock;
+
 	var <server;
 	var <synth,<>ugen;
 	var id;
 	var defName, def;
 	var onSynthFree, keepAlive;
+	var aliveThread;
 	var postit;
+
+	*initClass {
+		clock = TempoClock.new;
+		clock.permanent = true;
+	}
 
 	*prServerString{ |s|
 		var ascii = s.ascii;
@@ -60,15 +68,12 @@ FluidManipulationClient {
 		onSynthFree = {
 			synth = nil;
 			if(keepAlive){
-				//If we don't sync here, cmd-. doesn't reset properly (but server.freeAll does)
-				forkIfNeeded {
-					server.sync;
-					synth = Synth(defName,target: RootNode(server));
-					synth.onFree{onSynthFree.value};
-				}
+				synth = Synth(defName,target: RootNode(server));
+				synth.onFree{clock.sched(0,onSynthFree)};
 			}
 		};
-		synth.onFree{onSynthFree.value};
+		CmdPeriod.add({synth = nil});
+		synth.onFree{clock.sched(0,onSynthFree)};
 	}
 
 	free{
@@ -80,7 +85,8 @@ FluidManipulationClient {
 
 	prSendMsg { |msg, args, action,parser|
 		if(this.server.serverRunning.not,{(this.asString + "– server not running").error; ^nil});
-		synth !? {
+		server.bind{
+			synth ?? {onSynthFree.value; server.sync};
 			OSCFunc(
 				{ |msg|
 					defer{
@@ -89,7 +95,7 @@ FluidManipulationClient {
 						if(action.notNil){action.value(result)}{action.value};
 					}
 			},'/'++msg, server.addr, nil,[synth.nodeID]).oneShot;
-			server.listSendMsg(['/u_cmd',synth.nodeID,ugen.synthIndex,msg].addAll(args));
+			server.listSendMsg(['/u_cmd', synth.nodeID, ugen.synthIndex, msg].addAll(args));
 		}
 	}
 }
