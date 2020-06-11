@@ -13,14 +13,17 @@ private:: *new1
 METHOD:: kr
 The equivalent of calling link::Classes/FluidDataSet#-addPoint::, but within a link::Classes/Synth::
 
-ARGUMENT:: label
-A symbol for the label of the new point
+ARGUMENT:: dataset
+An instance of link::Classes/FluidDataSet:: or an instance's name.
+
+ARGUMENT:: labelPrefix
+A string or symbol with a prefix for generated labels
+
+ARGUMENT:: labelOffset
+An integer with the offset to start labeling from. If the UGen is run in a server-side loop (i.e. repeatedly retriggered), the generated labels will count upwards from this offset.
 
 ARGUMENT:: buf
 The link::Classes/Buffer:: containing the data point.
-
-ARGUMENT:: dataset
-An instance of link::Classes/FluidDataSet:: or an instance's name.
 
 ARGUMENT:: trig
 A kr trigger signal
@@ -36,7 +39,7 @@ s.reboot;
 (
 {
 	var b = LocalBuf.newFrom([0,1,2,3]);
-	FreeSelfWhenDone.kr(FluidDataSetWr.kr("help_data_point",b,~ds));
+	FreeSelfWhenDone.kr(FluidDataSetWr.kr(~ds,"help_data_point",buf:b));
 }.play(s);
 )
 
