@@ -85,7 +85,7 @@ FluidManipulationClient {
 
 	prSendMsg { |msg, args, action,parser|
 		if(this.server.serverRunning.not,{(this.asString + "– server not running").error; ^nil});
-		server.bind{
+		forkIfNeeded{
 			synth ?? {onSynthFree.value; server.sync};
 			OSCFunc(
 				{ |msg|
