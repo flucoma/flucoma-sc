@@ -56,60 +56,50 @@ A function that will run when the query returns, whose argument is an array of d
 EXAMPLES::
 
 code::
-//Make some 2D points and place into a dataset
-s.reboot;
+
+
+// Make a dataset of random 23D points
+s.boot;
 (
-~points = 100.collect{ [ 1.0.linrand,1.0.linrand] };
-~dataset= FluidDataSet(s,\kdtree_help_rand2d);
-~tmpbuf = Buffer.alloc(s,2);
 fork{
-	s.bind{
-		~dataset.ready.wait;
-		~points.do{|x,i|
-			(""++(i+1)++"/100").postln;
-			~tmpbuf.setn(0,x);
-			~dataset.addPoint(i,~tmpbuf);
-			s.sync
-		};
-		"Data loaded".postln;
-	}
+    ~ds = FluidDataSet.new(s,\kdtree_help_rand2d);
+    d = Dictionary.with(
+        *[\cols -> 2,\data -> Dictionary.newFrom(
+            100.collect{|i| [i, [ 1.0.linrand,1.0.linrand]]}.flatten)]);
+    s.sync;
+    ~ds.load(d, {~ds.print});
 }
 )
 
-//Make a new tree, and fit it to the dataset
-(
+// Make a new tree, and fit it to the dataset
+~tree = FluidKDTree(s);
+
+//Fit it to the dataset
+~tree.fit(~ds);
+
+// Should be 100 points, 2 columns
+~tree.size;
+~tree.cols;
+
+
+//Return labels of k nearest points to a new point
+~p = [ 1.0.linrand,1.0.linrand ];
+~tmpbuf = Buffer.loadCollection(s, ~p, 1, {
+	~tree.kNearest(~tmpbuf,5, { |a|~nearest = a;})
+});
+
+
+// Labels of nearest points
+~nearest.postln;
+
+// Values
 fork{
-	~tree = FluidKDTree(s);
-	~tree.ready.wait;
-	s.sync;
-	~tree.fit(~dataset);
+~nearest.do{|n|
+    ~ds.getPoint(n, ~tmpbuf, {~tmpbuf.getn(0, 2, {|x|x.postln})});
+    s.sync;
 }
-)
-
-//Dims of tree should match dataset
-~tree.cols
-
-//Return labels of k nearest points to new data
-(
-~testpoint = [ 1.0.linrand,1.0.linrand ];
-("\n\nTest point:" + ~testpoint).postln;
-~tmpbuf.setn(0,~testpoint);
-fork{
-	~tree.kNearest(~tmpbuf,5, { |a|
-		("Labels of nearest points" + a).postln;
-		"Nearest points".postln;
-		a.do{|l|
-			~dataset.getPoint(l,~tmpbuf,action:{
-				~tmpbuf.loadToFloatArray(action:{ |point|
-					point.postln;
-				})
-			});
-			s.sync;
-		}
-	});
 }
-)
 
-//or the distances
-~tree.kNearestDist(~tmpbuf,5, { |a| a.postln });
+//Distances of the nearest points
+~tree.kNearestDist(~tmpbuf, 5, { |a| a.postln });
 ::
