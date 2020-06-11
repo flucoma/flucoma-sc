@@ -30,17 +30,4 @@ FluidKMeans : FluidManipulationClient {
     predictPoint { |buffer, action|
         this.prSendMsg(\predictPoint,[buffer.asUGenInput],action,[number(FluidMessageResponse,_,_)]);
     }
-
-    cols { |action|
-		action ?? action = postit;
-        this.prSendMsg(\cols,[],action,[number(FluidMessageResponse,_,_)]);
-    }
-
-    read{ |filename,action|
-        this.prSendMsg(\read,[filename.asString],action);
-    }
-
-    write{ |filename,action|
-        this.prSendMsg(\write,[filename.asString],action);
-    }
 }

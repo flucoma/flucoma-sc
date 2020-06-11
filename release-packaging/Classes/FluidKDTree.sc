@@ -24,18 +24,4 @@ FluidKDTree : FluidManipulationClient {
         this.prSendMsg(\kNearestDist,[buffer.asUGenInput,k],action,[numbers(FluidMessageResponse,_,k,_)]);
     }
 
-    cols { |action|
-
-		action ?? {action = postit};
-
-        this.prSendMsg(\cols,[],action,[numbers(FluidMessageResponse,_,1,_)]);
-    }
-
-    read{ |filename,action|
-        this.prSendMsg(\read,[filename.asString],action);
-    }
-
-    write{ |filename,action|
-        this.prSendMsg(\write,[filename.asString],action);
-    }
 }

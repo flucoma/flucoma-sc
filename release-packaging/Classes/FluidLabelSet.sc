@@ -60,24 +60,6 @@ FluidLabelSet : FluidManipulationClient {
 		this.prSendMsg(\deleteLabel, [id.asString],action);
 	}
 
-	cols {|action|
-		action ?? {action = postit};
-		this.prSendMsg(\cols, [], action, [number(FluidMessageResponse,_,_)]);
-	}
-
-	read{|filename,action|
-		this.prSendMsg(\read, [filename.asString], action);
-	}
-
-	write{|filename,action|
-		this.prSendMsg(\write, [filename.asString], action);
-	}
-
-	size {|action|
-		action ?? {action = postit};
-		this.prSendMsg(\size,[], action, [number(FluidMessageResponse,_,_)]);
-	}
-
 	clear {|action|
 	 	this.prSendMsg(\clear,[], action);
 	}

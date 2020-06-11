@@ -19,5 +19,11 @@ FluidMDS : FluidManipulationClient {
 	fitTransform{|sourceDataset, destDataset, k, dist, action|
 		this.prSendMsg(\fitTransform,[sourceDataset.asSymbol,  destDataset.asSymbol, k, dist],action);
 	}
+	
+	// not implemented
+	cols {|action|}
+	read{|filename,action|}
+	write{|filename,action|}
+	size { |action|}
 
 }

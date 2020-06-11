@@ -26,13 +26,4 @@ FluidKNNRegressor : FluidManipulationClient {
         this.prSendMsg(\predictPoint, [buffer.asUGenInput, k,uniform], action,
 			[number(FluidMessageResponse,_,_)]);
     }
-
-	read{|filename,action|
-        this.prSendMsg(\read,[filename.asString],action);
-    }
-
-    write{|filename,action|
-        this.prSendMsg(\write,[filename.asString],action);
-    }
-
 }

@@ -24,18 +24,4 @@ FluidNormalize : FluidManipulationClient {
     transformPoint{|sourceBuffer, destBuffer, action|
         this.prSendMsg(\transformPoint,[sourceBuffer.asUGenInput, destBuffer.asUGenInput],action);
     }
-
-    cols {|action|
-		action ?? {action = postit};
-        this.prSendMsg(\cols,[],action,[numbers(FluidMessageResponse,_,1,_)]);
-    }
-
-    read{|filename,action|
-        this.prSendMsg(\read,[filename.asString],action);
-    }
-
-    write{|filename,action|
-        this.prSendMsg(\write,[filename.asString],action);
-    }
-
 }
