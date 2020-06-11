@@ -6,14 +6,15 @@
 
 (
 // fill up the dataset with 20 entries of 10 column/dimension/descriptor value each. The naming of the item's label is arbitrary as usual
-20.do({
-	arg i;
-	Buffer.loadCollection(s,Array.fill(~nb_of_dim,{rrand(0.0,100.0)}),action:{
-		arg buf;
-		~dataset.addPoint("point-"++i.asInteger.asString,buf);
-		buf.free;
+Routine{
+	var buf = Buffer.alloc(s,~nb_of_dim);
+	20.do({ arg i;
+		buf.loadCollection(Array.fill(~nb_of_dim,{rrand(0.0,100.0)}));
+		~dataset.addPoint("point-"++i.asInteger.asString, buf);
+		s.sync;
 	});
-});
+	buf.free;
+}.play
 )
 
 ~dataset.print;

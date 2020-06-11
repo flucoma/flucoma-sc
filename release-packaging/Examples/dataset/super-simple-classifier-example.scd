@@ -22,8 +22,8 @@ v.mouseDownAction = {|view, x, y|myx=x;myy=y;w.refresh;
 	// myx.postln;myy.postln;
 	Routine{
 		b.setn(0,[myx,myy]);
-		s.sync;
 		~knn.predictPoint(b, k, action: {|x|x.postln;});
+		s.sync;
 }.play;};
 
 //custom redraw function
@@ -40,19 +40,19 @@ w.drawFunc = {
 )
 
 (
-//populates a dataset with the same squares as the gui (their centres)
+//populates a dataset with the same squares as the gui (their centres) (old method, iterating over buffers. A dictionary approach would be more efficient, see the example in this folder)
 Routine{
 	50.do{|i|
 	var	x = i.div(10)*30+20;
 			var y = i.mod(10)*30+20;
 	b.setn(0,[x,y]);
-		s.sync;
 		~simpleInput.addPoint(i.asString,b,{("Added Input" + i).postln});
 			~simpleOutput.addLabel(i.asString,"White",{("Added Output" + i).postln});
-			b.setn(0,[x+150,y]);
 		s.sync;
+			b.setn(0,[x+150,y]);
 		~simpleInput.addPoint((i+50).asString,b,{("Added Input" + (i+50)).postln});
 		~simpleOutput.addLabel((i+50).asString,"Red",{("Added Output" + (i+50)).postln});
+		s.sync;
 	}
 	}.play;
 )

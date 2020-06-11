@@ -3,13 +3,14 @@ s.reboot
 ~point = Buffer.alloc(s,1,1)
 (
 Routine{
-    10.do{|i|
-        ~point.set(0,i);
-        s.sync;
-        ~ds.addPoint(i.asString,~point,{("addPoint"+i).postln})
-    }
+	10.do{|i|
+		~point.set(0,i);
+		~ds.addPoint(i.asString,~point,{("addPoint"+i).postln});
+		s.sync;
+	}
 }.play
 )
+~ds.print;
 
 /*** KDTREE ***/
 ~tree = FluidKDTree.new(s)
@@ -18,12 +19,11 @@ Routine{
 k = 5; //play with this
 (
 Routine{
-    10.do{|i|
-        ~point.set(0,i);
-        s.sync;
-        ("Neighbours for point" + i).postln;
-        ~tree.kNearest(~point, k, {|x| ("Labels:" + x).postln})
-    }
+	10.do{|i|
+		~point.set(0,i);
+		~tree.kNearest(~point, k, {|x| "Neighbours for a value of % are ".postf(i); x.postln});
+		s.sync;
+	}
 }.play
 )
 
@@ -35,11 +35,11 @@ Routine{
 
 (
 Routine{
-    10.do{|i|
+	10.do{|i|
 		~point.set(0,i);
-        s.sync;
-        ~kmeans.predictPoint(~point,{|x| ("Predicted Cluster for point" + i ++ ":" + x).postln})
-    }
+		~kmeans.predictPoint(~point,{|x| ("Predicted Cluster for a value of " + i ++ ":" + x).postln});
+		s.sync;
+	}
 }.play
 )
 
@@ -48,12 +48,16 @@ Routine{
 ~kmeans.predict(~ds,~labels, {|x| ("Size of each cluster" +  x).postln})
 
 (
-Routine{
-    var n;
-    ~labels.size({|x|
-		x.asInteger.do{|i|
-        ~labels.getLabel(i.asString,action: {|l|("Label for" + i ++ ":" + l).postln});
-			s.sync;
-	};});
-}.play
+~labels.size{|x|
+	Routine{x.asInteger.do{|i| //size does not return a value, but we can retrieve it via a function
+		~labels.getLabel(i,action: {|l|
+			("Label for entry " + i ++ ":" + l).postln;
+		});
+		s.sync;
+	}
+	}.play;
+};
 )
+
+// or simply print it
+~labels.print

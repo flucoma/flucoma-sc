@@ -7,11 +7,12 @@ Routine{
         var d;
         if(i<=4,{d=i},{d=i+5});
         ~point.set(0,d);
+        ~ds.addPoint(i.asString,~point,{("addPoint"+i).postln});
         s.sync;
-        ~ds.addPoint(i.asString,~point,{("addPoint"+i).postln})
     }
 }.play
 )
+~ds.print;
 
 /*** KDTREE ***/
 ~tree = FluidKDTree.new(s)
@@ -20,15 +21,15 @@ Routine{
 k = 5; //play with this
 (
 Routine{
-    10.do{|i|
-        ~point.set(0,i*2);
-        s.sync;
-        ("Neighbours for point" + (i*2)).postln;
-        ~tree.kNearest(~point, k, {|x| ("Labels:" + x).postln});
-        ~tree.kNearestDist(~point,k,{|x| ("Distances:" + x).postln})
-    }
+	15.do{|i|
+		~point.set(0,i);
+		~tree.kNearest(~point, k, {|x| "Neighbours for a value of % are ".postf(i); x.post;" with respective distances of ".post;});
+		~tree.kNearestDist(~point,k,{|x| x.postln});
+		s.sync;
+	}
 }.play
 )
+
 
 /*** KMEANS ***/
 
@@ -38,10 +39,10 @@ Routine{
 
 (
 Routine{
-    10.do{|i|
+    15.do{|i|
         ~point.set(0,i);
         s.sync;
-        ~kmeans.predictPoint(~point,{|x| ("Predicted Cluster for point" + i ++ ":" + x).postln})
+		~kmeans.predictPoint(~point,{|x| ("Predicted Cluster for a value of " + i ++ ":" + x).postln});
     }
 }.play
 )
@@ -51,12 +52,16 @@ Routine{
 ~kmeans.predict(~ds,~labels, {|x| ("Size of each cluster" +  x).postln})
 
 (
-Routine{
-    var n;
-    ~labels.size({|x|
-		x.asInteger.do{|i|
-        ~labels.getLabel(i.asString,action: {|l|("Label for" + i ++ ":" + l).postln});
+~labels.size{|x|
+	Routine{x.asInteger.do{|i| //size does not return a value, but we can retrieve it via a function
+		~labels.getLabel(i,action: {|l|
+			("Label for entry " + i ++ ":" + l).postln;
+		});
 		s.sync;
-	};});
-}.play
+	}
+	}.play;
+};
 )
+
+// or simply print it
+~labels.print

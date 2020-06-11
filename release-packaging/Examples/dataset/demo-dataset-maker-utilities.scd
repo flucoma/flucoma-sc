@@ -23,7 +23,7 @@
 	mfcc = FluidBufMFCC.kr(src,startFrame:start,numFrames:num,numChans:1,features:~mfccbuf[voice],trig:1);
 	stats = FluidBufStats.kr(~mfccbuf[voice],stats:~statsbuf[voice],trig:Done.kr(mfcc));
 	flatten = FluidBufFlatten.kr(~statsbuf[voice],~flatbuf[voice],trig:Done.kr(stats));
-	writer = FluidDataSetWr.kr(label,~flatbuf[voice],~ds,trig:Done.kr(flatten))
+	writer = FluidDataSetWr.kr(~ds,label,buf: ~flatbuf[voice],trig:Done.kr(flatten))
 });
 )
 
