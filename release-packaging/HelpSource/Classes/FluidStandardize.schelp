@@ -37,6 +37,8 @@ METHOD:: fitTransform
 Standardize a link::Classes/FluidDataSet:: into another link::Classes/FluidDataSet::
 ARGUMENT:: sourceDataset
 The link::Classes/FluidDataSet:: to standardize
+ARGUMENT:: destDataset
+The link::Classes/FluidDataSet:: to populate with standardized data
 ARGUMENT:: action
 A function to run when processing is complete
 
@@ -60,64 +62,57 @@ s.boot;
 ~stand = FluidDataSet(s,\stand_help_standd);
 ~audio = Buffer.read(s,~audiofile);
 ~pitch_feature = Buffer.new(s);
-~stats = Buffer.new(s);
-~datapoint = Buffer.alloc(s,2);
+~stats = Buffer.alloc(s, 7, 2);
 ~standardizer = FluidStandardize(s);
 )
 
-// Do a pitch analysis on the audio, which gives us pitch and pitch confidence (so a 2D datum)
+
+// Load audio and run a pitch analysis, which gives us pitch and pitch confidence (so a 2D datum)
+(
+~audio = Buffer.read(s,~audiofile);
+FluidBufPitch.process(s,~audio, features: ~pitch_feature);
+)
+
 // Divide the time series in to 10, and take the mean of each segment and add this as a point to
 // the 'raw' FluidDataSet
 (
-~raw.clear;
-~stand.clear;
-FluidBufPitch.process(s,~audio,features:~pitch_feature,action:{
-	"Pitch analysis.complete. Doing stats".postln;
-	fork{
-		var chunkLen = (~pitch_feature.numFrames / 10).asInteger;
-		10.do{ |i|
-			s.sync;	FluidBufStats.process(s,~pitch_feature,startFrame:i*chunkLen,numFrames:chunkLen,stats:~stats, action:{
-			~stats.loadToFloatArray(action:{ |statsdata|
-					[statsdata[0],statsdata[1]].postln;
-					~datapoint.setn(0,[statsdata[0],statsdata[1]]);
-					s.sync;
-					("Adding point" ++ i).postln;
-					~raw.addPoint(i,~datapoint);
-				})
-			});
-			if(i == 9) {"Analysis done, dataset ready".postln}
-		}
-	}
+{
+	var trig = LocalIn.kr(1, 1);
+	var buf =  LocalBuf(2, 1);
+    var count = PulseCount.kr(trig) - 1;
+	var chunkLen = (~pitch_feature.numFrames / 10).asInteger;
+	var stats = FluidBufStats.kr(
+			source: ~pitch_feature, startFrame: count * chunkLen,
+			numFrames: chunkLen, stats: ~stats, trig: trig
+	);
+	var rd = BufRd.kr(2, ~stats, DC.kr(0), 0, 1);// pick only mean pitch and confidence
+	var wr1 = BufWr.kr(rd[0], buf, DC.kr(0));
+	var wr2 = BufWr.kr(rd[1], buf, DC.kr(1));
+	var dsWr = FluidDataSetWr.kr(\stand_help_raw, buf: buf, trig: Done.kr(stats));
+	LocalOut.kr( Done.kr(dsWr));
+	FreeSelf.kr(count - 9);
+}.play;
+)
+
+
+// Standardize and load to language-side array
+(
+~rawarray = Array.new(10);
+~stdarray= Array.new(10);
+~standardizer.fitTransform(~raw,~stand, {
+	~raw.dump{|x| 10.do{|i|
+		~rawarray.add(x["data"][i.asString])
+	}};
+	~stand.dump{|x| 10.do{|i|
+		~stdarray.add(x["data"][i.asString])
+	}};
 });
 )
 
-//Fit the FluidStandardizer to the raw data, and then apply the scaling out of place into
-//our second FluidDataSet, so we can compare.
-//Download the dataset contents into arrays for plotting
-(
-~standardizer.fit(~raw);
-~standardizer.transform(~raw,~stand);
-~rawarray = Array.new(10);
-~stdarray= Array.new(10);
-fork{
-	10.do{|i|
-		~raw.getPoint(i,~datapoint,{
-			~datapoint.loadToFloatArray(action:{|a| ~rawarray.add(Array.newFrom(a))})
-		});
-		s.sync;
-		~stand.getPoint(i,~datapoint,{
-
-			~datapoint.loadToFloatArray(action:{|a| ~stdarray.add(Array.newFrom(a))})
-		});
-		s.sync;
-		if(i==9){"Data downloaded".postln};
-	}
-}
-)
-//Plot side by side. Before standardization the two dimensions have radically different scales
-//which can be unhelpful in many cases. Now they are zero-centered, and comparable
 (
 ~rawarray.flatten(1).unlace.plot("Unstandardized",Rect(0,0,400,400),minval:0,maxval:[5000,1]).plotMode=\bars;
 ~plot2 = ~stdarray.flatten(1).unlace.plot("Standardized",Rect(410,0,400,400)).plotMode=\bars;
 )
+
+
 ::
