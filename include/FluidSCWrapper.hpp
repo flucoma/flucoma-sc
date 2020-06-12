@@ -54,7 +54,7 @@ struct WrapperState
   
     ~WrapperState()
     {
-      if(!mJobDone && !mSynchronous)
+      if(!mJobDone && !mSynchronous && mHasTriggered)
       {
         std::cout << "Processing Cancelled" << std::endl; 
       }
