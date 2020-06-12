@@ -53,6 +53,39 @@ struct WrapperState
     Result       mResult{};
 };
 
+/// Named, shared clients already have a lookup table in their adaptor class
+template <typename T>
+struct IsPersistent
+{
+  using type = std::false_type;
+};
+
+//TODO: make less tied to current implementation
+template <typename T>
+struct IsPersistent<NRTThreadingAdaptor<NRTSharedInstanceAdaptor<T>>>
+{
+  using type = std::true_type;
+};
+
+template<typename T>
+using IsPersistent_t = typename IsPersistent<T>::type;
+
+/// Models don't, but still need to survive CMD-.
+template<typename T>
+struct IsModel
+{
+  using type = std::false_type;
+};
+
+template<typename T>
+struct IsModel<NRTThreadingAdaptor<ClientWrapper<T>>>
+{
+  using type = typename ClientWrapper<T>::isModelObject;
+};
+
+template<typename T>
+using IsModel_t = typename IsModel<T>::type;
+
 namespace impl {
 
 template <size_t N, typename T>
@@ -301,7 +334,7 @@ class NonRealTime : public SCUnit
   using SharedState = std::shared_ptr<WrapperState<Client>>;
 public:
 
-  static index ControlOffset(Unit*) { return 0; }
+  static index ControlOffset(Unit*) { return IsModel_t<Client>::value ? 1 : 0; }
   static index ControlSize(Unit* unit) { return index(unit->mNumInputs) - unit->mSpecialIndex - 2; }
 
   static void setup(InterfaceTable* ft, const char* name)
@@ -383,6 +416,11 @@ public:
     mWrapper->mDone = sharedState->mJobDone;
     if(trigger)
     {
+      mWrapper->mControlsIterator.reset(mInBuf + ControlOffset(this));
+      Wrapper::setParams(mWrapper,
+      mWrapper->params(), mWrapper->mControlsIterator); // forward on inputs N + audio inputs as params
+      mWrapper->params().constrainParameterValues();
+    
       SharedState* statePtr = static_cast<SharedState*>(mWorld->ft->fRTAlloc(mWorld, sizeof(SharedState)));
       statePtr = new (statePtr) SharedState(sharedState);
       mFifoMsg.Set(mWorld, initNRTJob, nullptr, statePtr);
@@ -591,38 +629,7 @@ class NonRealTimeAndRealTime : public RealTime<Client, Wrapper>,
 
 //Discovery for clients that need persistent storage (Dataset and friends)
 
-/// Named, shared clients already have a lookup table in their adaptor class
-template <typename T>
-struct IsPersistent
-{
-  using type = std::false_type;
-};
 
-//TODO: make less tied to current implementation
-template <typename T>
-struct IsPersistent<NRTThreadingAdaptor<NRTSharedInstanceAdaptor<T>>>
-{
-  using type = std::true_type;
-};
-
-template<typename T>
-using IsPersistent_t = typename IsPersistent<T>::type;
-
-/// Models don't, but still need to survive CMD-.
-template<typename T>
-struct IsModel
-{
-  using type = std::false_type;
-};
-
-template<typename T>
-struct IsModel<NRTThreadingAdaptor<ClientWrapper<T>>>
-{
-  using type = typename ClientWrapper<T>::isModelObject;
-};
-
-template<typename T>
-using IsModel_t = typename IsModel<T>::type;
 
 template<typename,typename,typename, typename>
 struct LifetimePolicy;
@@ -668,7 +675,7 @@ struct LifetimePolicy<Client, Wrapper,std::true_type, std::false_type>
   static void constructClass(Unit* unit)
   {
       index uid  = static_cast<index>(unit->mInBuf[Wrapper::ControlOffset(unit)][0]);
-      FloatControlsIter controlsReader{unit->mInBuf + 1 + Wrapper::ControlOffset(unit),Wrapper::ControlSize(unit)};
+      FloatControlsIter controlsReader{unit->mInBuf + Wrapper::ControlOffset(unit),Wrapper::ControlSize(unit)};
       auto& entry = mRegistry[uid];
       auto& client = entry.client;
       auto& params = entry.params;
