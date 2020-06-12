@@ -156,7 +156,7 @@ d.postln
 e = Array.new;
 d.do({
 	arg val, i;
-	if ((val[0] > 500) && (val[1] > 0.666)) {e = e.add(i)}; // if pitch is greater than 500Hz and confidence higher than 0.666, keep the index
+	if ((val[0] > 500) && (val[1] > 0.98)) {e = e.add(i)}; // if pitch is greater than 500Hz and confidence higher than 0.98, keep the index
 });
 )
 e.postln;

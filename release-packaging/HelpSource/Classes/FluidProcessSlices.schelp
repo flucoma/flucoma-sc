@@ -107,13 +107,12 @@ s.reboot;
 //write pitch statistics into a dataset
 (
 ~extractor = FluidProcessSlices({|src,start,num,data|
-    var pitch, stats, labelPrefix, labelIndex, i;
+    var pitch, stats, label,i;
     i = data.value[\voice];
-	labelPrefix = data.value[\prefix];
-	labelIndex = data.value[\index];
+    label = data.key;
     pitch = FluidBufPitch.kr(src,start,num,features:~pitchbufs[i]);
     stats = FluidBufStats.kr(~pitchbufs[i],stats:~statsbufs[i],trig:Done.kr(pitch));
-    FluidDataSetWr.kr(~pitchdata,labelPrefix,labelIndex,buf:~statsbufs[i],trig:Done.kr(stats))
+    FluidDataSetWr.kr(~pitchdata,label,-1,buf:~statsbufs[i],trig:Done.kr(stats))
 });
 )
 

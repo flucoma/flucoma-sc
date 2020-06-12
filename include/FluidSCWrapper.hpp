@@ -1213,6 +1213,12 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
     using IndexList =
         typename Client::MessageSetType::template MessageDescriptorAt<
             N>::IndexList;
+    if(!x->init)
+    {
+        std::cout << "ERROR: Synth constructor not yet called" << std::endl;
+        return;
+    }
+    
     launchMessageImpl<N>(x, args, IndexList());
   }
 
@@ -1421,6 +1427,7 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
               << std::endl;
   }
 
+  bool init{false};
 
 public:
   using Client = C;
@@ -1432,6 +1439,7 @@ public:
   {
     client().setParams(params()); //<-IMPORTANT: client's ref to params is by address, and this has just changed
     impl::FluidSCWrapperBase<Client>::init();
+    init = true;
   }
 
   ~FluidSCWrapper()
