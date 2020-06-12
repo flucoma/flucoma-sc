@@ -61,72 +61,70 @@ Run when done
 EXAMPLES::
 
 code::
-
 s.boot;
 //Preliminaries: we want some audio, a couple of FluidDataSets, some Buffers, a FluidStandardize and a FluidPCA
 (
 ~audiofile = File.realpath(FluidBufPitch.class.filenameSymbol).dirname +/+ "../AudioFiles/Tremblay-ASWINE-ScratchySynth-M.wav";
 ~raw = FluidDataSet(s,\pca_help_12D);
+~standardized = FluidDataSet(s,\pca_help_12Ds);
 ~reduced = FluidDataSet(s,\pca_help_2D);
 ~audio = Buffer.read(s,~audiofile);
 ~mfcc_feature = Buffer.new(s);
-~stats = Buffer.new(s);
-~datapoint = Buffer.alloc(s,12);
+~stats = Buffer.alloc(s, 7, 12);
+~datapoint = Buffer.alloc(s, 12);
 ~standardizer  = FluidStandardize(s);
 ~pca = FluidPCA(s);
 )
 
-// Do a mfcc analysis on the audio, which gives us 13 points, and we'll throw the 0th away
-// Divide the time series in to 100, and take the mean of each segment and add this as a point to
+
+// Load audio and run an mfcc analysis, which gives us 13 points (we'll throw the 0th away)
+(
+~audio = Buffer.read(s,~audiofile);
+FluidBufMFCC.process(s,~audio, features: ~mfcc_feature);
+)
+
+// Divide the time series in 100, and take the mean of each segment and add this as a point to
 // the 'raw' FluidDataSet
 (
-~raw.clear;
-~norm.clear;
-FluidBufMFCC.process(s,~audio,features:~mfcc_feature,action:{
-    "MFCC analysis.complete. Doing stats".postln;
-    fork{
-        var chunkLen = (~mfcc_feature.numFrames / 100).asInteger;
-        100.do{ |i|
-            s.sync;    FluidBufStats.process(s,~mfcc_feature,startFrame:i*chunkLen,numFrames:chunkLen,startChan:1, stats:~stats, action:{
-            ~stats.loadToFloatArray(action:{ |statsdata|
-                    [statsdata[0],statsdata[1]].postln;
-                    ~datapoint.setn(0,[statsdata[0],statsdata[1]]);
-                    s.sync;
-                    ("Adding point" ++ i).postln;
-                    ~raw.addPoint(i,~datapoint);
-                })
-            });
-            if(i == 99) {"Analysis done, dataset ready".postln}
-        }
-    }
-});
+{
+	var trig = LocalIn.kr(1, 1);
+	var buf =  LocalBuf(12, 1);
+    var count = PulseCount.kr(trig) - 1;
+	var chunkLen = (~mfcc_feature.numFrames / 100).asInteger;
+	var stats = FluidBufStats.kr(
+			source: ~mfcc_feature, startFrame: count * chunkLen,
+		    startChan:1, numFrames: chunkLen, stats: ~stats, trig: trig
+	);
+	var rd = BufRd.kr(12, ~stats, DC.kr(0), 0, 1);
+	var bufWr, dsWr;
+	12.do{|i|
+		bufWr = BufWr.kr(rd[i], buf, DC.kr(i));
+	};
+	dsWr = FluidDataSetWr.kr(\pca_help_12D, buf: buf, trig: Done.kr(stats));
+	LocalOut.kr( Done.kr(dsWr));
+	FreeSelf.kr(count - 98);
+}.play;
 )
+
 
 //First standardize our dataset, so that the MFCC dimensions are on comensurate scales
 //Then apply the PCA in-place on the standardized data
 //Download the dataset contents into an array for plotting
 (
-~standardizer.fit(~raw);
-~standardizer.transform(~raw, ~reduced);
-~pca.fitTransform(~raw,~reduced,2);
-~reducedarray= Array.new(100);
-fork{
-    100.do{|i|
-        ~reduced.getPoint(i,~datapoint,{
+~reducedarray = Array.new(100);
+~standardizer.fitTransform(~raw, ~standardized);
+~pca.fitTransform(~standardized, ~reduced, 2, action:{
+	~reduced.dump{|x| 100.do{|i|
+		~reducedarray.add(x["data"][i.asString])
+	}};
+});
 
-            ~datapoint.loadToFloatArray(action:{|a| ~reducedarray.add(Array.newFrom(a))})
-        });
-        s.sync;
-        if(i==99){"Data downloaded".postln};
-    }
-}
 )
 
 
 //Visualise the 2D projection of our original 12D data
 (
 d = ~reducedarray.flatten(1).unlace.deepCollect(1, { |x| x.normalize});
-// d = [20.collect{1.0.rand}, 20.collect{1.0.rand}];
 w = Window("scatter", Rect(128, 64, 200, 200));
 w.drawFunc = {
     Pen.use {
@@ -142,5 +140,4 @@ w.drawFunc = {
 w.refresh;
 w.front;
 )
-
 ::
