@@ -101,13 +101,13 @@ fork{
 	~ds.load(d); s.sync;
 	~ds.dump; s.sync; ~ds.free;
 }
-);
+)
 
 // Using synth
 (
 ~ds = FluidDataSet.new(s,\simple1d_3);
 {
-	var trig = Impulse.kr(10);
+	var trig = Impulse.kr(20);
 	var count = PulseCount.kr(trig) - 1;
 	var buf = LocalBuf(1);
 	BufWr.kr(count, buf);
