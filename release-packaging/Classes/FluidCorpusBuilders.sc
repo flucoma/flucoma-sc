@@ -83,14 +83,13 @@ FluidSliceCorpus {
 						var rawPoints = Array.newFrom(a).asInteger;
 						if(rawPoints[0] != [v[\bounds][0]]){rawPoints = [v[\bounds][0]] ++ rawPoints};
 						if(rawPoints.last != [v[\bounds][1]]){rawPoints=rawPoints ++ [v[\bounds][1]]};
+
 						rawPoints.doAdjacentPairs{|a,b|
 							var dict;
 							if ((b - a) >= 1){
 								dict = IdentityDictionary();
 								dict.putAll(v);
 								dict[\bounds] = [a,b];
-								dict[\prefix] = k;
-								dict[\index] = sliceindex;
 								index.add(((k ++ "-" ++sliceindex).asSymbol)->dict);
 								sliceindex = sliceindex + 1;
 							}
@@ -141,7 +140,7 @@ FluidProcessSlices{
 			counter = counter + 1;
 			("Processing" + counter ++ "/" ++ total).postln;
 			idx = counter;
-			v[\allindex] = counter;
+			v[\index] = counter;
 			v[\voice] = jobID;
 			OSCFunc({
 				completed = completed + 1;
