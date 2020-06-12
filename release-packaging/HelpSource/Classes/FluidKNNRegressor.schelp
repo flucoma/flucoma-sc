@@ -62,50 +62,56 @@ code::
 ~test = FluidDataSet(s,\knn_regress_test);
 ~output = FluidDataSet(s,\knn_regress_out);
 ~tmpbuf = Buffer.alloc(s,1);
+~regressor = FluidKNNRegressor(s);
 )
 
 //Make source, target and test data
 (
 ~sourcedata = 128.collect{|i|i/128};
 ~targetdata = 128.collect{|i| sin(2*pi*i/128) };
-fork{
-	128.do{ |i|
-		((i + 1).asString ++ "/128").postln;
-		~tmpbuf.setn(0,i/128);
-		~source.addPoint(i,~tmpbuf);
-		s.sync;
-		~tmpbuf.setn(0,sin(2*pi*i/128));
-		~target.addPoint(i,~tmpbuf);
-		s.sync;
-		~tmpbuf.setn(0,(i/128)**2);
-		~test.addPoint(i,~tmpbuf);
-		s.sync;
-		if(i==127){"Source, target and test generated".postln};
-	}
-}
+~testdata = 128.collect{|i|(i/128)**2};
+
+~source.load(
+	Dictionary.with(
+        *[\cols -> 1,\data -> Dictionary.newFrom(
+			~sourcedata.collect{|x, i| [i.asString, [x]]}.flatten)])
+);
+
+~target.load(
+d = Dictionary.with(
+        *[\cols -> 1,\data -> Dictionary.newFrom(
+			~targetdata.collect{|x, i| [i.asString, [x]]}.flatten)]);
+);
+
+~test.load(
+	Dictionary.with(
+        *[\cols -> 1,\data -> Dictionary.newFrom(
+			~testdata.collect{|x, i| [i.asString, [x]]}.flatten)])
+);
+
+
+~source.print;
+~target.print;
+~test.print;
+
 )
+
+
 
 // Now make a regressor and fit it to the source and target, and predict against test
 //grab the output data whilst we're at it, so we can inspect
 (
 ~outputdata = Array(128);
-fork{
-	~regressor = FluidKNNRegressor(s);
-	s.sync;
-	~regressor.fit(~source,~target);
-	~regressor.predict(~test,~output,1);
-	s.sync;
-	128.do{|i|
-		~output.getPoint(i,~tmpbuf,{
-			~tmpbuf.loadToFloatArray(action:{|x|
-				~outputdata.addAll(x)
-			})
-		});
-		s.sync;
-		if(i==127){"Model fitted, output generated".postln};
-	}
-}
+~regressor.fit(~source, ~target);
+~regressor.predict(~test, ~output, 1, action:{
+		~output.dump{|x| 128.do{|i|
+		~outputdata.add(x["data"][i.asString][0])
+	}};
+});
 )
+
+
 //We should see a single cycle of a chirp
 ~outputdata.plot;
+
 ::
