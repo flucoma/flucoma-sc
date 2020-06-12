@@ -5,6 +5,8 @@ related:: Classes/FluidMDS, Classes/FluidDataSet
 
 DESCRIPTION::
 
+Multidimensional scaling of a link::Classes/FluidDataSet::
+
 https://scikit-learn.org/stable/modules/manifold.html#multi-dimensional-scaling-mds
 
 

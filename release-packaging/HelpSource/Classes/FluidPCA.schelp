@@ -5,6 +5,8 @@ related:: Classes/FluidMDS, Classes/FluidDataSet
 
 DESCRIPTION::
 
+Principal Components Analysis of a link::Classes/FluidDataSet::
+
 https://scikit-learn.org/stable/modules/decomposition.html#principal-component-analysis-pca
 
 CLASSMETHODS::
