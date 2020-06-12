@@ -51,6 +51,15 @@ struct WrapperState
     std::atomic<bool> mInNRT{false};
     std::atomic<bool> mNodeAlive{true};
     Result       mResult{};
+  
+    ~WrapperState()
+    {
+      if(!mJobDone && !mSynchronous)
+      {
+        std::cout << "Processing Cancelled" << std::endl; 
+      }
+    }
+  
 };
 
 /// Named, shared clients already have a lookup table in their adaptor class
