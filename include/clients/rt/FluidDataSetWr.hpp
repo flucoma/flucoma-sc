@@ -39,7 +39,11 @@ public:
     if (auto datasetPtr = dataset.lock())
     {
       std::stringstream ss;
-      ss << get<1>() << get<2>() + (mCounter++);
+      ss << get<1>(); 
+      
+      index labelOffset = get<2>(); 
+      if(labelOffset >=  0) ss << labelOffset +  (mCounter++);
+            
       auto  buf = get<3>();
       return datasetPtr->addPoint(ss.str(), buf);
     }

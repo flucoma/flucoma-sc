@@ -4,7 +4,17 @@ categories:: FluidManipulation
 related:: Classes/FLuidDataSet
 
 DESCRIPTION::
-A UGen that writes to a link::Classes/FluidDataSet::
+A UGen that adds labelled points to a link::Classes/FluidDataSet::
+
+By default the object generates a numerical index that gets used for the point labels. This index starts counting from link::#offset#labelOffset:: and increments each time the Ugen is retriggered with a zero to non-zero transition. The label is then concatenated with the code::labelPrefix:: symbol, which is fixed at instantiation. In this way, one can make custom, incrementing labels, e.g.
+
+code::
+FluidDataSetWr.kr(~somedataset,"my_data",0,~somebuffer,trig)
+::
+
+would add points like code::my_data0, mydata1, mydata2...:: if successively retriggered.
+
+Alternatively, for one shot use you may not want a numerical suffix at all. Setting code::indexLabel:: < 0 will bypass this and use only the labelPrefix. As such, any retriggering will result in a complaint from the link::Classes/FluidDataSet:: that the requested label is already present.
 
 CLASSMETHODS::
 
@@ -20,12 +30,14 @@ ARGUMENT:: labelPrefix
 A string or symbol with a prefix for generated labels
 
 ARGUMENT:: labelOffset
-An integer with the offset to start labeling from. If the UGen is run in a server-side loop (i.e. repeatedly retriggered), the generated labels will count upwards from this offset.
+ANCHOR::offset::
+An integer with the offset to start labeling from. If the UGen is run in a server-side loop (i.e. repeatedly retriggered), the generated labels will count upwards from this offset. If < 0, then no numerical index will be applied to the generated label (i.e. only the labelPrefix is used).
 
 ARGUMENT:: buf
 The link::Classes/Buffer:: containing the data point.
 
 ARGUMENT:: trig
+
 A kr trigger signal
 
 EXAMPLES::
