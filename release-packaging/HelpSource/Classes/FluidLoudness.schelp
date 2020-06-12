@@ -32,7 +32,7 @@ ARGUMENT:: maxwindowSize
 	How large can the windowSize be, by allocating memory at instantiation time. This cannot be modulated.
 
 RETURNS::
-	A 2-channel KR signal with the [pitch, confidence] descriptors. The latency is windowSize.
+	A 2-channel KR signal with the [loudness, peak] descriptors. The latency is windowSize.
 
 
 EXAMPLES::

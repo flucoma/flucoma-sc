@@ -65,7 +65,7 @@ ARGUMENT:: minSliceLength
 	The length in samples that the Slice will stay ON. Changes of states during that period will be ignored.
 
 ARGUMENT:: highPassFreq
-	The frequency of the fourth-order Linkwitz–Riley high-pass filter (https://en.wikipedia.org/wiki/Linkwitz%E2%80%93Riley_filter). This is done first on the signal to minimise low frequency intermodulation with very fast ramp lengths.
+	The frequency of the fourth-order Linkwitz–Riley high-pass filter (https://en.wikipedia.org/wiki/Linkwitz%E2%80%93Riley_filter). This is done first on the signal to minimise low frequency intermodulation with very fast ramp lengths. A frequency of 0 bypasses the filter.
 
 ARGUMENT:: action
 	A Function to be evaluated once the offline process has finished and indices instance variables have been updated on the client side. The metric will be passed indices as an argument.
@@ -86,7 +86,7 @@ c = Buffer.new(s);
 b.play
 b.plot
 
-//
+//process with symmetrical thresholds
 FluidBufAmpSlice.process(s, b,indices: c,fastRampUp: 5,fastRampDown: 50,slowRampUp: 220,slowRampDown: 220, onThreshold: 10, offThreshold: 10,floor: -60);
 c.query
 c.getn(0,c.numFrames,{|item|item.postln;})
