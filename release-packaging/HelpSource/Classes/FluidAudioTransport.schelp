@@ -44,5 +44,5 @@ EXAMPLES::
 
 code::
 //the mouse X axis interpolates between the two sinewaves
-{FluidAudioTransport.ar(SinOsc.ar(220),SinOsc.ar(440),MouseX.kr())}.play;
+{FluidAudioTransport.ar(SinOsc.ar(220,mul: 0.1),SinOsc.ar(440,mul: 0.02),MouseX.kr())}.play;
 ::

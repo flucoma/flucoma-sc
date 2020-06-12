@@ -81,7 +81,7 @@ code::
 //Make 2 sources to be interpolated
 (
 b = Buffer.loadCollection(s, FloatArray.fill(44100, {|a|(a / pi).sin * 0.1}));
-c = Buffer.loadCollection(s, FloatArray.fill(44100, {|a|(a / pi / 2).sin * 0.1}));
+c = Buffer.loadCollection(s, FloatArray.fill(44100, {|a|(a / pi / 2).sin * 0.02}));
 d = Buffer.new
 )
 
