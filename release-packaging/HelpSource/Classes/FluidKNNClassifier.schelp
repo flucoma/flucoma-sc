@@ -4,6 +4,8 @@ categories:: Classification, KNN
 related:: Classes/FluidKNNRegressor, Classes/FluidDataSet, Classes/FluidLabelSet
 
 DESCRIPTION::
+A nearest-neighbor classifier using link::Classes/FluidKDTree:: . Each point is assigned the class that is most common among its nearest neighbors.
+https://scikit-learn.org/stable/modules/neighbors.html#classification
 
 CLASSMETHODS::
 
@@ -15,7 +17,7 @@ The server to make the model on
 INSTANCEMETHODS::
 
 METHOD:: fit
-Fit the model to a source link::Classes/FluidDataSet:: and a target link::Classes/FluidLabelSet:: . These need to be the sime size
+Fit the model to a source link::Classes/FluidDataSet:: and a target link::Classes/FluidLabelSet::. These need to be the same size
 ARGUMENT:: dataset
 Source data
 ARGUMENT:: labelset
@@ -32,7 +34,7 @@ place to write labels
 ARGUMENT:: k
 the number of neighours to consider
 ARGUMENT:: uniform
-true / false: whether the neighbours shold be weighted by distance
+true / false: whether the neighbours should be weighted by distance
 ARGUMENT:: action
 Run when done
 
@@ -43,7 +45,7 @@ A data point
 ARGUMENT:: k
 Number of neighbours to consider
 ARGUMENT:: uniform
-true / false: whether the neighbours shold be weighted by distance
+true / false: whether the neighbours should be weighted by distance (default) or uniformly
 ARGUMENT:: action
 Run when done, passes predicted label as argument
 

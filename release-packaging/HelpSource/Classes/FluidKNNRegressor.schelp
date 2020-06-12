@@ -4,6 +4,9 @@ categories:: Regression
 related:: Classes/FluidKNNClassifier, Classes/FluidDataSet
 
 DESCRIPTION::
+A nearest-neighbor regressor. A continuous value is predicted for each point as the (weighted) average value of its nearest neighbors.
+
+https://scikit-learn.org/stable/modules/neighbors.html#regression
 
 CLASSMETHODS::
 
@@ -15,7 +18,7 @@ The server to run this model on.
 INSTANCEMETHODS::
 
 METHOD:: fit
-Map a source link::Classes/FluidDataSet:: to a target; they must be the same size, but can have different dimensionality
+Map a source link::Classes/FluidDataSet:: to a one-dimensional target; both datasets need to have the same number of points.
 ARGUMENT:: sourceDataset
 Source data
 ARGUMENT:: targetDataset
@@ -44,7 +47,7 @@ data point
 ARGUMENT:: k
 number of neigbours to consider in mapping, min 1
 ARGUMENT:: uniform
-Whether to weight neighbours by distance when producing new point
+Whether the neighbours should be weighted by distance (default) or uniformly
 ARGUMENT:: action
 Run when done
 
