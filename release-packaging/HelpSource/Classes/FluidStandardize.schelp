@@ -25,7 +25,7 @@ ARGUMENT:: action
 A function to run when processing is complete
 
 METHOD:: transform
-Standrdize a link::Classes/FluidDataSet:: non-destructively into another link::Classes/FluidDataSet::
+Standardize a link::Classes/FluidDataSet::, using the learned statistics from a previous call to link::Classes/FluidStandardize#fit::
 ARGUMENT:: sourceDataset
 The link::Classes/FluidDataSet:: to standardize
 ARGUMENT:: destDataset
@@ -34,14 +34,14 @@ ARGUMENT:: action
 A function to run when processing is complete
 
 METHOD:: fitTransform
-Standrdize a link::Classes/FluidDataSet:: fit and scale a link::Classes/FluidDataSet:: in-place
+Standardize a link::Classes/FluidDataSet:: into another link::Classes/FluidDataSet::
 ARGUMENT:: sourceDataset
 The link::Classes/FluidDataSet:: to standardize
 ARGUMENT:: action
 A function to run when processing is complete
 
 METHOD:: transformPoint
-Standardize a new data point, using the learned statistics from a previous link::Classes/FluidStandardize#fit::ting
+Standardize a new data point, using the learned statistics from a previous call to link::Classes/FluidStandardize#fit::
 ARGUMENT:: sourceBuffer
 A link::Classes/Buffer:: with the new data point
 ARGUMENT:: destBuffer
@@ -49,24 +49,6 @@ A link::Classes/Buffer:: to contain the standardize value
 ARGUMENT:: action
 A function to run when processing is complete
 
-METHOD:: cols
-Retreive the dimensionality of the data set we have fitted on
-ARGUMENT:: action
-A function to run when the server responds, taking the dimensions as its argument. Will print to post window by default
-
-METHOD:: read
-Load internal state (dimensionality, means, deviations) from a JSON file
-ARGUMENT:: filename
-Absolute path to the JSON file
-ARGUMENT:: action
-A function to run when file is loaded
-
-METHOD:: write
-Store the internal state of object on disk as a JSON file.
-ARGUMENT:: filename
-Absolute path of file to write
-ARGUMENT:: action
-A function to run when file is written
 
 EXAMPLES::
 code::

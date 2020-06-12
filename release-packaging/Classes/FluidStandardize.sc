@@ -9,19 +9,25 @@ FluidStandardize : FluidManipulationClient {
 		id = uid;
 	}
 
-    fit{|dataset, action|
-        this.prSendMsg(\fit,[dataset.asSymbol],action);
-    }
+	fit{|dataset, action|
+		this.prSendMsg(\fit, [dataset.asSymbol], action);
+	}
 
-    transform{|sourceDataset, destDataset, action|
-        this.prSendMsg(\transform,[sourceDataset.asSymbol, destDataset.asSymbol],action);
-    }
+	transform{|sourceDataset, destDataset, action|
+		this.prSendMsg(\transform,
+			[sourceDataset.asSymbol, destDataset.asSymbol], action
+		);
+	}
 
-	fitTransform{|dataset, action|
-        this.prSendMsg(\fitTransform,[dataset.asSymbol],action);
-    }
+	fitTransform{|sourceDataset, destDataset, action|
+		this.prSendMsg(\fitTransform,
+			[sourceDataset.asSymbol, destDataset.asSymbol], action
+		);
+	}
 
-    transformPoint{|sourceBuffer, destBuffer, action|
-        this.prSendMsg(\transformPoint,[sourceBuffer.asUGenInput, destBuffer.asUGenInput],action);
-    }
+	transformPoint{|sourceBuffer, destBuffer, action|
+		this.prSendMsg(\transformPoint,
+			[sourceBuffer.asUGenInput, destBuffer.asUGenInput], action
+		);
+	}
 }

@@ -4,7 +4,7 @@ categories:: FluidManipulation
 related:: Classes/FluidStandardize, Classes/FluidDataSet
 
 DESCRIPTION::
-Normalize the entries of a link::Classes/FluidDataSet::, or normalize a data point according to the learned bounrds of a data set. On the server.
+Normalize the entries of a link::Classes/FluidDataSet::, or normalize a data point according to the learned bounds of a data set. On the server.
 
 See http://www.faqs.org/faqs/ai-faq/neural-nets/part2/section-16.html
 
@@ -25,21 +25,14 @@ Maximum output value, default 1
 INSTANCEMETHODS::
 
 METHOD:: fit
-Normalize a link::Classes/FluidDataSet:: strong::in-place::
-ARGUMENT:: dataset
-The link::Classes/FluidDataSet:: to normalize
-ARGUMENT:: action
-A function to run when processing is complete
-
-METHOD:: fitTransform
-Normalize a link::Classes/FluidDataSet:: strong::in-place::
+Compute the normalization factors from a link::Classes/FluidDataSet:: for later.
 ARGUMENT:: dataset
 The link::Classes/FluidDataSet:: to normalize
 ARGUMENT:: action
 A function to run when processing is complete
 
 METHOD:: transform
-Normalize a link::Classes/FluidDataSet:: non-destructively into another link::Classes/FluidDataSet::
+Normalize a link::Classes/FluidDataSet:: into another link::Classes/FluidDataSet::, using the learned extrema from a previous call to link::Classes/FluidNormalize#fit::
 ARGUMENT:: sourceDataset
 The link::Classes/FluidDataSet:: to normalize
 ARGUMENT:: destDataset
@@ -47,34 +40,25 @@ The link::Classes/FluidDataSet:: to populate with normalized data
 ARGUMENT:: action
 A function to run when processing is complete
 
+
+METHOD:: fitTransform
+Normalize a link::Classes/FluidDataSet::
+ARGUMENT:: sourceDataset
+The link::Classes/FluidDataSet:: to normalize
+ARGUMENT:: destDataset
+The link::Classes/FluidDataSet:: to populate with normalized data
+ARGUMENT:: action
+A function to run when processing is complete
+
+
 METHOD:: transformPoint
-Normalize a new data point, using the learned extrema from a previous link::Classes/FluidNormalize#fit::ting
+Normalize a new data point, using the learned extrema from a previous call to link::Classes/FluidNormalize#fit::
 ARGUMENT:: sourceBuffer
 A link::Classes/Buffer:: with the new data point
 ARGUMENT:: destBuffer
 A link::Classes/Buffer:: to contain the normalized value
 ARGUMENT:: action
 A function to run when processing is complete
-
-METHOD:: cols
-Retreive the dimensionality of the data set we have fitted on
-ARGUMENT:: action
-A function to run when the server responds, taking the dimensions as its argument
-
-METHOD:: read
-Load internal state (dimensionality, mins, maxes) from a JSON file
-ARGUMENT:: filename
-Absolute path to the JSON file
-ARGUMENT:: action
-A function to run when file is loaded
-
-METHOD:: write
-Store the internal state of object on disk as a JSON file. Will not overwrite existing files
-ARGUMENT:: filename
-Absolute path of file to write
-ARGUMENT:: action
-A function to run when file is written
-
 
 EXAMPLES::
 code::
