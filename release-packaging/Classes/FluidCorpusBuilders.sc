@@ -98,8 +98,6 @@ FluidSliceCorpus {
 					}{
 						var dict = IdentityDictionary();
 						dict.putAll(v);
-						dict[\prefix] = k;
-						dict[\index] = 1;
 						index.add((k ++ "-1").asSymbol->dict);
 					};
 					if(jobs.size > 0){perf.value(tmpIndices)}{ tmpIndices.free };
