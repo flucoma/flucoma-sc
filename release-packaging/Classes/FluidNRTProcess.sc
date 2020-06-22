@@ -42,7 +42,7 @@ FluidNRTProcess : Object{
             c.test = true;
             c.signal;
             }
-        },'/done',argTemplate:[synth.nodeID]).oneShot;
+        },'/done', srcID:server.addr, argTemplate:[synth.nodeID]).oneShot;
 
 		forkIfNeeded{
             c.wait;
