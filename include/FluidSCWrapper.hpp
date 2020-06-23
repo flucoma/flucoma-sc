@@ -1294,7 +1294,7 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
       auto& report = std::cout;
       report << "ERROR: " << msg->name << " type signature incorrect.\nExpect: (";
       size_t i{0};
-      ForEach(args, [&i](auto& x){
+      ForEach(args, [&i,&expectedArgCount](auto& x){
         report << ParamReader<sc_msg_iter*>::argTypeToString(x);
         if(i < ( expectedArgCount - 1 ) )
         {
