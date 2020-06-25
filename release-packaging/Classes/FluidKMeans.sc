@@ -1,15 +1,6 @@
-FluidKMeans : FluidManipulationClient {
+FluidKMeans : FluidDataClient {
 
 	var <>k;
-
-	*new {|server|
-		var uid = UniqueID.next;
-		^super.new(server,uid)!?{|inst|inst.init(uid);inst}
-	}
-
-	init {|uid|
-		id = uid;
-	}
 
 	fit{|dataset,k, maxIter = 100, action|
 		this.k = k;

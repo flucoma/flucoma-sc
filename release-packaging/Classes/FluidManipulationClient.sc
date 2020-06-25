@@ -9,6 +9,7 @@ FluidProxyUgen : UGen {
 	init { |pluginname...args|
 		this.pluginname = pluginname;
 		inputs = args++Done.none++0;
+		rate = inputs.rate;
 	}
 
 	name{
@@ -50,17 +51,23 @@ FluidManipulationClient {
 		^super.newCopyArgs(server ?? {Server.default}).baseinit(*args)
 	}
 
+	makeDef { |defName...args|
+		^SynthDef(defName,{
+			var  ugen = FluidProxyUgen.kr(this.class.name, *args);
+			this.ugen = ugen;
+			ugen
+		});
+	}
+
+	updateSynthControls {}
+
 	baseinit { |...args|
 		var makeFirstSynth,synthMsg;
 		id = UniqueID.next;
 		postit = {|x| x.postln;};
 		keepAlive = true;
 		defName = (this.class.name.asString ++ id).asSymbol;
-		def = SynthDef(defName,{
-			var  ugen = FluidProxyUgen.kr(this.class.name, *args);
-			this.ugen = ugen;
-			ugen
-		});
+		def = this.makeDef(defName,*args);
 		synth = Synth.basicNew(def.name, server);
 		synthMsg = synth.newMsg(RootNode(server));
 		def.doSend(server,synthMsg);
@@ -70,10 +77,12 @@ FluidManipulationClient {
 			if(keepAlive){
 				synth = Synth(defName,target: RootNode(server));
 				synth.onFree{clock.sched(0,onSynthFree)};
+				this.updateSynthControls;
 			}
 		};
 		CmdPeriod.add({synth = nil});
 		synth.onFree{clock.sched(0,onSynthFree)};
+		this.updateSynthControls;
 	}
 
 	free{
@@ -117,6 +126,71 @@ FluidManipulationClient {
 		}
 	}
 }
+
+FluidDataClient : FluidManipulationClient {
+
+	var <id;
+	var <inBus, <outBus;
+	var <inBuffer, <outBuffer;
+
+	*new {|server,inbus, outbus,inbuf,outbuf|
+		var uid = UniqueID.next;
+		^super.new(server,uid)!?{|inst|
+			inst.init(uid);
+			inst.inBus = inbus;
+			inst.outBus = outbus;
+			inst.inBuffer = inbuf;
+			inst.outBuffer = outbuf;
+			inst
+		}
+	}
+
+	updateSynthControls{
+		synth !? {
+			if(synth.isRunning){
+				synth.set(
+					\in, inBus !? {inBus.index} ?? {0},
+					\out, outBus !? {outBus.index} ?? {0},
+					\inBuffer,inBuffer !? {inBuffer.asUGenInput} ?? {-1},
+					\outBuffer,outBuffer !? {outBuffer.asUGenInput} ?? {-1}
+			) }
+		};
+	}
+
+	inBuffer_{|newBuffer|
+		inBuffer = newBuffer;
+		this.updateSynthControls;
+	}
+
+	outBuffer_{|newBuffer|
+		outBuffer = newBuffer;
+		this.updateSynthControls;
+	}
+
+	init {|uid|
+		id = uid;
+	}
+
+	inBus_{ |newBus|
+		inBus = newBus;
+		this.updateSynthControls;
+	}
+
+	outBus_{ |newBus|
+		outBus = newBus;
+		this.updateSynthControls;
+	}
+
+	makeDef{|defName...args|
+		^SynthDef(defName, { |in,out,inBuffer,outBuffer|
+			var  ugen = FluidProxyUgen.kr(this.class.name, T2A.ar(T2K.kr(In.ar(in))), inBuffer, outBuffer, *args);
+			this.ugen = ugen;
+			Out.kr(out,ugen);
+			ugen
+		});
+	}
+}
+
 
 FluidServerCache {
 

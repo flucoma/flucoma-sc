@@ -92,6 +92,14 @@ struct IsModel<NRTThreadingAdaptor<ClientWrapper<T>>>
   using type = typename ClientWrapper<T>::isModelObject;
 };
 
+
+template<typename T>
+struct IsModel<ClientWrapper<T>>
+{
+  using type = typename ClientWrapper<T>::isModelObject;
+};
+
+
 template<typename T>
 using IsModel_t = typename IsModel<T>::type;
 
