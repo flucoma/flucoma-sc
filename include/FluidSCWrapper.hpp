@@ -1343,6 +1343,8 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
     ForEach(args,[x,&inArgs](auto& arg){
       arg = ParamReader<sc_msg_iter*>::fromArgs(x, inArgs,arg,0);
     });
+    
+    x->client().setParams(x->params()); 
 
     ft->fDoAsynchronousCommand(
         x->mWorld, nullptr, getName(), msg,
