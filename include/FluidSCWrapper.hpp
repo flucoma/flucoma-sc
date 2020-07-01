@@ -987,6 +987,24 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
       ft->fRTFree(w,chunk);
       return res;
     }
+    
+    static auto fromArgs(Unit*, FloatControlsIter& args,typename LongArrayT::type&, int)
+    {
+        //first is array size, then items
+      
+        using Container = typename LongArrayT::type;
+        using Value = typename Container::type;
+      
+        index size = static_cast<index>(args.next());
+      
+        Container res(size);
+      
+        for (index i = 0; i < size; ++i)
+          res[i] = static_cast<Value>(args.next());
+      
+        return res;
+    }
+    
 
     template <typename T>
     static std::enable_if_t<std::is_integral<T>::value, T>
