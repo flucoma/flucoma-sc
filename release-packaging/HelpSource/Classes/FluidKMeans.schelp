@@ -94,13 +94,14 @@ fork{
 ~kmeans = FluidKMeans(s);
 
 // Fit into 4 clusters
+(
 ~kmeans.fitPredict(~dataset,~clusters, 4, action: {|c|
 		"Fitted.\n # Points in each cluster:".postln;
 		c.do{|x,i|
 			("Cluster" + i + "->" + x.asInteger + "points").postln;
 		}
 	});
-
+)
 
 // Cols of kmeans should match dataset, size is the number of clusters
 ~kmeans.cols;
@@ -120,6 +121,9 @@ fork{
     }
 }
 )
+
+//or faster by sorting the IDs
+~clusters.dump{|x|~assignments = x.at("data").atAll(x.at("data").keys.asArray.sort{|a,b|a.asInteger < b.asInteger}).flatten.postln;}
 
 //Visualise: we're hoping to see colours neatly mapped to quandrants...
 (
@@ -141,4 +145,57 @@ w.refresh;
 w.front;
 )
 
+//Querying on the server using busses and buffers:
+//This is the equivalent of predictPoint, but wholly on the server
+//FluidKMeans is accessed via its own synth, so we need to use
+//a bus to communicate with it. The inBus receives a trigger to query, using data
+//from inBuffer; a trigger is then send to outBus with the prediction in outBuffer
+(
+~ib = Bus.audio(s); // input bus must be audio (for now)
+~ob = Bus.control(s); //output bus can be kr
+~inpPoint = Buffer.alloc(s,2);
+~outPoint = Buffer.alloc(s,1);
+)
+
+//We make two Synths. One, before FluidKMeans, generates a random point and sends
+//a trigger to query. The second, after FluidKMeans, gives us the predicted cluster //triggering upadtes from the outBus
+(
+//Set properties on FluidKMeans:
+~kmeans.inBus_(~ib).outBus_(~ob).inBuffer_(~inpPoint).outBuffer_(~outPoint);
+//pitching
+{
+	var trig = Impulse.ar(10);
+	var point = [WhiteNoise.kr,WhiteNoise.kr];
+	BufWr.kr(point[0],~inpPoint,0);
+	BufWr.kr(point[1],~inpPoint,1);
+	Poll.kr(T2K.kr(trig),point,[\pointX,\pointY]);
+	Out.ar(~ib.index,[trig]);
+}.play(~kmeans.synth,addAction:\addBefore);
+//catching
+{
+	Poll.kr(In.kr(~ob),Latch.kr(BufRd.kr(1,~outPoint,0,interpolation:0),In.kr(~ob)),\cluster);
+}.play(~kmeans.synth,addAction:\addAfter);
+)
+
+// to sonify the output, here are random values alternating quadrant.
+(
+//Set properties on FluidKMeans:
+~kmeans.inBus_(~ib).outBus_(~ob).inBuffer_(~inpPoint).outBuffer_(~outPoint);
+//pitching
+{
+	var count,trig,point;
+	trig = Impulse.ar(MouseX.kr(0,1).exprange(0.5,1000));
+	count = Stepper.ar(trig,0,0,3);
+	point = Latch.ar(WhiteNoise.ar([0.1,0.1],[count.div(2)-0.5,count.mod(2)-0.5]),trig);
+	BufWr.kr(point[0],~inpPoint,0);//annoying but triggered bufcompose or some other sort of entry here. (imagine having 20 mfccs here)
+	BufWr.kr(point[1],~inpPoint,1);
+	// Poll.kr(T2K.kr(trig),point,[\pointX,\pointY]);
+	Out.ar(~ib.index,[trig]);
+	trig*0.1;
+}.play(~kmeans.synth,addAction:\addBefore);
+//catching
+{
+	SinOsc.ar((Latch.kr(BufRd.kr(1,~outPoint,0,interpolation:0),In.kr(~ob)) + 69).midicps,mul: 0.1);
+}.play(~kmeans.synth,addAction:\addAfter);
+)
 ::
