@@ -2,7 +2,7 @@ FluidNormalize : FluidManipulationClient {
 
   *new {|server, min = 0, max = 1|
 		var uid = UniqueID.next;
-		^super.new(server,uid,min,max)!?{|inst|inst.init(uid);inst}
+		^super.new(server,min,max,uid)!?{|inst|inst.init(uid);inst}
 	}
 
 	init {|uid|

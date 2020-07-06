@@ -351,8 +351,8 @@ class NonRealTime : public SCUnit
   using SharedState = std::shared_ptr<WrapperState<Client>>;
 public:
 
-  static index ControlOffset(Unit*) { return IsModel_t<Client>::value ? 1 : 0; }
-  static index ControlSize(Unit* unit) { return index(unit->mNumInputs) - unit->mSpecialIndex - 2; }
+  static index ControlOffset(Unit*) { return 0; }
+  static index ControlSize(Unit* unit) { return index(unit->mNumInputs) - unit->mSpecialIndex - 2 - (IsModel_t<Client>::value ? 1 : 0); }
 
   static void setup(InterfaceTable* ft, const char* name)
   {
@@ -691,7 +691,8 @@ struct LifetimePolicy<Client, Wrapper,std::true_type, std::false_type>
 
   static void constructClass(Unit* unit)
   {
-      index uid  = static_cast<index>(unit->mInBuf[Wrapper::ControlOffset(unit)][0]);
+      index uid = static_cast<index>(unit->mInBuf[Wrapper::ControlOffset(unit)+Wrapper::ControlSize(unit)][0]);
+    
       FloatControlsIter controlsReader{unit->mInBuf + Wrapper::ControlOffset(unit),Wrapper::ControlSize(unit)};
       auto& entry = mRegistry[uid];
       auto& client = entry.client;
@@ -995,6 +996,24 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
       ft->fRTFree(w,chunk);
       return res;
     }
+    
+    static auto fromArgs(Unit*, FloatControlsIter& args,typename LongArrayT::type&, int)
+    {
+        //first is array size, then items
+      
+        using Container = typename LongArrayT::type;
+        using Value = typename Container::type;
+      
+        index size = static_cast<index>(args.next());
+      
+        Container res(size);
+      
+        for (index i = 0; i < size; ++i)
+          res[i] = static_cast<Value>(args.next());
+      
+        return res;
+    }
+    
 
     template <typename T>
     static std::enable_if_t<std::is_integral<T>::value, T>
@@ -1333,6 +1352,8 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
     ForEach(args,[x,&inArgs](auto& arg){
       arg = ParamReader<sc_msg_iter*>::fromArgs(x, inArgs,arg,0);
     });
+    
+    x->client().setParams(x->params()); 
 
     ft->fDoAsynchronousCommand(
         x->mWorld, nullptr, getName(), msg,

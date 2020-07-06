@@ -10,7 +10,7 @@ FluidLoadFolder {
 
 	play { |server, action|
 		var sizes,channels,maxChan, startEnd,counter;
-		server ?? server = Server.default;
+		server ?? {server = Server.default};
 		files = SoundFile.collect(path +/+ '*');
 		sizes = files.collect{|f|f.numFrames()};
 		channels = files.collect{|f| f.numChannels()};
@@ -56,7 +56,7 @@ FluidSliceCorpus {
 		^super.newCopyArgs(sliceFunc,labelFunc);
 	}
 
-	play{ |server,sourceBuffer,bufIdx, action|
+	play{ |server,sourceBuffer,bufIdx, action, tasks = 4|
 		var counter, tmpIndices,perf,jobs,total,uid, completed, pointstotal;
 		uid = UniqueID.next;
 		sourceBuffer ?? {"No buffer to slice".error; ^nil};
@@ -111,7 +111,8 @@ FluidSliceCorpus {
 				FreeSelfWhenDone.kr(onsets);
 			}.play;
 		};
-		4.do{perf.value(Buffer.new)};
+		tasks ?? {tasks  = 4};
+		tasks.asInteger.min(jobs.size).do{perf.value(Buffer.new)};
 	}
 }
 
