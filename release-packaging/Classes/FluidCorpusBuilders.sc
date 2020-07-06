@@ -10,7 +10,7 @@ FluidLoadFolder {
 
 	play { |server, action|
 		var sizes,channels,maxChan, startEnd,counter;
-		server ?? server = Server.default;
+		server ?? {server = Server.default};
 		files = SoundFile.collect(path +/+ '*');
 		sizes = files.collect{|f|f.numFrames()};
 		channels = files.collect{|f| f.numChannels()};
