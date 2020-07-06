@@ -343,8 +343,8 @@ class NonRealTime : public SCUnit
   using SharedState = std::shared_ptr<WrapperState<Client>>;
 public:
 
-  static index ControlOffset(Unit*) { return IsModel_t<Client>::value ? 1 : 0; }
-  static index ControlSize(Unit* unit) { return index(unit->mNumInputs) - unit->mSpecialIndex - 2; }
+  static index ControlOffset(Unit*) { return 0; }
+  static index ControlSize(Unit* unit) { return index(unit->mNumInputs) - unit->mSpecialIndex - 2 - (IsModel_t<Client>::value ? 1 : 0); }
 
   static void setup(InterfaceTable* ft, const char* name)
   {
@@ -683,7 +683,8 @@ struct LifetimePolicy<Client, Wrapper,std::true_type, std::false_type>
 
   static void constructClass(Unit* unit)
   {
-      index uid  = static_cast<index>(unit->mInBuf[Wrapper::ControlOffset(unit)][0]);
+      index uid = static_cast<index>(unit->mInBuf[Wrapper::ControlOffset(unit)+Wrapper::ControlSize(unit)][0]);
+    
       FloatControlsIter controlsReader{unit->mInBuf + Wrapper::ControlOffset(unit),Wrapper::ControlSize(unit)};
       auto& entry = mRegistry[uid];
       auto& client = entry.client;
