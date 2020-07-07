@@ -153,9 +153,14 @@ w.front;
 (
 ~ib = Bus.audio(s); // input bus must be audio (for now)
 ~ob = Bus.control(s); //output bus can be kr
+~tempPoint = Buffer.alloc(s,1,2);
 ~inpPoint = Buffer.alloc(s,2);
 ~outPoint = Buffer.alloc(s,1);
 )
+
+~tempPoint.getn(0,2,{|x|x.post})
+
+~inpPoint.getn(0,2,{|x|x.post})
 
 //We make two Synths. One, before FluidKMeans, generates a random point and sends
 //a trigger to query. The second, after FluidKMeans, gives us the predicted cluster //triggering upadtes from the outBus
@@ -164,12 +169,13 @@ w.front;
 ~kmeans.inBus_(~ib).outBus_(~ob).inBuffer_(~inpPoint).outBuffer_(~outPoint);
 //pitching
 {
-	var trig = Impulse.ar(10);
-	var point = [WhiteNoise.kr,WhiteNoise.kr];
-	BufWr.kr(point[0],~inpPoint,0);
-	BufWr.kr(point[1],~inpPoint,1);
-	Poll.kr(T2K.kr(trig),point,[\pointX,\pointY]);
-	Out.ar(~ib.index,[trig]);
+	var trig = Impulse.kr(1);
+	var point = WhiteNoise.kr(1.dup);
+	var copied;
+	BufWr.kr(point,~tempPoint,0);
+	Poll.kr(trig, point, [\pointX,\pointY]);
+	copied = Done.kr(FluidBufFlatten.kr(~tempPoint, ~inpPoint, trig: trig));
+	Out.ar(~ib.index,K2A.ar(copied > Delay1.kr(copied)));
 }.play(~kmeans.synth,addAction:\addBefore);
 //catching
 {
@@ -183,14 +189,13 @@ w.front;
 ~kmeans.inBus_(~ib).outBus_(~ob).inBuffer_(~inpPoint).outBuffer_(~outPoint);
 //pitching
 {
-	var count,trig,point;
-	trig = Impulse.ar(MouseX.kr(0,1).exprange(0.5,1000));
-	count = Stepper.ar(trig,0,0,3);
-	point = Latch.ar(WhiteNoise.ar([0.1,0.1],[count.div(2)-0.5,count.mod(2)-0.5]),trig);
-	BufWr.kr(point[0],~inpPoint,0);//annoying but triggered bufcompose or some other sort of entry here. (imagine having 20 mfccs here)
-	BufWr.kr(point[1],~inpPoint,1);
-	// Poll.kr(T2K.kr(trig),point,[\pointX,\pointY]);
-	Out.ar(~ib.index,[trig]);
+	var count, trig, point, copied;
+	trig = Impulse.kr(MouseX.kr(0,1).exprange(0.5,1000).poll);
+	count = Stepper.kr(trig,0,0,3);
+	point = Latch.kr(WhiteNoise.ar([0.1,0.1],[count.div(2)-0.5,count.mod(2)-0.5]),trig);
+	BufWr.kr(point,~tempPoint,0);
+	copied = Done.kr(FluidBufFlatten.kr(~tempPoint, ~inpPoint, trig: trig));
+	Out.ar(~ib.index,K2A.ar(copied > Delay1.kr(copied)));
 	trig*0.1;
 }.play(~kmeans.synth,addAction:\addBefore);
 //catching
