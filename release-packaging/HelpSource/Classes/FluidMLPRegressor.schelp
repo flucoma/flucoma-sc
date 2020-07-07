@@ -1,0 +1,127 @@
+TITLE:: FluidMLPRegressor
+summary:: Regression with a multi-layer perceptron
+categories:: Machine learning
+related:: Classes/FluidDataSet
+
+DESCRIPTION::
+Perform regression between link::Classes/FluidDataSet::s using a Multilayer Perception neural network.
+
+CLASSMETHODS::
+
+METHOD:: new
+Creates a new instance on the server.
+
+ARGUMENT:: server
+The link::Classes/Server:: on which to run this model.
+
+ARGUMENT:: hidden
+An link::Classes/Array:: that gives the sizes of any hidden layers in the network (default is two hidden layers of three units each).
+
+ARGUMENT:: activation
+Ativation function to use for the hidden layer units.
+
+ARGUMENT:: maxIter
+Maximum number of iterations to use in training.
+
+ARGUMENT:: learnRate
+The learning rate of the network. Start small, increase slowly.
+
+ARGUMENT:: momentum
+Training momentum, default 0.9
+
+ARGUMENT:: batchSize
+Training batch size.
+
+METHOD:: identity, relu, sigmoid, tanh
+Convinience constants for the available activation functions.
+
+INSTANCEMETHODS::
+
+PRIVATE:: init, uid
+
+METHOD:: fit
+Train the network to map between a source and target link::Classes/FluidDataSet::
+
+ARGUMENT:: sourceDataset
+Source data
+
+ARGUMENT:: targetDataset
+Target data
+
+ARGUMENT:: action
+Function to run when training is complete
+
+returns:: The training loss, or -1 if training failed
+
+METHOD:: predict
+Apply the learned mapping to a dataset (given a trained network)
+
+ARGUMENT:: sourceDataset
+Input data
+
+ARGUMENT:: targetDataset
+Output data
+
+ARGUMENT:: layer
+Layer whose output to return.
+
+ARGUMENT:: action
+Function to run when complete
+
+METHOD:: predictPoint
+Apply the learned mapping to a single data point in a link::Classes/Buffer::
+
+ARGUMENT:: sourceBuffer
+Input point
+
+ARGUMENT:: targetBuffer
+Output point
+
+ARGUMENT:: layer
+Layer whose output to return.
+
+ARGUMENT:: action
+A function to run when complete
+
+EXAMPLES::
+
+code::
+
+(
+{
+	~source = FluidDataSet.new(s,"mlpregressor_source");
+	~target = FluidDataSet.new(s,"mlpregressor_target");
+	~dest = FluidDataSet.new(s,"mlpregressor_dest");
+	~datapoint = Buffer.alloc(s,2);
+	~destpoint = Buffer.new(s);
+	~regressor = FluidMLPRegressor(s) ;
+	s.sync;
+	~source.read("/tmp/test_reg_source_200_lin.json");
+	~source.print;
+	~target.read("/tmp/test_reg_target_200_lin.json");
+	~target.print;
+}.fork
+)
+
+//Train network to map source to target. fit() returns loss. If this is -1, then training has failed
+(
+~regressor.fit(~source,~target,action: {|x|
+	if(x != -1) {("MLP trained with loss"+x).postln;}{"Training failed. Try again (perhaps with a lower learning rate)".postln;}
+});
+)
+
+//Batch predict takes a FluidDataSet source, a FluidDataSet to write netwotk output to, and layer to read from
+~regressor.predict(~source,~dest,2);
+~dest.dump
+
+//Single point predict uses Buffers rater than FluidDataSet:
+{
+	~datapoint.setn(0,[1,1]);
+	~regressor.predictPoint(~datapoint,~destpoint,2);
+	s.sync;
+	~destpoint.loadToFloatArray(0,action:{|a|
+		a.postln;
+	});
+}.fork
+
+::
