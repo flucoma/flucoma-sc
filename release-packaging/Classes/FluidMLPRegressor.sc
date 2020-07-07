@@ -1,9 +1,9 @@
 FluidMLPRegressor : FluidManipulationClient {
 
-  classvar <identity = 0;
-  classvar <sigmoid  =  1;
-  classvar <relu = 2;
-  classvar <tanh = 3;
+  const <identity = 0;
+  const <sigmoid  =  1;
+  const <relu = 2;
+  const <tanh = 3;
 
 	*new {|server, hidden = #[3,3] , activation = 0, maxIter = 100, learnRate = 0.0001, momentum = 0.9, batchSize = 50|
 		var uid = UniqueID.next;
