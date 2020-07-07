@@ -32,7 +32,7 @@ PluginLoad(FluidSTFTUGen)
   makeSCWrapper<NRTThreadedKNNRegressorClient>("FluidKNNRegressor",ft);
   makeSCWrapper<NRTThreadedNormalizeClient>("FluidNormalize",ft);
   makeSCWrapper<NRTThreadedStandardizeClient>("FluidStandardize",ft);
-  makeSCWrapper<NRTThreadedPCAClient>("FluidPCA",ft);
+  makeSCWrapper<RTPCAClient>("FluidPCA",ft);
   makeSCWrapper<NRTThreadedMDSClient>("FluidMDS",ft);
   makeSCWrapper<RTAudioTransportClient>("FluidAudioTransport",ft);
   makeSCWrapper<NRTThreadedAudioTransportClient>("FluidBufAudioTransport",ft);
