@@ -30,8 +30,8 @@ PluginLoad(FluidSTFTUGen)
   makeSCWrapper<RTKMeansClient>("FluidKMeans",ft);
   makeSCWrapper<RTKNNClassifierClient>("FluidKNNClassifier",ft);
   makeSCWrapper<RTKNNRegressorClient>("FluidKNNRegressor",ft);
-  makeSCWrapper<NRTThreadedNormalizeClient>("FluidNormalize",ft);
-  makeSCWrapper<NRTThreadedStandardizeClient>("FluidStandardize",ft);
+  makeSCWrapper<RTNormalizeClient>("FluidNormalize",ft);
+  makeSCWrapper<RTStandardizeClient>("FluidStandardize",ft);
   makeSCWrapper<RTPCAClient>("FluidPCA",ft);
   makeSCWrapper<NRTThreadedMDSClient>("FluidMDS",ft);
   makeSCWrapper<RTAudioTransportClient>("FluidAudioTransport",ft);
