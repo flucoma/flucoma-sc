@@ -14,41 +14,31 @@ METHOD:: new
 Make a new KDTree model for the given server.
 ARGUMENT:: server
 The server on which to make the model.
+ARGUMENT:: numNeighbours
+The number of neighbours to return.
+ARGUMENT:: lookupDataSet
+An optional link::Classes/FluidDataSet:: from which data points will be returned for realtime queries. This does not need to be the same DataSet that the tree was fitted against, but does need to have matching labels. Using this mechanism, we have a way to, e.g. associate labels with segments of playback buffers, without needing pass strings around the server. warning::This parameter can not be safely changed after the instance of FluidKDTree has been created::
 
 INSTANCEMETHODS::
 
 METHOD:: fit
 Build the tree by scanning the points of a LINK::Classes/FluidDataSet::
-
 ARGUMENT:: dataset
 The LINK::Classes/FluidDataSet:: of interest. This can either be a data set object itself, or the name of one.
-
 ARGUMENT:: action
 A function to run when indexing is complete.
 
-
 METHOD:: kNearest
 Returns the IDs of the CODE::k:: points nearest to the one passed.
-
 ARGUMENT:: buffer
 A LINK::Classes/Buffer:: containing a data point to match against. The number of frames in the buffer must match the dimensionality of the LINK::Classes/FluidDataSet:: the tree was fitted to.
-
-ARGUMENT:: k
-The number of neighbours to return.
-
-
 ARGUMENT:: action
 A function that will run when the query returns, whose argument is an array of point IDs from the tree's LINK::Classes/FluidDataSet::
 
 METHOD:: kNearestDist
 Get the distances of the K nearest neighbours to a point.
-
 ARGUMENT:: buffer
 A LINK::Classes/Buffer:: containing a data point to match against. The number of frames in the buffer must match the dimensionality of the LINK::Classes/FluidDataSet:: the tree was fitted to.
-
-ARGUMENT:: k
-The number of neighbours to search
-
 ARGUMENT:: action
 A function that will run when the query returns, whose argument is an array of distances.
 

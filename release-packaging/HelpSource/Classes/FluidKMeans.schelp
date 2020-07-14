@@ -11,9 +11,14 @@ https://scikit-learn.org/stable/tutorial/statistical_inference/unsupervised_lear
 CLASSMETHODS::
 
 METHOD:: new
-Construct a new K Means model on the passed server.
+Construct a new K Means model on the passed server. The parameters code::numClusters:: and code::maxIter:: can be modulated on an existing instance.
 ARGUMENT:: server
 If nil will use Server.default.
+ARGUMENT:: numClusters
+The number of clusters to classify data into.
+ARGUMENT:: maxIter
+The maximum number of iterations the algorithm will use whilst fitting.
+
 
 INSTANCEMETHODS::
 
@@ -23,10 +28,6 @@ METHOD:: fit
 Identify code::k:: clusters in a link::Classes/FluidDataSet::
 ARGUMENT:: dataset
 A link::Classes/FluidDataSet:: of data points.
-ARGUMENT:: k
-The number of clusters to identify in the data set.
-ARGUMENT:: maxIter
-Maximum number of iterations.
 ARGUMENT:: action
 A function to run when fitting is complete, taking as its argument an array with the number of data points for each cluster.
 
@@ -45,10 +46,6 @@ ARGUMENT:: dataset
 a link::Classes/FluidDataSet:: containing the data to fit and predict.
 ARGUMENT:: labelset
 a link::Classes/FluidLabelSet:: to retrieve the predicted clusters.
-ARGUMENT:: k
-The number of clusters.
-ARGUMENT:: maxIter
-Maximum number of iterations.
 ARGUMENT:: action
 A function to run when the server responds
 

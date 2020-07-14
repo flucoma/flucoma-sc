@@ -14,6 +14,10 @@ METHOD:: new
 Create a new KNN regressor on the server
 ARGUMENT:: server
 The server to run this model on.
+ARGUMENT:: numNeighbours
+number of neigbours to consider in mapping, min 1
+ARGUMENT:: weight
+Whether to weight neighbours by distance when producing new point
 
 INSTANCEMETHODS::
 
@@ -33,10 +37,6 @@ ARGUMENT:: sourceDataset
 data to regress
 ARGUMENT:: targetDataset
 output data
-ARGUMENT:: k
-number of neigbours to consider in mapping, min 1
-ARGUMENT:: uniform
-Whether to weight neighbours by distance when producing new point
 ARGUMENT:: action
 Run when done
 
@@ -44,9 +44,6 @@ METHOD:: predictPoint
 Apply learned mapping to a data point in a link::Classes/Buffer::
 ARGUMENT:: buffer
 data point
-ARGUMENT:: k
-number of neigbours to consider in mapping, min 1
-ARGUMENT:: uniform
 Whether the neighbours should be weighted by distance (default) or uniformly
 ARGUMENT:: action
 Run when done

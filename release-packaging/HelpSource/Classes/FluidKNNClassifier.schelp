@@ -13,6 +13,10 @@ METHOD:: new
 Create a new KNNClassifier
 ARGUMENT:: server
 The server to make the model on
+ARGUMENT:: numNeighbours
+the number of neighours to consider
+ARGUMENT:: weight
+true / false: whether the neighbours should be weighted by distance
 
 INSTANCEMETHODS::
 
@@ -31,10 +35,6 @@ ARGUMENT:: dataset
 data to predict labels for
 ARGUMENT:: labelset
 place to write labels
-ARGUMENT:: k
-the number of neighours to consider
-ARGUMENT:: uniform
-true / false: whether the neighbours should be weighted by distance
 ARGUMENT:: action
 Run when done
 
@@ -42,10 +42,6 @@ METHOD:: predictPoint
 Given a fitted model, predict labels for a data point in a link::Classes/Buffer:: and return these to the caller
 ARGUMENT:: buffer
 A data point
-ARGUMENT:: k
-Number of neighbours to consider
-ARGUMENT:: uniform
-true / false: whether the neighbours should be weighted by distance (default) or uniformly
 ARGUMENT:: action
 Run when done, passes predicted label as argument
 
