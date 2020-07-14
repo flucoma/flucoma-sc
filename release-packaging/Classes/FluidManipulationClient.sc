@@ -56,9 +56,11 @@ FluidManipulationClient {
 		^super.newCopyArgs(server ?? {Server.default}).baseinit(objectID,*args)
 	}
 
-	makeDef { |defName,objectID|
+	makeDef { |defName,objectID,args|
+		var initialVals = [];
+		args!? { if(args.size > 0) {initialVals = args.unlace(2)[1].flatten}};
 		^SynthDef(defName,{
-			var  ugen = FluidProxyUgen.kr(this.class.name, *objectID);
+			var  ugen = FluidProxyUgen.kr(this.class.name, *(initialVals ++ objectID));
 			this.ugen = ugen;
 			ugen
 		});
@@ -72,7 +74,7 @@ FluidManipulationClient {
 		postit = {|x| x.postln;};
 		keepAlive = true;
 		defName = (this.class.name.asString ++ id).asSymbol;
-		def = this.makeDef(defName,objectID);
+		def = this.makeDef(defName,objectID,args);
 		synth = Synth.basicNew(def.name, server);
 		synthMsg = synth.newMsg(RootNode(server),args);
 		def.doSend(server,synthMsg);
@@ -145,8 +147,8 @@ FluidDataClient : FluidManipulationClient {
 
 	*new1{ |server, params|
 		var uid = UniqueID.next;
-		params = params ?? {[]}; 
-		if(params.size > 0) {synthControls = params.unlace[0]}; 
+		params = params ?? {[]};
+		if(params.size > 0) {synthControls = params.unlace[0]};
 		params = params ++ [\inBus,Bus.control,\outBus,Bus.control,\inBuffer,-1,\outBuffer,-1];
 		^super.new(server, uid, *params) !? { |inst| inst.init(uid, params) }
 	}
@@ -175,11 +177,11 @@ FluidDataClient : FluidManipulationClient {
 		};
 	}
 
-	updateSynthControls{ 
+	updateSynthControls{
 		synth !? { synth.set(*parameters.asKeyValuePairs); };
 	}
 
-	makeDef{|defName,uid|
+	makeDef{|defName,uid,args|
 		var defControls = [\inBus, \outBus] ++ synthControls ++ [\inBuffer,\outBuffer];
 		var ugenControls = [this.class.name,"T2A.ar(In.kr(inBus))"] ++ synthControls ++ [\inBuffer,\outBuffer,uid];
 		var f = (
