@@ -1,29 +1,23 @@
-FluidKNNClassifier : FluidManipulationClient {
+FluidKNNClassifier : FluidDataClient {
 
-	*new {|server|
-		var uid = UniqueID.next;
-		^super.new(server,uid)!?{|inst|inst.init(uid);inst}
-	}
-
-	init {|uid|
-		id = uid;
+	*new {|server, numNeighbours = 3, weight = 1|
+		^super.new1(server,[\numNeighbours,numNeighbours,\weight,weight]);
 	}
 
 	fit{|dataset, labelset, action|
 	   this.prSendMsg(\fit,[dataset.asSymbol, labelset.asSymbol], action);
 	}
 
-	predict{|dataset, labelset, k, uniform = 0, action|
+	predict{|dataset, labelset, action|
 		this.prSendMsg(\predict,
-			[dataset.asSymbol, labelset.asSymbol, k, uniform],
+			[dataset.asSymbol, labelset.asSymbol],
 			action);
 	}
 
-	predictPoint {|buffer, k, uniform = 0, action|
+	predictPoint {|buffer, action|
 		this.prSendMsg(\predictPoint,
-			[buffer.asUGenInput, k, uniform], action,
+			[buffer.asUGenInput], action,
 			[string(FluidMessageResponse,_,_)]
 		);
 	}
-
 }

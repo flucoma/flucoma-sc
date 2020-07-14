@@ -1,29 +1,23 @@
-FluidPCA : FluidManipulationClient {
+FluidPCA : FluidDataClient {
 
-
-  *new {|server|
-		var uid = UniqueID.next;
-		^super.new(server,uid)!?{|inst|inst.init(uid);inst}
+  *new {|server, numDimensions = 2|
+		^super.new1(server,[\numDimensions,numDimensions]);
 	}
 
-	init {|uid|
-		id = uid;
-	}
-
-    fit{|dataset, k, action|
-        this.prSendMsg(\fit,[dataset.asSymbol, k],action);
+    fit{|dataset, action|
+        this.prSendMsg(\fit,[dataset.asSymbol], action);
     }
 
     transform{|sourceDataset, destDataset, action|
-        this.prSendMsg(\transform,[sourceDataset.asSymbol, destDataset.asSymbol],action);
+        this.prSendMsg(\transform,[sourceDataset.asSymbol, destDataset.asSymbol], action);
     }
 
-    fitTransform{|sourceDataset, destDataset, k, action|
-        this.prSendMsg(\fitTransform,[sourceDataset.asSymbol, destDataset.asSymbol, k],action);
+    fitTransform{|sourceDataset, destDataset, action|
+        this.prSendMsg(\fitTransform,[sourceDataset.asSymbol, destDataset.asSymbol], action);
     }
 
 
     transformPoint{|sourceBuffer, destBuffer, action|
-        this.prSendMsg(\transformPoint,[sourceBuffer.asUGenInput, destBuffer.asUGenInput],action);
+        this.prSendMsg(\transformPoint,[sourceBuffer.asUGenInput, destBuffer.asUGenInput], action);
     }
 }

@@ -1,14 +1,25 @@
-FluidKDTree : FluidManipulationClient {
+FluidKDTree : FluidDataClient {
 
-	var id;
+	*new {|server,numNeighbours = 1,lookupDataSet = ""|
+		var env;
+		var names = [\numNeighbours]
+		++ this.prServerString(lookupDataSet.asSymbol).collect{|x,i|
+			("lookupDataSet"++i).asSymbol;
+		};
 
-	*new {|server|
-		var uid = UniqueID.next;
-		^super.new(server,uid)!?{|inst|inst.init(uid);inst}
-	}
+		var values  = [numNeighbours] ++ this.prServerString(lookupDataSet.asSymbol);
+		var params = [names,values].lace;
+		
 
-	init {|uid|
-		id = uid;
+		/* env = Environment();
+		synthControls[1..].do{|x|
+			env.put(x,0);
+		};
+		env.put(\numNeighbours,1); */
+
+		^super.new1(server,params); 
+			/* env,
+			[\numNeighbours]++lookupDataSet); */
 	}
 
 	fit{|dataset,action|
@@ -16,16 +27,16 @@ FluidKDTree : FluidManipulationClient {
 		this.prSendMsg(\fit, [dataset.asSymbol], action);
 	}
 
-	kNearest{ |buffer, k,action|
+	kNearest{ |buffer, action|
 		this.prSendMsg(\kNearest,
-			[buffer.asUGenInput,k], action,
-			k.collect{string(FluidMessageResponse,_,_)}
+			[buffer.asUGenInput], action,
+			this.numNeighbours.collect{string(FluidMessageResponse,_,_)}
 		);
 	}
 
-	kNearestDist { |buffer, k,action|
-		this.prSendMsg(\kNearestDist, [buffer.asUGenInput,k], action,
-			[numbers(FluidMessageResponse,_,k,_)]
+	kNearestDist { |buffer, action|
+		this.prSendMsg(\kNearestDist, [buffer.asUGenInput], action,
+			[numbers(FluidMessageResponse,_,this.numNeighbours,_)]
 		);
 	}
 }

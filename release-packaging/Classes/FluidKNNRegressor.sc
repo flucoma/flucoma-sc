@@ -1,12 +1,7 @@
-FluidKNNRegressor : FluidManipulationClient {
+FluidKNNRegressor : FluidDataClient {
 
-	*new {|server|
-		var uid = UniqueID.next;
-		^super.new(server,uid)!?{|inst|inst.init(uid);inst}
-	}
-
-	init {|uid|
-		id = uid;
+	*new {|server, numNeighbours = 3, weight = 1|
+		^super.new1(server,[\numNeighbours,numNeighbours,\weight,weight]);
 	}
 
 	fit{|sourceDataset, targetDataset, action|
@@ -16,14 +11,14 @@ FluidKNNRegressor : FluidManipulationClient {
 		);
 	}
 
-	predict{ |sourceDataset, targetDataset, k, uniform = 0, action|
+	predict{ |sourceDataset, targetDataset,action|
 		this.prSendMsg(\predict,
-			[sourceDataset.asSymbol, targetDataset.asSymbol, k, uniform],
+			[sourceDataset.asSymbol, targetDataset.asSymbol],
 			action);
 	}
 
-	predictPoint { |buffer, k, uniform = 0, action|
-		this.prSendMsg(\predictPoint, [buffer.asUGenInput, k, uniform], action,
+	predictPoint { |buffer, action|
+		this.prSendMsg(\predictPoint, [buffer.asUGenInput], action,
 			[number(FluidMessageResponse,_,_)]);
 	}
 }

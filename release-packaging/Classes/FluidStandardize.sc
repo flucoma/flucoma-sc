@@ -1,14 +1,4 @@
-FluidStandardize : FluidManipulationClient {
-
-  *new {|server|
-		var uid = UniqueID.next;
-		^super.new(server,uid)!?{|inst|inst.init(uid);inst}
-	}
-
-	init {|uid|
-		id = uid;
-	}
-
+FluidStandardize : FluidDataClient {
 	fit{|dataset, action|
 		this.prSendMsg(\fit, [dataset.asSymbol], action);
 	}

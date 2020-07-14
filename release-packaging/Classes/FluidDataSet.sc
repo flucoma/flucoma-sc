@@ -20,7 +20,7 @@ FluidDataSet : FluidManipulationClient {
 			FluidDataSetExistsError("A FluidDataset called % already exists.".format(name)).throw;
 			^nil
 		}
-		^super.new(server,*FluidManipulationClient.prServerString(name))!?{|inst|inst.init(name);inst}
+		^super.new(server,FluidManipulationClient.prServerString(name))!?{|inst|inst.init(name);inst}
 	}
 
 	init {|name|

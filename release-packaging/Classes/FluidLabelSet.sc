@@ -18,7 +18,7 @@ FluidLabelSet : FluidManipulationClient {
 		serverCaches.at(server,name) !? {
 			FluidLabelSetExistsError("A FluidLabelSet called % already exists.".format(name)).throw;
 		};
-		^super.new(server,*FluidManipulationClient.prServerString(name))!?{|inst|inst.init(name);inst}
+		^super.new(server,FluidManipulationClient.prServerString(name))!?{|inst|inst.init(name);inst}
 	}
 
 	init { |name|

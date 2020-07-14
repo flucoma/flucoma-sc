@@ -1,12 +1,7 @@
-FluidNormalize : FluidManipulationClient {
+FluidNormalize : FluidDataClient {
 
-  *new {|server, min = 0, max = 1|
-		var uid = UniqueID.next;
-		^super.new(server,min,max,uid)!?{|inst|inst.init(uid);inst}
-	}
-
-	init {|uid|
-		id = uid;
+	*new {|server, min = 0, max = 1|
+		^super.new1(server,[\min,min,\max,max]);
 	}
 
 	fit{|dataset, action|

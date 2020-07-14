@@ -8,7 +8,12 @@ FluidProxyUgen : UGen {
 
 	init { |pluginname...args|
 		this.pluginname = pluginname;
-		inputs = args++Done.none++0;
+		inputs = args;
+		pluginname
+		.asSymbol
+		.asClass
+		.superclasses
+		.indexOf(FluidDataClient) ??{inputs= inputs ++ [Done.none,0]};
 		rate = inputs.rate;
 	}
 
@@ -43,17 +48,17 @@ FluidManipulationClient {
 		^FluidProxyUgen.newFromDesc(rate, numOutputs, inputs, specialIndex)
 	}
 
-	*new{ |server...args|
+	*new{ |server,objectID...args|
 		server = server ? Server.default;
 		if(server.serverRunning.not,{
 			(this.asString + "– server not running").error; ^nil
 		});
-		^super.newCopyArgs(server ?? {Server.default}).baseinit(*args)
+		^super.newCopyArgs(server ?? {Server.default}).baseinit(objectID,*args)
 	}
 
-	makeDef { |defName...args|
+	makeDef { |defName,objectID|
 		^SynthDef(defName,{
-			var  ugen = FluidProxyUgen.kr(this.class.name, *args);
+			var  ugen = FluidProxyUgen.kr(this.class.name, *objectID);
 			this.ugen = ugen;
 			ugen
 		});
@@ -61,15 +66,15 @@ FluidManipulationClient {
 
 	updateSynthControls {}
 
-	baseinit { |...args|
-		var makeFirstSynth,synthMsg;
+	baseinit { |objectID...args|
+		var makeFirstSynth,synthMsg,synthArgs;
 		id = UniqueID.next;
 		postit = {|x| x.postln;};
 		keepAlive = true;
 		defName = (this.class.name.asString ++ id).asSymbol;
-		def = this.makeDef(defName,*args);
+		def = this.makeDef(defName,objectID);
 		synth = Synth.basicNew(def.name, server);
-		synthMsg = synth.newMsg(RootNode(server));
+		synthMsg = synth.newMsg(RootNode(server),args);
 		def.doSend(server,synthMsg);
 
 		onSynthFree = {
@@ -82,7 +87,6 @@ FluidManipulationClient {
 		};
 		CmdPeriod.add({synth = nil});
 		synth.onFree{clock.sched(0,onSynthFree)};
-		this.updateSynthControls;
 	}
 
 	free{
@@ -129,65 +133,66 @@ FluidManipulationClient {
 
 FluidDataClient : FluidManipulationClient {
 
-	var <id;
-	var <inBus, <outBus;
-	var <inBuffer, <outBuffer;
+	classvar synthControls = #[];
 
-	*new {|server,inbus, outbus,inbuf,outbuf|
-		var uid = UniqueID.next;
-		^super.new(server,uid)!?{|inst|
-			inst.init(uid);
-			inst.inBus = inbus;
-			inst.outBus = outbus;
-			inst.inBuffer = inbuf;
-			inst.outBuffer = outbuf;
-			inst
-		}
+	var <id;
+	var parameters;
+	var parameterDefaults;
+
+	*new {|server|
+		^this.new1(server,#[])
 	}
 
-	updateSynthControls{
-		synth !? {
-			if(synth.isRunning){
-				synth.set(
-					\in, inBus !? {inBus.index} ?? {0},
-					\out, outBus !? {outBus.index} ?? {0},
-					\inBuffer,inBuffer !? {inBuffer.asUGenInput} ?? {-1},
-					\outBuffer,outBuffer !? {outBuffer.asUGenInput} ?? {-1}
-			) }
+	*new1{ |server, params|
+		var uid = UniqueID.next;
+		params = params ?? {[]}; 
+		if(params.size > 0) {synthControls = params.unlace[0]}; 
+		params = params ++ [\inBus,Bus.control,\outBus,Bus.control,\inBuffer,-1,\outBuffer,-1];
+		^super.new(server, uid, *params) !? { |inst| inst.init(uid, params) }
+	}
+
+	init { |uid, params|
+		id = uid;
+		parameters = ().putPairs(params);
+		parameterDefaults = parameters.copy;
+		this.makePropertyMethods;
+	}
+
+	makePropertyMethods{
+		if (parameters.keys.size > 0) {
+			parameters.keys.do{|c,i|
+				this.addUniqueMethod(c,{ parameters.at(c) });
+				this.addUniqueMethod((c++\_).asSymbol,{|responder,x|
+					//if we have a default or initial value set, then fall back to
+					//this if val is nil. Otherwise, fallback even furter to -1 as
+					// a best guess
+					x = x ?? { parameterDefaults !? { parameterDefaults[c] } ?? {-1} };
+					parameters.put(c, x.asUGenInput);
+					synth !? { if(synth.isRunning){ synth.set(c,x); } };
+					responder
+				});
+			}
 		};
 	}
 
-	inBuffer_{|newBuffer|
-		inBuffer = newBuffer;
-		this.updateSynthControls;
+	updateSynthControls{ 
+		synth !? { synth.set(*parameters.asKeyValuePairs); };
 	}
 
-	outBuffer_{|newBuffer|
-		outBuffer = newBuffer;
-		this.updateSynthControls;
-	}
-
-	init {|uid|
-		id = uid;
-	}
-
-	inBus_{ |newBus|
-		inBus = newBus;
-		this.updateSynthControls;
-	}
-
-	outBus_{ |newBus|
-		outBus = newBus;
-		this.updateSynthControls;
-	}
-
-	makeDef{|defName...args|
-		^SynthDef(defName, { |in,out,inBuffer,outBuffer|
-			var  ugen = FluidProxyUgen.kr(this.class.name, T2A.ar(T2K.kr(In.ar(in))), inBuffer, outBuffer, *args);
-			this.ugen = ugen;
-			Out.kr(out,ugen);
-			ugen
-		});
+	makeDef{|defName,uid|
+		var defControls = [\inBus, \outBus] ++ synthControls ++ [\inBuffer,\outBuffer];
+		var ugenControls = [this.class.name,"T2A.ar(In.kr(inBus))"] ++ synthControls ++ [\inBuffer,\outBuffer,uid];
+		var f = (
+			"{ |dataClient|"
+			"    SynthDef("++defName.asCompileString++", { |" ++ defControls.join(",") ++ "|"
+			"       var  ugen = FluidProxyUgen.kr(" ++ ugenControls.join(",") ++ ");"
+			"	    dataClient.ugen = ugen;"
+			"       Out.kr(outBus,ugen);"
+			"     })"
+			"}"
+		);
+		var res = f.interpret.value(this);
+		^res
 	}
 }
 
