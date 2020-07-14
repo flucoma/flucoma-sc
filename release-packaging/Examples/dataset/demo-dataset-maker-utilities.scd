@@ -150,7 +150,8 @@ FluidBufCompose.process(s,~loader.buffer,a,(b-a),numChans: 1, destination: ~targ
 
 //find its nearest neighbours
 ~friends = Array;
-~tree.kNearest(~flatbuf[0],5,{|x| ~friends = x.postln;})
+~tree.numNeighbours = 5;
+~tree.kNearest(~flatbuf[0],{|x| ~friends = x.postln;})
 
 // play them in a row
 (

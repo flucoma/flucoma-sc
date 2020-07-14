@@ -18,13 +18,13 @@ Routine{
 ~tree = FluidKDTree.new(s)
 ~tree.fit(~ds,action:{"Done indexing".postln})
 
-k = 5; //play with this
+~tree.numNeighbours = 5; //play with this
 (
 Routine{
 	15.do{|i|
 		~point.set(0,i);
-		~tree.kNearest(~point, k, {|x| "Neighbours for a value of % are ".postf(i); x.post;" with respective distances of ".post;});
-		~tree.kNearestDist(~point,k,{|x| x.postln});
+		~tree.kNearest(~point, {|x| "Neighbours for a value of % are ".postf(i); x.post;" with respective distances of ".post;});
+		~tree.kNearestDist(~point, {|x| x.postln});
 		s.sync;
 	}
 }.play
@@ -33,9 +33,9 @@ Routine{
 
 /*** KMEANS ***/
 
-~kmeans = FluidKMeans.new(s)
-~nClusters = 2; //play with this
-~kmeans.fit(~ds,~nClusters,100,action:{|x| "Done fitting with these number of items per cluster ".post;x.postln;})
+~kmeans = FluidKMeans.new(s,maxIter:100)
+~kmeans.numClusters = 2; //play with this
+~kmeans.fit(~ds, action:{|x| "Done fitting with these number of items per cluster ".post;x.postln;})
 
 (
 Routine{

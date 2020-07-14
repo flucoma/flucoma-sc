@@ -3,7 +3,7 @@
 ~simpleOutput = FluidLabelSet(s,\simpleOutput);
 b = Buffer.alloc(s,2);
 ~knn = FluidKNNClassifier(s);
-k = 3
+~knn.numNeighbours = 3
 )
 
 (
@@ -22,7 +22,7 @@ v.mouseDownAction = {|view, x, y|myx=x;myy=y;w.refresh;
 	// myx.postln;myy.postln;
 	Routine{
 		b.setn(0,[myx,myy]);
-		~knn.predictPoint(b, k, action: {|x|x.postln;});
+		~knn.predictPoint(b, action: {|x|x.postln;});
 		s.sync;
 }.play;};
 

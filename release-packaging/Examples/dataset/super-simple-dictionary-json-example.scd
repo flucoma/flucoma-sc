@@ -13,12 +13,11 @@
 ~ds.print
 
 //fun with kdtree to see it actually works
-~kdtree = FluidKDTree.new(s)
+~kdtree = FluidKDTree.new(s,numNeighbours:5)
 ~kdtree.fit(~ds,{\done.postln;})
-
 ~target = Buffer.loadCollection(s,(4).dup(10));
-~kdtree.kNearest(~target,5,{|a|a.postln;})
-~kdtree.kNearestDist(~target,5,{|a|a.postln;})
+~kdtree.kNearest(~target, {|a|a.postln;})
+~kdtree.kNearestDist(~target, {|a|a.postln;})
 
 
 /////////////////////////////////////////////
@@ -39,7 +38,7 @@
 ~ls.print
 
 // testin with a classifier toy example
-~classifier = FluidKNNClassifier.new(s);
+~classifier = FluidKNNClassifier.new(s, numNeighbours:2);
 ~classifier.fit(~ds,~ls, {\done.postln;})
 
-~classifier.predictPoint(~target,2,action: {|x|x.postln;})
+~classifier.predictPoint(~target, action: {|x|x.postln;})

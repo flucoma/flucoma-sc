@@ -73,10 +73,10 @@ Routine{
 ~dataset.getPoint("point-7",~query_buf);
 
 // find the 2 points with the shortest distances in the dataset
-~tree = FluidKDTree.new(s);
+~tree = FluidKDTree.new(s,numNeighbours:2);
 ~tree.fit(~dataset)
-~tree.kNearest(~query_buf,2, {|x| ("Labels:" + x).postln});
-~tree.kNearestDist(~query_buf,2, {|x| ("Distances:" + x).postln});
+~tree.kNearest(~query_buf, {|x| ("Labels:" + x).postln});
+~tree.kNearestDist(~query_buf, {|x| ("Distances:" + x).postln});
 // its nearest neighbourg is itself: it should be itself and the distance should be 0. The second point is depending on your input dataset.
 
 // normalise that point (~query_buf) to be at the right scale
@@ -85,10 +85,10 @@ Routine{
 ~normbuf.getn(0,~nb_of_dim,{arg vec;vec.postln;});
 
 // make a tree of the normalized database and query with the normalize buffer
-~normtree = FluidKDTree.new(s);
+~normtree = FluidKDTree.new(s,numNeighbours:2);
 ~normtree.fit(~normed_dataset)
-~normtree.kNearest(~normbuf,2, {|x| ("Labels:" + x).postln});
-~normtree.kNearestDist(~normbuf,2, {|x| ("Distances:" + x).postln});
+~normtree.kNearest(~normbuf,  {|x| ("Labels:" + x).postln});
+~normtree.kNearestDist(~normbuf, {|x| ("Distances:" + x).postln});
 // its nearest neighbourg is still itself as it should be, but the 2nd neighbourg will probably have changed. The distance is now different too
 
 // standardize that same point (~query_buf) to be at the right scale
@@ -97,10 +97,10 @@ Routine{
 ~stdbuf.getn(0,~nb_of_dim,{arg vec;vec.postln;});
 
 // make a tree of the standardized database and query with the normalize buffer
-~stdtree = FluidKDTree.new(s);
+~stdtree = FluidKDTree.new(s, numNeighbours: 2);
 ~stdtree.fit(~standardized_dataset)
-~stdtree.kNearest(~stdbuf,2, {|x| ("Labels:" + x).postln});
-~stdtree.kNearestDist(~stdbuf,2, {|x| ("Distances:" + x).postln});
+~stdtree.kNearest(~stdbuf, {|x| ("Labels:" + x).postln});
+~stdtree.kNearestDist(~stdbuf, {|x| ("Distances:" + x).postln});
 // its nearest neighbourg is still itself as it should be, but the 2nd neighbourg will probably have changed yet again. The distance is also different too
 
 // where it starts to be interesting is when we query points that are not in our original dataset
@@ -113,6 +113,7 @@ Routine{
 ~standardize.transformPoint(~query_buf,~stdbuf);
 
 //query the single nearest neighbourg via 3 different data scaling. Depending on the random source at the begining, you will get small to large differences between the 3 answers!
-~tree.kNearest(~query_buf,1, {|x| ("Original:" + x).post;~tree.kNearestDist(~query_buf,1, {|x| (" with a distance of " + x).postln});});
-~normtree.kNearest(~normbuf,1, {|x| ("Normalized:" + x).post;~normtree.kNearestDist(~normbuf,1, {|x| (" with a distance of " + x).postln});});
-~stdtree.kNearest(~stdbuf,1, {|x| ("Standardized:" + x).post; ~stdtree.kNearestDist(~stdbuf,1, {|x| (" with a distance of " + x).postln});});
+[~tree,~normtree,~stdtree].do{|t| t.numNeighbours =1  };
+~tree.kNearest(~query_buf, {|x| ("Original:" + x).post;~tree.kNearestDist(~query_buf,1, {|x| (" with a distance of " + x).postln});});
+~normtree.kNearest(~normbuf, {|x| ("Normalized:" + x).post;~normtree.kNearestDist(~normbuf,1, {|x| (" with a distance of " + x).postln});});
+~stdtree.kNearest(~stdbuf, {|x| ("Standardized:" + x).post; ~stdtree.kNearestDist(~stdbuf,1, {|x| (" with a distance of " + x).postln});});

@@ -44,11 +44,11 @@ Routine{
 
 // query 512 points along the line (slow because of all that sync'ing)
 (
-k = 1; // change to see how many points the system uses to regress
+~knn.numNeighbours = 1; // change to see how many points the system uses to regress
 Routine{
 	512.do{|i|
 		b.set(0,i*61);
-		~knn.predictPoint(b,k,action:{|d|~mappingresult.set(i,d);});
+		~knn.predictPoint(b,action:{|d|~mappingresult.set(i,d);});
 		s.sync;
 		i.postln;
 	}
