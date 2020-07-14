@@ -4,7 +4,7 @@ categories:: Classification, KNN
 related:: Classes/FluidKNNRegressor, Classes/FluidDataSet, Classes/FluidLabelSet
 
 DESCRIPTION::
-A nearest-neighbor classifier using link::Classes/FluidKDTree:: . Each point is assigned the class that is most common among its nearest neighbors.
+A nearest-neighbour classifier using link::Classes/FluidKDTree:: . Each point is assigned the class that is most common among its nearest neighbours.
 https://scikit-learn.org/stable/modules/neighbors.html#classification
 
 CLASSMETHODS::
