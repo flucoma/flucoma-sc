@@ -4,19 +4,19 @@ FluidNormalize : FluidDataClient {
 		^super.new1(server,[\min,min,\max,max]);
 	}
 
-	fit{|dataset, action|
-		this.prSendMsg(\fit,[dataset.asSymbol], action);
+	fit{|dataSet, action|
+		this.prSendMsg(\fit,[dataSet.asSymbol], action);
 	}
 
-	transform{|sourceDataset, destDataset, action|
+	transform{|sourceDataSet, destDataSet, action|
 		this.prSendMsg(\transform,
-			[sourceDataset.asSymbol, destDataset.asSymbol], action
+			[sourceDataSet.asSymbol, destDataSet.asSymbol], action
 		);
 	}
 
-	fitTransform{|sourceDataset, destDataset, action|
+	fitTransform{|sourceDataSet, destDataSet, action|
 		this.prSendMsg(\fitTransform,
-			[sourceDataset.asSymbol, destDataset.asSymbol], action
+			[sourceDataSet.asSymbol, destDataSet.asSymbol], action
 		);
 	}
 

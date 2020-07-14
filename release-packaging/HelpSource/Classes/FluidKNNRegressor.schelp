@@ -22,20 +22,20 @@ Whether to weight neighbours by distance when producing new point
 INSTANCEMETHODS::
 
 METHOD:: fit
-Map a source link::Classes/FluidDataSet:: to a one-dimensional target; both datasets need to have the same number of points.
-ARGUMENT:: sourceDataset
+Map a source link::Classes/FluidDataSet:: to a one-dimensional target; both DataSets need to have the same number of points.
+ARGUMENT:: sourceDataSet
 Source data
-ARGUMENT:: targetDataset
+ARGUMENT:: targetDataSet
 Target data
 ARGUMENT:: action
 Run when done
 
 
 METHOD:: predict
-Apply learned mapping to a link::Classes/FluidDataSet:: and write to an output dataset
-ARGUMENT:: sourceDataset
+Apply learned mapping to a link::Classes/FluidDataSet:: and write to an output DataSet
+ARGUMENT:: sourceDataSet
 data to regress
-ARGUMENT:: targetDataset
+ARGUMENT:: targetDataSet
 output data
 ARGUMENT:: action
 Run when done

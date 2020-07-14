@@ -18,26 +18,26 @@ The server for this model
 INSTANCEMETHODS::
 
 METHOD:: fit
-Fit model to a dataset without applying scaling
-ARGUMENT:: dataset
+Fit model to a DataSet without applying scaling
+ARGUMENT:: dataSet
 The link::Classes/FluidDataSet:: to standardize
 ARGUMENT:: action
 A function to run when processing is complete
 
 METHOD:: transform
 Standardize a link::Classes/FluidDataSet::, using the learned statistics from a previous call to link::Classes/FluidStandardize#fit::
-ARGUMENT:: sourceDataset
+ARGUMENT:: sourceDataSet
 The link::Classes/FluidDataSet:: to standardize
-ARGUMENT:: destDataset
+ARGUMENT:: destDataSet
 The link::Classes/FluidDataSet:: to populate with standardized data
 ARGUMENT:: action
 A function to run when processing is complete
 
 METHOD:: fitTransform
 Standardize a link::Classes/FluidDataSet:: into another link::Classes/FluidDataSet::
-ARGUMENT:: sourceDataset
+ARGUMENT:: sourceDataSet
 The link::Classes/FluidDataSet:: to standardize
-ARGUMENT:: destDataset
+ARGUMENT:: destDataSet
 The link::Classes/FluidDataSet:: to populate with standardized data
 ARGUMENT:: action
 A function to run when processing is complete

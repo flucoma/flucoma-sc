@@ -24,26 +24,26 @@ PRIVATE:: init
 
 METHOD:: fit
 Train this model on a link::Classes/FluidDataSet:: but don't transform the data
-ARGUMENT:: dataset
+ARGUMENT:: dataSet
 A link::Classes/FluidDataSet:: to analyse
 ARGUMENT:: action
 Run when done
 
 METHOD:: transform
 Given a trained model, apply the reduction to a source link::Classes/FluidDataSet:: and write to a destination. Can be the same
-ARGUMENT:: sourceDataset
-Source data, or the dataset name
-ARGUMENT:: destDataset
-Destination data, or the dataset name
+ARGUMENT:: sourceDataSet
+Source data, or the DataSet name
+ARGUMENT:: destDataSet
+Destination data, or the DataSet name
 ARGUMENT:: action
 Run when done
 
 METHOD:: fitTransform
 link::Classes/FluidPCA#fit:: and link::Classes/FluidPCA#transform:: in a single pass
-ARGUMENT:: sourceDataset
-Source data, or the dataset name
-ARGUMENT:: destDataset
-Destination data, or the dataset name
+ARGUMENT:: sourceDataSet
+Source data, or the DataSet name
+ARGUMENT:: destDataSet
+Destination data, or the DataSet name
 ARGUMENT:: action
 Run when done
 
@@ -105,9 +105,9 @@ FluidBufMFCC.process(s,~audio, features: ~mfcc_feature);
 )
 
 
-//First standardize our dataset, so that the MFCC dimensions are on comensurate scales
+//First standardize our DataSet, so that the MFCC dimensions are on comensurate scales
 //Then apply the PCA in-place on the standardized data
-//Download the dataset contents into an array for plotting
+//Download the DataSet contents into an array for plotting
 (
 ~reducedarray = Array.new(100);
 ~standardizer.fitTransform(~raw, ~standardized);

@@ -84,10 +84,10 @@ Run when done
 
 METHOD:: transform
 Apply the query to a source link::Classes/FluidDataSet:: and write to a destination. Can be the same.
-ARGUMENT:: sourceDataset
-Source data, or the dataset name
-ARGUMENT:: destDataset
-Destination data, or the dataset name
+ARGUMENT:: sourceDataSet
+Source data, or the DataSet name
+ARGUMENT:: destDataSet
+Destination data, or the DataSet name
 ARGUMENT:: action
 Run when done
 
@@ -99,19 +99,19 @@ code::
 s.boot;
 
 
-// Create a dataset with random data
-~dataset= FluidDataSet(s,\help_fluid_dataset_query);
+// Create a DataSet with random data
+~dataSet= FluidDataSet(s,\help_fluid_dataset_query);
 
 (
 ~points = 100.collect{24.collect{100.rand}};
-~dataset.clear;
+~dataSet.clear;
 ~tmpbuf = Buffer.alloc(s,24);
 
 fork{
     s.sync;
     ~points.do{|x,i|
         ~tmpbuf.setn(0,x);
-        ~dataset.addPoint(i,~tmpbuf);
+        ~dataSet.addPoint(i,~tmpbuf);
         s.sync
     }
 }
@@ -128,12 +128,12 @@ fork{
 ~query.and(2,"<",50);
 ~query.limit(10);
 
-// Create an output dataset and run the query
+// Create an output DataSet and run the query
 ~out = FluidDataSet(s,\help_fluid_dataset_query_out);
-~query.transform(~dataset, ~out);
+~query.transform(~dataSet, ~out);
 
 // Check the results
-~dataset.print;
+~dataSet.print;
 ~out.print;
 
 

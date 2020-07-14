@@ -9,7 +9,7 @@ FluidKDTree : FluidDataClient {
 
 		var values  = [numNeighbours] ++ this.prServerString(lookupDataSet.asSymbol);
 		var params = [names,values].lace;
-		
+
 
 		/* env = Environment();
 		synthControls[1..].do{|x|
@@ -17,14 +17,13 @@ FluidKDTree : FluidDataClient {
 		};
 		env.put(\numNeighbours,1); */
 
-		^super.new1(server,params); 
+		^super.new1(server,params);
 			/* env,
 			[\numNeighbours]++lookupDataSet); */
 	}
 
-	fit{|dataset,action|
-		dataset.asSymbol.postln;
-		this.prSendMsg(\fit, [dataset.asSymbol], action);
+	fit{|dataSet,action|
+		this.prSendMsg(\fit, [dataSet.asSymbol], action);
 	}
 
 	kNearest{ |buffer, action|

@@ -15,16 +15,16 @@ FluidMLPRegressor : FluidManipulationClient {
 		id = uid;
 	}
 
-	fit{|sourceDataset, targetDataset, action|
+	fit{|sourceDataSet, targetDataSet, action|
 	   this.prSendMsg(\fit,
-			[sourceDataset.asSymbol, targetDataset.asSymbol],
+			[sourceDataSet.asSymbol, targetDataSet.asSymbol],
 			action,numbers(FluidMessageResponse,_,1,_)
 		);
 	}
 
-	predict{ |sourceDataset, targetDataset, layer, action|
+	predict{ |sourceDataSet, targetDataSet, layer, action|
 		this.prSendMsg(\predict,
-			[sourceDataset.asSymbol, targetDataset.asSymbol,layer],
+			[sourceDataSet.asSymbol, targetDataSet.asSymbol,layer],
 			action);
 	}
 

@@ -4,16 +4,16 @@ FluidKNNRegressor : FluidDataClient {
 		^super.new1(server,[\numNeighbours,numNeighbours,\weight,weight]);
 	}
 
-	fit{|sourceDataset, targetDataset, action|
+	fit{|sourceDataSet, targetDataSet, action|
 	   this.prSendMsg(\fit,
-			[sourceDataset.asSymbol, targetDataset.asSymbol],
+			[sourceDataSet.asSymbol, targetDataSet.asSymbol],
 			action
 		);
 	}
 
-	predict{ |sourceDataset, targetDataset,action|
+	predict{ |sourceDataSet, targetDataSet,action|
 		this.prSendMsg(\predict,
-			[sourceDataset.asSymbol, targetDataset.asSymbol],
+			[sourceDataSet.asSymbol, targetDataSet.asSymbol],
 			action);
 	}
 

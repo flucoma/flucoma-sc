@@ -42,10 +42,10 @@ PRIVATE:: init, uid
 METHOD:: fit
 Train the network to map between a source and target link::Classes/FluidDataSet::
 
-ARGUMENT:: sourceDataset
+ARGUMENT:: sourceDataSet
 Source data
 
-ARGUMENT:: targetDataset
+ARGUMENT:: targetDataSet
 Target data
 
 ARGUMENT:: action
@@ -54,12 +54,12 @@ Function to run when training is complete
 returns:: The training loss, or -1 if training failed
 
 METHOD:: predict
-Apply the learned mapping to a dataset (given a trained network)
+Apply the learned mapping to a DataSet (given a trained network)
 
-ARGUMENT:: sourceDataset
+ARGUMENT:: sourceDataSet
 Input data
 
-ARGUMENT:: targetDataset
+ARGUMENT:: targetDataSet
 Output data
 
 ARGUMENT:: layer

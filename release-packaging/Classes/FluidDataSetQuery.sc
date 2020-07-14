@@ -41,8 +41,8 @@ FluidDataSetQuery : FluidManipulationClient {
 		this.prSendMsg(\limit, [rows], action);
 	}
 
-    transform{|sourceDataset, destDataset, action|
-        this.prSendMsg(\transform,[sourceDataset.asSymbol, destDataset.asSymbol],action);
+    transform{|sourceDataSet, destDataSet, action|
+        this.prSendMsg(\transform,[sourceDataSet.asSymbol, destDataSet.asSymbol],action);
     }
 
 }

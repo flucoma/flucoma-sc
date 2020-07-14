@@ -11,12 +11,12 @@ CLASSMETHODS::
 PRIVATE:: asUGenInput
 
 METHOD:: new
-Create a new instance of the dataset, with the given name. If a Dataset with this name already exists, an exception will be thrown (see link::Classes/FluidDataSet#at:: to access an extant Dataset).
+Create a new instance of the DataSet, with the given name. If a DataSet with this name already exists, an exception will be thrown (see link::Classes/FluidDataSet#at:: to access an existant DataSet).
 
 ARGUMENT:: server
 The link::Classes/Server:: on which to create the data set.
 ARGUMENT:: name
-A symbol with the name of the dataset.
+A symbol with the name of the DataSet.
 ​
 returns:: The new instance
 
@@ -24,9 +24,9 @@ METHOD:: at
 Retrieves a cached instance of a FluidDataSet with the given name, or returns nil if no such object exists.
 
 ARGUMENT:: server
-The server associated with this dataset instance.
+The server associated with this DataSet instance.
 ARGUMENT:: name
-The name of the Dataset to retrieve from the cache.
+The name of the DataSet to retrieve from the cache.
 
 
 INSTANCEMETHODS::
@@ -34,8 +34,8 @@ INSTANCEMETHODS::
 PRIVATE:: init,id,cache
 
 METHOD:: addPoint
-Add a new point to the data set. The dimensionality of the dataset is governed by the size of the first point added.
-Will report an error if the label already exists, or if the size of the data does not match the dimensionality of the dataset.
+Add a new point to the data set. The dimensionality of the DataSet is governed by the size of the first point added.
+Will report an error if the label already exists, or if the size of the data does not match the dimensionality of the DataSet.
 ARGUMENT:: label
 A symbol or string with the label for the new point.
 ARGUMENT:: buffer
@@ -44,7 +44,7 @@ ARGUMENT:: action
 A function to run when the point has been added.
 ​​
 METHOD:: updatePoint
-Update an existing label's data. Will report an error if the label doesn't exist, or if the size of the data does not match the given dimensionality of the dataset.
+Update an existing label's data. Will report an error if the label doesn't exist, or if the size of the data does not match the given dimensionality of the DataSet.
 
 METHOD:: getPoint
 Retrieve a point from the data set into a link::Classes/Buffer::. Will report an error if the label or buffer doesn't exist​.
@@ -59,7 +59,7 @@ METHOD:: free
 Destroy the object on the server.
 
 METHOD:: print
-Post an abbreviated content of the dataset in the window by default, but you can supply a custom action instead.
+Post an abbreviated content of the DataSet in the window by default, but you can supply a custom action instead.
 ​​
 METHOD:: synth
 The internal synth the object uses to communicate with the server

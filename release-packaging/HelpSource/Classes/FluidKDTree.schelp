@@ -23,7 +23,7 @@ INSTANCEMETHODS::
 
 METHOD:: fit
 Build the tree by scanning the points of a LINK::Classes/FluidDataSet::
-ARGUMENT:: dataset
+ARGUMENT:: dataSet
 The LINK::Classes/FluidDataSet:: of interest. This can either be a data set object itself, or the name of one.
 ARGUMENT:: action
 A function to run when indexing is complete.
@@ -48,7 +48,7 @@ EXAMPLES::
 code::
 
 
-// Make a dataset of random 23D points
+// Make a DataSet of random 23D points
 s.boot;
 (
 fork{
@@ -61,10 +61,10 @@ fork{
 }
 )
 
-// Make a new tree, and fit it to the dataset
+// Make a new tree, and fit it to the DataSet
 ~tree = FluidKDTree(s,numNeighbours:5,lookupDataSet:~ds);
 
-//Fit it to the dataset
+//Fit it to the DataSet
 ~tree.fit(~ds);
 
 // Should be 100 points, 2 columns

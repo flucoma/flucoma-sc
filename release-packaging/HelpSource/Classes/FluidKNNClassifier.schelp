@@ -22,18 +22,18 @@ INSTANCEMETHODS::
 
 METHOD:: fit
 Fit the model to a source link::Classes/FluidDataSet:: and a target link::Classes/FluidLabelSet::. These need to be the same size
-ARGUMENT:: dataset
+ARGUMENT:: dataSet
 Source data
-ARGUMENT:: labelset
+ARGUMENT:: labelSet
 Labels for the source data
 ARGUMENT:: action
 Run when done
 
 METHOD:: predict
 Given a fitted model, predict labels for a link::Classes/FluidDataSet:: and write these to a link::Classes/FluidLabelSet::
-ARGUMENT:: dataset
+ARGUMENT:: dataSet
 data to predict labels for
-ARGUMENT:: labelset
+ARGUMENT:: labelSet
 place to write labels
 ARGUMENT:: action
 Run when done
@@ -52,8 +52,8 @@ code::
 
 // Make:
 // - A KNN Classifier
-// - A dataset of example points, and a label set of corresponding labels
-// - A dataset of test data and a labelset for predicted labels
+// - A DataSet of example points, and a label set of corresponding labels
+// - A DataSet of test data and a LabelSet for predicted labels
 
 (
 ~classifier = FluidKNNClassifier(s);
@@ -63,7 +63,7 @@ code::
 ~mapping = FluidLabelSet(s,\knnclassify_help_mapping);
 )
 
-//Make some clumped 2D points and place into a dataset
+//Make some clumped 2D points and place into a DataSet
 (
 ~examplepoints = [[0.5,0.5],[-0.5,0.5],[0.5,-0.5],[-0.5,-0.5]];
 ~examplelabels = [\red,\orange,\green,\blue];
@@ -87,7 +87,7 @@ d = Dictionary.with(
 )
 
 
-//Fit the classifier to the example dataset and labels, and then run prediction on the test data into our mapping label set
+//Fit the classifier to the example DataSet and labels, and then run prediction on the test data into our mapping label set
 (
 ~classifier.fit(~source,~labels);
 ~classifier.predict(~test, ~mapping, 1);
@@ -193,6 +193,3 @@ code::
 }.play(~classifier.synth,addAction:\addAfter);
 )
 ::
-
-
-
