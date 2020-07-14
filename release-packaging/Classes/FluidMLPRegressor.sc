@@ -7,8 +7,14 @@ FluidMLPRegressor : FluidManipulationClient {
 
 	*new {|server, hidden = #[3,3] , activation = 0, maxIter = 100, learnRate = 0.0001, momentum = 0.9, batchSize = 50|
 		var uid = UniqueID.next;
-		^super.new(server,*([hidden.size]++hidden++activation++maxIter++learnRate++
-			momentum++batchSize++uid))!?{|inst|inst.init(uid);inst}
+		hidden = [hidden.size]++hidden;
+		^super.new(server,uid, *[
+			\hidden,hidden,
+			\activation,activation,
+			\maxIter, maxIter,
+			\learnRate,learnRate,
+			\momentum, momentum,
+			\batchsize,batchSize])!?{|inst|inst.init(uid);inst}
 	}
 
 	init {|uid|

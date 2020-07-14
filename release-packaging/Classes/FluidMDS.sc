@@ -7,18 +7,21 @@ FluidMDS : FluidManipulationClient {
 	classvar < kl = 5;
 	classvar < cosine = 5;
 
-	*new {|server|
+	*new {|server,numDimensions = 2, distanceMetric = 1|
 		var uid = UniqueID.next;
-		^super.new(server,uid)!?{|inst|inst.init(uid);inst}
+		^super.new(server,uid,*[
+			\numDimensions,numDimensions,
+			\distanceMetric, distanceMetric
+		])!?{|inst|inst.init(uid);inst}
 	}
 
 	init {|uid|
 		id = uid;
 	}
 
-	fitTransform{|sourceDataSet, destDataSet, numDimensions, distanceMetric, action|
+	fitTransform{|sourceDataSet, destDataSet, action|
 		this.prSendMsg(\fitTransform,
-			[sourceDataSet.asSymbol,  destDataSet.asSymbol, numDimensions, distanceMetric], action);
+			[sourceDataSet.asSymbol,  destDataSet.asSymbol], action);
 	}
 
 	// not implemented

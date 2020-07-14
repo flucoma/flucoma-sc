@@ -111,7 +111,7 @@ FluidBufMFCC.process(s,~audio, features: ~mfcc_feature);
 (
 ~reducedarray = Array.new(100);
 ~standardizer.fitTransform(~raw, ~standardized);
-~mds.fitTransform(~standardized, ~reduced, 2, FluidMDS.euclidean, action:{
+~mds.fitTransform(~standardized, ~reduced, action:{
 	~reduced.dump{|x| 100.do{|i|
 		~reducedarray.add(x["data"][i.asString])
      }}});
