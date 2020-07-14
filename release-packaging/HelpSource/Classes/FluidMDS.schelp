@@ -45,13 +45,13 @@ PRIVATE:: init
 
 METHOD:: fitTransform
 Fit the model to a link::Classes/FluidDataSet:: and write the new projected data to a destination FluidDataSet.
-ARGUMENT:: sourceDataset
-Source data, or the dataset name
-ARGUMENT:: destDataset
-Destination data, or the dataset name
-ARGUMENT:: k
+ARGUMENT:: sourceDataSet
+Source data, or the DataSet name
+ARGUMENT:: destDataSet
+Destination data, or the DataSet name
+ARGUMENT:: numDimensions
 The number of dimensions to reduce to
-ARGUMENT:: dist
+ARGUMENT:: distanceMetric
 The distance metric to use (integer, 0-6, see flags above)
 ARGUMENT:: action
 Run when done
@@ -105,9 +105,9 @@ FluidBufMFCC.process(s,~audio, features: ~mfcc_feature);
 
 
 
-//First standardize our dataset, so that the MFCC dimensions are on comensurate scales
+//First standardize our DataSet, so that the MFCC dimensions are on comensurate scales
 //Then apply the MDS in-place on the standardized data to get 2 dimensions, using a Euclidean distance metric
-//Download the dataset contents into an array for plotting
+//Download the DataSet contents into an array for plotting
 (
 ~reducedarray = Array.new(100);
 ~standardizer.fitTransform(~raw, ~standardized);

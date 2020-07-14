@@ -4,13 +4,13 @@ FluidKNNClassifier : FluidDataClient {
 		^super.new1(server,[\numNeighbours,numNeighbours,\weight,weight]);
 	}
 
-	fit{|dataset, labelset, action|
-	   this.prSendMsg(\fit,[dataset.asSymbol, labelset.asSymbol], action);
+	fit{|dataSet, labelSet, action|
+	   this.prSendMsg(\fit,[dataSet.asSymbol, labelSet.asSymbol], action);
 	}
 
-	predict{|dataset, labelset, action|
+	predict{|dataSet, labelSet, action|
 		this.prSendMsg(\predict,
-			[dataset.asSymbol, labelset.asSymbol],
+			[dataSet.asSymbol, labelSet.asSymbol],
 			action);
 	}
 

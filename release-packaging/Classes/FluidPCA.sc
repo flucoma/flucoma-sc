@@ -4,16 +4,16 @@ FluidPCA : FluidDataClient {
 		^super.new1(server,[\numDimensions,numDimensions]);
 	}
 
-    fit{|dataset, action|
-        this.prSendMsg(\fit,[dataset.asSymbol], action);
+    fit{|dataSet, action|
+        this.prSendMsg(\fit,[dataSet.asSymbol], action);
     }
 
-    transform{|sourceDataset, destDataset, action|
-        this.prSendMsg(\transform,[sourceDataset.asSymbol, destDataset.asSymbol], action);
+    transform{|sourceDataSet, destDataSet, action|
+        this.prSendMsg(\transform,[sourceDataSet.asSymbol, destDataSet.asSymbol], action);
     }
 
-    fitTransform{|sourceDataset, destDataset, action|
-        this.prSendMsg(\fitTransform,[sourceDataset.asSymbol, destDataset.asSymbol], action);
+    fitTransform{|sourceDataSet, destDataSet, action|
+        this.prSendMsg(\fitTransform,[sourceDataSet.asSymbol, destDataSet.asSymbol], action);
     }
 
 

@@ -26,16 +26,16 @@ INSTANCEMETHODS::
 
 METHOD:: fit
 Compute the normalization factors from a link::Classes/FluidDataSet:: for later.
-ARGUMENT:: dataset
+ARGUMENT:: dataSet
 The link::Classes/FluidDataSet:: to normalize
 ARGUMENT:: action
 A function to run when processing is complete
 
 METHOD:: transform
 Normalize a link::Classes/FluidDataSet:: into another link::Classes/FluidDataSet::, using the learned extrema from a previous call to link::Classes/FluidNormalize#fit::
-ARGUMENT:: sourceDataset
+ARGUMENT:: sourceDataSet
 The link::Classes/FluidDataSet:: to normalize
-ARGUMENT:: destDataset
+ARGUMENT:: destDataSet
 The link::Classes/FluidDataSet:: to populate with normalized data
 ARGUMENT:: action
 A function to run when processing is complete
@@ -43,9 +43,9 @@ A function to run when processing is complete
 
 METHOD:: fitTransform
 Normalize a link::Classes/FluidDataSet::
-ARGUMENT:: sourceDataset
+ARGUMENT:: sourceDataSet
 The link::Classes/FluidDataSet:: to normalize
-ARGUMENT:: destDataset
+ARGUMENT:: destDataSet
 The link::Classes/FluidDataSet:: to populate with normalized data
 ARGUMENT:: action
 A function to run when processing is complete

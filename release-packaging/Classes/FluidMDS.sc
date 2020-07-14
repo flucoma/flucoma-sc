@@ -16,9 +16,9 @@ FluidMDS : FluidManipulationClient {
 		id = uid;
 	}
 
-	fitTransform{|sourceDataset, destDataset, k, dist, action|
+	fitTransform{|sourceDataSet, destDataSet, numDimensions, distanceMetric, action|
 		this.prSendMsg(\fitTransform,
-			[sourceDataset.asSymbol,  destDataset.asSymbol, k, dist], action);
+			[sourceDataSet.asSymbol,  destDataSet.asSymbol, numDimensions, distanceMetric], action);
 	}
 
 	// not implemented
