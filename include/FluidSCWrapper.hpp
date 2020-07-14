@@ -227,7 +227,7 @@ class RealTime : public SCUnit
 public:
 
   static index ControlOffset(Unit* unit) { return unit->mSpecialIndex + 1; }
-  static index ControlSize(Unit* unit) { return static_cast<index>(unit->mNumInputs) - unit->mSpecialIndex - 1; }
+  static index ControlSize(Unit* unit) { return static_cast<index>(unit->mNumInputs) - unit->mSpecialIndex - 1  -(IsModel_t<Client>::value ? 1 : 0); }
 
   static void setup(InterfaceTable* ft, const char* name)
   {
