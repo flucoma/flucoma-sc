@@ -4,7 +4,9 @@ var trained = 0, entering = 0;
 var va = Array.fill(10,{0.5});
 var input = Buffer.alloc(s,2);
 var output = Buffer.alloc(s,10);
-var mlp = FluidMLPRegressor(s,[8, 6, 4],1,1000,0.01);
+var maxIter = 1000;
+var learnRate = 0.01;
+var mlp = FluidMLPRegressor(s,[6],1,maxIter,learnRate);
 var entry = 0;
 
 ~inData = FluidDataSet(s,\indata);
@@ -38,7 +40,7 @@ f.action = {arg x,y; //if trained, predict the point f.x f.y
 	});
 };
 
-c = Button(w, Rect(730,200,50, 20)).states_([["train", Color.red, Color.white], ["trained", Color.white, Color.grey]]).action_{
+c = Button(w, Rect(730,240,50, 20)).states_([["train", Color.red, Color.white], ["trained", Color.white, Color.grey]]).action_{
 	mlp.fit(~inData,~outData,{|x|
 		trained = 1;
 		c.value = 1;
@@ -48,7 +50,12 @@ c = Button(w, Rect(730,200,50, 20)).states_([["train", Color.red, Color.white], 
 d = Button(w, Rect(730,10,50, 20)).states_([["entry", Color.white, Color.grey], ["entry",  Color.red, Color.white]]).action_{
 	entering = 1;
 };
-e = TextField(w,Rect(730,250,50,20)).string_(0.asString);
+StaticText(w,Rect(732,260,50,20)).string_("Error:");
+e = TextField(w,Rect(730,280,50,20)).string_(0.asString);
+StaticText(w,Rect(732,150,50,20)).string_("rate:");
+g = TextField(w,Rect(730,170,50,20)).string_(learnRate.asString).action_{|in|learnRate = in.value;};
+StaticText(w,Rect(732,190,50,20)).string_("maxIter:");
+h = TextField(w,Rect(730,210,50,20)).string_(maxIter.asString).action_{|in|maxIter = in.value;};
 )
 
 //2- the synth (CAREFUL - LOUD!)
