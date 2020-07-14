@@ -50,7 +50,6 @@ ARGUMENT:: destBuffer
 A link::Classes/Buffer:: to contain the standardize value
 ARGUMENT:: action
 A function to run when processing is complete
-[].unlace
 
 EXAMPLES::
 code::

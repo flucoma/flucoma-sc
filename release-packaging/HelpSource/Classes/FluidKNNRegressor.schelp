@@ -44,7 +44,6 @@ METHOD:: predictPoint
 Apply learned mapping to a data point in a link::Classes/Buffer::
 ARGUMENT:: buffer
 data point
-Whether the neighbours should be weighted by distance (default) or uniformly
 ARGUMENT:: action
 Run when done
 
