@@ -72,7 +72,7 @@ fork{
 )
 
 // Make a new tree, and fit it to the dataset
-~tree = FluidKDTree(s);
+~tree = FluidKDTree(s,numNeighbours:5,lookupDataSet:~ds);
 
 //Fit it to the dataset
 ~tree.fit(~ds);
@@ -83,23 +83,57 @@ fork{
 
 
 //Return labels of k nearest points to a new point
+(
 ~p = [ 1.0.linrand,1.0.linrand ];
+~tree.numNeighbours = 5;
 ~tmpbuf = Buffer.loadCollection(s, ~p, 1, {
-	~tree.kNearest(~tmpbuf,5, { |a|~nearest = a;})
+	~tree.kNearest(~tmpbuf,{ |a|a.postln;~nearest = a;})
 });
-
+)
 
 // Labels of nearest points
 ~nearest.postln;
 
 // Values
+(
 fork{
-~nearest.do{|n|
-    ~ds.getPoint(n, ~tmpbuf, {~tmpbuf.getn(0, 2, {|x|x.postln})});
-    s.sync;
+	~nearest.do{|n|
+		~ds.getPoint(n, ~tmpbuf, {~tmpbuf.getn(0, 2, {|x|x.postln})});
+		s.sync;
+	}
 }
-}
-
+)
 //Distances of the nearest points
-~tree.kNearestDist(~tmpbuf, 5, { |a| a.postln });
+~tree.kNearestDist(~tmpbuf, { |a| a.postln });
 ::
+
+subsection:: Server Side Queries
+
+code::
+
+(
+~inputPoint = Buffer.alloc(s,2);
+~predictPoint = Buffer.alloc(s,10);
+~pitchingBus = Bus.control;
+~catchingBus = Bus.control;
+)
+
+(
+
+~tree.inBus_(~pitchingBus).outBus_(~catchingBus).inBuffer_(~inputPoint).outBuffer_(~predictPoint);
+{
+	var trig = Impulse.kr(ControlRate.ir/2);
+	var point = 2.collect{TRand.kr(0,1,trig)};
+	point.collect{|p,i| BufWr.kr([p],~inputPoint,i)};
+	Poll.kr(trig,point);
+	Out.kr(~pitchingBus.index,[trig]);
+	Poll.kr(In.kr(~catchingBus.index),BufRd.kr(1,~predictPoint,Array.iota(5)));
+	Silent.ar;
+}.play(~tree.synth,addAction:\addBefore);
+
+)
+
+
+
+::
+

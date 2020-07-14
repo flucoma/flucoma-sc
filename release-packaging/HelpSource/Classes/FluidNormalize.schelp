@@ -64,6 +64,7 @@ EXAMPLES::
 code::
 s.boot;
 //Preliminaries: we want some audio, a couple of FluidDataSets, some Buffers and a FluidNormalize
+// FluidNormalize.dumpAllMethods
 (
 ~audiofile = File.realpath(FluidBufPitch.class.filenameSymbol).dirname +/+ "../AudioFiles/Tremblay-ASWINE-ScratchySynth-M.wav";
 ~raw = FluidDataSet(s,\norm_help_raw);
@@ -122,5 +123,41 @@ FluidBufPitch.process(s,~audio, features: ~pitch_feature);
 ~rawarray.flatten(1).unlace.plot("Unnormalized",Rect(0,0,400,400),minval:0,maxval:[5000,1]).plotMode=\bars;
 ~plot2 = ~normedarray.flatten(1).unlace.plot("Normalized",Rect(410,0,400,400)).plotMode=\bars;
 )
+
+//Server side queries
+//Setup
+(
+~tempPoint = Buffer.alloc(s,2);
+~predictPoint = Buffer.alloc(s,2);
+~avgBuf = Buffer.alloc(s,10,2);
+~pitchingBus = Bus.control;
+~catchingBus = Bus.control;
+)
+(
+~normalizer.inBus_(~pitchingBus).outBus_(~catchingBus).inBuffer_(~tempPoint).outBuffer_(~predictPoint);
+//Pitching (no pun intended): read frames out of buffer and pass to standardize
+{
+	var audio = BufRd.ar(1,~audio,LFSaw.ar(BufDur.ir(~audio).reciprocal).range(0, BufFrames.ir(~audio)));
+	var counter = Stepper.ar(Impulse.ar(ControlRate.ir),max:9);
+	var trig = HPZ1.ar(counter) < 0;
+	//average 10 frames: one could use the MovingAverage extension here
+	var avg;
+	BufWr.kr(FluidPitch.kr(audio),~avgBuf,phase:counter);
+	avg = Mix.new(BufRd.kr(2, ~avgBuf, phase:10.collect{|x|x})) * 0.1;
+	//assemble data point
+	BufWr.kr(avg[0],~tempPoint,0);
+	BufWr.kr(avg[1],~tempPoint,1);
+	Poll.kr(T2K.kr(trig),BufRd.kr(1,~tempPoint,[0,1]),["pitch (raw)", "confidence (raw)"]);
+	Out.kr(~pitchingBus.index,[T2K.kr(trig)]);
+}.play(~normalizer.synth,addAction:\addBefore);
+
+{
+	Poll.kr(In.kr(~catchingBus.index),BufRd.kr(1,~predictPoint,[0,1]),["pitch (normalized)", "confidence (normalized)"])
+}.play(~normalizer.synth,addAction:\addAfter);
+
+)
+
+
+
 
 ::

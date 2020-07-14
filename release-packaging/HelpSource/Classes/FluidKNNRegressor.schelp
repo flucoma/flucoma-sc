@@ -89,14 +89,12 @@ d = Dictionary.with(
 			~testdata.collect{|x, i| [i.asString, [x]]}.flatten)])
 );
 
-
+~targetdata.plot
 ~source.print;
 ~target.print;
 ~test.print;
 
 )
-
-
 
 // Now make a regressor and fit it to the source and target, and predict against test
 //grab the output data whilst we're at it, so we can inspect
@@ -110,8 +108,45 @@ d = Dictionary.with(
 });
 )
 
-
 //We should see a single cycle of a chirp
 ~outputdata.plot;
+::
+
+subsection:: Server Side Queries
+
+code::
+//Setup
+(
+~inputPoint = Buffer.alloc(s,1);
+~predictPoint = Buffer.alloc(s,2);
+~avgBuf = Buffer.alloc(s,10,2);
+~pitchingBus = Bus.control;
+~catchingBus = Bus.control;
+)
+
+(
+~regressor.inBus_(~pitchingBus).outBus_(~catchingBus).inBuffer_(~inputPoint).outBuffer_(~predictPoint);
+
+~inputSynth = {
+	var input = Saw.kr(2).linlin(-1,1,0,1);
+	var trig = Impulse.kr(ControlRate.ir/10);
+	BufWr.kr(input,~inputPoint,0);
+	Out.kr(~pitchingBus.index,[trig]);
+};
+
+~inputSynth.play(~regressor.synth,addAction:\addBefore);
+
+~outputSynth = {
+	Poll.kr(In.kr(~catchingBus.index),BufRd.kr(1,~predictPoint,0),"mapped value")
+};
+~outputSynth.play(~regressor.synth,addAction:\addAfter);
+~outputSynth.scope
+)
+
+
 
 ::
+
+
+
+

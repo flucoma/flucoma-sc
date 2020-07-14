@@ -121,7 +121,6 @@ FluidBufMFCC.process(s,~audio, features: ~mfcc_feature);
 
 )
 
-
 //Visualise the 2D projection of our original 12D data
 (
 d = ~reducedarray.flatten(1).unlace.deepCollect(1, { |x| x.normalize});
@@ -140,4 +139,37 @@ w.drawFunc = {
 w.refresh;
 w.front;
 )
+::
+
+subsection:: Server Side Queries
+
+Let's map our learned PCA dimensions to the controls of a processor
+
+code::
+
+(
+~inputPoint = Buffer.alloc(s,12);
+~predictPoint = Buffer.alloc(s,2);
+~pitchingBus = Bus.control;
+~catchingBus = Bus.control;
+)
+
+(
+~pca.inBus_(~pitchingBus).outBus_(~catchingBus).inBuffer_(~inputPoint).outBuffer_(~predictPoint);
+
+{
+	var mapped;
+	var audio = BufRd.ar(1,~audio,LFSaw.ar(BufDur.ir(~audio).reciprocal).range(0, BufFrames.ir(~audio)));
+	var mfcc = FluidMFCC.kr(audio)[1..12];
+	var smoothed = LagUD.kr(mfcc,1*ControlDur.ir,500*ControlDur.ir);
+	var trig = Impulse.kr(ControlRate.ir / 2);
+	smoothed.collect{|coeff,i| BufWr.kr([coeff],~inputPoint,i)};
+	Out.kr(~pitchingBus,[trig]);
+	mapped = Latch.kr(BufRd.kr(2,~predictPoint).linlin(-3,3,0,3),In.kr(~catchingBus));
+	CombC.ar(audio,3,mapped[0],mapped[1]*3)
+}.play(~pca.synth,addAction:\addBefore);
+
+)
+
+
 ::
