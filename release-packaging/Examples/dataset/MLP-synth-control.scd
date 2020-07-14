@@ -22,13 +22,6 @@ f = Slider2D(w,Rect(420,10,300, 300));
 f.x = 0.5;
 f.y = 0.5;
 f.action = {arg x,y; //if trained, predict the point f.x f.y
-	if (trained == 1, {
-		input.setn(0, [f.x, f.y]);
-		mlp.predictPoint(input,output,0,{
-			output.getn(0,10,{
-				|x|va = x; b.set(\val, va); {a.value = va;}.defer;});
-		});
-	});
 	if (entering == 1, { //if entering a point, add to the the database f.x f.y against the array va
 		input.setn(0, [f.x, f.y]);
 		output.setn(0, va);
@@ -37,6 +30,13 @@ f.action = {arg x,y; //if trained, predict the point f.x f.y
 		entering = 0;
 		entry = entry + 1;
 		{d.value = 0;}.defer;
+	});
+	if (trained == 1, {
+		input.setn(0, [f.x, f.y]);
+		mlp.predictPoint(input,output,0,{
+			output.getn(0,10,{
+				|x|va = x; b.set(\val, va); {a.value = va;}.defer;});
+		});
 	});
 };
 
