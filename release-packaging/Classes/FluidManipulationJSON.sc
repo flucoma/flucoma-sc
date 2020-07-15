@@ -51,7 +51,8 @@
 
 	asJSON{|d|
 		if(d.isNumber){^d};
-		if(d.isString){^d.asCompileString};
+		if(d.isString){^d.asString.asCompileString};
+		if(d.isKindOf(Symbol)){^this.asJSON(d.asString)};
 		if(d.isKindOf(Dictionary))
 		{
 		  ^"{" ++ (
