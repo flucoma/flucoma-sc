@@ -1,0 +1,95 @@
+TITLE:: FluidNMFMorph
+summary:: Morph between sounds
+categories:: FluidCorpusManipulation
+related:: Classes/FluidAudioTransport,Classes/FluidBufNMFCross
+
+
+DESCRIPTION::
+Perform cross-synthesis using Nonnegative Matrix Factorization (NMF) and Optimal Transport
+(OT). NMF analyses of code::source:: and code::target:: sounds decompose their material in to a selectable number of components, which are in turn represented by their emphasis::bases:: (spectrum) and emphasis::activations:: (temporal pattern of each component).
+
+code::FluidNMFMorph:: provides the ability to interpolate between code::source:: and code::target:: spectra using a technique called Optimal Transport, that provides richer results than a simple linear interpolation between spectral shapes. The resulting sound is built up using a buffer of temporal activations, then resynthesised using a phase estimate.
+
+CLASSMETHODS::
+
+METHOD:: ar
+Given buffers of spectral and temporal data from a NMF anlaysis such as produced by link::Classes/FluidBufNMF::, cross-synthesise a hybrid sound.
+
+ARGUMENT:: source
+A link::Classes/Buffer:: with the spectral bases for the source sound.
+
+ARGUMENT:: target
+A link::Classes/Buffer:: with the spectral bases for the target sound.
+
+ARGUMENT:: activations
+A link::Classes/Buffer:: with the temporal activations for the target sound.
+
+ARGUMENT:: autoassign
+If set to code::1:: the algorithm will attempt to optimally match which NMF basis components from source and target best match each other, and will use this mapping as its basis for interpolation. warning::changing this value re-initalizes the process::
+
+ARGUMENT:: interp
+Set the relative contributions of code::source:: and code::target:: between 0 and 1.
+
+ARGUMENT:: windowSize
+The analysis window size in samples. Needs to match that of the seeding NMF analyses
+
+ARGUMENT:: hopSize
+The analysis hop size in samples. Needs to match that of the seeding NMF analyses
+
+ARGUMENT:: fftSize
+The analysis FFT size in samples. Needs to match that of the seeding NMF analyses
+
+ARGUMENT:: maxFFTSize
+The maximum FFT size to allocate memory for
+
+INSTANCEMETHODS::
+
+private:: checkInputs, init
+
+EXAMPLES::
+
+code::FluidNMFMorph:: relies on preexisting NMF analyses to generate variations between sounds. We can produce these using link::Classes/FluidBufNMF::
+
+code::
+//read some audio
+(
+~audiopath = File.realpath(FluidMelBands.class.filenameSymbol).dirname;
+~src1 = Buffer.readChannel(s,~audiopath +/+ "../AudioFiles/Nicol-LoopE-M.wav",channels:[0]); //some drums
+~src2 = Buffer.readChannel(s,~audiopath +/+ "../AudioFiles/Tremblay-SA-UprightPianoPedalWide.wav",channels:[0]);//some piano
+
+~src1Bases = Buffer.new;
+~src2Bases = Buffer.new;
+~src1Activations = Buffer.new;
+~src2Activations = Buffer.new;
+)
+//nmf analyses
+(
+FluidBufNMF.process(s,~src1,bases:~src1Bases,activations:~src1Activations,components:5, action:{"Analysed Source 1".postln});
+FluidBufNMF.process(s,~src2,bases:~src2Bases,activations:~src2Activations, components:5, action:{"Analysed Source 2".postln});
+)
+
+(
+~morph = { |source, target, activations, interp, autoassign|
+	FluidNMFMorph.ar(source,target,activations,autoassign,interp) * 80
+};
+
+~synth = ~morph.play(s,args:[\source,~src1Bases,\target,~src2Bases,\activations,~src2Activations,\interp,0.5,\autoassign,1]);
+
+)
+
+//Play with different interpolation values
+~synth.set(\interp,0.0);
+~synth.set(\interp,1.0);
+::
+warning::The following parameters current require one to change the 'autoassign' control to update the process::
+code::
+//Change the actvations
+~synth.set(\activations, ~src1Activations, \autoassign,0);
+~synth.set(\autoassign,1);
+~synth.set(\activations, ~src2Activations, \autoassign,0);
+~synth.set(\autoassign,1);
+
+//Swap source and target
+~synth.set(\source,~src2Bases,\target,~src1Bases, \autoassign,0);
+~synth.set(\autoassign,1);
+::
