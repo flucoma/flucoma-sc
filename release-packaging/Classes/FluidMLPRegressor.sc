@@ -6,9 +6,14 @@ FluidMLPRegressor : FluidDataClient {
   const <tanh = 3;
 
 	*new {|server, hidden = #[3,3] , activation = 0, maxIter = 100, learnRate = 0.0001, momentum = 0.9, batchSize = 50, validation = 0.2|
+		var hiddenCtrlLabels;
 		hidden = [hidden.size]++hidden;
-		^super.new1(server,[
-			\hidden,hidden,
+
+		hiddenCtrlLabels = hidden.collect{|x,i| \hidden++i};
+
+		^super.new1(server,
+			[hiddenCtrlLabels,hidden].lace ++
+			[
 			\activation,activation,
 			\maxIter, maxIter,
 			\learnRate,learnRate,
