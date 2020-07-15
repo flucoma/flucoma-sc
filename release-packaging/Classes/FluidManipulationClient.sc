@@ -176,6 +176,24 @@ FluidDataClient : FluidManipulationClient {
 		};
 	}
 
+
+	makeDef {|defName,uid,args|
+		var defControls = synthControls;
+		var ugenControls = [this.class.name] ++ synthControls ++ uid;
+
+		var f = (
+			"{ |dataClient|"
+			"    SynthDef("++defName.asCompileString++", { |" ++ defControls.join(",") ++ "|"
+			"       var  ugen = FluidProxyUgen.kr(" ++ ugenControls.join(",") ++ ");"
+			"	    dataClient.ugen = ugen;"
+			"       ugen"
+			"     })"
+			"}"
+		);
+		var res = f.interpret.value(this);
+		^res
+	}
+
 	updateSynthControls{
 		synth !? { synth.set(*parameters.asKeyValuePairs); };
 	}
