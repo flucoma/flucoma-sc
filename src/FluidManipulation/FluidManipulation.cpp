@@ -13,6 +13,7 @@
 #include <clients/nrt/PCAClient.hpp>
 #include <clients/nrt/MDSClient.hpp>
 #include <clients/nrt/MLPRegressorClient.hpp>
+#include <clients/nrt/MLPClassifierClient.hpp>
 #include <clients/rt/AudioTransportClient.hpp>
 #include <clients/rt/FluidDataSetWr.hpp>
 #include <FluidSCWrapper.hpp>
@@ -38,4 +39,5 @@ PluginLoad(FluidSTFTUGen)
   makeSCWrapper<NRTThreadedAudioTransportClient>("FluidBufAudioTransport",ft);
   makeSCWrapper<NRTThreadedDataSetWriter>("FluidDataSetWr", ft);
   makeSCWrapper<NRTThreadedMLPRegressorClient>("FluidMLPRegressor",ft);
+  makeSCWrapper<NRTThreadedMLPClassifierClient>("FluidMLPClassifier",ft);
 }
