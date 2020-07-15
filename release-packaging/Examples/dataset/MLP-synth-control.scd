@@ -8,7 +8,7 @@ var maxIter = 1000;
 var learnRate = 0.01;
 var momentum = 0.5;
 var validation = 0.1;
-var mlp = FluidMLPRegressor(s,[6],1,maxIter,learnRate,momentum,1,validation);
+var mlp = FluidMLPRegressor(s,[6],1,1000,0.01,0.5,1,0.1);
 var entry = 0;
 
 ~inData = FluidDataSet(s,\indata);
@@ -55,13 +55,13 @@ d = Button(w, Rect(730,10,50, 20)).states_([["entry", Color.white, Color.grey], 
 StaticText(w,Rect(732,260,50,20)).string_("Error:");
 e = TextField(w,Rect(730,280,50,20)).string_(0.asString);
 StaticText(w,Rect(732,70,50,20)).string_("rate:");
-TextField(w,Rect(730,90,50,20)).string_(learnRate.asString).action_{|in|learnRate = in.value;learnRate.postln;};
+TextField(w,Rect(730,90,50,20)).string_(0.01.asString).action_{|in|mlp.learnRate = in.value.asFloat.postln;};
 StaticText(w,Rect(732,110,50,20)).string_("momentum:");
-TextField(w,Rect(730,130,50,20)).string_(momentum.asString).action_{|in|momentum = in.value;momentum.postln;};
+TextField(w,Rect(730,130,50,20)).string_(0.5.asString).action_{|in|mlp.momentum = in.value.asFloat.postln;};
 StaticText(w,Rect(732,150,50,20)).string_("maxIter:");
-TextField(w,Rect(730,170,50,20)).string_(maxIter.asString).action_{|in|maxIter = in.value;maxIter.postln;};
+TextField(w,Rect(730,170,50,20)).string_(1000.asString).action_{|in| mlp.maxIter = in.value.asInteger.postln;};
 StaticText(w,Rect(732,190,50,20)).string_("validation:");
-TextField(w,Rect(730,210,50,20)).string_(validation.asString).action_{|in|validation = in.value;validation.postln;};
+TextField(w,Rect(730,210,50,20)).string_(0.1.asString).action_{|in|mlp.validation = in.value.asFloat.postln;};
 )
 
 //2- the synth (CAREFUL - LOUD!)

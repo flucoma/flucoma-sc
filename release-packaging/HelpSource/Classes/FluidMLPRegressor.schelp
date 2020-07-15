@@ -33,7 +33,7 @@ ARGUMENT:: batchSize
 Training batch size.
 
 ARGUMENT:: validation
-Early stopping threshold.
+The fraction of the DataSet size to hold back during training to validate the network against.
 
 METHOD:: identity, relu, sigmoid, tanh
 Convinience constants for the available activation functions.
