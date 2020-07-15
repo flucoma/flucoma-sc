@@ -9,21 +9,24 @@ FluidProviderTest : UGen {
 
     }*/
 
-    *kr{ |name|
-        ^this.multiNew('control',name);
+    *kr{ |name,vals|
+        ^this.new1('control',name,vals);
 	}
 
-    *new1 { |rate, name|
+    *new1 { |rate, name,vals|
         var ascii = name.ascii;
-        ^super.new1(*[rate, ascii.size].addAll(ascii));
+		var args;
+		vals ?? {vals = []};
+		if(vals.isArray.not) {vals = [vals]};
+		args = ([rate, ascii.size].addAll(ascii) ++ vals.size).addAll(vals).addAll([1,1]);
+		args.postln;
+		^super.new1(*args);
     }
 
-    init { |size...chars|
-        //Send the number of inputs (size of provider string) as specialIndex,
-        //so server plugin knows what's going onnode
+/*    init { |size...chars|
         specialIndex = -1;
         inputs = [size].addAll(chars);
-    }
+    }*/
 
     addPoint{|server, nodeID, args, action|
         this.prSendMsg(server, nodeID, 'addPoint',args,action);

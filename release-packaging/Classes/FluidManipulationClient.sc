@@ -13,7 +13,7 @@ FluidProxyUgen : UGen {
 		.asSymbol
 		.asClass
 		.superclasses
-		.indexOf(FluidDataClient) ??{inputs= inputs ++ [Done.none,0]};
+		.indexOf(FluidRTDataClient) ??{inputs= inputs ++ [Done.none,0]};
 		rate = inputs.rate;
 	}
 
@@ -148,8 +148,7 @@ FluidDataClient : FluidManipulationClient {
 	*new1{ |server, params|
 		var uid = UniqueID.next;
 		params = params ?? {[]};
-		if(params.size > 0) {synthControls = params.unlace[0]};
-		params = params ++ [\inBus,Bus.control,\outBus,Bus.control,\inBuffer,-1,\outBuffer,-1];
+		if(params.size > 0 and: synthControls.size == 0) {synthControls = params.unlace[0]};
 		^super.new(server, uid, *params) !? { |inst| inst.init(uid, params) }
 	}
 
@@ -180,8 +179,19 @@ FluidDataClient : FluidManipulationClient {
 	updateSynthControls{
 		synth !? { synth.set(*parameters.asKeyValuePairs); };
 	}
+}
 
-	makeDef{|defName,uid,args|
+FluidRTDataClient : FluidDataClient
+{
+
+	*new1{|server, params|
+		params = params ?? {[]};
+		if(params.size > 0) {synthControls = params.unlace[0]};
+		params = params ++ [\inBus,Bus.control,\outBus,Bus.control,\inBuffer,-1,\outBuffer,-1];
+		^super.new1(server,params)
+	}
+
+	makeDef {|defName,uid,args|
 		var defControls = [\inBus, \outBus] ++ synthControls ++ [\inBuffer,\outBuffer];
 		var ugenControls = [this.class.name,"T2A.ar(In.kr(inBus))"] ++ synthControls ++ [\inBuffer,\outBuffer,uid];
 		var f = (

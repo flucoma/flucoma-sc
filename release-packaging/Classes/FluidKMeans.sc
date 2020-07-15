@@ -1,4 +1,4 @@
-FluidKMeans : FluidDataClient {
+FluidKMeans : FluidRTDataClient {
 
 	*new {|server, numClusters = 4, maxIter = 100|
 		^super.new1(server,[\numClusters,numClusters,\maxIter,maxIter]);

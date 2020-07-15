@@ -1,4 +1,4 @@
-FluidKDTree : FluidDataClient {
+FluidKDTree : FluidRTDataClient {
 
 	*new {|server,numNeighbours = 1,lookupDataSet = ""|
 		var env;

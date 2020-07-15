@@ -1,4 +1,4 @@
-FluidPCA : FluidDataClient {
+FluidPCA : FluidRTDataClient {
 
   *new {|server, numDimensions = 2|
 		^super.new1(server,[\numDimensions,numDimensions]);

@@ -1,4 +1,4 @@
-FluidKNNClassifier : FluidDataClient {
+FluidKNNClassifier : FluidRTDataClient {
 
 	*new {|server, numNeighbours = 3, weight = 1|
 		^super.new1(server,[\numNeighbours,numNeighbours,\weight,weight]);

@@ -1,4 +1,4 @@
-FluidStandardize : FluidDataClient {
+FluidStandardize : FluidRTDataClient {
 	fit{|dataSet, action|
 		this.prSendMsg(\fit, [dataSet.asSymbol], action);
 	}

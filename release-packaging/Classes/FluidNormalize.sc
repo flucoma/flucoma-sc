@@ -1,4 +1,4 @@
-FluidNormalize : FluidDataClient {
+FluidNormalize : FluidRTDataClient {
 
 	*new {|server, min = 0, max = 1|
 		^super.new1(server,[\min,min,\max,max]);
