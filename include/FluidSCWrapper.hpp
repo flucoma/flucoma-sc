@@ -428,16 +428,16 @@ public:
     index triggerInput = static_cast<index>(mInBuf[static_cast<index>(mNumInputs) - mSpecialIndex - 2][0]);
     bool  trigger = (mPreviousTrigger <= 0) && triggerInput > 0; 
     mPreviousTrigger = triggerInput;
+
+    mWrapper->mControlsIterator.reset(mInBuf + ControlOffset(this));
+    Wrapper::setParams(mWrapper,
+    mWrapper->params(), mWrapper->mControlsIterator); // forward on inputs N + audio inputs as params
+    mWrapper->params().constrainParameterValues();
     
     auto& sharedState = mWrapper->state();
     mWrapper->mDone = sharedState->mJobDone;
     if(trigger)
     {
-      mWrapper->mControlsIterator.reset(mInBuf + ControlOffset(this));
-      Wrapper::setParams(mWrapper,
-      mWrapper->params(), mWrapper->mControlsIterator); // forward on inputs N + audio inputs as params
-      mWrapper->params().constrainParameterValues();
-    
       SharedState* statePtr = static_cast<SharedState*>(mWorld->ft->fRTAlloc(mWorld, sizeof(SharedState)));
       statePtr = new (statePtr) SharedState(sharedState);
       mFifoMsg.Set(mWorld, initNRTJob, nullptr, statePtr);
