@@ -5,7 +5,7 @@ FluidMLPRegressor : FluidManipulationClient {
   const <relu = 2;
   const <tanh = 3;
 
-	*new {|server, hidden = #[3,3] , activation = 0, maxIter = 100, learnRate = 0.0001, momentum = 0.9, batchSize = 50|
+	*new {|server, hidden = #[3,3] , activation = 0, maxIter = 100, learnRate = 0.0001, momentum = 0.9, batchSize = 50, validation = 0.2|
 		var uid = UniqueID.next;
 		hidden = [hidden.size]++hidden;
 		^super.new(server,uid, *[
@@ -14,7 +14,9 @@ FluidMLPRegressor : FluidManipulationClient {
 			\maxIter, maxIter,
 			\learnRate,learnRate,
 			\momentum, momentum,
-			\batchsize,batchSize])!?{|inst|inst.init(uid);inst}
+			\batchsize,batchSize,
+			\validation,validation,
+		])!?{|inst|inst.init(uid);inst}
 	}
 
 	init {|uid|

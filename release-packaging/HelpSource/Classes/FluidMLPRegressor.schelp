@@ -32,6 +32,9 @@ Training momentum, default 0.9
 ARGUMENT:: batchSize
 Training batch size.
 
+ARGUMENT:: validation
+Early stopping threshold.
+
 METHOD:: identity, relu, sigmoid, tanh
 Convinience constants for the available activation functions.
 
