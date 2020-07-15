@@ -1,11 +1,5 @@
-FluidMLPRegressor : FluidDataClient {
-
-  const <identity = 0;
-  const <sigmoid  =  1;
-  const <relu = 2;
-  const <tanh = 3;
-
-	*new {|server, hidden = #[3,3] , activation = 0, maxIter = 100, learnRate = 0.0001, momentum = 0.9, batchSize = 50, validation = 0.2|
+FluidBaseMLP : FluidDataClient {
+		*new {|server, hidden = #[3,3] , activation = 0, maxIter = 100, learnRate = 0.0001, momentum = 0.9, batchSize = 50, validation = 0.2|
 		var hiddenCtrlLabels;
 		hidden = [hidden.size]++hidden;
 
@@ -21,6 +15,18 @@ FluidMLPRegressor : FluidDataClient {
 			\batchsize,batchSize,
 			\validation,validation,
 		])
+	}
+}
+
+FluidMLPRegressor : FluidBaseMLP {
+
+  const <identity = 0;
+  const <sigmoid  =  1;
+  const <relu = 2;
+  const <tanh = 3;
+
+	*new {|server, hidden = #[3,3] , activation = 0, maxIter = 100, learnRate = 0.0001, momentum = 0.9, batchSize = 50, validation = 0.2|
+		^super.new(server,hidden,activation, maxIter,learnRate, momentum, batchSize,validation)
 	}
 
 	fit{|sourceDataSet, targetDataSet, action|
