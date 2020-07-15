@@ -14,7 +14,7 @@ FluidProxyUgen : UGen {
 		.asClass
 		.superclasses
 		.indexOf(FluidRTDataClient) ??{inputs= inputs ++ [Done.none,0]};
-		rate = inputs.rate;
+		rate = 'control';
 	}
 
 	name{
