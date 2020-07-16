@@ -55,7 +55,7 @@ Remove a point from the data set. Will report an error if the label doesn't exis
 METHOD:: clear
 Empty the data set.
 ​
-METHOD:: clear
+METHOD:: merge
 Merge sourceDataSet in the current DataSet. It will update the value of points with the same label if overwrite is set to 1.
 
 METHOD:: free
