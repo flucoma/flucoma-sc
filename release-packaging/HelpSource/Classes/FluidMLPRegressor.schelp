@@ -36,7 +36,7 @@ ARGUMENT:: validation
 The fraction of the DataSet size to hold back during training to validate the network against.
 
 METHOD:: identity, relu, sigmoid, tanh
-A set of convinience constants for the available activation functions.
+A set of convinience constants for the available activation functions. Beware of the permitted ranges of each: relu (0->inf), sigmoid (0->1), tanh (-1,1)
 
 INSTANCEMETHODS::
 
@@ -150,7 +150,7 @@ d = Dictionary.with(
 });
 )
 
-//We should see a single cycle of a chirp. if not,
+//We should see a single cycle of a chirp. If not, fit a little more epochs
 ~outputdata.plot;
 
 ::
