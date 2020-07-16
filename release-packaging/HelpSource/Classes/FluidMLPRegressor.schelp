@@ -1,7 +1,7 @@
 TITLE:: FluidMLPRegressor
 summary:: Regression with a multi-layer perceptron
 categories:: Machine learning
-related:: Classes/FluidDataSet
+related:: Classes/FluidMLPClassifier, Classes/FluidDataSet
 
 DESCRIPTION::
 Perform regression between link::Classes/FluidDataSet::s using a Multilayer Perception neural network.
@@ -18,25 +18,25 @@ ARGUMENT:: hidden
 An link::Classes/Array:: that gives the sizes of any hidden layers in the network (default is two hidden layers of three units each).
 
 ARGUMENT:: activation
-Ativation function to use for the hidden layer units.
+The activation function to use for the hidden layer units.
 
 ARGUMENT:: maxIter
-Maximum number of iterations to use in training.
+The maximum number of iterations to use in training.
 
 ARGUMENT:: learnRate
 The learning rate of the network. Start small, increase slowly.
 
 ARGUMENT:: momentum
-Training momentum, default 0.9
+The training momentum, default 0.9
 
 ARGUMENT:: batchSize
-Training batch size.
+The training batch size.
 
 ARGUMENT:: validation
 The fraction of the DataSet size to hold back during training to validate the network against.
 
 METHOD:: identity, relu, sigmoid, tanh
-Convinience constants for the available activation functions.
+A set of convinience constants for the available activation functions.
 
 INSTANCEMETHODS::
 
@@ -57,7 +57,7 @@ Function to run when training is complete
 returns:: The training loss, or -1 if training failed
 
 METHOD:: predict
-Apply the learned mapping to a DataSet (given a trained network)
+Apply the learned mapping to a link::Classes/FluidDataSet:: (given a trained network)
 
 ARGUMENT:: sourceDataSet
 Input data
@@ -90,41 +90,67 @@ EXAMPLES::
 
 code::
 
+//Make a simple mapping between a ramp and a sine cycle, test with an exponentional ramp
 (
-{
-	~source = FluidDataSet.new(s,"mlpregressor_source");
-	~target = FluidDataSet.new(s,"mlpregressor_target");
-	~dest = FluidDataSet.new(s,"mlpregressor_dest");
-	~datapoint = Buffer.alloc(s,2);
-	~destpoint = Buffer.new(s);
-	~regressor = FluidMLPRegressor(s) ;
-	s.sync;
-	~source.read("/tmp/test_reg_source_200_lin.json");
-	~source.print;
-	~target.read("/tmp/test_reg_target_200_lin.json");
-	~target.print;
-}.fork
+~source = FluidDataSet(s,\mlp_regressor_source);
+~target = FluidDataSet(s,\mlp_regressor_target);
+~test = FluidDataSet(s,\mlp_regressor_dest);
+~output = FluidDataSet(s,\mlp_regress_out);
+~tmpbuf = Buffer.alloc(s,1);
+~regressor = FluidMLPRegressor(s,[2],FluidMLPRegressor.tanh,1000,0.1,0.1,1,0);
 )
 
-//Train network to map source to target. fit() returns loss. If this is -1, then training has failed
+//Make source, target and test data
 (
-~regressor.fit(~source,~target,action: {|x|
-	if(x != -1) {("MLP trained with loss"+x).postln;}{"Training failed. Try again (perhaps with a lower learning rate)".postln;}
+~sourcedata = 128.collect{|i|i/128};
+~targetdata = 128.collect{|i| sin(2*pi*i/128) };
+~testdata = 128.collect{|i|(i/128)**2};
+
+~source.load(
+    Dictionary.with(
+        *[\cols -> 1,\data -> Dictionary.newFrom(
+            ~sourcedata.collect{|x, i| [i.asString, [x]]}.flatten)]);
+);
+
+~target.load(
+d = Dictionary.with(
+        *[\cols -> 1,\data -> Dictionary.newFrom(
+            ~targetdata.collect{|x, i| [i.asString, [x]]}.flatten)]);
+);
+
+~test.load(
+    Dictionary.with(
+        *[\cols -> 1,\data -> Dictionary.newFrom(
+            ~testdata.collect{|x, i| [i.asString, [x]]}.flatten)]);
+);
+
+~targetdata.plot;
+~source.print;
+~target.print;
+~test.print;
+)
+
+// Now make a regressor and fit it to the source and target, and predict against test
+//grab the output data whilst we're at it, so we can inspect
+
+// run this to train the network for up to 1000(max epochs to map source to target. fit() returns loss. If this is -1, then training has failed. Run until the printed error is satisfactory to you
+~regressor.fit(~source, ~target, {|x|x.postln;});
+
+//you can change parameters of the MLPregressor with setters
+~regressor.learnRate = 0.01;
+~regressor.momentum = 0;
+~regressor.validation= 0.2;
+
+(
+~outputdata = Array(128);
+~regressor.predict(~test, ~output, action:{
+        ~output.dump{|x| 128.do{|i|
+        ~outputdata.add(x["data"][i.asString][0])
+    }};
 });
 )
 
-//Batch predict takes a FluidDataSet source, a FluidDataSet to write netwotk output to, and layer to read from
-~regressor.predict(~source,~dest,2);
-~dest.dump
-
-//Single point predict uses Buffers rater than FluidDataSet:
-{
-	~datapoint.setn(0,[1,1]);
-	~regressor.predictPoint(~datapoint,~destpoint,2);
-	s.sync;
-	~destpoint.loadToFloatArray(0,action:{|a|
-		a.postln;
-	});
-}.fork
+//We should see a single cycle of a chirp. if not,
+~outputdata.plot;
 
 ::

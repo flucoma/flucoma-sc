@@ -1,84 +1,80 @@
 TITLE:: FluidMLPClassifier
-summary:: Classification with a neural network
-categories:: Undocumented classes
+summary:: Classification with a multi-layer perceptron
+categories:: Machine learning
 related:: Classes/FluidMLPRegressor, Classes/FluidDataSet
 
-DESCRIPTION::
-
-
+Perform regression between link::Classes/FluidDataSet::s using a Multilayer Perception neural network.
 
 CLASSMETHODS::
 
 METHOD:: new
-(describe method here)
+Creates a new instance on the server.
 
 ARGUMENT:: server
-(describe argument here)
+The link::Classes/Server:: on which to run this model.
 
 ARGUMENT:: hidden
-(describe argument here)
+An link::Classes/Array:: that gives the sizes of any hidden layers in the network (default is two hidden layers of three units each).
 
 ARGUMENT:: activation
-(describe argument here)
+The activation function to use for the hidden layer units.
 
 ARGUMENT:: maxIter
-(describe argument here)
+The maximum number of iterations to use in training.
 
 ARGUMENT:: learnRate
-(describe argument here)
+The learning rate of the network. Start small, increase slowly.
 
 ARGUMENT:: momentum
-(describe argument here)
+The training momentum, default 0.9
 
 ARGUMENT:: batchSize
-(describe argument here)
+The training batch size.
 
 ARGUMENT:: validation
-(describe argument here)
+The fraction of the DataSet size to hold back during training to validate the network against.
 
-returns:: (describe returnvalue here)
-
+METHOD:: identity, relu, sigmoid, tanh
+A set of convinience constants for the available activation functions.
 
 INSTANCEMETHODS::
 
-METHOD:: predictPoint
-(describe method here)
-
-ARGUMENT:: sourceBuffer
-(describe argument here)
-
-ARGUMENT:: action
-(describe argument here)
-
-returns:: (describe returnvalue here)
+PRIVATE:: init, uid
 
 METHOD:: fit
-(describe method here)
+Train the network to map between a source link::Classes/FluidDataSet:: and a target link::Classes/FluidLabelSet::
 
 ARGUMENT:: sourceDataSet
-(describe argument here)
+Source data
 
 ARGUMENT:: targetLabelSet
-(describe argument here)
+Target data
 
 ARGUMENT:: action
-(describe argument here)
+Function to run when training is complete
 
-returns:: (describe returnvalue here)
+returns:: The training loss, or -1 if training failed
 
 METHOD:: predict
-(describe method here)
+Apply the learned mapping to a DataSet (given a trained network)
 
 ARGUMENT:: sourceDataSet
-(describe argument here)
+Input data
 
 ARGUMENT:: targetLabelSet
-(describe argument here)
+Output data
 
 ARGUMENT:: action
-(describe argument here)
+Function to run when complete
 
-returns:: (describe returnvalue here)
+METHOD:: predictPoint
+Apply the learned mapping to a single data point in a link::Classes/Buffer::
+
+ARGUMENT:: sourceBuffer
+Input point
+
+ARGUMENT:: action
+A function to run when complete
 
 
 EXAMPLES::

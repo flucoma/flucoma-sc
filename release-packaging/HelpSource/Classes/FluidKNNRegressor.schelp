@@ -85,7 +85,7 @@ d = Dictionary.with(
 			~testdata.collect{|x, i| [i.asString, [x]]}.flatten)])
 );
 
-~targetdata.plot
+~targetdata.plot;
 ~source.print;
 ~target.print;
 ~test.print;
