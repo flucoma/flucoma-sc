@@ -77,18 +77,6 @@ w.refresh;
 w.front;
 )
 
-
-
-
-
-
-
-
-
-
-
-
-
 ~mlpHelpShades.free
 ~mlpHelpSource.free
 ~mlpHelpTarget.free

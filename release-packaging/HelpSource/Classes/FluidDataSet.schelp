@@ -55,6 +55,9 @@ Remove a point from the data set. Will report an error if the label doesn't exis
 METHOD:: clear
 Empty the data set.
 ​
+METHOD:: clear
+Merge sourceDataSet in the current DataSet. It will update the value of points with the same label if overwrite is set to 1.
+
 METHOD:: free
 Destroy the object on the server.
 
@@ -116,4 +119,34 @@ fork{
 }.play.onFree{~ds.dump{|o| o.postln; ~ds.free}}
 )
 
+//merging
+//create 2 datasets
+(
+~dsA = FluidDataSet.new(s,\simple1d_4a);
+~dsB = FluidDataSet.new(s,\simple1d_4b);
+)
+
+//feed them items with same dimensions but different labels
+~dsA.load(Dictionary.newFrom([\cols, 1, \data, Dictionary.newFrom([\one,[1],\two,[2]])]));
+~dsB.load(Dictionary.newFrom([\cols, 1, \data, Dictionary.newFrom([\three,[3],\four,[4]])]));
+~dsA.print;
+~dsB.print;
+
+// merge and check. it works.
+~dsB.merge(~dsA)
+~dsB.print;
+
+//change the content of the dataset to shared labels
+~dsA.load(Dictionary.newFrom([\cols, 1, \data, Dictionary.newFrom([\three,[333],\four,[444]])]));
+~dsB.load(Dictionary.newFrom([\cols, 1, \data, Dictionary.newFrom([\three,[3],\four,[4]])]));
+~dsA.print;
+~dsB.print;
+
+//try to merge, it does not update
+~dsB.merge(~dsA)
+~dsB.print;
+
+// add the overwrite flag, and it works
+~dsB.merge(~dsA,1)
+~dsB.print;
 ::

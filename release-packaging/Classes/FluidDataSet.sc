@@ -66,6 +66,11 @@ FluidDataSet : FluidManipulationClient {
 	  this.prSendMsg(\clear,[],action);
 	}
 
+	merge{|sourceDataSet, overwrite = 0, action|
+		this.prSendMsg(\merge,
+			[sourceDataSet.asSymbol,  overwrite], action);
+	}
+
 	print { |action|
 		action ?? {action = postit};
 		this.prSendMsg(\print,[],action,[string(FluidMessageResponse,_,_)]);
