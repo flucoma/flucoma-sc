@@ -81,7 +81,7 @@ EXAMPLES::
 
 code::
 (
-~classifier = FluidMLPClassifier(s,hidden:[6],validation:0,momentum:0.1,learnRate:0.01);
+~classifier = FluidMLPClassifier(s, [6], FluidMLPClassifier.tanh,1000, 0.1, 0.1, 50, 0);
 ~sourcedata= FluidDataSet(s,\mlpclassify_help_examples);
 ~labels = FluidLabelSet(s,\mlpclassify_help_labels);
 ~testdata = FluidDataSet(s,\mlpclassify_help_test);
