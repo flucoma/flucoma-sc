@@ -28,12 +28,13 @@ f.action = {arg x,y; //if trained, predict the point f.x f.y
 		entering = 0;
 		entry = entry + 1;
 		{d.value = 0;}.defer;
-	});
-	if (trained == 1, {
-		input.setn(0, [f.x, f.y]);
-		mlp.predictPoint(input,output,0,{
-			output.getn(0,10,{
-				|x|va = x; b.set(\val, va); {a.value = va;}.defer;});
+	}, { //if not entering a point
+		if (trained == 1, { //if trained
+			input.setn(0, [f.x, f.y]);
+			mlp.predictPoint(input,output,0,{
+				output.getn(0,10,{
+					|x|va = x; b.set(\val, va); {a.value = va;}.defer;});
+			});
 		});
 	});
 };
