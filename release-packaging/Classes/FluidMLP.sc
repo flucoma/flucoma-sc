@@ -22,6 +22,11 @@ FluidBaseMLP : FluidDataClient {
 			\validation,validation,
 		])
 	}
+
+	reset{ |action|
+		this.prSendMsg(\reset,action:action);
+	}
+
 }
 
 FluidMLPRegressor : FluidBaseMLP {
