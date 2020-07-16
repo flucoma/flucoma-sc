@@ -3,7 +3,7 @@ summary:: Classification with a multi-layer perceptron
 categories:: Machine learning
 related:: Classes/FluidMLPRegressor, Classes/FluidDataSet
 
-Perform classification between a link::Classes/FluidDataSet:: and a link::Classes/FluidLabelSet:: using a Multilayer Perception neural network.
+Perform classification between a link::Classes/FluidDataSet:: and a link::Classes/FluidLabelSet:: using a Multi-Layer Perception neural network.
 
 CLASSMETHODS::
 

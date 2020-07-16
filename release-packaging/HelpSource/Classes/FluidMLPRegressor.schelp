@@ -4,7 +4,7 @@ categories:: Machine learning
 related:: Classes/FluidMLPClassifier, Classes/FluidDataSet
 
 DESCRIPTION::
-Perform regression between link::Classes/FluidDataSet::s using a Multilayer Perception neural network.
+Perform regression between link::Classes/FluidDataSet::s using a Multi-Layer Perception neural network.
 
 CLASSMETHODS::
 
