@@ -23,8 +23,8 @@ FluidBaseMLP : FluidDataClient {
 		])
 	}
 
-	reset{ |action|
-		this.prSendMsg(\reset,action:action);
+	init{ |action|
+		this.prSendMsg(\init,action:action);
 	}
 
 }
