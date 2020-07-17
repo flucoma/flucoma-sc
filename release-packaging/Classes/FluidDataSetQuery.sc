@@ -33,8 +33,8 @@ FluidDataSetQuery : FluidManipulationClient {
 		this.prSendMsg(\or, [column, condition, value], action);
 	}
 
-	reset{|action|
-		this.prSendMsg(\reset, [], action);
+	clear{|action|
+		this.prSendMsg(\clear, [], action);
 	}
 
 	limit{|rows, action|

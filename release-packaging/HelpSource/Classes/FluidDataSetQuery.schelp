@@ -77,7 +77,7 @@ Maximum number of rows
 ARGUMENT:: action
 Run when done
 
-METHOD:: reset
+METHOD:: clear
 Clear the query, remove all columns, filters and limit.
 ARGUMENT:: action
 Run when done
@@ -103,9 +103,9 @@ s.boot;
 ~dataSet= FluidDataSet(s,\help_fluid_dataset_query);
 
 (
-~points = 100.collect{24.collect{100.rand}};
+~points = 100.collect{|i|5.collect{|j|j+(i/100)}};
 ~dataSet.clear;
-~tmpbuf = Buffer.alloc(s,24);
+~tmpbuf = Buffer.alloc(s,5);
 
 fork{
     s.sync;
@@ -117,24 +117,30 @@ fork{
 }
 )
 
+//check the source
+~dataSet.print;
+
 // Prepare a FluidDataSetQuery object
 ~query = FluidDataSetQuery.new;
-~query.reset;
-~query.addColumn(5);
-~query.addRange(0,2);
-
-~query.filter(0,"<",50);
-~query.and(1,"<",50);
-~query.and(2,"<",50);
-~query.limit(10);
-
-// Create an output DataSet and run the query
 ~out = FluidDataSet(s,\help_fluid_dataset_query_out);
+
+// prepare a simple query
+~query.filter(0,"<",0.04);
+~query.addColumn(2);
+~query.transform(~dataSet, ~out);
+
+// check the result
+~out.print;
+
+//prepare a more complex query
+~query.clear;
+~query.filter(0,">",0.03);
+~query.and(1,"<",1.08);
+~query.or(2,">",2.98);
+~query.addRange(1,2);
 ~query.transform(~dataSet, ~out);
 
 // Check the results
-~dataSet.print;
 ~out.print;
-
 
 ::
