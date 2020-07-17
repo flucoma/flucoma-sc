@@ -18,7 +18,7 @@ ARGUMENT:: hidden
 An link::Classes/Array:: that gives the sizes of any hidden layers in the network (default is two hidden layers of three units each).
 
 ARGUMENT:: activation
-The activation function to use for the hidden layer units.
+The activation function to use for the hidden layer units. Beware of the permitted ranges of each: relu (0->inf), sigmoid (0->1), tanh (-1,1).
 
 ARGUMENT:: outputLayer
 The layer whose output to return. It is negative 0 counting, where the default of 0 is the output layer, and 1 would be the last hidden layer, and so on.
@@ -39,7 +39,7 @@ ARGUMENT:: validation
 The fraction of the DataSet size to hold back during training to validate the network against.
 
 METHOD:: identity, relu, sigmoid, tanh
-A set of convinience constants for the available activation functions. Beware of the permitted ranges of each: relu (0->inf), sigmoid (0->1), tanh (-1,1)
+A set of convinience constants for the available activation functions.
 
 INSTANCEMETHODS::
 
