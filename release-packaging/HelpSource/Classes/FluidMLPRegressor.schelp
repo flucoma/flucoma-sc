@@ -20,6 +20,9 @@ An link::Classes/Array:: that gives the sizes of any hidden layers in the networ
 ARGUMENT:: activation
 The activation function to use for the hidden layer units.
 
+ARGUMENT:: outputLayer
+The layer whose output to return. It is negative 0 counting, where the default of 0 is the output layer, and 1 would be the last hidden layer, and so on.
+
 ARGUMENT:: maxIter
 The maximum number of iterations to use in training.
 
@@ -65,9 +68,6 @@ Input data
 ARGUMENT:: targetDataSet
 Output data
 
-ARGUMENT:: layer
-Layer whose output to return.
-
 ARGUMENT:: action
 Function to run when complete
 
@@ -79,9 +79,6 @@ Input point
 
 ARGUMENT:: targetBuffer
 Output point
-
-ARGUMENT:: layer
-Layer whose output to return.
 
 ARGUMENT:: action
 A function to run when complete
@@ -103,7 +100,7 @@ code::
 ~test = FluidDataSet(s,\mlp_regressor_dest);
 ~output = FluidDataSet(s,\mlp_regress_out);
 ~tmpbuf = Buffer.alloc(s,1);
-~regressor = FluidMLPRegressor(s,[2],FluidMLPRegressor.tanh,1000,0.1,0.1,1,0);
+~regressor = FluidMLPRegressor(s,[2], FluidMLPRegressor.tanh, 0, 1000,0.1,0.1,1,0);
 )
 
 //Make source, target and test data

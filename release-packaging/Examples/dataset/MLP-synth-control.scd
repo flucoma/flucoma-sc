@@ -4,7 +4,7 @@ var trained = 0, entering = 0;
 var va = Array.fill(10,{0.5});
 var input = Buffer.alloc(s,2);
 var output = Buffer.alloc(s,10);
-var mlp = FluidMLPRegressor(s,[6],1,1000,0.1,0,1,0);
+var mlp = FluidMLPRegressor(s,[6],1,0,1000,0.1,0,1,0);
 var entry = 0;
 
 ~inData = FluidDataSet(s,\indata);
@@ -31,7 +31,7 @@ f.action = {arg x,y; //if trained, predict the point f.x f.y
 	}, { //if not entering a point
 		if (trained == 1, { //if trained
 			input.setn(0, [f.x, f.y]);
-			mlp.predictPoint(input,output,0,{
+			mlp.predictPoint(input,output,{
 				output.getn(0,10,{
 					|x|va = x; b.set(\val, va); {a.value = va;}.defer;});
 			});
