@@ -38,6 +38,6 @@ PluginLoad(FluidSTFTUGen)
   makeSCWrapper<RTAudioTransportClient>("FluidAudioTransport",ft);
   makeSCWrapper<NRTThreadedAudioTransportClient>("FluidBufAudioTransport",ft);
   makeSCWrapper<NRTThreadedDataSetWriter>("FluidDataSetWr", ft);
-  makeSCWrapper<NRTThreadedMLPRegressorClient>("FluidMLPRegressor",ft);
-  makeSCWrapper<NRTThreadedMLPClassifierClient>("FluidMLPClassifier",ft);
+  makeSCWrapper<RTMLPRegressorClient>("FluidMLPRegressor",ft);
+  makeSCWrapper<RTMLPClassifierClient>("FluidMLPClassifier",ft);
 }
