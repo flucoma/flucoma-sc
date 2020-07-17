@@ -1,6 +1,6 @@
 TITLE:: FluidBuf* Multithreading Behaviour
 SUMMARY:: A tutorial on the multithreading behaviour of offline processes of the Fluid Decomposition toolbox for signal decomposition
-CATEGORIES:: Libraries>FluidDecomposition
+CATEGORIES:: Libraries>FluidDecomposition, Guides>FluCoMa
 RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
 
 DESCRIPTION::
