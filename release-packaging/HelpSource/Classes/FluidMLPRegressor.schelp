@@ -86,7 +86,7 @@ Layer whose output to return.
 ARGUMENT:: action
 A function to run when complete
 
-METHOD:: init
+METHOD:: clear
 This will erase all the learning done in the neural network.
 
 ARGUMENT:: action
