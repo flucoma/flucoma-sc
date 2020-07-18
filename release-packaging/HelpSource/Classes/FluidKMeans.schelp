@@ -152,8 +152,8 @@ a bus to communicate with it. The inBus receives a trigger to query, using data
 from inBuffer; a trigger is then send to outBus with the prediction in outBuffer
 code::
 (
-~ib = Bus.control(s); // input bus must be audio (for now)
-~ob = Bus.control(s); //output bus can be kr
+~ib = Bus.control(s); // input bus
+~ob = Bus.control(s); //output bus
 ~tempPoint = Buffer.alloc(s,1,2);
 ~inpPoint = Buffer.alloc(s,2);
 ~outPoint = Buffer.alloc(s,1);
