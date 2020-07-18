@@ -22,6 +22,7 @@ FluidLabelSet : FluidManipulationClient {
 	}
 
 	init { |name|
+		this.baseinit(FluidManipulationClient.prServerString(name));
 		id = name;
 		this.cache;
 	}

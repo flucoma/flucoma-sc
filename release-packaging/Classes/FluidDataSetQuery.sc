@@ -8,6 +8,7 @@ FluidDataSetQuery : FluidManipulationClient {
 
 	init {|uid|
 		id = uid;
+		this.baseinit(uid);
 	}
 
 	addColumn{|column, action|
