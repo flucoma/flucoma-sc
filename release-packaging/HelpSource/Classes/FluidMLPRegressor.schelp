@@ -157,3 +157,37 @@ d = Dictionary.with(
 ~outputdata.plot;
 
 ::
+
+subsection:: Server Side Queries
+
+code::
+//Setup
+(
+~inputPoint = Buffer.alloc(s,1);
+~predictPoint = Buffer.alloc(s,1);
+~pitchingBus = Bus.control;
+~catchingBus = Bus.control;
+)
+
+(
+~regressor.inBus_(~pitchingBus).outBus_(~catchingBus).inBuffer_(~inputPoint).outBuffer_(~predictPoint);
+
+~inputSynth = {
+	var input = Saw.kr(2).linlin(-1,1,0,1);
+	var trig = Impulse.kr(ControlRate.ir/10);
+	BufWr.kr(input,~inputPoint,0);
+	Out.kr(~pitchingBus.index,[trig]);
+};
+
+~inputSynth.play(~regressor.synth,addAction:\addBefore);
+
+~outputSynth = {
+	Poll.kr(In.kr(~catchingBus.index),BufRd.kr(1,~predictPoint,0),"mapped value")
+};
+~outputSynth.play(~regressor.synth,addAction:\addAfter);
+~outputSynth.scope
+)
+
+
+
+::

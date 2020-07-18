@@ -86,7 +86,7 @@ EXAMPLES::
 
 code::
 (
-~classifier = FluidMLPClassifier(s, [6], FluidMLPClassifier.tanh,1000, 0.1, 0.1, 50, 0);
+~classifier = FluidMLPClassifier(s, [6], FluidMLPClassifier.tanh, 1000, 0.1, 0.1, 50, 0);
 ~sourcedata= FluidDataSet(s,\mlpclassify_help_examples);
 ~labels = FluidLabelSet(s,\mlpclassify_help_labels);
 ~testdata = FluidDataSet(s,\mlpclassify_help_test);
@@ -149,5 +149,57 @@ w.drawFunc = {
 };
 w.refresh;
 w.front;
+)
+::
+
+
+subsection::Server Side Queries
+This is the equivalent of predictPoint, but wholly on the server
+FluidMLPClassifier is accessed via its own synth, so we need to use
+a bus to communicate with it. The inBus receives a trigger to query, using data
+from inBuffer; a trigger is then send to outBus with the prediction in outBuffer
+code::
+(
+~ib = Bus.control(s); // input bus
+~ob = Bus.control(s); //output bus
+~inpPoint = Buffer.alloc(s,2);
+~outPoint = Buffer.alloc(s,1);
+)
+
+//We make two Synths. One, before FluidKMeans, generates a random point and sends
+//a trigger to query. The second, after FluidKMeans, gives us the predicted cluster //triggering upadtes from the outBus
+(
+//Set properties on FluidMLPClassifier:
+~classifier.inBus_(~ib).outBus_(~ob).inBuffer_(~inpPoint).outBuffer_(~outPoint);
+//pitching
+{
+	var trig = Impulse.kr(5);
+	var point = WhiteNoise.kr(1.dup);
+	Poll.kr(trig, point, [\pointX,\pointY]);
+	point.collect{ |p,i| BufWr.kr([p],~inpPoint,i)};
+	Out.kr(~ib.index,[trig]);
+}.play(~classifier.synth,addAction:\addBefore);
+//catching
+{
+	Poll.kr(In.kr(~ob),Latch.kr(BufRd.kr(1,~outPoint,0,interpolation:0),In.kr(~ob)),\cluster);
+}.play(~classifier.synth,addAction:\addAfter);
+)
+
+// to sonify the output, here are random values alternating quadrant.
+(
+//Set properties on FluidMLPClassifier:
+~classifier.inBus_(~ib).outBus_(~ob).inBuffer_(~inpPoint).outBuffer_(~outPoint);
+//pitching
+{
+	var trig = Impulse.kr(MouseX.kr(0,1).exprange(0.5,ControlRate.ir /2).poll);
+	var point = 2.collect{TIRand.kr(0,3,trig).linlin(0,3,-1,1)};
+	point.collect{|p,i| BufWr.kr([p],~inpPoint,i)};
+	Out.kr(~ib.index,[trig]);
+	T2A.ar(trig)*0.1;
+}.play(~classifier.synth,addAction:\addBefore);
+//catching
+{
+	SinOsc.ar((Latch.kr(BufRd.kr(1,~outPoint,0,interpolation:0),In.kr(~ob)) + 69).midicps,mul: 0.1);
+}.play(~classifier.synth,addAction:\addAfter);
 )
 ::

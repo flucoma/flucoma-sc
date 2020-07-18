@@ -145,13 +145,13 @@ w.front;
 
 subsection::Server Side Queries
 This is the equivalent of predictPoint, but wholly on the server
-FluidKMeans is accessed via its own synth, so we need to use
+FluidKNNClassifier is accessed via its own synth, so we need to use
 a bus to communicate with it. The inBus receives a trigger to query, using data
 from inBuffer; a trigger is then send to outBus with the prediction in outBuffer
 code::
 (
-~ib = Bus.control(s); // input bus must be audio (for now)
-~ob = Bus.control(s); //output bus can be kr
+~ib = Bus.control(s); // input bus
+~ob = Bus.control(s); //output bus
 ~inpPoint = Buffer.alloc(s,2);
 ~outPoint = Buffer.alloc(s,1);
 )
@@ -159,7 +159,7 @@ code::
 //We make two Synths. One, before FluidKMeans, generates a random point and sends
 //a trigger to query. The second, after FluidKMeans, gives us the predicted cluster //triggering upadtes from the outBus
 (
-//Set properties on FluidKMeans:
+//Set properties on FluidKNNClassifier:
 ~classifier.inBus_(~ib).outBus_(~ob).inBuffer_(~inpPoint).outBuffer_(~outPoint);
 //pitching
 {
@@ -177,7 +177,7 @@ code::
 
 // to sonify the output, here are random values alternating quadrant.
 (
-//Set properties on FluidKMeans:
+//Set properties on FluidKNNClassifier:
 ~classifier.inBus_(~ib).outBus_(~ob).inBuffer_(~inpPoint).outBuffer_(~outPoint);
 //pitching
 {
