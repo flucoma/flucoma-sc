@@ -114,8 +114,7 @@ code::
 //Setup
 (
 ~inputPoint = Buffer.alloc(s,1);
-~predictPoint = Buffer.alloc(s,2);
-~avgBuf = Buffer.alloc(s,10,2);
+~predictPoint = Buffer.alloc(s,1);
 ~pitchingBus = Bus.control;
 ~catchingBus = Bus.control;
 )
