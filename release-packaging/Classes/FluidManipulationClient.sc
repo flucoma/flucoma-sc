@@ -135,7 +135,7 @@ FluidManipulationClient {
 
 FluidDataClient : FluidManipulationClient {
 
-	classvar synthControls = #[];
+	classvar synthControls;
 
 	var <id;
 	var parameters;
@@ -148,7 +148,7 @@ FluidDataClient : FluidManipulationClient {
 	*new1{ |server, params|
 		var uid = UniqueID.next;
 		params = params ?? {[]};
-		if(params.size > 0 and: synthControls.size == 0) {synthControls = params.unlace[0]};
+		if(params.size > 0 and: synthControls.isNil) {synthControls = params.unlace[0]};
 		^super.new(server, uid, *params) !? { |inst| inst.init(uid, params) }
 	}
 
@@ -202,9 +202,10 @@ FluidDataClient : FluidManipulationClient {
 FluidRTDataClient : FluidDataClient
 {
 
+
 	*new1{|server, params|
 		params = params ?? {[]};
-		if(params.size > 0) {synthControls = params.unlace[0]};
+		if(params.size > 0) {synthControls = params.unlace[0]}{synthControls=[]};
 		params = params ++ [\inBus,Bus.control,\outBus,Bus.control,\inBuffer,-1,\outBuffer,-1];
 		^super.new1(server,params)
 	}
@@ -222,6 +223,7 @@ FluidRTDataClient : FluidDataClient
 			"}"
 		);
 		var res = f.interpret.value(this);
+
 		^res
 	}
 }
