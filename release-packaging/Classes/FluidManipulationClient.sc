@@ -53,7 +53,7 @@ FluidManipulationClient {
 		if(server.serverRunning.not,{
 			(this.asString + "– server not running").error; ^nil
 		});
-		^super.newCopyArgs(server ?? {Server.default}).baseinit(objectID,*args)
+		^super.newCopyArgs(server ?? {Server.default});//.baseinit(objectID,*args)
 	}
 
 	makeDef { |defName,objectID,args|
@@ -135,7 +135,7 @@ FluidManipulationClient {
 
 FluidDataClient : FluidManipulationClient {
 
-	classvar synthControls;
+	var synthControls;
 
 	var <id;
 	var parameters;
@@ -147,16 +147,17 @@ FluidDataClient : FluidManipulationClient {
 
 	*new1{ |server, params|
 		var uid = UniqueID.next;
-		params = params ?? {[]};
-		if(params.size > 0 and: synthControls.isNil) {synthControls = params.unlace[0]};
 		^super.new(server, uid, *params) !? { |inst| inst.init(uid, params) }
 	}
 
 	init { |uid, params|
 		id = uid;
+		params = params ?? {[]};
+		if(params.size > 0 and: synthControls.isNil) {synthControls = params.unlace[0]};
 		parameters = ().putPairs(params);
 		parameterDefaults = parameters.copy;
 		this.makePropertyMethods;
+		this.baseinit(uid,*params);
 	}
 
 	makePropertyMethods{
@@ -205,9 +206,19 @@ FluidRTDataClient : FluidDataClient
 
 	*new1{|server, params|
 		params = params ?? {[]};
+		^super.new1(server,params)
+	}
+
+
+	init { |uid, params|
+		id = uid;
+		params = params ?? {[]};
 		if(params.size > 0) {synthControls = params.unlace[0]}{synthControls=[]};
 		params = params ++ [\inBus,Bus.control,\outBus,Bus.control,\inBuffer,-1,\outBuffer,-1];
-		^super.new1(server,params)
+		parameters = ().putPairs(params);
+		parameterDefaults = parameters.copy;
+		this.makePropertyMethods;
+		this.baseinit(uid,*params);
 	}
 
 	makeDef {|defName,uid,args|
