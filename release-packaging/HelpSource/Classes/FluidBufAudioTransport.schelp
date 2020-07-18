@@ -75,7 +75,8 @@ private:: synth, server
 EXAMPLES::
 
 code::
-//Make 2 sources to be interpolated
+//Didactic:
+//Make 2 sinewave sources to be interpolated
 (
 b = Buffer.loadCollection(s, FloatArray.fill(44100, {|a|(a / pi).sin * 0.1}));
 c = Buffer.loadCollection(s, FloatArray.fill(44100, {|a|(a / pi / 2).sin * 0.02}));
@@ -89,4 +90,20 @@ FluidBufAudioTransport.process(s,b,source2:c,destination:d,interpolation:0.5,act
 b.play
 c.play
 d.play
+
+// more interesting sources: two cardboard bowing gestures
+(
+b = Buffer.read(s,File.realpath(FluidBufAudioTransport.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Green-Box641.wav");
+c = Buffer.read(s,File.realpath(FluidBufAudioTransport.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Green-Box639.wav");
+d = Buffer.new
+)
+
+// listen to the source
+b.play
+c.play
+
+// process and listen
+FluidBufAudioTransport.process(s,b,source2:c,destination:d,interpolation:0.5,action:{"Ding".postln})
+d.play
+// try various interpolation factors (0.1 and 0.9 are quite good
 ::

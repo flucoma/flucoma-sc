@@ -44,6 +44,19 @@ RETURNS::
 EXAMPLES::
 
 code::
-//the mouse X axis interpolates between the two sinewaves
+//didactic - the mouse X axis interpolates between the two sinewaves
 {FluidAudioTransport.ar(SinOsc.ar(220,mul: 0.1),SinOsc.ar(440,mul: 0.02),MouseX.kr())}.play;
+
+//richer with complex spectra
+//load 2 files
+(
+b = Buffer.read(s,File.realpath(FluidAudioTransport.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-CEL-GlitchyMusicBoxMelo.wav");
+c = Buffer.read(s,File.realpath(FluidAudioTransport.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-CF-ChurchBells.wav");
+)
+//listen to them
+b.play
+c.play
+//stereo cross!
+{FluidAudioTransport.ar(PlayBuf.ar(2,b,loop: 1),PlayBuf.ar(2,c,loop: 1),MouseX.kr())}.play;
+
 ::
