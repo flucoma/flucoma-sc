@@ -102,6 +102,7 @@ FluidBufMFCC.process(s,~audio, features: ~mfcc_feature);
 	FreeSelf.kr(count - 99);
 }.play;
 )
+// wait for the post window to acknoledge the job is done.
 
 
 

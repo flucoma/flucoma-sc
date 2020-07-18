@@ -103,6 +103,7 @@ FluidBufMFCC.process(s,~audio, features: ~mfcc_feature);
 	FreeSelf.kr(count - 99);
 }.play;
 )
+// wait for the post window to acknoledge the job is done.
 
 
 //First standardize our DataSet, so that the MFCC dimensions are on comensurate scales
@@ -116,7 +117,6 @@ FluidBufMFCC.process(s,~audio, features: ~mfcc_feature);
 		~reducedarray.add(x["data"][i.asString])
 	}};
 });
-// wait for the post window to acknoledge the job is done.
 )
 
 //Visualise the 2D projection of our original 12D data
