@@ -138,7 +138,7 @@ code::
 	//average 10 frames: one could use the MovingAverage extension here
 	var avg;
 	BufWr.kr(FluidPitch.kr(audio),~avgBuf,phase:counter);
-	avg = Mix.new(BufRd.kr(2, ~avgBuf, phase:100.collect{|x|x})) * 0.1;
+	avg = Mix.new(BufRd.kr(2, ~avgBuf, phase:100.collect{|x|x})) * 0.01;
 	//assemble data point
 	BufWr.kr(avg[0],~tempPoint,0);
 	BufWr.kr(avg[1],~tempPoint,1);

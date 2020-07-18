@@ -71,7 +71,7 @@ s.boot;
 ~stats = Buffer.alloc(s, 7, 12);
 ~datapoint = Buffer.alloc(s, 12);
 ~standardizer  = FluidStandardize(s);
-~pca = FluidPCA(s);
+~pca = FluidPCA(s,2);
 )
 
 
@@ -111,12 +111,12 @@ FluidBufMFCC.process(s,~audio, features: ~mfcc_feature);
 (
 ~reducedarray = Array.new(100);
 ~standardizer.fitTransform(~raw, ~standardized);
-~pca.fitTransform(~standardized, ~reduced, 2, action:{
+~pca.fitTransform(~standardized, ~reduced, action:{
 	~reduced.dump{|x| 100.do{|i|
 		~reducedarray.add(x["data"][i.asString])
 	}};
 });
-
+// wait for the post window to acknoledge the job is done.
 )
 
 //Visualise the 2D projection of our original 12D data

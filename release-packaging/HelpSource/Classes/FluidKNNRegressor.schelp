@@ -137,7 +137,4 @@ code::
 ~outputSynth.play(~regressor.synth,addAction:\addAfter);
 ~outputSynth.scope
 )
-
-
-
 ::
