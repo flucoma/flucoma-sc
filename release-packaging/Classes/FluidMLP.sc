@@ -5,7 +5,7 @@ FluidMLPRegressor : FluidRTDataClient {
 	const <relu = 2;
 	const <tanh = 3;
 
-	*new {|server, hidden = #[3,3] , activation = 0, outputLayer = 0, maxIter = 100, learnRate = 0.0001, momentum = 0.9, batchSize = 50, validation = 0.2|
+	*new {|server, hidden = #[3,3] , activation = 0, outputLayer = 0, maxIter = 1000, learnRate = 0.0001, momentum = 0.9, batchSize = 50, validation = 0.2|
 		var hiddenCtrlLabels;
 		hidden = [hidden.size]++hidden;
 
@@ -55,7 +55,7 @@ FluidMLPClassifier : FluidRTDataClient {
 	const <relu = 2;
 	const <tanh = 3;
 
-	*new {|server, hidden = #[3,3] , activation = 0, maxIter = 100, learnRate = 0.0001, momentum = 0.9, batchSize = 50, validation = 0.2|
+	*new {|server, hidden = #[3,3] , activation = 0, maxIter = 1000, learnRate = 0.0001, momentum = 0.9, batchSize = 50, validation = 0.2|
 		var hiddenCtrlLabels;
 		hidden = [hidden.size]++hidden;
 
