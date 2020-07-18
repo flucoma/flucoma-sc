@@ -163,7 +163,7 @@ code::
 	var trig = Impulse.kr(ControlRate.ir / 2);
 	smoothed.collect{|coeff,i| BufWr.kr([coeff],~inputPoint,i)};
 	Out.kr(~pitchingBus,[trig]);
-	mapped = Latch.kr(BufRd.kr(2,~predictPoint).linlin(-3,3,0,3),In.kr(~catchingBus));
+	mapped = Latch.kr(BufRd.kr(1,~predictPoint, phase:[0,1]).linlin(-3,3,0,3),In.kr(~catchingBus));
 	CombC.ar(audio,3,mapped[0],mapped[1]*3)
 }.play(~pca.synth,addAction:\addBefore);
 
