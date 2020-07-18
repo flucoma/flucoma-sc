@@ -112,7 +112,7 @@ code::
 
 ~tree.inBus_(~pitchingBus).outBus_(~catchingBus).inBuffer_(~inputPoint).outBuffer_(~predictPoint);
 {
-	var trig = Impulse.kr(ControlRate.ir/2);
+	var trig = Impulse.kr(4); //can go as fast as ControlRate.ir/2
 	var point = 2.collect{TRand.kr(0,1,trig)};
 	point.collect{|p,i| BufWr.kr([p],~inputPoint,i)};
 	Poll.kr(trig,point);

@@ -100,7 +100,7 @@ FluidBufMFCC.process(s,~audio, features: ~mfcc_feature);
 	};
 	dsWr = FluidDataSetWr.kr(\pca_help_12D, buf: buf, trig: Done.kr(stats));
 	LocalOut.kr( Done.kr(dsWr));
-	FreeSelf.kr(count - 98);
+	FreeSelf.kr(count - 99);
 }.play;
 )
 

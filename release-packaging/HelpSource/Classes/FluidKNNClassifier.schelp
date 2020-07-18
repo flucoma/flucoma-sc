@@ -163,7 +163,7 @@ code::
 ~classifier.inBus_(~ib).outBus_(~ob).inBuffer_(~inpPoint).outBuffer_(~outPoint);
 //pitching
 {
-	var trig = Impulse.kr(100);
+	var trig = Impulse.kr(5);
 	var point = WhiteNoise.kr(1.dup);
 	Poll.kr(trig, point, [\pointX,\pointY]);
 	point.collect{ |p,i| BufWr.kr([p],~inpPoint,i)};

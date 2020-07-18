@@ -39,7 +39,7 @@ Routine{
 ~mappingresult = Buffer.alloc(s,512);
 
 //make the process then fit the data
-~knn = FluidKNNRegressor(s)
+~knn = FluidKNNRegressor(s,3,1)
 ~knn.fit(~simpleInput, ~simpleOutput, action:{"fitting done".postln})
 
 // query 512 points along the line (slow because of all that sync'ing)
