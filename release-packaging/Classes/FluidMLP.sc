@@ -5,7 +5,7 @@ FluidMLPRegressor : FluidRTDataClient {
 	const <relu = 2;
 	const <tanh = 3;
 
-	*new {|server, hidden = #[3,3] , activation = 0, outputLayer = 0, maxIter = 1000, learnRate = 0.0001, momentum = 0.9, batchSize = 50, validation = 0.2|
+	*new {|server, hidden = #[3,3] , activation = 0, finalActivation = 0, outputLayer = 0, maxIter = 1000, learnRate = 0.0001, momentum = 0.9, batchSize = 50, validation = 0.2|
 		var hiddenCtrlLabels;
 		hidden = [hidden.size]++hidden;
 
@@ -15,6 +15,7 @@ FluidMLPRegressor : FluidRTDataClient {
 			[hiddenCtrlLabels,hidden].lace ++
 			[
 			\activation,activation,
+			\finalActivation, finalActivation,
 			\outputLayer, outputLayer,
 			\maxIter, maxIter,
 			\learnRate,learnRate,
@@ -85,9 +86,9 @@ FluidMLPClassifier : FluidRTDataClient {
 		);
 	}
 
-	predict{ |sourceDataSet, targetDataSet, action|
+	predict{ |sourceDataSet, targetLabelSet, action|
 		this.prSendMsg(\predict,
-			[sourceDataSet.asSymbol, targetDataSet.asSymbol],
+			[sourceDataSet.asSymbol, targetLabelSet.asSymbol],
 			action);
 	}
 
