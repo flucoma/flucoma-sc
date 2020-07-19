@@ -53,6 +53,7 @@ s.boot;
 (
 fork{
     ~ds = FluidDataSet.new(s,\kdtree_help_rand2d);
+	~dsL = FluidDataSet.new(s,\kdtree_help_indices);// for use later in KR query
     d = Dictionary.with(
         *[\cols -> 2,\data -> Dictionary.newFrom(
             100.collect{|i| [i, [ 1.0.linrand,1.0.linrand]]}.flatten)]);
@@ -62,7 +63,7 @@ fork{
 )
 
 // Make a new tree, and fit it to the DataSet
-~tree = FluidKDTree(s,numNeighbours:5,lookupDataSet:~ds);
+~tree = FluidKDTree(s,numNeighbours:5,lookupDataSet:~dsL);
 
 //Fit it to the DataSet
 ~tree.fit(~ds);
@@ -101,11 +102,24 @@ subsection:: Server Side Queries
 
 code::
 
+//set the buffers and busses needed
 (
 ~inputPoint = Buffer.alloc(s,2);
-~predictPoint = Buffer.alloc(s,10);
+~predictPoint = Buffer.alloc(s,5);
 ~pitchingBus = Bus.control;
 ~catchingBus = Bus.control;
+)
+
+//populate the lookupDataSet
+//here we populate with numbers that are in effect the indicies, but it could be anything numerical that will be returned on the server-side and would be usable on that side
+(
+fork{
+    d = Dictionary.with(
+        *[\cols -> 1,\data -> Dictionary.newFrom(
+            100.collect{|i| [i, [ i ]]}.flatten)]);
+    s.sync;
+    ~dsL.load(d, {~dsL.print});
+}
 )
 
 (
