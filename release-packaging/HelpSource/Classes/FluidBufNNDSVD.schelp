@@ -1,0 +1,87 @@
+TITLE:: FluidBufNNDSVD
+summary:: Non-Negative Double Singular Value Decomposition on a Buffer
+categories:: FluidManipulation
+related:: Classes/FluidBufNMF
+
+DESCRIPTION::
+Find Initial Bases and Activations for FluidBufNMF via Non-Negative Double Singular Value Decomposition .
+
+See http://nimfa.biolab.si/nimfa.methods.seeding.nndsvd.html
+
+CLASSMETHODS::
+
+METHOD:: process
+This is the method that calls for the decomposition to be calculated on a given source buffer.
+
+ARGUMENT:: server
+The server on which the buffers to be processed are allocated.
+
+ARGUMENT:: source
+The index of the buffer to use as the source material to be decomposed through the NMF process. The different channels of multichannel buffers will be processing sequentially.
+
+ARGUMENT:: bases
+The index of the buffer where the different bases will be written to and/or read from: the behaviour is set in the following argument.
+
+ARGUMENT:: activations
+The index of the buffer where the different activations will be written to and/or read from: the behaviour is set in the following argument.
+
+ARGUMENT:: minComponents
+Minimum number of estimated components
+
+ARGUMENT:: maxComponents
+Maximum number of estimated components
+
+ARGUMENT:: coverage
+Fraction (0 to 1) of information preserved in the decomposition
+
+ARGUMENT:: method
+The method used for the decomposition. Options are:
+
+table::
+## 0 || NMF-SVD || faster
+## 1 || NNDSVDar || more accurate, fill in the zero elements with random values
+## 2 || NNDSVDa || fill in the zero elements with the average
+## 3 || NNDSVD || leave zero elements as zero, works better for sparse spectrograms
+::
+
+ARGUMENT:: windowSize
+	The window size. As spectral differencing relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
+
+ARGUMENT:: hopSize
+	The window hop size. As sinusoidal estimation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of windowSize (overlap of 2).
+
+ARGUMENT:: fftSize
+	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will use the next power of 2 equal or above the highest of windowSize and (bandwidth - 1) * 2.
+
+ARGUMENT:: action
+	A Function to be evaluated once the offline process has finished and all Buffer's instance variables have been updated on the client side. The function will be passed [destination] as an argument.
+
+INSTANCEMETHODS::
+
+private:: synth, server
+
+EXAMPLES::
+
+code::
+(
+b = Buffer.read(s,File.realpath(FluidBufNNDSVD.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
+~bases = Buffer.new(s);
+~activations = Buffer.new(s);
+~resynth = Buffer.new(s);
+)
+
+//how many bases do I need to decompose the buffer with 90% accuracy
+FluidBufNNDSVD.process(s, b, ~bases, ~activations, coverage: 0.9, method: 1, action: {\done.postln;})
+
+//check how many bases we are returned:
+~bases.numChannels
+
+//try the same process with less accuracy
+FluidBufNNDSVD.process(s, b, ~bases, ~activations, coverage: 0.5, action: {\done.postln;})
+~bases.numChannels
+
+//use the bases to run NMF on
+FluidBufNMF.process(s, b, resynth: ~resynth, bases: ~bases, activations: ~activations,actMode: 2, components: ~bases.numChannels, action: {\done.postln;})
+{PlayBuf.ar(~resynth.numChannels, ~resynth)[1]}.play
+}
+::
