@@ -23,11 +23,11 @@ The activation function to use for the hidden layer units. Beware of the permitt
 ARGUMENT:: outputActivation
 The activation function to use for the final layer units. Beware of the permitted ranges of each: relu (0->inf), sigmoid (0->1), tanh (-1,1).
 
-ARGUMENT:: inputTap
+ARGUMENT:: tapIn
 The layer whose input is used to predict and predictPoint. It is 0 counting, where the default of 0 is the input layer, and 1 would be the first hidden layer, and so on.
 
-ARGUMENT:: outputTap
-The layer whose output to return. It is negative 0 counting, where the default of 0 is the output layer, and 1 would be the last hidden layer, and so on.
+ARGUMENT:: tapOut
+The layer whose output to return. It is counting from 0 as the input layer, and 1 would be the first hidden layer, and so on. The default of -1 is the last layer.
 
 ARGUMENT:: maxIter
 The maximum number of iterations to use in training.
@@ -106,7 +106,7 @@ code::
 ~test = FluidDataSet(s,\mlp_regressor_dest);
 ~output = FluidDataSet(s,\mlp_regress_out);
 ~tmpbuf = Buffer.alloc(s,1);
-~regressor = FluidMLPRegressor(s,[2], FluidMLPRegressor.tanh, FluidMLPRegressor.tanh, 0, 0, 1000,0.1,0.1,1,0);
+~regressor = FluidMLPRegressor(s,[2], FluidMLPRegressor.tanh, FluidMLPRegressor.tanh, maxIter: 1000, learnRate: 0.1, momentum: 0.1, batchSize: 1, validation: 0);
 )
 
 //Make source, target and test data
