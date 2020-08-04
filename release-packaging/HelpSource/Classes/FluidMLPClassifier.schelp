@@ -34,7 +34,7 @@ The training batch size.
 ARGUMENT:: validation
 The fraction of the DataSet size to hold back during training to validate the network against.
 
-METHOD:: identity, relu, sigmoid, tanh
+METHOD:: identity, sigmoid, relu, tanh
 A set of convinience constants for the available activation functions.
 
 INSTANCEMETHODS::
