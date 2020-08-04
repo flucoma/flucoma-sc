@@ -1,7 +1,7 @@
 FluidNormalize : FluidRTDataClient {
 
-	*new {|server, min = 0, max = 1|
-		^super.new1(server,[\min,min,\max,max]);
+	*new {|server, min = 0, max = 1, invert = 0|
+		^super.new1(server,[\min,min,\max,max, \invert, invert]);
 	}
 
 	fit{|dataSet, action|

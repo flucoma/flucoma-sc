@@ -1,4 +1,8 @@
 FluidStandardize : FluidRTDataClient {
+	*new {|server, invert = 0|
+		^super.new1(server,[\invert, invert]);
+	}
+
 	fit{|dataSet, action|
 		this.prSendMsg(\fit, [dataSet.asSymbol], action);
 	}
