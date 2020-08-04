@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC -O3 -DNDEBUG  -shared  -o ../../../release-packaging/plugins/FluidBufFlatten.so CMakeFiles/FluidBufFlatten.dir/FluidBufFlatten.cpp.o  ../../_deps/flucoma-core-build/libHISSTools_FFT.a 

@@ -1,0 +1,2 @@
+/usr/bin/ar qc libHISSTools_AudioFile.a  CMakeFiles/HISSTools_AudioFile.dir/home/owen/mac/dev/HISSTools_Library/AudioFile/BaseAudioFile.cpp.o CMakeFiles/HISSTools_AudioFile.dir/home/owen/mac/dev/HISSTools_Library/AudioFile/IAudioFile.cpp.o CMakeFiles/HISSTools_AudioFile.dir/home/owen/mac/dev/HISSTools_Library/AudioFile/OAudioFile.cpp.o
+/usr/bin/ranlib libHISSTools_AudioFile.a

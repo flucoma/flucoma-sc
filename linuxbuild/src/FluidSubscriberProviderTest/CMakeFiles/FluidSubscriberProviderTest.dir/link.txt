@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC -O3 -DNDEBUG  -shared  -o ../../../release-packaging/plugins/FluidSubscriberProviderTest.so CMakeFiles/FluidSubscriberProviderTest.dir/FluidSubscriberProviderTest.cpp.o  ../../_deps/flucoma-core-build/libHISSTools_FFT.a 

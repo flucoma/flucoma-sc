@@ -10,8 +10,8 @@ FluidBufFlatten : UGen {
 		^super.new1(rate, source,  destination, axis, trig, blocking);
 	}
 
-    *kr { |source, destination, axis = 1, trig = 1|
-        ^this.new1('control', source, destination, axis, trig, 1);
+    *kr  { |source, destination, axis = 1, trig = 1, blocking = 1| 
+        ^this.new1('control', source, destination, axis, trig, blocking);
 	}
 
 	*process { |server, source,  destination, axis = 1, action|

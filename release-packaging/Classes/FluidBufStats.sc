@@ -11,8 +11,8 @@ FluidBufStats : UGen{
 		^super.new1(rate, source, startFrame, numFrames, startChan, numChans, stats, numDerivs, low, middle, high,trig, blocking);
 	}
 
-	*kr { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, stats, numDerivs = 0, low = 0, middle = 50, high = 100, trig = 1|
-		^this.multiNew(\control, source, startFrame, numFrames, startChan, numChans, stats, numDerivs, low, middle, high,trig);
+	*kr  { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, stats, numDerivs = 0, low = 0, middle = 50, high = 100, trig = 1, blocking = 0| 
+		^this.multiNew(\control, source, startFrame, numFrames, startChan, numChans, stats, numDerivs, low, middle, high,trig, blocking);
 	}
 
     *process { |server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, stats, numDerivs = 0, low = 0, middle = 50, high = 100, action|

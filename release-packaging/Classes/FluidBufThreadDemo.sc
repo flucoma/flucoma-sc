@@ -7,8 +7,8 @@ FluidBufThreadDemo : UGen{
 	 }
 
 
-	*kr {|result, time, trig = 1|
-        ^this.new1(\control, result, time, trig);
+	*kr  {|result, time, trig = 1, blocking = 0| 
+        ^this.new1(\control, result, time, trig, blocking);
 	 }
 
     *process { |server, result, time = 1000, action|

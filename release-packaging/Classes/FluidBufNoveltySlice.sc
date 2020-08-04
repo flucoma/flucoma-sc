@@ -13,9 +13,9 @@ FluidBufNoveltySlice : UGen {
 
 	}
 
-    *kr { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, feature = 0, kernelSize = 3, threshold = 0.5, filterSize = 1, minSliceLength = 2, windowSize = 1024, hopSize = -1, fftSize = -1, trig = 1 |
+    *kr  { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, feature = 0, kernelSize = 3, threshold = 0.5, filterSize = 1, minSliceLength = 2, windowSize = 1024, hopSize = -1, fftSize = -1, trig = 1 , blocking = 0| 
 
-		^this.multiNew(\control, source, startFrame, numFrames, startChan, numChans, indices, feature, kernelSize, threshold, filterSize, minSliceLength, windowSize, hopSize, fftSize, trig);
+		^this.multiNew(\control, source, startFrame, numFrames, startChan, numChans, indices, feature, kernelSize, threshold, filterSize, minSliceLength, windowSize, hopSize, fftSize, trig, blocking);
 
 	}
 

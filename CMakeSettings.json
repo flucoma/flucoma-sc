@@ -1,0 +1,10 @@
+﻿{
+  "configurations": [
+    {
+      "name": "fluid_decomposition_supercollider",
+      "cacheRoot": "Z:\\dev\\flucoma-supercollider\\win",
+      "inheritEnvironments": [],
+      "variables": []
+    }
+  ]
+}
