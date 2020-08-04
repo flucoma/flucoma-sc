@@ -12,8 +12,8 @@ FluidBufNNDSVD : UGen{
 
 	}
 
-	*kr { |source, bases, activations, minComponents = 1, maxComponents = 200, coverage = 0.5, method = 0, windowSize = 1024, hopSize = -1, fftSize = -1, trig = 1|
-		^this.new1(\control, source, bases, activations, minComponents, maxComponents, coverage, method, windowSize, hopSize, fftSize, trig);
+	*kr  { |source, bases, activations, minComponents = 1, maxComponents = 200, coverage = 0.5, method = 0, windowSize = 1024, hopSize = -1, fftSize = -1, trig = 1, blocking = 0| 
+		^this.new1(\control, source, bases, activations, minComponents, maxComponents, coverage, method, windowSize, hopSize, fftSize, trig, blocking);
 	}
 
 

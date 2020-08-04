@@ -16,8 +16,8 @@ FluidBufAudioTransport : UGen{
 
 	}
 
-	*kr { |source1, startFrame1 = 0, numFrames1 = -1, startChan1 = 0, numChans1 = -1, source2, startFrame2 = 0, numFrames2 = -1, startChan2 = 0, numChans2 = -1, destination, interpolation=0.0, bandwidth=255, windowSize = 1024, hopSize = -1, fftSize = -1, trig = 1|
-		^this.new1(\control, source1, startFrame1, numFrames1, startChan1, numChans1, source2, startFrame1, numFrames1, startChan2, numChans2, destination, interpolation, bandwidth, windowSize, hopSize, fftSize, trig);
+	*kr  { |source1, startFrame1 = 0, numFrames1 = -1, startChan1 = 0, numChans1 = -1, source2, startFrame2 = 0, numFrames2 = -1, startChan2 = 0, numChans2 = -1, destination, interpolation=0.0, bandwidth=255, windowSize = 1024, hopSize = -1, fftSize = -1, trig = 1, blocking = 0| 
+		^this.new1(\control, source1, startFrame1, numFrames1, startChan1, numChans1, source2, startFrame1, numFrames1, startChan2, numChans2, destination, interpolation, bandwidth, windowSize, hopSize, fftSize, trig, blocking);
 	}
 
 

@@ -18,8 +18,8 @@ FluidBufSpectralShape : UGen {
 	}
 
 
-    *kr{ |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, features,  windowSize = 1024, hopSize = -1, fftSize = -1, trig = 1|
-		^this.multiNew(\control, source, startFrame, numFrames, startChan, numChans, features, windowSize, hopSize, fftSize, trig);
+    *kr { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, features,  windowSize = 1024, hopSize = -1, fftSize = -1, trig = 1, blocking = 0| 
+		^this.multiNew(\control, source, startFrame, numFrames, startChan, numChans, features, windowSize, hopSize, fftSize, trig, blocking);
 
 	}
 

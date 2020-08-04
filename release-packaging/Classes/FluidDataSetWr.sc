@@ -6,7 +6,7 @@ FluidDataSetWr : UGen {
 			++ FluidDataSet.asUGenInput(labelPrefix.asSymbol) ++ labelOffset.asInteger.asUGenInput ++buf.asUGenInput ++  trig ++ blocking));
 	}
 
-	*kr { |dataset,labelPrefix = "", labelOffset = 0,buf, trig=1|
-		^this.new1(\control,dataset,labelPrefix,labelOffset, buf, trig,1)
+	*kr  { |dataset,labelPrefix = "", labelOffset = 0,buf, trig=1, blocking = 0| 
+		^this.new1(\control,dataset,labelPrefix,labelOffset, buf, trig, blocking)
 	}
 }

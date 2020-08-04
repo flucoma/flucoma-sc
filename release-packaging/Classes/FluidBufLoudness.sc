@@ -12,8 +12,8 @@ FluidBufLoudness : UGen{
         ^super.new1(rate, source, startFrame, numFrames, startChan, numChans, features, kWeighting, truePeak, windowSize, hopSize, maxwindowSize, trig, blocking);
     }
 
-    *kr { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, features,  kWeighting = 1, truePeak = 1, windowSize = 1024, hopSize = 512, trig = 1|
-        ^this.multiNew('control', source, startFrame, numFrames, startChan, numChans, features, kWeighting, truePeak, windowSize, hopSize, trig, blocking:0 );
+    *kr  { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, features,  kWeighting = 1, truePeak = 1, windowSize = 1024, hopSize = 512, trig = 1, blocking = 0| 
+        ^this.multiNew('control', source, startFrame, numFrames, startChan, numChans, features, kWeighting, truePeak, windowSize, hopSize, trig, blocking );
     }
 
     *process { |server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, features,  kWeighting = 1, truePeak = 1, windowSize = 1024, hopSize = 512, action|

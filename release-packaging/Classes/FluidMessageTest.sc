@@ -2,9 +2,9 @@ FluidMessageTest : UGen {
 
     var server;
 
-    *kr{ |trig = 1|
+    *kr { |trig = 1, blocking = 0| 
 
-        ^this.multiNew('control', trig);
+        ^this.multiNew('control', trig, blocking);
     }
 
     testReturnStrings { |server, nodeID, action|

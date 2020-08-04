@@ -12,8 +12,8 @@ FluidBufNMFCross : UGen{
 		^super.new1(rate, source, target, output, timeSparsity, polyphony, iterations,  windowSize, hopSize, fftSize, trig, blocking);
 	}
 
-    *kr { |source, target, output , timeSparsity = 10, polyphony = 7, iterations = 50, windowSize = 1024, hopSize = -1, fftSize = -1, trig = 1|
-		^this.multiNew(\control, source, target, output, timeSparsity, polyphony, iterations,  windowSize, hopSize, fftSize, trig);
+    *kr  { |source, target, output , timeSparsity = 10, polyphony = 7, iterations = 50, windowSize = 1024, hopSize = -1, fftSize = -1, trig = 1, blocking = 0| 
+		^this.multiNew(\control, source, target, output, timeSparsity, polyphony, iterations,  windowSize, hopSize, fftSize, trig, blocking);
 	}
 
     *process { |server, source, target, output , timeSparsity = 10, polyphony = 7, iterations = 50, windowSize = 1024, hopSize = -1, fftSize = -1, action|

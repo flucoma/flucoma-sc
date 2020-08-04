@@ -16,8 +16,8 @@ FluidBufSines : UGen{
 		^super.new1(rate, source, startFrame, numFrames, startChan, numChans, sines, residual, bandwidth, detectionThreshold,birthLowThreshold, birthHighThreshold, minTrackLen, trackingMethod, trackMagRange, trackFreqRange, trackProb, windowSize, hopSize, fftSize, maxFFTSize, trig, blocking);
 	}
 
-    *kr { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, sines = -1, residual = -1, bandwidth = 76, detectionThreshold = -96, birthLowThreshold = -24, birthHighThreshold = -60, minTrackLen = 15, trackingMethod = 0, trackMagRange = 15, trackFreqRange = 50, trackProb = 0.5, windowSize = 1024, hopSize = -1, fftSize = -1, trig = 1|
-		^this.multiNew(\control, source, startFrame, numFrames, startChan, numChans, sines, residual, bandwidth, detectionThreshold,birthLowThreshold, birthHighThreshold, minTrackLen, trackingMethod, trackMagRange, trackFreqRange, trackProb, windowSize, hopSize, fftSize, trig);
+    *kr  { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, sines = -1, residual = -1, bandwidth = 76, detectionThreshold = -96, birthLowThreshold = -24, birthHighThreshold = -60, minTrackLen = 15, trackingMethod = 0, trackMagRange = 15, trackFreqRange = 50, trackProb = 0.5, windowSize = 1024, hopSize = -1, fftSize = -1, trig = 1, blocking = 0| 
+		^this.multiNew(\control, source, startFrame, numFrames, startChan, numChans, sines, residual, bandwidth, detectionThreshold,birthLowThreshold, birthHighThreshold, minTrackLen, trackingMethod, trackMagRange, trackFreqRange, trackProb, windowSize, hopSize, fftSize, trig, blocking);
 	}
 
     *process { |server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, sines = -1, residual = -1, bandwidth = 76, detectionThreshold = -96, birthLowThreshold = -24, birthHighThreshold = -60, minTrackLen = 15, trackingMethod = 0, trackMagRange = 15, trackFreqRange = 50, trackProb = 0.5, windowSize = 1024, hopSize = -1, fftSize = -1, action|

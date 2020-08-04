@@ -12,9 +12,8 @@ FluidBufAmpGate : UGen {
 		^super.new1(rate, source, startFrame, numFrames, startChan, numChans, indices, rampUp, rampDown, onThreshold, offThreshold, minSliceLength, minSilenceLength, minLengthAbove, minLengthBelow, lookBack, lookAhead, highPassFreq, maxSize, trig, blocking);
 	}
 
-	*kr { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, rampUp = 10, rampDown = 10, onThreshold = -90, offThreshold = -90, minSliceLength = 1, minSilenceLength = 1, minLengthAbove = 1, minLengthBelow = 1, lookBack = 0, lookAhead = 0, highPassFreq = 85, trig = 1|
-
-		^this.multiNew(\control, source, startFrame, numFrames, startChan, numChans, indices, rampUp, rampDown, onThreshold, offThreshold, minSliceLength, minSilenceLength, minLengthAbove, minLengthBelow, lookBack, lookAhead, highPassFreq,  trig,blocking:0);
+	*kr  { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, rampUp = 10, rampDown = 10, onThreshold = -90, offThreshold = -90, minSliceLength = 1, minSilenceLength = 1, minLengthAbove = 1, minLengthBelow = 1, lookBack = 0, lookAhead = 0, highPassFreq = 85, trig = 1, blocking = 0| 
+		^this.multiNew(\control, source, startFrame, numFrames, startChan, numChans, indices, rampUp, rampDown, onThreshold, offThreshold, minSliceLength, minSilenceLength, minLengthAbove, minLengthBelow, lookBack, lookAhead, highPassFreq,  trig, blocking);
 	}
 
     *process { |server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, rampUp = 10, rampDown = 10, onThreshold = -90, offThreshold = -90, minSliceLength = 1, minSilenceLength = 1, minLengthAbove = 1, minLengthBelow = 1, lookBack = 0, lookAhead = 0, highPassFreq = 85, action |
