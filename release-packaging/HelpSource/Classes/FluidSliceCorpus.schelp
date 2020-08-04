@@ -73,6 +73,10 @@ An link::Classes/IdentityDictionary:: that details labels and start-end position
 ARGUMENT:: action
 A function that runs on complettion, will be passed the link::Classes/IdentityDictionary:: from link::#index:: as an argument.
 
+ARGUMENT:: tasks
+ANCHOR::ntasks::
+The number of parallel processing tasks to run on the server. Default 4. This should probably never be greater than the number of available CPU cores.
+
 METHOD:: index
 A link::Classes/IdentityDictionary:: containing information about the position of each discovered slice, using labels based on those passed into link::#play:: (see link::#labelling::). This dictionary copies all other entries from the source dictionary on a per-key basis (so you can store arbitary stuff in there should you wish, and it will remain oassciated with its original source chunk).
 
