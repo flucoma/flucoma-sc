@@ -9,13 +9,12 @@ FluidPCA : FluidRTDataClient {
     }
 
     transform{|sourceDataSet, destDataSet, action|
-        this.prSendMsg(\transform,[sourceDataSet.asSymbol, destDataSet.asSymbol], action);
+		 this.prSendMsg(\transform,[sourceDataSet.asSymbol, destDataSet.asSymbol], action, [numbers(FluidMessageResponse,_,1,_)]);
     }
 
     fitTransform{|sourceDataSet, destDataSet, action|
-        this.prSendMsg(\fitTransform,[sourceDataSet.asSymbol, destDataSet.asSymbol], action);
+		this.prSendMsg(\fitTransform,[sourceDataSet.asSymbol, destDataSet.asSymbol], action, [numbers(FluidMessageResponse,_,1,_)]);
     }
-
 
     transformPoint{|sourceBuffer, destBuffer, action|
         this.prSendMsg(\transformPoint,[sourceBuffer.asUGenInput, destBuffer.asUGenInput], action);
