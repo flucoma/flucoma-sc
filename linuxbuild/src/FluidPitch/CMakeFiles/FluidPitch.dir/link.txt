@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC -O3 -DNDEBUG  -shared  -o ../../../release-packaging/plugins/FluidPitch.so CMakeFiles/FluidPitch.dir/FluidPitch.cpp.o  ../../_deps/flucoma-core-build/libHISSTools_FFT.a 

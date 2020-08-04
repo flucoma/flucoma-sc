@@ -432,15 +432,18 @@ public:
     bool  trigger = (mPreviousTrigger <= 0) && triggerInput > 0; 
     mPreviousTrigger = triggerInput;
 
-    mWrapper->mControlsIterator.reset(mInBuf + ControlOffset(this));
-    Wrapper::setParams(mWrapper,
-    mWrapper->params(), mWrapper->mControlsIterator); // forward on inputs N + audio inputs as params
-    mWrapper->params().constrainParameterValues();
+
     
     auto& sharedState = mWrapper->state();
     mWrapper->mDone = sharedState->mJobDone;
     if(trigger && !sharedState->mInNRT)
     {
+      mWrapper->mControlsIterator.reset(mInBuf + ControlOffset(this));
+      Wrapper::setParams(mWrapper,
+      mWrapper->params(), mWrapper->mControlsIterator); // forward on inputs N + audio inputs as params
+      mWrapper->params().constrainParameterValues();
+    
+      sharedState->mInNRT = true;
 //      SharedState<Client>* statePtr = static_cast<SharedState<Client>*>(mWorld->ft->fRTAlloc(mWorld, sizeof(SharedState<Client>)));
       SharedState<Client>* statePtr = new SharedState<Client>(sharedState);
 //      statePtr = new (statePtr) SharedState<Client>(sharedState);
@@ -498,7 +501,7 @@ public:
         }
     }
     s->mInNRT = false;
-    using namespace std;
+//    using namespace std;
 //    w->~shared_ptr<WrapperState<Client>>();
 //    f->mWorld->ft->fRTFree(f->mWorld,w);
 //    delete w;
@@ -588,7 +591,7 @@ public:
     if(!data) return;
     auto& s = *static_cast<SharedState<Client>*>(data);
     s->mInNRT = false;
-    using namespace std;
+//    using namespace std;
 //    s.~shared_ptr<WrapperState<Client>>();
 //    world->ft->fRTFree(world,data);
     delete static_cast<SharedState<Client>*>(data);

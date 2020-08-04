@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC -O3 -DNDEBUG  -shared  -o ../../../release-packaging/plugins/FluidLoudness.so CMakeFiles/FluidLoudness.dir/FluidLoudness.cpp.o  ../../_deps/flucoma-core-build/libHISSTools_FFT.a 

@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC -O3 -DNDEBUG  -shared  -o ../../../release-packaging/plugins/FluidSines.so CMakeFiles/FluidSines.dir/FluidSines.cpp.o  ../../_deps/flucoma-core-build/libHISSTools_FFT.a 
