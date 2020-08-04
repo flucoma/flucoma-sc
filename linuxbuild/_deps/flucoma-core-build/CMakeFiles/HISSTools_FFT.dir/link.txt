@@ -1,2 +1,0 @@
-/usr/bin/ar qc libHISSTools_FFT.a  CMakeFiles/HISSTools_FFT.dir/home/owen/mac/dev/HISSTools_Library/HISSTools_FFT/HISSTools_FFT.cpp.o
-/usr/bin/ranlib libHISSTools_FFT.a

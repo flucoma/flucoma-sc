@@ -1,1 +1,0 @@
-/usr/bin/c++ -fPIC -O3 -DNDEBUG  -shared  -o ../../../release-packaging/plugins/FluidBufOnsetSlice.so CMakeFiles/FluidBufOnsetSlice.dir/FluidBufOnsetSlice.cpp.o  ../../_deps/flucoma-core-build/libHISSTools_FFT.a 

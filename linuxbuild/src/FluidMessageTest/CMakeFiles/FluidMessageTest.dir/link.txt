@@ -1,1 +1,0 @@
-/usr/bin/c++ -fPIC -O3 -DNDEBUG  -shared  -o ../../../release-packaging/plugins/FluidMessageTest.so CMakeFiles/FluidMessageTest.dir/FluidMessageTest.cpp.o  ../../_deps/flucoma-core-build/libHISSTools_FFT.a 

@@ -1,1 +1,0 @@
-/usr/bin/c++  -O3 -DNDEBUG   CMakeFiles/describe.dir/describe.cpp.o  -o describe  ../libHISSTools_AudioFile.a ../libHISSTools_FFT.a 
