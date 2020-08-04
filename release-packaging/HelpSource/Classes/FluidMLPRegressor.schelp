@@ -27,7 +27,7 @@ ARGUMENT:: tapIn
 The layer whose input is used to predict and predictPoint. It is 0 counting, where the default of 0 is the input layer, and 1 would be the first hidden layer, and so on.
 
 ARGUMENT:: tapOut
-The layer whose output to return. It is counting from 0 as the input layer, and 1 would be the first hidden layer, and so on. The default of -1 is the last layer.
+The layer whose output to return. It is counting from 0 as the input layer, and 1 would be the first hidden layer, and so on. The default of -1 is the last layer of the whole network.
 
 ARGUMENT:: maxIter
 The maximum number of iterations to use in training.
@@ -44,7 +44,7 @@ The training batch size.
 ARGUMENT:: validation
 The fraction of the DataSet size to hold back during training to validate the network against.
 
-METHOD:: identity, relu, sigmoid, tanh
+METHOD:: identity, sigmoid, relu, tanh
 A set of convinience constants for the available activation functions.
 
 INSTANCEMETHODS::
