@@ -14,6 +14,8 @@ METHOD:: new
 Create a new instance
 ARGUMENT:: server
 The server for this model
+ARGUMENT:: invert
+The direction in which the standardization will occur for transform and transformpoint. The default 0 is taking in the range of the input used to fit and transforms it towards the standardized range. A value of 1 will expect an input of the standardized range to transform back to the original range.
 
 INSTANCEMETHODS::
 

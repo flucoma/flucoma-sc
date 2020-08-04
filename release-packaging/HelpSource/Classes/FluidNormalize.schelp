@@ -20,6 +20,8 @@ ARGUMENT:: min
 Minimum output value, default 0
 ARGUMENT:: max
 Maximum output value, default 1
+ARGUMENT:: invert
+The direction in which the normalization will occur for transform and transformpoint. The default 0 is taking in the range of the input used to fit and transforms it towards the normalised range. A value of 1 will expect an input of the normalized range to transform back to the original range.
 
 
 INSTANCEMETHODS::
