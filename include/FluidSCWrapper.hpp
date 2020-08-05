@@ -306,31 +306,38 @@ public:
   
     auto& client = mWrapper->client();
     auto& params = mWrapper->params();
-
-    mWrapper->mControlsIterator.reset(mInBuf + mSpecialIndex +
-                            1); // mClient.audioChannelsIn());
-    Wrapper::setParams(mWrapper,
-        params, mWrapper->mControlsIterator); // forward on inputs N + audio inputs as params
-    params.constrainParameterValues();
     const Unit* unit = this;
-    for (index i = 0; i < client.audioChannelsIn(); ++i)
+    bool trig =  IsModel_t<Client>::value ? mPrevTrig  && in0(0) > 0 : false;
+    bool shouldProcess = IsModel_t<Client>::value ? trig : true;
+    mPrevTrig = trig;
+    
+    if(shouldProcess)
     {
-      if (mInputConnections[asUnsigned(i)])
-      { mAudioInputs[asUnsigned(i)].reset(IN(i), 0, fullBufferSize()); }
+      mWrapper->mControlsIterator.reset(mInBuf + mSpecialIndex +
+                              1); // mClient.audioChannelsIn());
+      Wrapper::setParams(mWrapper,
+          params, mWrapper->mControlsIterator); // forward on inputs N + audio inputs as params
+      params.constrainParameterValues();
+   
+      for (index i = 0; i < client.audioChannelsIn(); ++i)
+      {
+        if (mInputConnections[asUnsigned(i)])
+        { mAudioInputs[asUnsigned(i)].reset(IN(i), 0, fullBufferSize()); }
+      }
+      for (index i = 0; i < client.audioChannelsOut(); ++i)
+      {
+        assert(i <= std::numeric_limits<int>::max());
+        if (mOutputConnections[asUnsigned(i)])
+          mOutputs[asUnsigned(i)].reset(out(static_cast<int>(i)), 0,
+                                        fullBufferSize());
+      }
+      for (index i = 0; i < client.controlChannelsOut(); ++i)
+      {
+        assert(i <= std::numeric_limits<int>::max());
+        mOutputs[asUnsigned(i)].reset(out(static_cast<int>(i)), 0, 1);
+      }
+      client.process(mAudioInputs, mOutputs, mContext);
     }
-    for (index i = 0; i < client.audioChannelsOut(); ++i)
-    {
-      assert(i <= std::numeric_limits<int>::max());
-      if (mOutputConnections[asUnsigned(i)])
-        mOutputs[asUnsigned(i)].reset(out(static_cast<int>(i)), 0,
-                                      fullBufferSize());
-    }
-    for (index i = 0; i < client.controlChannelsOut(); ++i)
-    {
-      assert(i <= std::numeric_limits<int>::max());
-      mOutputs[asUnsigned(i)].reset(out(static_cast<int>(i)), 0, 1);
-    }
-    client.process(mAudioInputs, mOutputs, mContext);
   }
 private:
   std::vector<bool>       mInputConnections;
@@ -339,6 +346,7 @@ private:
   std::vector<HostVector> mOutputs;
   FluidContext            mContext;
   Wrapper*                mWrapper{static_cast<Wrapper*>(this)};
+  bool                    mPrevTrig;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1555,8 +1563,19 @@ public:
     // We won't even try and set params if the arguments don't match
     // if (inputs.size() == C::getParameterDescriptors().count())
     // {
-      p.template setParameterValues<ControlSetter>(x->mWorld->mVerbosity > 0, x, inputs);
-      if (constrain) p.constrainParameterValues();
+      FluidSCWrapper* w = static_cast<FluidSCWrapper*>(x);
+      bool verbose = w->mWorld->mVerbosity > 0;
+      p.template setParameterValuesRT<ControlSetter>(verbose ? &w->mReportage : nullptr , x, inputs);
+      if (constrain) p.constrainParameterValuesRT(verbose ? &w->mReportage : nullptr);
+      if(verbose)
+      {
+        for(auto& r:w->mReportage) if(!r.ok())
+        {
+          printResult(w->state(), r);
+        }
+      }
+//      p.template forEachParam<SetWithResult>(x,inputs,
+    
     // }
     // else
     // {
@@ -1603,7 +1622,7 @@ private:
     UnitDtorFunc dtor = impl::FluidSCWrapperBase<Client>::destroyClass;
     (*ft->fDefineUnit)(name, sizeof(FluidSCWrapper), ctor, dtor, 0);
   }
-  
+  std::array<Result, Client::getParameterDescriptors().size()> mReportage;
   FloatControlsIter mControlsIterator;
   std::shared_ptr<WrapperState<Client>> mState;
 };
