@@ -18,7 +18,8 @@ FluidKNNRegressor : FluidRTDataClient {
 	}
 
 	predictPoint { |buffer, action|
-		this.prSendMsg(\predictPoint, [buffer.asUGenInput], action,
-			[number(FluidMessageResponse,_,_)]);
+		buffer = this.prEncodeBuffer(buffer);
+		this.prSendMsg(\predictPoint, [buffer], action,
+			[number(FluidMessageResponse,_,_)],outputBuffers:[buffer]);
 	}
 }

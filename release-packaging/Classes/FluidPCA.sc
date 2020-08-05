@@ -17,6 +17,8 @@ FluidPCA : FluidRTDataClient {
     }
 
     transformPoint{|sourceBuffer, destBuffer, action|
-        this.prSendMsg(\transformPoint,[sourceBuffer.asUGenInput, destBuffer.asUGenInput], action);
+        sourceBuffer = this.prEncodeBuffer(sourceBuffer);
+        destBuffer = this.prEncodeBuffer(destBuffer);
+        this.prSendMsg(\transformPoint,[sourceBuffer, destBuffer], action, outputBuffers:[destBuffer]);
     }
 }

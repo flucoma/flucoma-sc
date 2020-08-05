@@ -116,7 +116,9 @@ FluidManipulationClient {
 	  this.prSendMsg(\size,[],action,[numbers(FluidMessageResponse,_,1,_)]);
 	}
 
-	prSendMsg { |msg, args, action,parser|
+	prEncodeBuffer { |buf| buf !? {^buf.asUGenInput} ?? {^-1} }
+
+	prSendMsg { |msg, args, action,parser,outputBuffers|
 		if(this.server.serverRunning.not,{(this.asString + "– server not running").error; ^nil});
 		forkIfNeeded{
 			synth ?? {onSynthFree.value; server.sync};
@@ -125,7 +127,16 @@ FluidManipulationClient {
 					defer{
 						var result;
 						result = FluidMessageResponse.collectArgs(parser,msg.drop(3));
-						if(action.notNil){action.value(result)}{action.value};
+						if(outputBuffers.notNil) {
+							forkIfNeeded {
+								outputBuffers.collectInPlace{ |b|
+									server.cachedBufferAt(b) !? {|x| x.updateInfo}
+								};
+								server.sync;
+								if(action.notNil){action.value(*(outputBuffers++result))}{action.value};
+							};
+						}
+						{if(action.notNil){action.value(result)}{action.value};}
 					}
 			},'/'++msg, server.addr, nil,[synth.nodeID]).oneShot;
 			server.listSendMsg(['/u_cmd', synth.nodeID, ugen.synthIndex, msg].addAll(args));
