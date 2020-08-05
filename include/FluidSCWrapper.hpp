@@ -1295,6 +1295,9 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
   static void launchMessageImpl(FluidSCWrapper* x, sc_msg_iter* inArgs,
                                 std::index_sequence<Is...>)
   {
+    x->mControlsIterator.reset(x->mInBuf + FluidSCWrapper::ControlOffset(x));
+    setParams(x, x->params(),x->mControlsIterator, true);
+
     using MessageDescriptor =
         typename Client::MessageSetType::template MessageDescriptorAt<N>;
     using ArgTuple = typename MessageDescriptor::ArgumentTypes;
