@@ -307,7 +307,7 @@ public:
     auto& client = mWrapper->client();
     auto& params = mWrapper->params();
     const Unit* unit = this;
-    bool trig =  IsModel_t<Client>::value ? !mPrevTrig  && in0(0) > 0 : false;
+    bool trig =  IsModel_t<Client>::value ? mPrevTrig  && in0(0) > 0 : false;
     bool shouldProcess = IsModel_t<Client>::value ? trig : true;
     mPrevTrig = trig;
     
@@ -318,7 +318,7 @@ public:
       Wrapper::setParams(mWrapper,
           params, mWrapper->mControlsIterator); // forward on inputs N + audio inputs as params
       params.constrainParameterValues();
-    }
+   
       for (index i = 0; i < client.audioChannelsIn(); ++i)
       {
         if (mInputConnections[asUnsigned(i)])
@@ -337,7 +337,7 @@ public:
         mOutputs[asUnsigned(i)].reset(out(static_cast<int>(i)), 0, 1);
       }
       client.process(mAudioInputs, mOutputs, mContext);
-//    }
+    }
   }
 private:
   std::vector<bool>       mInputConnections;
@@ -594,7 +594,7 @@ public:
     return true;
   }
 
-  static void destroy(World* /*world*/, void* data)
+  static void destroy(World* world, void* data)
   {
     if(!data) return;
     auto& s = *static_cast<SharedState<Client>*>(data);
@@ -995,17 +995,17 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
       return std::string(recv ? recv : "");
     }
 
-    static auto fromArgs(Unit* /*x*/, FloatControlsIter& args, std::string, int)
+    static auto fromArgs(Unit* x, FloatControlsIter& args, std::string, int)
     {
       // first is string size, then chars
       index size = static_cast<index>(args.next());
       
-//      auto ft = FluidSCWrapper::getInterfaceTable();
-//      auto w = x->mWorld;
+      auto ft = FluidSCWrapper::getInterfaceTable();
+      auto w = x->mWorld;
 //      char* chunk =
 //          static_cast<char*>(ft->fRTAlloc(w, asUnsigned(size + 1)));
       std::string res;
-      res.resize(asUnsigned(size));
+      res.resize(size);
       
 //      if (!chunk)
 //      {
@@ -1015,7 +1015,7 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
 //      }
 
       for (index i = 0; i < size; ++i)
-        res[asUnsigned(i)] = static_cast<char>(args.next());
+        res[i] = static_cast<char>(args.next());
 
 //      res[size] = 0; // terminate string
 //      auto res =  std::string{chunk};
@@ -1415,7 +1415,7 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
           return true;
         },
         nullptr,                 // NRT Thread: No-op
-        [](World* /*w*/, void* data) // RT thread: clean up
+        [](World* w, void* data) // RT thread: clean up
         {
           MessageData* m = static_cast<MessageData*>(data);
 //          m->~MessageData();
@@ -1451,7 +1451,7 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
 //    float* values = static_cast<float*>(
 //        ft->fRTAlloc(x->mNode->mWorld, asUnsigned(numArgs) * sizeof(float)));
     
-    float* values = new float[asUnsigned(numArgs)];
+    float* values = new float[numArgs];
     
     // copy return data
     ToFloatArray::convert(values, static_cast<T>(result));
@@ -1492,7 +1492,7 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
 //    float* values = static_cast<float*>(
 //        ft->fRTAlloc(x->mNode->mWorld, asUnsigned(numArgs) * sizeof(float)));
     
-    float* values = new float[asUnsigned(numArgs)];
+    float* values = new float[numArgs];
     ToFloatArray::convert(values, std::tuple<Ts...>(result), offsets,
                           std::index_sequence_for<Ts...>());
     
