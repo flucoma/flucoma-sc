@@ -30,13 +30,15 @@ ARGUMENT:: action
 Run when done
 
 METHOD:: transform
-Given a trained model, apply the reduction to a source link::Classes/FluidDataSet:: and write to a destination. Can be the same
+Given a trained model, apply the reduction to a source link::Classes/FluidDataSet:: and write to a destination. Can be the same for both (in-place)
 ARGUMENT:: sourceDataSet
 Source data, or the DataSet name
 ARGUMENT:: destDataSet
 Destination data, or the DataSet name
 ARGUMENT:: action
 Run when done
+RETURNS::
+The variance, aka the error of the new representation: a lower value means a higher fidelity to the original.
 
 METHOD:: fitTransform
 link::Classes/FluidPCA#fit:: and link::Classes/FluidPCA#transform:: in a single pass
@@ -46,6 +48,8 @@ ARGUMENT:: destDataSet
 Destination data, or the DataSet name
 ARGUMENT:: action
 Run when done
+RETURNS::
+The variance, aka the error of the new representation: a lower value means a higher fidelity to the original.
 
 METHOD:: transformPoint
 Given a trained model, transform the data point in a link::Classes/Buffer:: and write to an output
@@ -55,6 +59,8 @@ ARGUMENT:: destBuffer
 Output data
 ARGUMENT:: action
 Run when done
+RETURNS::
+The variance, aka the error of the new representation: a lower value means a higher fidelity to the original.
 
 EXAMPLES::
 
