@@ -225,7 +225,7 @@ FluidRTDataClient : FluidDataClient
 		id = uid;
 		params = params ?? {[]};
 		if(params.size > 0) {synthControls = params.unlace[0]}{synthControls=[]};
-		params = params ++ [\inBus,Bus.control,\outBus,Bus.control,\inBuffer,-1,\outBuffer,-1];
+		params = params ++ [\inBus,Bus.control(server),\outBus,Bus.control(server),\inBuffer,-1,\outBuffer,-1];
 		parameters = ().putPairs(params);
 		parameterDefaults = parameters.copy;
 		this.makePropertyMethods;
