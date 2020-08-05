@@ -100,6 +100,7 @@ FluidBufMFCC.process(s,~audio, features: ~mfcc_feature);
 	dsWr = FluidDataSetWr.kr(\mds_help_12D, buf: buf, trig: Done.kr(stats));
 	LocalOut.kr( Done.kr(dsWr));
 	FreeSelf.kr(count - 99);
+	Poll.kr(trig,count);
 }.play;
 )
 // wait for the post window to acknoledge the job is done.
@@ -120,8 +121,7 @@ FluidBufMFCC.process(s,~audio, features: ~mfcc_feature);
 
 //Visualise the 2D projection of our original 12D data
 (
-d = ~reducedarray.flatten(1).unlace.deepCollect(1, { |x| x.normalize});
-// d = [20.collect{1.0.rand}, 20.collect{1.0.rand}];
+d = ~reducedarray.flop.deepCollect(1, { |x| x.normalize});
 w = Window("scatter", Rect(128, 64, 200, 200));
 w.drawFunc = {
     Pen.use {
@@ -137,5 +137,4 @@ w.drawFunc = {
 w.refresh;
 w.front;
 )
-
 ::

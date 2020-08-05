@@ -36,9 +36,7 @@ Source data, or the DataSet name
 ARGUMENT:: destDataSet
 Destination data, or the DataSet name
 ARGUMENT:: action
-Run when done
-RETURNS::
-The variance, aka the error of the new representation: a lower value means a higher fidelity to the original.
+Run when done. The variance is passed as an argument, aka the error of the new representation: a lower value means a higher fidelity to the original.
 
 METHOD:: fitTransform
 link::Classes/FluidPCA#fit:: and link::Classes/FluidPCA#transform:: in a single pass
@@ -47,9 +45,7 @@ Source data, or the DataSet name
 ARGUMENT:: destDataSet
 Destination data, or the DataSet name
 ARGUMENT:: action
-Run when done
-RETURNS::
-The variance, aka the error of the new representation: a lower value means a higher fidelity to the original.
+Run when done. The variance is passed as an argument, aka the error of the new representation: a lower value means a higher fidelity to the original.
 
 METHOD:: transformPoint
 Given a trained model, transform the data point in a link::Classes/Buffer:: and write to an output
@@ -58,9 +54,7 @@ Input data
 ARGUMENT:: destBuffer
 Output data
 ARGUMENT:: action
-Run when done
-RETURNS::
-The variance, aka the error of the new representation: a lower value means a higher fidelity to the original.
+Run when done. The variance is passed as an argument, aka the error of the new representation: a lower value means a higher fidelity to the original.
 
 EXAMPLES::
 
@@ -107,10 +101,10 @@ FluidBufMFCC.process(s,~audio, features: ~mfcc_feature);
 	dsWr = FluidDataSetWr.kr(\pca_help_12D, buf: buf, trig: Done.kr(stats));
 	LocalOut.kr( Done.kr(dsWr));
 	FreeSelf.kr(count - 99);
+	Poll.kr(trig,count);
 }.play;
 )
 // wait for the post window to acknoledge the job is done.
-
 
 //First standardize our DataSet, so that the MFCC dimensions are on comensurate scales
 //Then apply the PCA in-place on the standardized data
@@ -118,7 +112,8 @@ FluidBufMFCC.process(s,~audio, features: ~mfcc_feature);
 (
 ~reducedarray = Array.new(100);
 ~standardizer.fitTransform(~raw, ~standardized);
-~pca.fitTransform(~standardized, ~reduced, action:{
+~pca.fitTransform(~standardized, ~reduced, action:{|x|
+	x.postln; //pass on the variance
 	~reduced.dump{|x| 100.do{|i|
 		~reducedarray.add(x["data"][i.asString])
 	}};
@@ -127,7 +122,7 @@ FluidBufMFCC.process(s,~audio, features: ~mfcc_feature);
 
 //Visualise the 2D projection of our original 12D data
 (
-d = ~reducedarray.flatten(1).unlace.deepCollect(1, { |x| x.normalize});
+d = ~reducedarray.flop.deepCollect(1, { |x| x.normalize});
 w = Window("scatter", Rect(128, 64, 200, 200));
 w.drawFunc = {
     Pen.use {
