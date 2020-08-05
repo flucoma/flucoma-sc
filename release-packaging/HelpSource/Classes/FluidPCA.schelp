@@ -36,7 +36,7 @@ Source data, or the DataSet name
 ARGUMENT:: destDataSet
 Destination data, or the DataSet name
 ARGUMENT:: action
-Run when done. The variance is passed as an argument, aka the error of the new representation: a lower value means a higher fidelity to the original.
+Run when done. The variance is passed as an argument, aka the fidelity of the new representation: a value near 1.0 means a higher fidelity to the original.
 
 METHOD:: fitTransform
 link::Classes/FluidPCA#fit:: and link::Classes/FluidPCA#transform:: in a single pass
@@ -45,7 +45,7 @@ Source data, or the DataSet name
 ARGUMENT:: destDataSet
 Destination data, or the DataSet name
 ARGUMENT:: action
-Run when done. The variance is passed as an argument, aka the error of the new representation: a lower value means a higher fidelity to the original.
+Run when done. The variance is passed as an argument, aka the fidelity of the new representation: a value near 1.0 means a higher fidelity to the original.
 
 METHOD:: transformPoint
 Given a trained model, transform the data point in a link::Classes/Buffer:: and write to an output
@@ -54,7 +54,7 @@ Input data
 ARGUMENT:: destBuffer
 Output data
 ARGUMENT:: action
-Run when done. The variance is passed as an argument, aka the error of the new representation: a lower value means a higher fidelity to the original.
+Run when done. The variance is passed as an argument, aka the fidelity of the new representation: a value near 1.0 means a higher fidelity to the original.
 
 EXAMPLES::
 
