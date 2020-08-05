@@ -26,10 +26,9 @@ FluidKMeans : FluidRTDataClient {
 	}
 
 	predictPoint { |buffer, action|
-		buffer = this.prEncodeBuffer(buffer);
 		this.prSendMsg(\predictPoint,
-			[buffer], action,
-			[number(FluidMessageResponse,_,_)],outputBuffers:[buffer]
+			[buffer.asUGenInput], action,
+			[number(FluidMessageResponse,_,_)]
 		);
 	}
 }

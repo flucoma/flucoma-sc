@@ -44,10 +44,8 @@ FluidMLPRegressor : FluidRTDataClient {
 	}
 
 	predictPoint { |sourceBuffer, targetBuffer, action|
-		sourceBuffer = this.prEncodeBuffer(sourceBuffer);
-		targetBuffer = this.prEncodeBuffer(targetBuffer);
 		this.prSendMsg(\predictPoint,
-      [sourceBuffer.asUGenInput, targetBuffer.asUGenInput], action,outputBuffers:[targetBuffer]);
+      [sourceBuffer.asUGenInput, targetBuffer.asUGenInput], action);
 	}
 }
 
@@ -96,8 +94,7 @@ FluidMLPClassifier : FluidRTDataClient {
 	}
 
 	predictPoint { |sourceBuffer, action|
-		sourceBuffer = this.prEncodeBuffer(sourceBuffer);
 		this.prSendMsg(\predictPoint,
-			[sourceBuffer], action, string(FluidMessageResponse,_,_));
+			[sourceBuffer.asUGenInput], action, string(FluidMessageResponse,_,_));
 	}
 }

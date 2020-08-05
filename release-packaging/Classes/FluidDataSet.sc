@@ -48,18 +48,15 @@ FluidDataSet : FluidManipulationClient {
 	}
 
 	addPoint{|label, buffer, action|
-    buffer = this.prEncodeBuffer(buffer);
-	  this.prSendMsg(\addPoint,[label.asSymbol,buffer],action);
+	  this.prSendMsg(\addPoint,[label.asSymbol,buffer.asUGenInput],action);
 	}
 
 	getPoint{|label, buffer, action|
-		buffer = this.prEncodeBuffer(buffer);
-		this.prSendMsg(\getPoint,[label.asSymbol,buffer],action,outputBuffers:[buffer]);
+	  this.prSendMsg(\getPoint,[label.asSymbol,buffer.asUGenInput],action);
 	}
 
 	updatePoint{|label, buffer, action|
-    buffer = this.prEncodeBuffer(buffer);
-	  this.prSendMsg(\updatePoint,[label.asSymbol,buffer],action,outputBuffers:[buffer]);
+	  this.prSendMsg(\updatePoint,[label.asSymbol,buffer.asUGenInput],action);
 	}
 
 	deletePoint{|label, action|

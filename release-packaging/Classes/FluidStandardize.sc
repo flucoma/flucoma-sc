@@ -20,10 +20,8 @@ FluidStandardize : FluidRTDataClient {
 	}
 
 	transformPoint{|sourceBuffer, destBuffer, action|
-		sourceBuffer = this.prEncodeBuffer(sourceBuffer);
-		destBuffer = this.prEncodeBuffer(destBuffer);
 		this.prSendMsg(\transformPoint,
-			[sourceBuffer, destBuffer], action, outputBuffers:[destBuffer]
+			[sourceBuffer.asUGenInput, destBuffer.asUGenInput], action
 		);
 	}
 }
