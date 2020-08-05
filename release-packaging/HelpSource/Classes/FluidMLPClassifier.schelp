@@ -192,8 +192,7 @@ code::
 //pitching
 {
 	var trig = Impulse.kr(MouseX.kr(0,1).exprange(0.5,ControlRate.ir /2).poll);
-	var step = Stepper.kr(trig,max:3);
-	var point = TRand.kr(-0.1, [0.1, 0.1], trig) + [step.mod(2).linlin(0,1,-0.6,0.6),step.div(2).linlin(0,1,-0.6,0.6)] ;
+	var point = 2.collect{TIRand.kr(0,3,trig).linlin(0,3,-1,1)};
 	point.collect{|p,i| BufWr.kr([p],~inpPoint,i)};
 	Out.kr(~ib.index,[trig]);
 	T2A.ar(trig)*0.1;
