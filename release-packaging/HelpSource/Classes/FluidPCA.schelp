@@ -142,7 +142,7 @@ w.front;
 // transform a single point with arbitrary value
 ~inbuf = Buffer.loadCollection(s,0.5.dup(12));
 ~outbuf = Buffer.new(s);
-~pca.transformPoint(~inbuf,~outbuf,{|x|x.postln;})
+~pca.transformPoint(~inbuf,~outbuf,{|x|x.postln;x.getn(0,1,{|y|y.postln;};)});
 ::
 
 subsection:: Server Side Queries
@@ -169,11 +169,10 @@ code::
 	var trig = Impulse.kr(ControlRate.ir / 2);
 	smoothed.collect{|coeff,i| BufWr.kr([coeff],~inputPoint,i)};
 	Out.kr(~pitchingBus,[trig]);
-	mapped = Latch.kr(BufRd.kr(1,~predictPoint, phase:[0,1]).linlin(-3,3,0,3),In.kr(~catchingBus));
+	mapped = Latch.kr(BufRd.kr(1,~predictPoint, phase:[0,1]).linlin(-3,3,0,3),In.kr(~catchingBus)).scope;
 	CombC.ar(audio,3,mapped[0],mapped[1]*3)
 }.play(~pca.synth,addAction:\addBefore);
 
 )
-
 
 ::
