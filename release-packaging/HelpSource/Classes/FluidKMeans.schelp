@@ -142,6 +142,9 @@ w.refresh;
 w.front;
 )
 
+// single point transform on arbitrary value
+~inbuf = Buffer.loadCollection(s,0.5.dup);
+~kmeans.predictPoint(~inbuf,{|x|x.postln;});
 ::
 
 subsection:: Server Side Queries

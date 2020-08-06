@@ -150,6 +150,10 @@ w.drawFunc = {
 w.refresh;
 w.front;
 )
+
+// single point transform on arbitrary value
+~inbuf = Buffer.loadCollection(s,0.5.dup);
+~classifier.predictPoint(~inbuf,{|x|x.postln;});
 ::
 
 

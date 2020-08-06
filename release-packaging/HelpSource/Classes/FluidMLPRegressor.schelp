@@ -162,6 +162,11 @@ d = Dictionary.with(
 //We should see a single cycle of a chirp. If not, fit a little more epochs
 ~outputdata.plot;
 
+// single point transform on arbitrary value
+~inbuf = Buffer.loadCollection(s,[0.5]);
+~outbuf = Buffer.new(s);
+~regressor.predictPoint(~inbuf,~outbuf,{|x|x.postln;x.getn(0,1,{|y|y.postln;};)});
+
 ::
 
 subsection:: Server Side Queries

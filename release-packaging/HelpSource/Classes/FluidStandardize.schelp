@@ -114,6 +114,12 @@ FluidBufPitch.process(s,~audio, features: ~pitch_feature);
 ~rawarray.flatten(1).unlace.plot("Unstandardized",Rect(0,0,400,400),minval:0,maxval:[5000,1]).plotMode=\bars;
 ~plot2 = ~stdarray.flatten(1).unlace.plot("Standardized",Rect(410,0,400,400)).plotMode=\bars;
 )
+
+// single point transform on arbitrary value
+~inbuf = Buffer.loadCollection(s,0.5.dup);
+~outbuf = Buffer.new(s);
+~standardizer.transformPoint(~inbuf,~outbuf,{|x|x.postln;x.getn(0,2,{|y|y.postln;};)});
+
 ::
 
 subsection::Server Side Querying
