@@ -54,7 +54,7 @@ Input data
 ARGUMENT:: destBuffer
 Output data
 ARGUMENT:: action
-Run when done. The function is passed [destBuffer, variance] as argument.
+Run when done. The function is passed code::destBuffer:: as argument.
 
 EXAMPLES::
 
