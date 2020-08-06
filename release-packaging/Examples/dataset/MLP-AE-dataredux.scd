@@ -1,19 +1,20 @@
 s.reboot;
 //Preliminaries: we want some audio, a couple of FluidDataSets, some Buffers
 (
-~raw = FluidDataSet(s,\MLP40);
+~raw = FluidDataSet(s,\Mel40);
+~norm = FluidDataSet(s,\Mel40n);
 ~retrieved = FluidDataSet(s,\ae2);
 ~audio = Buffer.read(s,File.realpath(FluidBufMelBands.class.filenameSymbol).dirname +/+ "../AudioFiles/Tremblay-ASWINE-ScratchySynth-M.wav");
 ~melfeatures = Buffer.new(s);
 ~stats = Buffer.alloc(s, 7, 40);
 ~datapoint = Buffer.alloc(s, 40);
-~mlp = FluidMLPRegressor(s,[10,2,10],1,1,2,10000,0.01,0.1,10,0);
+~mlp = FluidMLPRegressor(s,[9,2,9],activation: 1,outputActivation: 1,tapIn: 0,tapOut: 2,maxIter: 10000,learnRate: 0.1,momentum: 0.1,batchSize: 10,validation: 0.1);
+~normalizer = FluidNormalize(s);
 )
 
 // process the melbands
 FluidBufMelBands.process(s,~audio, features: ~melfeatures,action: {\done.postln;});
 
-~raw.free
 // Divide the time series in 100, and take the mean of each segment and add this as a point to
 // the 'raw' FluidDataSet
 (
@@ -31,15 +32,19 @@ FluidBufMelBands.process(s,~audio, features: ~melfeatures,action: {\done.postln;
     dsWr = FluidDataSetWr.kr(\MLP40, buf: buf, trig: Done.kr(stats));
     LocalOut.kr( Done.kr(dsWr));
     FreeSelf.kr(count - 99);
+	Poll.kr(trig,count);
 }.play;
 )
 // wait for the post window to acknoledge the job is done.
 
+// normalize the input
+~normalizer.fitTransform(~raw,~norm);
+
 //we can then run the AE - the server might become yellow :)
-~mlp.fit(~raw,~raw,{|x|x.postln;});
+~mlp.fit(~norm,~norm,{|x|x.postln;});
 
 //we can then retrieve the hidden layer #2
-~mlp.predict(~raw,~retrieved)
+~mlp.predict(~norm,~retrieved)
 
 //check the structure of retrieved
 ~retrieved.print
@@ -47,16 +52,16 @@ FluidBufMelBands.process(s,~audio, features: ~melfeatures,action: {\done.postln;
 //let's normalise it for display
 ~normData = FluidDataSet(s,\ae2N);
 ~reducedarray = Array.new(100);
-~normalizer = FluidNormalize(s);
-~normalizer.fitTransform(~retrieved,~normData, action:{
+~normalView = FluidNormalize(s);
+(
+~normalView.fitTransform(~retrieved,~normData, action:{
     ~normData.dump{|x| 100.do{|i|
         ~reducedarray.add(x["data"][i.asString])
     }};
 });
-
+)
 ~normData.print
 ~reducedarray.postln;
-
 
 //Visualise the 2D projection of our original 12D data
 (

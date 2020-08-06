@@ -7,12 +7,12 @@
 ~flatbuf = 4.collect{Buffer.new};
 
 // here we instantiate a loader which creates a single large buffer with a dictionary of what was included in it
-// ~loader = FluidLoadFolder("/Volumes/machins/projets/newsfeed/smallnum/");
-~loader = FluidLoadFolder("/Volumes/machins/projets/newsfeed/segments/");
+// ~loader = FluidLoadFolder("/Volumes/machins/projets/newsfeed/sons/smallnum/");
+~loader = FluidLoadFolder("/Volumes/machins/projets/newsfeed/sons/segments/");
 
 // here we instantiate a further slicing step if needs be, which iterate through all the items of the FluidLoadFolder and slice the slices with the declared function. Here it is a very picky onset slicer
 ~slicer = FluidSliceCorpus({ |src,start,num,dest|
-	FluidBufOnsetSlice.kr(src,start,num,metric: 9, minSliceLength: 17, indices:dest, threshold:2)
+	FluidBufOnsetSlice.kr(src,start,num,metric: 9, minSliceLength: 17, indices:dest, threshold:2,blocking: 1)
 });
 
 // here we instantiate a process of description and dataset writing, which will run each slice of the previous slice and write the entry. Note the chain of Done.kr triggers.
@@ -20,10 +20,10 @@
 	var mfcc, stats, writer, flatten,mfccBuf, statsBuf, flatBuf, label, voice;
 	label = data.key;
     voice = data.value[\voice];
-	mfcc = FluidBufMFCC.kr(src,startFrame:start,numFrames:num,numChans:1,features:~mfccbuf[voice],trig:1);
-	stats = FluidBufStats.kr(~mfccbuf[voice],stats:~statsbuf[voice],trig:Done.kr(mfcc));
-	flatten = FluidBufFlatten.kr(~statsbuf[voice],~flatbuf[voice],trig:Done.kr(stats));
-	writer = FluidDataSetWr.kr(~ds,label, -1, ~flatbuf[voice], Done.kr(flatten))
+	mfcc = FluidBufMFCC.kr(src,startFrame:start,numFrames:num,numChans:1,features:~mfccbuf[voice],trig:1,blocking: 1);
+	stats = FluidBufStats.kr(~mfccbuf[voice],stats:~statsbuf[voice],trig:Done.kr(mfcc),blocking: 1);
+	flatten = FluidBufFlatten.kr(~statsbuf[voice],~flatbuf[voice],trig:Done.kr(stats),blocking: 1);
+	writer = FluidDataSetWr.kr(~ds,label, -1, ~flatbuf[voice], Done.kr(flatten),blocking: 1)
 });
 )
 
