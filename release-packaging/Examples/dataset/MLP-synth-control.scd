@@ -4,7 +4,7 @@ var trained = 0, entering = 0;
 var va = Array.fill(10,{0.5});
 var input = Buffer.alloc(s,2);
 var output = Buffer.alloc(s,10);
-var mlp = FluidMLPRegressor(s,[6],1,1,0,1000,0.1,0,1,0);
+var mlp = FluidMLPRegressor(s,[6],activation: 1,outputActivation: 1,maxIter: 1000,learnRate: 0.1,momentum: 0,batchSize: 1,validation: 0);
 var entry = 0;
 
 ~inData = FluidDataSet(s,\indata);

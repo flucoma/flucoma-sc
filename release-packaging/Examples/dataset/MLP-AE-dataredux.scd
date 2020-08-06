@@ -29,7 +29,7 @@ FluidBufMelBands.process(s,~audio, features: ~melfeatures,action: {\done.postln;
     40.do{|i|
         bufWr = BufWr.kr(rd[i], buf, DC.kr(i));
     };
-    dsWr = FluidDataSetWr.kr(\MLP40, buf: buf, trig: Done.kr(stats));
+    dsWr = FluidDataSetWr.kr(~raw, buf: buf, trig: Done.kr(stats));
     LocalOut.kr( Done.kr(dsWr));
     FreeSelf.kr(count - 99);
 	Poll.kr(trig,count);

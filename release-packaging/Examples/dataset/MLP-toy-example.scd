@@ -26,7 +26,7 @@ Routine{
 ~mlpHelpTarget.print
 
 // make an MLPregressor
-~mlp = FluidMLPRegressor(s, [3], FluidMLPRegressor.sigmoid, FluidMLPRegressor.sigmoid, 0, 1000,0.1,0.1,1,0);//1000 epoch at a time
+~mlp = FluidMLPRegressor(s, [3], FluidMLPRegressor.sigmoid, FluidMLPRegressor.sigmoid,maxIter:1000,learnRate: 0.1,momentum: 0.1,batchSize: 1,validation: 0);//1000 epoch at a time
 //train on it and observe the error
 ~mlp.fit(~mlpHelpSource,~mlpHelpTarget,{|x|x.postln;});
 
