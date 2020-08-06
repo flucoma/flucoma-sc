@@ -18,7 +18,7 @@ FluidKNNClassifier : FluidRTDataClient {
 		buffer = this.prEncodeBuffer(buffer);
 		this.prSendMsg(\predictPoint,
 			[buffer.asUGenInput], action,
-			[string(FluidMessageResponse,_,_)],outputBuffers:[buffer]
+			[string(FluidMessageResponse,_,_)]
 		);
 	}
 }
