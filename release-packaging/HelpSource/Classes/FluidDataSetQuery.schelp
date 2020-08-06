@@ -137,7 +137,7 @@ fork{
 ~query.filter(0,">",0.03);
 ~query.and(1,"<",1.08);
 ~query.or(2,">",2.98);
-~query.addRange(1,2);
+~query.addRange(2,2);
 ~query.transform(~dataSet, ~out);
 
 // Check the results

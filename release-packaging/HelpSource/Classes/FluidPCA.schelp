@@ -138,6 +138,11 @@ w.drawFunc = {
 w.refresh;
 w.front;
 )
+
+// transform a single point with arbitrary value
+~inbuf = Buffer.loadCollection(s,0.5.dup(12));
+~outbuf = Buffer.new(s);
+~pca.transformPoint(~inbuf,~outbuf,{|x,y|x.postln;y.postln;})
 ::
 
 subsection:: Server Side Queries
