@@ -54,7 +54,7 @@ Input data
 ARGUMENT:: destBuffer
 Output data
 ARGUMENT:: action
-Run when done. The variance is passed as an argument, aka the fidelity of the new representation: a value near 1.0 means a higher fidelity to the original.
+Run when done. The function is passed [destBuffer, variance] as argument.
 
 EXAMPLES::
 
