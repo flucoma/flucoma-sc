@@ -18,8 +18,7 @@ s.reboot;
 // process the melbands
 FluidBufMelBands.process(s,~audio, features: ~melfeatures,action: {\done.postln;});
 
-// Divide the time series in 100, and take the mean of each segment and add this as a point to
-// the 'raw' FluidDataSet
+// Divide the time series in 100, and take the mean of each segment and add this as a point to the 'raw' FluidDataSet
 (
 {
 	var trig = LocalIn.kr(1, 1);
@@ -54,7 +53,7 @@ FluidBufMelBands.process(s,~audio, features: ~melfeatures,action: {\done.postln;
 ~mlp.predict(~norm,~retrieved);
 
 //check the structure of retrieved
-~retrieved.print
+~retrieved.print;
 
 //let's normalise it for display
 ~normData = FluidDataSet(s,\ae2N);
