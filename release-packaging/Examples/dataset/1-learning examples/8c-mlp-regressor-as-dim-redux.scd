@@ -8,8 +8,11 @@ s.reboot;
 ~melfeatures = Buffer.new(s);
 ~stats = Buffer.alloc(s, 7, 40);
 ~datapoint = Buffer.alloc(s, 40);
-~mlp = FluidMLPRegressor(s,[9,2,9],activation: 1,outputActivation: 1,tapIn: 0,tapOut: 2,maxIter: 10000,learnRate: 0.1,momentum: 0.1,batchSize: 10,validation: 0.1);
-~normalizer = FluidNormalize(s);
+~queryPoint = Buffer.alloc(s, 2);
+~dQueryPoint = Buffer.alloc(s, 2);
+~dpN =Buffer.alloc(s, 40);
+~dpMLPn =Buffer.alloc(s, 40);
+~dpMLP =Buffer.alloc(s, 40);
 )
 
 // process the melbands
@@ -19,32 +22,36 @@ FluidBufMelBands.process(s,~audio, features: ~melfeatures,action: {\done.postln;
 // the 'raw' FluidDataSet
 (
 {
-    var trig = LocalIn.kr(1, 1);
-    var buf =  LocalBuf(40, 1);
-    var count = PulseCount.kr(trig) - 1;
-    var chunkLen = (~melfeatures.numFrames / 100).asInteger;
-    var stats = FluidBufStats.kr(source: ~melfeatures, startFrame: count * chunkLen, numFrames: chunkLen, stats: ~stats, trig: trig);
-    var rd = BufRd.kr(40, ~stats, DC.kr(0), 0, 1);
-    var bufWr, dsWr;
-    40.do{|i|
-        bufWr = BufWr.kr(rd[i], buf, DC.kr(i));
-    };
-    dsWr = FluidDataSetWr.kr(~raw, buf: buf, trig: Done.kr(stats));
-    LocalOut.kr( Done.kr(dsWr));
-    FreeSelf.kr(count - 99);
+	var trig = LocalIn.kr(1, 1);
+	var buf =  LocalBuf(40, 1);
+	var count = PulseCount.kr(trig) - 1;
+	var chunkLen = (~melfeatures.numFrames / 100).asInteger;
+	var stats = FluidBufStats.kr(source: ~melfeatures, startFrame: count * chunkLen, numFrames: chunkLen, stats: ~stats, trig: trig, blocking: 1);
+	var rd = BufRd.kr(40, ~stats, DC.kr(0), 0, 1);
+	var bufWr, dsWr;
+	40.do{|i|
+		bufWr = BufWr.kr(rd[i], buf, DC.kr(i));
+	};
+	dsWr = FluidDataSetWr.kr(~raw, buf: buf, trig: Done.kr(stats));
+	LocalOut.kr( Done.kr(dsWr));
+	FreeSelf.kr(count - 99);
 	Poll.kr(trig,count);
 }.play;
 )
-// wait for the post window to acknoledge the job is done.
+// wait for the post window to acknoledge the job is done. Check the dataset if curious (loads of small numbers)
+~raw.print;
 
 // normalize the input
+~normalizer = FluidNormalize(s);
 ~normalizer.fitTransform(~raw,~norm);
+~norm.print; //a more decent range
 
 //we can then run the AE - the server might become yellow :)
-~mlp.fit(~norm,~norm,{|x|x.postln;});
+~mlp = FluidMLPRegressor(s,[9,2,9],activation: 1,outputActivation: 1,tapIn: 0,tapOut: 2,maxIter: 10000,learnRate: 0.1,momentum: 0.1,batchSize: 10,validation: 0.1);
+~mlp.fit(~norm,~norm,{|x|x.postln;});// run this a few times, until you are happy with the error
 
-//we can then retrieve the hidden layer #2
-~mlp.predict(~norm,~retrieved)
+//we can then retrieve the hidden layer #2 because of the tapOut parameter
+~mlp.predict(~norm,~retrieved);
 
 //check the structure of retrieved
 ~retrieved.print
@@ -52,31 +59,98 @@ FluidBufMelBands.process(s,~audio, features: ~melfeatures,action: {\done.postln;
 //let's normalise it for display
 ~normData = FluidDataSet(s,\ae2N);
 ~reducedarray = Array.new(100);
-~normalView = FluidNormalize(s);
+~normalView = FluidNormalize(s,0.1,0.9);
 (
 ~normalView.fitTransform(~retrieved,~normData, action:{
-    ~normData.dump{|x| 100.do{|i|
-        ~reducedarray.add(x["data"][i.asString])
-    }};
+	~normData.dump{|x| 100.do{|i|
+		~reducedarray.add(x["data"][i.asString])
+	}};
 });
 )
-~normData.print
+~normData.print;
 ~reducedarray.postln;
 
-//Visualise the 2D projection of our original 12D data
+//make a basic KD tree to retrieve the nearest entry in 2D
+~kdtree = FluidKDTree(s,numNeighbours: 1);
+~kdtree.fit(~normData);
+
+//prepare the normalizers and the neural net for inverse query
 (
-d = ~reducedarray.flatten(1).unlace.deepCollect(1, { |x| x.normalize});
-w = Window("scatter", Rect(128, 64, 200, 200));
+~normalView.invert = 1;
+~normalizer.invert = 1;
+~mlp.tapIn = 2;
+~mlp.tapOut = -1;
+)
+
+//Visualise and query the 2D projection of our original 40D data
+(
+var w,v,myx,myy,vRNN, vRN, vMN, vM;
+
+~arrayRawNn = Array.new(40);
+~arrayRawN = Array.new(40);
+~arrayMLPn = Array.new(40);
+~arrayMLP = Array.new(40);
+
+//initialise the mouse position holder
+myx=130;
+myy=130;
+
+w = Window("AutoEncoder", Rect(64, 64, 770, 270));
+v = View.new(w,Rect(0,0, 310, 310));
+
+vRNN = MultiSliderView(w,Rect(270,8,240,125)).value_(~arrayRawNn).readOnly_(true).elasticMode_(1).isFilled_(true);
+vRN = MultiSliderView(w,Rect(270,137,240,125)).value_(~arrayRawN).readOnly_(true).elasticMode_(1).isFilled_(true);
+vMN = MultiSliderView(w,Rect(520,10,240,120)).value_(~arrayMLPn).readOnly_(true).elasticMode_(1).isFilled_(true);
+vM = MultiSliderView(w,Rect(520,137,240,125)).value_(~arrayMLP).readOnly_(true).elasticMode_(1).isFilled_(true);
+
+//creates a function that reacts to mousedown
+v.mouseMoveAction = {|view, x, y|myx=x.clip(10,260);myy=y.clip(10,260);w.refresh;
+	// myx.postln;myy.postln;
+	Routine{
+		~queryPoint.setn(0,([myx,myy] - 10 / 250));//set the query point to the coordinate
+		~kdtree.kNearest(~queryPoint, action: {|nearest| //retrieve the nearest point
+			~norm.getPoint(nearest, ~dpN, action: { //get the normalised 40d
+				~raw.getPoint(nearest, ~datapoint, action: { // get the original 40d
+					~normalView.transformPoint(~queryPoint, ~dQueryPoint, action: { //denormalise the 2d coordinate to get the right range of values for the MLP
+						~mlp.predictPoint(~dQueryPoint, ~dpMLPn, action:  { //predict from the middle (2d) to the normalised output (40d)
+							~normalizer.transformPoint(~dpMLPn, ~dpMLP, action:  { //denormalised the 40d
+								~datapoint.getn(0,40,{|x|~arrayRawN = x; //retrieve the nearest
+									~dpN.getn(0,40,{|x|~arrayRawNn = x; // retrieve the normalised nearest
+										~dpMLPn.getn(0,40,{|x|~arrayMLPn = x; //retrieve the predicted normalised 40d
+											~dpMLP.getn(0,40,{|x|~arrayMLP = x; //retrieve the denormalised predicted 40d
+												AppClock.sched(0,{ // update the visualisation of the 4 arrays
+													vRNN.value=~arrayRawNn;
+													vRN.value=~arrayRawN * 15;
+													vMN.value=~arrayMLPn;
+													vM.value=~arrayMLP * 15;
+												});
+											});
+										});
+									});
+								});
+							});
+						});
+					});
+				});
+			});
+		});
+	}.play;
+};
+//custom redraw function
 w.drawFunc = {
-    Pen.use {
-        d[0].size.do{|i|
-            var x = (d[0][i]*200);
-            var y = (d[1][i]*200);
-            var r = Rect(x,y,5,5);
-            Pen.fillColor = Color.blue;
-            Pen.fillOval(r);
-        }
-    }
+	Pen.use {
+		~reducedarray.size.do{|i|
+			var coord = (~reducedarray[i] * 250) + 7;
+			var r = Rect(coord[0],coord[1],6,6);
+			Pen.fillColor = Color.blue;
+			Pen.fillOval(r);
+		};
+	};
+	Pen.color = Color.black;
+	Pen.addOval(Rect(myx-4, myy-4,8,8));
+	Pen.perform(\stroke);
+	Pen.addRect(Rect(10,10,250,250));
+	Pen.perform(\stroke);
 };
 w.refresh;
 w.front;
