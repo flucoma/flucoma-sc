@@ -68,7 +68,6 @@ FluidBufMelBands.process(s,~audio, features: ~melfeatures,action: {\done.postln;
 });
 )
 ~normData.print;
-~reducedarray.postln;
 
 //make a basic KD tree to retrieve the nearest entry in 2D
 ~kdtree = FluidKDTree(s,numNeighbours: 1);
@@ -98,14 +97,19 @@ myy=130;
 w = Window("AutoEncoder", Rect(64, 64, 770, 270));
 v = View.new(w,Rect(0,0, 310, 310));
 
-vRNN = MultiSliderView(w,Rect(270,8,240,125)).value_(~arrayRawNn).readOnly_(true).elasticMode_(1).isFilled_(true);
-vRN = MultiSliderView(w,Rect(270,137,240,125)).value_(~arrayRawN).readOnly_(true).elasticMode_(1).isFilled_(true);
-vMN = MultiSliderView(w,Rect(520,10,240,120)).value_(~arrayMLPn).readOnly_(true).elasticMode_(1).isFilled_(true);
-vM = MultiSliderView(w,Rect(520,137,240,125)).value_(~arrayMLP).readOnly_(true).elasticMode_(1).isFilled_(true);
+vRNN = MultiSliderView(w,Rect(270,8,240,115)).value_(~arrayRawNn).readOnly_(true).elasticMode_(1).isFilled_(true);
+vRN = MultiSliderView(w,Rect(270,147,240,115)).value_(~arrayRawN).readOnly_(true).elasticMode_(1).isFilled_(true);
+vMN = MultiSliderView(w,Rect(520,10,240,115)).value_(~arrayMLPn).readOnly_(true).elasticMode_(1).isFilled_(true);
+vM = MultiSliderView(w,Rect(520,147,240,115)).value_(~arrayMLP).readOnly_(true).elasticMode_(1).isFilled_(true);
+
+StaticText(w,Rect(275,120,490,30)).string_("above: normalised nearest neighbour\nbelow: original nearest neighbour").font_(Font("Monaco", 10));
+StaticText(w,Rect(525,120,490,30)).string_("above: regressed values at coordinates\nbelow: denormalised regressed values").font_(Font("Monaco", 10));
 
 //creates a function that reacts to mousedown
-v.mouseMoveAction = {|view, x, y|myx=x.clip(10,260);myy=y.clip(10,260);w.refresh;
-	// myx.postln;myy.postln;
+v.mouseMoveAction = {|view, x, y|
+	myx=x.clip(10,260);
+	myy=y.clip(10,260);
+	w.refresh;
 	Routine{
 		~queryPoint.setn(0,([myx,myy] - 10 / 250));//set the query point to the coordinate
 		~kdtree.kNearest(~queryPoint, action: {|nearest| //retrieve the nearest point
@@ -146,9 +150,10 @@ w.drawFunc = {
 			Pen.fillOval(r);
 		};
 	};
-	Pen.color = Color.black;
+	Pen.color = Color.red;
 	Pen.addOval(Rect(myx-4, myy-4,8,8));
 	Pen.perform(\stroke);
+	Pen.color = Color.black;
 	Pen.addRect(Rect(10,10,250,250));
 	Pen.perform(\stroke);
 };
