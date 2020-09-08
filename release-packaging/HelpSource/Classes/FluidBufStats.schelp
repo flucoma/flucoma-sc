@@ -195,13 +195,27 @@ CODE::
 b = Buffer.loadCollection(s,[1, 8, 9, 10, 11, 12, 99]);
 
 // plot to confirm
-b.plot//check the mode here so it print better
+b.plot.plotMode = \points;
 
 // create a new buffer as destinations
 c = Buffer.new(s);
 
 // run the stats and send back the values
-FluidBufStats.process(s, b, stats:c, numDerivs:1, action:{c.getn(0,c.numFrames * c.numChannels,{|item|d = item; d.postln})});
+FluidBufStats.process(s, b, stats:c, numDerivs:1, action:{c.getn(0,c.numFrames,{|item|item.postln})});
 // run the same array with outliers rejected if outside of k=1.5
-FluidBufStats.process(s, b, stats:c, numDerivs:1,outliersCutoff: 1.5, action:{c.getn(0,c.numFrames * c.numChannels,{|item|d = item; d.postln})});
+FluidBufStats.process(s, b, stats:c, numDerivs:1,outliersCutoff: 1.5, action:{c.getn(0,c.numFrames,{|item|item.postln})});
+
+
+//example 1b (run the stats above)
+b = Buffer.loadCollection(s,[1, 8, 9, 10, 11, 12, 16, 99].scramble);
+
+
+//example 2
+b = Buffer.loadCollection(s,(1..9));
+c = Buffer.loadCollection(s,1.0.series(0.9,0.2));
+d = Buffer.new(s);
+// run the stats and send back the values
+FluidBufStats.process(s, b, stats:d, numDerivs:1, action:{d.getn(0,d.numFrames,{|item|item.postln})});
+// run the same array with the weights
+FluidBufStats.process(s, b, stats:d, numDerivs:1, weights: c, action:{d.getn(0,d.numFrames,{|item|item.postln})});
 ::
