@@ -51,6 +51,15 @@ ARGUMENT:: middle
 ARGUMENT:: high
 	The rank requested for the third percentile value. By default, it is percentile 100.0, which is the maximum of the given channel of the source buffer.
 
+ARGUMENT:: outliersCutoff
+Some blab
+
+ARGUMENT:: weights
+Some blab
+
+ARGUMENT:: weightsThreshold
+Some blab
+
 ARGUMENT:: action
 		A Function to be evaluated once the offline process has finished and indices instance variables have been updated on the client side. The function will be passed stats as an argument.
 
@@ -176,4 +185,23 @@ FluidBufStats.process(s, b, stats:c, numDerivs:1, action:{c.getn(0,c.numFrames *
 //looking at the result is not easy to grasp, since it is interleaved: first number is mean of L, second is mean of R, third is stddev of L, fourth is stddev or R
 //this will make it tidier - the first value of each line is Left, the second is Right
 d.reshape(14,2).do({|x,i|["mean\t\t","stddev\t\t","skew\t\t\t", "kurtosis\t", "min\t\t\t", "median\t\t", "max\t\t\t","d-mean\t","d-stddev\t","d-skew\t\t", "d-kurtosis", "d-min\t\t", "d-median\t", "d-max\t\t"].at(i).post;x.round(0.01).postln});"".postln;
+::
+
+STRONG::Outliers and Weights::
+
+CODE::
+//example 1a
+// make a buffer of known qualities
+b = Buffer.loadCollection(s,[1, 8, 9, 10, 11, 12, 99]);
+
+// plot to confirm
+b.plot//check the mode here so it print better
+
+// create a new buffer as destinations
+c = Buffer.new(s);
+
+// run the stats and send back the values
+FluidBufStats.process(s, b, stats:c, numDerivs:1, action:{c.getn(0,c.numFrames * c.numChannels,{|item|d = item; d.postln})});
+// run the same array with outliers rejected if outside of k=1.5
+FluidBufStats.process(s, b, stats:c, numDerivs:1,outliersCutoff: 1.5, action:{c.getn(0,c.numFrames * c.numChannels,{|item|d = item; d.postln})});
 ::
