@@ -14,7 +14,7 @@ FluidBufStats : UGen{
 	}
 
 	*kr  { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, stats, numDerivs = 0, low = 0, middle = 50, high = 100, outliersCutoff = -1, weights, weightsThreshold = 0, trig = 1, blocking = 0|
-		^this.multiNew(\control, source, startFrame, numFrames, startChan, numChans, stats, numDerivs, low, middle, high,trig, blocking);
+		^this.multiNew(\control, source, startFrame, numFrames, startChan, numChans, stats, numDerivs, low, middle, high, outliersCutoff, weights, weightsThreshold, trig, blocking);
 	}
 
     *process { |server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, stats, numDerivs = 0, low = 0, middle = 50, high = 100, outliersCutoff = -1, weights, weightsThreshold = 0, action|
