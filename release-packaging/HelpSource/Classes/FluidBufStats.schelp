@@ -57,9 +57,6 @@ Some blab
 ARGUMENT:: weights
 Some blab
 
-ARGUMENT:: weightsThreshold
-Some blab
-
 ARGUMENT:: action
 		A Function to be evaluated once the offline process has finished and indices instance variables have been updated on the client side. The function will be passed stats as an argument.
 
@@ -203,7 +200,7 @@ c = Buffer.new(s);
 // run the stats and send back the values
 FluidBufStats.process(s, b, stats:c, numDerivs:1, action:{c.getn(0,c.numFrames,{|item|item.postln})});
 // run the same array with outliers rejected if outside of k=1.5
-FluidBufStats.process(s, b, stats:c, numDerivs:1,outliersCutoff: 1.5, action:{c.getn(0,c.numFrames,{|item|item.postln})});
+FluidBufStats.process(s, b, stats:c, numDerivs:1,outliersCutoff: 1.5, action:{c.getn(0,c.numFrames * c.numChannels,{|item| f =item.postln})});
 
 //example 1b (run the stats above)
 b = Buffer.loadCollection(s,[1, 8, 9, 10, 11, 12, 16, 99].scramble);
@@ -211,6 +208,8 @@ b = Buffer.loadCollection(s,[1, 8, 9, 10, 11, 12, 16, 99].scramble);
 //example 1c (multichannel in behaviour is OR)
 e = [(1..8)++99, [1001] ++ 10002.series(10003,10009)].flop.scramble.flat
 b = Buffer.loadCollection(s,e,2);
+
+f.reshape(14,2).do({|x,i|["mean\t\t","stddev\t\t","skew\t\t\t", "kurtosis\t", "min\t\t\t", "median\t\t", "max\t\t\t","d-mean\t","d-stddev\t","d-skew\t\t", "d-kurtosis", "d-min\t\t", "d-median\t", "d-max\t\t"].at(i).post;x.round(0.01).postln});"".postln;
 
 /////////////
 //example 2a
@@ -221,7 +220,7 @@ d = Buffer.new(s);
 // run the stats and send back the values
 FluidBufStats.process(s, b, stats:d, numDerivs:1, action:{d.getn(0,d.numFrames,{|item|item.postln})});
 // run the same array with the weights
-FluidBufStats.process(s, b, stats:d, numDerivs:1, weights: c, action:{d.getn(0,d.numFrames * d.numChannels,{|item|item.postln})});
+FluidBufStats.process(s, b, stats:d, numDerivs:1, weights: c, action:{d.getn(0,d.numFrames * d.numChannels,{|item|f = item.postln})});
 
 //example 2b (run the stats above)
 e = [(1..9), -100.series(-90,-20)].flop.scramble.flop;
@@ -231,7 +230,7 @@ e = [(1..9), (101..109), 1.0.series(0.9,0.2)].flop.scramble.flop;
 b = Buffer.loadCollection(s,e[0..1].flop.flat,2);
 b.plot(separately: true).plotMode = \points;
 c = Buffer.loadCollection(s,e[2]);
-FluidBufStats.process(s, b, stats:d, numDerivs:1, weights: c, action:{d.getn(0,d.numFrames * d.numChannels,{|item|f = item.postln})});
+
 f.reshape(14,2).do({|x,i|["mean\t\t","stddev\t\t","skew\t\t\t", "kurtosis\t", "min\t\t\t", "median\t\t", "max\t\t\t","d-mean\t","d-stddev\t","d-skew\t\t", "d-kurtosis", "d-min\t\t", "d-median\t", "d-max\t\t"].at(i).post;x.round(0.01).postln});"".postln;
 
 //see the example folder for 2 musical comparisons: 1) weighted MFCCs providing different nearest neighbours, and 2) pitch manipulations
