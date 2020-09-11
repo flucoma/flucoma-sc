@@ -550,18 +550,21 @@ public:
         w->mJobDone = true;
         return false;
       }
-
+      
+      w->client.checkProgress(r);
+      if(w->mSynchronous) r = w->mResult;
       if (!r.ok())
       {
-        if(!w->mJobDone)
-            std::cout << "ERROR: " << Wrapper::getName() << ": "
-                  << r.message().c_str() << std::endl;
+        if(!w->mJobDone) Wrapper::printResult(w,r);
+        if(r.status() == Result::Status::kError)
+        {
          w->mJobDone = true;
          w->mHasTriggered = false;
-        return false;
+         return false;
+        }
       }
-      w->mHasTriggered = false;
       w->mJobDone = true;
+      w->mHasTriggered = false;      
       return true;
     }
     return false;
