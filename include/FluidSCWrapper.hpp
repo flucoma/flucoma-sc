@@ -689,7 +689,7 @@ struct LifetimePolicy<Client, Wrapper,std::false_type, std::false_type>
   {
       FloatControlsIter controlsReader{unit->mInBuf + Wrapper::ControlOffset(unit),Wrapper::ControlSize(unit)};
       auto params = typename Wrapper::ParamSetType{Client::getParameterDescriptors()};
-      Wrapper::setParams(unit, params, controlsReader,true);
+      Wrapper::setParams(unit, params, controlsReader,true,false);
       Client client{params};
       new (static_cast<Wrapper*>(unit)) Wrapper(std::move(controlsReader), std::move(client), std::move(params));
   }
@@ -726,7 +726,7 @@ struct LifetimePolicy<Client, Wrapper,std::true_type, std::false_type>
         std::cout << "ERROR: ID " << uid << "is already being used by the cache" << std::endl;
         return;
       }
-      Wrapper::setParams(unit, entry.params,controlsReader,true);
+      Wrapper::setParams(unit, entry.params,controlsReader,true,false);
       new (static_cast<Wrapper*>(unit)) Wrapper{std::move(controlsReader),std::move(client),std::move(params)};
       static_cast<Wrapper*>(unit)->uid = uid;
       entry.leased = true;
@@ -794,7 +794,7 @@ struct LifetimePolicy<Client, Wrapper,std::false_type, std::true_type>
     FloatControlsIter controlsReader{unit->mInBuf + Wrapper::ControlOffset(unit),Wrapper::ControlSize(unit)};
 
     auto params = typename Client::ParamSetType{Client::getParameterDescriptors()};
-    Wrapper::setParams(unit, params,controlsReader,true);
+    Wrapper::setParams(unit, params,controlsReader,true,false);
     
     auto& name = params.template get<0>();
    
@@ -1560,61 +1560,59 @@ public:
   }
 
   static auto& setParams(Unit* x, ParamSetType& p,
-                         FloatControlsIter& inputs, bool constrain = false)
+                         FloatControlsIter& inputs, bool constrain = false, bool initialized = true)
   {
-      //TODO: Regain this robustness if possible? 
-    // We won't even try and set params if the arguments don't match
-    // if (inputs.size() == C::getParameterDescriptors().count())
-    // {
-      FluidSCWrapper* w = static_cast<FluidSCWrapper*>(x);
-      bool verbose = w->mWorld->mVerbosity > 0;
-      p.template setParameterValuesRT<ControlSetter>(verbose ? &w->mReportage : nullptr , x, inputs);
-      if (constrain) p.constrainParameterValuesRT(verbose ? &w->mReportage : nullptr);
-      if(verbose)
-      {
-        for(auto& r:w->mReportage) if(!r.ok())
-        {
-          printResult(w->state(), r);
-        }
-      }
-//      p.template forEachParam<SetWithResult>(x,inputs,
+    bool verbose = x->mWorld->mVerbosity > 0;
     
-    // }
-    // else
-    // {
-    //   std::cout << "ERROR: " << getName()
-    //             << ": parameter count mismatch. Perhaps your binary plugins "
-    //                "and SC sources are different versions"
-    //             << std::endl;
-    // }
-
+    using Reportage = decltype(static_cast<FluidSCWrapper*>(x)->mReportage);
+    
+    Reportage* reportage = initialized ? &(static_cast<FluidSCWrapper*>(x)->mReportage) : new Reportage();
+          
+    p.template setParameterValuesRT<ControlSetter>(verbose ? reportage: nullptr , x, inputs);
+    if (constrain) p.constrainParameterValuesRT(verbose ? reportage : nullptr);
+    if(verbose)
+    {
+      for(auto& r:*reportage)
+      {
+        if(!r.ok()) printResult(&x->mParent->mNode, r);
+      }
+    }
+    if(!initialized) delete reportage;
     return p;
   }
 
   static void printResult(SharedState<C>& x, Result& r)
   {
     if (!x.get() || !x->mNodeAlive) return;
-
-    switch (r.status())
-    {
-    case Result::Status::kWarning: {
-      if (x->mNode->mWorld->mVerbosity > 0)
-        std::cout << "WARNING: " << r.message().c_str() << '\n';
-      break;
-    }
-    case Result::Status::kError: {
-      std::cout << "ERROR: " << r.message().c_str() << '\n';
-      break;
-    }
-    case Result::Status::kCancelled: {
-      std::cout << "Task cancelled\n" << '\n';
-      break;
-    }
-    default: {
-    }
-    }
+    FluidSCWrapper::printResult(x->mNode, r);
   }
   
+  static void printResult(Node* x, Result& r)
+  {
+    switch (r.status())
+    {
+      case Result::Status::kWarning: 
+      {
+        if (x->mWorld->mVerbosity > 0)
+          std::cout << "WARNING: " << r.message().c_str() << '\n';
+        break;
+      }
+      case Result::Status::kError: 
+      {
+        std::cout << "ERROR: " << r.message().c_str() << '\n';
+        break;
+      }
+      case Result::Status::kCancelled: 
+      {
+        std::cout << "Task cancelled\n" << '\n';
+        break;
+      }
+      default: 
+      {
+      }
+    }  
+  }
+    
   auto& client() { return mState->client; }
   auto& params() { return mState->params; }
   
