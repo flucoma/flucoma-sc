@@ -96,15 +96,15 @@ FluidBufCompose.process(s,~loader.buffer,a,(b-a),numChans: 1, destination: ~targ
 //describe the sound to match
 (
 {
-	var loud, loud2, mfcc, stats, stats2, loudbuf2;
-	loudbuf2 = LocalBuf.new((((num+1024) / 512) - 1).asInteger, 1); //temp buffer to extract what we need
+	var loud, loud2, mfcc, stats, flatten, stats2, loudbuf2;
+	loudbuf2 = LocalBuf.new((((~targetsound.numFrames+1024) / 512) - 1).asInteger, 1); //temp buffer to extract what we need
 	mfcc = FluidBufMFCC.kr(~targetsound,features:~mfccbuf[0],trig:1);
 	stats = FluidBufStats.kr(~mfccbuf[0],stats:~statsbuf[0],trig:Done.kr(mfcc));
 	flatten = FluidBufFlatten.kr(~statsbuf[0],~flatbuf[0],trig:Done.kr(stats));
-	loud = FluidBufLoudness.kr(src,startFrame:start,numFrames:num,numChans:1,features:~loudbuf[voice],trig:Done.kr(flatten),blocking: 1);
+	loud = FluidBufLoudness.kr(~targetsound,features:~loudbuf[0],trig:Done.kr(flatten),blocking: 1);
 	loud2 = FluidBufCompose.kr(~mfccbuf[0],numChans: 1,destination: loudbuf2,trig: Done.kr(loud),blocking: 1);
 	stats2 = FluidBufStats.kr(~mfccbuf[0],stats:~statsbuf[0], weights: loudbuf2, trig:Done.kr(loud2),blocking: 1);
-	flatten = FluidBufFlatten.kr(~statsbuf[0],~flatbuf[1],trig:Done.kr(stats));
+	FluidBufFlatten.kr(~statsbuf[0],~flatbuf[1],trig:Done.kr(stats2));
 }.play;
 )
 
