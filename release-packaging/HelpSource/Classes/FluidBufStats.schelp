@@ -52,10 +52,14 @@ ARGUMENT:: high
 	The rank requested for the third percentile value. By default, it is percentile 100.0, which is the maximum of the given channel of the source buffer.
 
 ARGUMENT:: outliersCutoff
-Some blab
+	A ratio of the inter quantile range (IQR) that defines a range outside of which data will be rejected. It is run on each channel independently and a single channel being flagged as outlier removes the whole frame (on all channels). The default (-1) bypasses this function, keeping all frames in the statistical measurements. For more information on this statistical process, please refer to the concept of IQR and how the whiskers of a box plot are computed here (https://en.wikipedia.org/wiki/Box_plot)
 
 ARGUMENT:: weights
-Some blab
+	A buffer to provide relative weighting of the source material. Not providing one will not apply weighting and consider all frames equally. The provided buffer has to satisfy all of the following conditions: LIST::
+	## a single-channel, that will be applied to all channels of source
+	## exactly the same amount of frames as ‘source’
+	## weights must be positive (anything lower than 0 will be rejected)
+	::
 
 ARGUMENT:: action
 		A Function to be evaluated once the offline process has finished and indices instance variables have been updated on the client side. The function will be passed stats as an argument.
@@ -187,7 +191,7 @@ d.reshape(14,2).do({|x,i|["mean\t\t","stddev\t\t","skew\t\t\t", "kurtosis\t", "m
 STRONG::Outliers and Weights::
 
 CODE::
-//example 1a
+// example 1a
 // make a buffer of known qualities
 b = Buffer.loadCollection(s,[1, 8, 9, 10, 11, 12, 99]);
 
@@ -199,20 +203,27 @@ c = Buffer.new(s);
 
 // run the stats and send back the values
 FluidBufStats.process(s, b, stats:c, numDerivs:1, action:{c.getn(0,c.numFrames,{|item|item.postln})});
-// run the same array with outliers rejected if outside of k=1.5
-FluidBufStats.process(s, b, stats:c, numDerivs:1,outliersCutoff: 1.5, action:{c.getn(0,c.numFrames * c.numChannels,{|item| f =item.postln})});
+// run the same array with outliers rejected if outside of 1.5 times the IQR - observe the new minimum and maximum to see
+FluidBufStats.process(s, b, stats:c, numDerivs:1, outliersCutoff: 1.5, action:{c.getn(0,c.numFrames,{|item| item.postln})});
 
-//example 1b (run the stats above)
+// example 1b (run the stats above, and change the value of some elements in the array too)
 b = Buffer.loadCollection(s,[1, 8, 9, 10, 11, 12, 16, 99].scramble);
 
-//example 1c (multichannel in behaviour is OR)
+// example 1c (multichannel in behaviour is greedy)
+// This mean that an outlier in any channel will dismiss the whole frame.
+// For instance here the outlier is 99 (frame 8) in channel 0, and 1001 in channel 1 (frame 0)
+// The final stats therefore has minima of [2,10002] and maxima of [8,10008]
 e = [(1..8)++99, [1001] ++ 10002.series(10003,10009)].flop.scramble.flat
 b = Buffer.loadCollection(s,e,2);
+FluidBufStats.process(s, b, stats:c, numDerivs:1, outliersCutoff: 1.5, action:{c.getn(0,c.numFrames * c.numChannels,{|item| f =item.postln})});
 
+//More readable format
 f.reshape(14,2).do({|x,i|["mean\t\t","stddev\t\t","skew\t\t\t", "kurtosis\t", "min\t\t\t", "median\t\t", "max\t\t\t","d-mean\t","d-stddev\t","d-skew\t\t", "d-kurtosis", "d-min\t\t", "d-median\t", "d-max\t\t"].at(i).post;x.round(0.01).postln});"".postln;
 
-/////////////
-//example 2a
+//////////////
+// example 2a
+
+// make an array of 9 values, with known weigths. Scramble them pairwise for good measure (that should not change any stats)
 e = [(1..9), 1.0.series(0.9,0.2)].flop.scramble.flop;
 b = Buffer.loadCollection(s,e[0]);
 c = Buffer.loadCollection(s,e[1]);
@@ -220,17 +231,26 @@ d = Buffer.new(s);
 // run the stats and send back the values
 FluidBufStats.process(s, b, stats:d, numDerivs:1, action:{d.getn(0,d.numFrames,{|item|item.postln})});
 // run the same array with the weights
-FluidBufStats.process(s, b, stats:d, numDerivs:1, weights: c, action:{d.getn(0,d.numFrames * d.numChannels,{|item|f = item.postln})});
+FluidBufStats.process(s, b, stats:d, numDerivs:1, weights: c, action:{d.getn(0,d.numFrames * d.numChannels,{|item|item.postln})});
 
-//example 2b (run the stats above)
-e = [(1..9), -100.series(-90,-20)].flop.scramble.flop;
+// example 2b (run the stats above)
+e = [(1..9), 0.series(-10,-80)].flop.scramble.flop; // this has negative weights, they are capped at 0, so nothing happens
+// but if we scale them up
+g = Buffer(s)
+FluidBufScale.process(s,c,g,-100,0)
+// look at the new values - because 0->1 and -100->0 we get the same weights as example 2a
+g.getn(0,9,{|x|x.postln})
+// run the stats - same results as example 2a
+FluidBufStats.process(s, b, stats:d, numDerivs:1, weights: g, action:{d.getn(0,d.numFrames * d.numChannels,{|item|item.postln})});
 
-//example 2c (stereo input but mono weigths
+//example 2c (stereo input but mono weigths - works like a charm)
 e = [(1..9), (101..109), 1.0.series(0.9,0.2)].flop.scramble.flop;
 b = Buffer.loadCollection(s,e[0..1].flop.flat,2);
 b.plot(separately: true).plotMode = \points;
 c = Buffer.loadCollection(s,e[2]);
+FluidBufStats.process(s, b, stats:d, numDerivs:1, weights: c, action:{d.getn(0,d.numFrames * d.numChannels,{|item|f = item.postln})});
 
+//More readable format
 f.reshape(14,2).do({|x,i|["mean\t\t","stddev\t\t","skew\t\t\t", "kurtosis\t", "min\t\t\t", "median\t\t", "max\t\t\t","d-mean\t","d-stddev\t","d-skew\t\t", "d-kurtosis", "d-min\t\t", "d-median\t", "d-max\t\t"].at(i).post;x.round(0.01).postln});"".postln;
 
 //see the example folder for 2 musical comparisons: 1) weighted MFCCs providing different nearest neighbours, and 2) pitch manipulations
