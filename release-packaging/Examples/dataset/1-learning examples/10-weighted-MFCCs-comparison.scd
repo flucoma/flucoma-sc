@@ -5,13 +5,14 @@
 ~dsL = FluidDataSet(s,\ds10L);
 //define as many buffers as we have parallel voices/threads in the extractor processing (default is 4)
 ~loudbuf = 4.collect{Buffer.new};
+~weightbuf = 4.collect{Buffer.new};
 ~mfccbuf = 4.collect{Buffer.new};
 ~statsbuf = 4.collect{Buffer.new};
 ~flatbuf = 4.collect{Buffer.new};
 
 // here we instantiate a loader as per example 0
-// ~loader = FluidLoadFolder("/Volumes/machins/projets/newsfeed/sons/smallnum/");
-~loader = FluidLoadFolder("/Volumes/machins/projets/newsfeed/sons/segments/");
+~loader = FluidLoadFolder("/Volumes/machins/projets/newsfeed/sons/smallnum/");
+// ~loader = FluidLoadFolder("/Volumes/machins/projets/newsfeed/sons/segments/");
 // ~loader = FluidLoadFolder("/Users/pa/Desktop/RodDrums/Training/");
 // ~loader = FluidLoadFolder("/Users/pa/Desktop/HansPiano/Pianoteq-subset/");
 
@@ -33,16 +34,13 @@
 
 // here we make another processor, this time with doing an amplitude weighing
 ~extractorW = FluidProcessSlices({|src,start,num,data|
-	var label, voice, loud, loud2, loudbuf2, loud3, loudbuf3, mfcc, stats, flatten;
-	loudbuf2 = LocalBuf.new((((num+1024) / 512) - 1).asInteger, 1); //temp buffer to extract what we need
-	loudbuf3 = LocalBuf.new((((num+1024) / 512) - 1).asInteger, 1); //temp buffer to extract what we need
+	var label, voice, loud, weights, mfcc, stats, flatten;
 	label = data.key;
     voice = data.value[\voice];
 	mfcc = FluidBufMFCC.kr(src,startFrame:start,numFrames:num,numChans:1,features:~mfccbuf[voice],trig:1,blocking: 1);
 	loud = FluidBufLoudness.kr(src,startFrame:start,numFrames:num,numChans:1,features:~loudbuf[voice],trig:Done.kr(mfcc),blocking: 1);
-	loud2 = FluidBufCompose.kr(~loudbuf[voice],numChans: 1,destination: loudbuf2,trig: Done.kr(loud),blocking: 1);
-	loud3 = FluidBufScale.kr(loudbuf2, loudbuf3, inlo: -70, inhi: 0, trig: Done.kr(loud2),blocking: 1);
-	stats = FluidBufStats.kr(~mfccbuf[voice], stats:~statsbuf[voice], numDerivs: 1, weights: loudbuf3, trig:Done.kr(loud3), blocking: 1);
+	weights = FluidBufScale.kr(~loudbuf[voice],numChans: 1,destination: ~weightbuf[voice],inputLow: -70,inputHigh: 0, trig: Done.kr(loud),blocking: 1);
+	stats = FluidBufStats.kr(~mfccbuf[voice], stats:~statsbuf[voice], numDerivs: 1, weights: ~weightbuf[voice], trig:Done.kr(weights), blocking: 1);
 	flatten = FluidBufFlatten.kr(~statsbuf[voice],~flatbuf[voice],trig:Done.kr(stats),blocking: 1);
 	FluidDataSetWr.kr(~dsW,label, -1, ~flatbuf[voice], Done.kr(flatten),blocking: 1);
 });
@@ -157,16 +155,13 @@ FluidBufCompose.process(s,~loader.buffer,a,(b-a),numChans: 1, destination: ~targ
 //describe the sound to match
 (
 {
-	var loud, loud2, loud3, mfcc, stats, flatten, stats2, loudbuf2, loudbuf3, written;
-	loudbuf2 = LocalBuf.new((((~targetsound.numFrames+1024) / 512) - 1).asInteger, 1);
-	loudbuf3 = LocalBuf.new((((~targetsound.numFrames+1024) / 512) - 1).asInteger, 1);
+	var loud, weights, mfcc, stats, flatten, stats2, written;
 	mfcc = FluidBufMFCC.kr(~targetsound,features:~mfccbuf[0],trig:1);
 	stats = FluidBufStats.kr(~mfccbuf[0],stats:~statsbuf[0], numDerivs: 1,trig:Done.kr(mfcc));
 	flatten = FluidBufFlatten.kr(~statsbuf[0],~flatbuf[0],trig:Done.kr(stats));
 	loud = FluidBufLoudness.kr(~targetsound,features:~loudbuf[0],trig:Done.kr(flatten),blocking: 1);
-	loud2 = FluidBufCompose.kr(~loudbuf[0],numChans: 1,destination: loudbuf2,trig: Done.kr(loud),blocking: 1);
-	loud3 = FluidBufScale.kr(loudbuf2, loudbuf3,inlo: -70,inhi: 0,trig: Done.kr(loud2),blocking: 1);
-	stats2 = FluidBufStats.kr(~mfccbuf[0],stats:~statsbuf[0], numDerivs: 1, weights: loudbuf3, trig:Done.kr(loud3),blocking: 1);
+	weights = FluidBufScale.kr(~loudbuf[0],numChans: 1,destination: ~weightbuf[0],inputLow: -70,inputHigh: 0,trig: Done.kr(loud),blocking: 1);
+	stats2 = FluidBufStats.kr(~mfccbuf[0],stats:~statsbuf[0], numDerivs: 1, weights: ~weightbuf[0], trig:Done.kr(weights),blocking: 1);
 	written = FluidBufFlatten.kr(~statsbuf[0],~flatbuf[1],trig:Done.kr(stats2));
 	FreeSelf.kr(Done.kr(written));
 }.play;
