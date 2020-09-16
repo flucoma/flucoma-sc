@@ -6,7 +6,7 @@ RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreadi
 DESCRIPTION::
 This class implements a simple Buffer preprocessor, by replacing values under a threshold by 0s. It is part of the LINK:: Guides/FluidDecomposition:: of LINK:: Guides/FluCoMa::. For more explanations, learning material, and discussions on its musicianly uses, visit http://www.flucoma.org/
 
-The process will return a buffer with the same size and shape than the original.
+The process will return a buffer with the same size and shape than the requested range.
 
 STRONG::Threading::
 

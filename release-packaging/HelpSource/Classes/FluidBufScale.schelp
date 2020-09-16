@@ -5,7 +5,7 @@ RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreadi
 
 This class implements a simple Buffer preprocessor, by scaling its values. It draws a simple translation from inputLow to outputLow, and from inputHigh to outputHigh. It is part of the LINK:: Guides/FluidDecomposition:: of LINK:: Guides/FluCoMa::. For more explanations, learning material, and discussions on its musicianly uses, visit http://www.flucoma.org/
 
-The process will return a buffer with the same size and shape than the original.
+The process will return a buffer with the same size and shape than the requested range.
 
 STRONG::Threading::
 
@@ -38,16 +38,16 @@ ARGUMENT:: destination
 The index of the buffer to use as the destination for the processed material.
 
 ARGUMENT:: inputLow
-the low reference point of the input. it will be scaled to yield outputLow at the output
+The low reference point of the input. it will be scaled to yield outputLow at the output
 
 ARGUMENT:: inputHigh
-the high reference point of the input. it will be scaled to yield outputHigh at the output
+The high reference point of the input. it will be scaled to yield outputHigh at the output
 
 ARGUMENT:: outputLow
-the output value when the input is inputLow
+The output value when the input is inputLow
 
 ARGUMENT:: outputHigh
-the output value whenthe input is inputHigh
+The output value when the input is inputHigh
 
 ARGUMENT:: action
 	A Function to be evaluated once the offline process has finished and indices instance variables have been updated on the client side. The metric will be passed indices as an argument.
