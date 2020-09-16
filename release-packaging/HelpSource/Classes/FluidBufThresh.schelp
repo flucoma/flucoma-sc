@@ -23,6 +23,18 @@ ARGUMENT:: server
 ARGUMENT:: source
 The index of the buffer to use as the source material to be processed.
 
+ARGUMENT:: startFrame
+	The starting point (in samples) from which to copy in the source buffer.
+
+ARGUMENT:: numFrames
+	The duration (in samples) to copy from the source buffer. The default (-1) copies the full lenght of the buffer.
+
+ARGUMENT:: startChan
+	The first channel from which to copy in the source buffer.
+
+ARGUMENT:: numChans
+	The number of channels from which to copy in the source buffer. This parameter will wrap around the number of channels in the source buffer. The default (-1) copies all of the buffer's channel.
+
 ARGUMENT:: destination
 The index of the buffer to use as the destination for the processed material.
 
@@ -43,7 +55,7 @@ b = Buffer.sendCollection(s,0.0.series(0.1,1.0))
 // and a destination buffer
 c = Buffer(s)
 // play with the threshold
-FluidBufThresh.process(s,b,c,0.5)
+FluidBufThresh.process(s, b, destination: c, threshold: 0.5)
 // retrieve the buffer and enjoy the results.
 c.getn(0,11,{|x|x.postln;})
 
@@ -51,7 +63,15 @@ c.getn(0,11,{|x|x.postln;})
 b = Buffer.sendCollection(s,0.0.series(0.1,2.0).scramble,2)
 b.plot.plotMode_(\points)
 //process and keep just the top values
-FluidBufThresh.process(s,b,c,1.6)
+FluidBufThresh.process(s, b, destination: c, threshold: 1.6)
 //enjoy
 c.plot.plotMode_(\points)
+
+//also works with a subset of the input, resizing the output
+b = Buffer.sendCollection(s,0.0.series(0.1,3.0).reshape(3,10).flop.flat,3)
+b.plot(separately: true).plotMode_(\points)
+//process and keep just the top values
+FluidBufThresh.process(s, b,startFrame: 3,numFrames: 4,startChan: 1,numChans: 1,destination: c, threshold: 1.6)
+//enjoy
+c.plot(separately: true).plotMode_(\points)
 ::
