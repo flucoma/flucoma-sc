@@ -1,0 +1,66 @@
+TITLE:: FluidBufScale
+SUMMARY:: A Scaling Processor for Buffers
+CATEGORIES:: Libraries>FluidDecomposition
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreading
+
+This class implements a simple Buffer preprocessor, by scaling its values. It draws a simple translation from inlo to outlo, and from inhi to outhi. It is part of the LINK:: Guides/FluidDecomposition:: of LINK:: Guides/FluCoMa::. For more explanations, learning material, and discussions on its musicianly uses, visit http://www.flucoma.org/
+
+The process will return a buffer with the same size and shape than the original.
+
+STRONG::Threading::
+
+By default, this UGen spawns a new thread to avoid blocking the server command queue, so it is free to go about with its business. For a more detailed discussion of the available threading and monitoring options, including the two undocumented Class Methods below (.processBlocking and .kr) please read the guide LINK::Guides/FluidBufMultiThreading::.
+
+CLASSMETHODS::
+
+METHOD:: process
+	This is the method that calls for the scaling to be calculated on a given source buffer.
+
+ARGUMENT:: server
+	The server on which the buffer to be processed is allocated.
+
+ARGUMENT:: source
+The index of the buffer to use as the source material to be processed.
+
+ARGUMENT:: destination
+The index of the buffer to use as the destination for the processed material.
+
+ARGUMENT:: inlo
+the low reference point of the input. it will be scaled to yield outlo at the output
+
+ARGUMENT:: inhi
+the high reference point of the input. it will be scaled to yield outhi at the output
+
+ARGUMENT:: outlo
+the output value when the input is inlo
+
+ARGUMENT:: outhi
+the output value whenthe input is inhi
+
+ARGUMENT:: action
+	A Function to be evaluated once the offline process has finished and indices instance variables have been updated on the client side. The metric will be passed indices as an argument.
+
+RETURNS::
+Nothing, as the destination buffer is declared in the function call.
+
+
+EXAMPLES::
+
+code::
+// make a buffer of know qualities
+b = Buffer.sendCollection(s,0.0.series(0.1,1.0))
+// and a destination buffer
+c = Buffer(s)
+// play with the threshold
+FluidBufScale.process(s,b,c,0,1,20,10)
+// retrieve the buffer and enjoy the results.
+c.getn(0,11,{|x|x.postln;})
+
+// also works in multichannel - explore the following buffer
+b = Buffer.sendCollection(s,-10.0.series(-9,10.0).scramble,2)
+b.plot.plotMode_(\points)
+//process and keep just the top values
+FluidBufScale.process(s,b,c,-20,20,0,1)
+//enjoy
+c.plot.plotMode_(\points)
+::
