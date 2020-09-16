@@ -26,7 +26,7 @@ The index of the buffer to use as the source material to be processed.
 ARGUMENT:: destination
 The index of the buffer to use as the destination for the processed material.
 
-ARGUMENT:: thresh
+ARGUMENT:: threshold
 The threshold under which values will be zeroed
 
 ARGUMENT:: action
