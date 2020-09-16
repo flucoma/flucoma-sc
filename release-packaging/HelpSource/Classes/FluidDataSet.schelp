@@ -56,7 +56,7 @@ METHOD:: clear
 Empty the data set.
 ​
 METHOD:: merge
-Merge sourceDataSet in the current DataSet. It will update the value of points with the same label if overwrite is set to 1.
+Merge sourceDataSet in the current DataSet. It will update the value of points with the same label if overwrite is set to 1. To add columns instead, see the 'transformJoin' method of link::Classes/FluidDataSetQuery::
 
 METHOD:: free
 Destroy the object on the server.
@@ -118,8 +118,12 @@ fork{
 	FreeSelf.kr(count - 8);
 }.play.onFree{~ds.dump{|o| o.postln; ~ds.free}}
 )
+::
 
-//merging
+STRONG:: Merging Datasets::
+
+code::
+//this is how to add items between 2 datasets.
 //create 2 datasets
 (
 ~dsA = FluidDataSet.new(s,\simple1d_4a);

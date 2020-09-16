@@ -46,4 +46,7 @@ FluidDataSetQuery : FluidManipulationClient {
         this.prSendMsg(\transform,[sourceDataSet.asSymbol, destDataSet.asSymbol],action);
     }
 
+	transformJoin{|source1DataSet, source2DataSet, destDataSet, action|
+        this.prSendMsg(\transformJoin,[source1DataSet.asSymbol, source2DataSet.asSymbol, destDataSet.asSymbol],action);
+    }
 }
