@@ -22,6 +22,18 @@ ARGUMENT:: server
 ARGUMENT:: source
 The index of the buffer to use as the source material to be processed.
 
+ARGUMENT:: startFrame
+	The starting point (in samples) from which to copy in the source buffer.
+
+ARGUMENT:: numFrames
+	The duration (in samples) to copy from the source buffer. The default (-1) copies the full lenght of the buffer.
+
+ARGUMENT:: startChan
+	The first channel from which to copy in the source buffer.
+
+ARGUMENT:: numChans
+	The number of channels from which to copy in the source buffer. This parameter will wrap around the number of channels in the source buffer. The default (-1) copies all of the buffer's channel.
+
 ARGUMENT:: destination
 The index of the buffer to use as the destination for the processed material.
 
@@ -52,7 +64,7 @@ b = Buffer.sendCollection(s,0.0.series(0.1,1.0))
 // and a destination buffer
 c = Buffer(s)
 // play with the scaling
-FluidBufScale.process(s,b,c,0,1,20,10)
+FluidBufScale.process(s, b, destination: c, inputLow: 0, inputHigh: 1, outputLow: 20, outputHigh:10)
 // retrieve the buffer and enjoy the results.
 c.getn(0,11,{|x|x.postln;})
 
@@ -60,7 +72,17 @@ c.getn(0,11,{|x|x.postln;})
 b = Buffer.sendCollection(s,-10.0.series(-9,10.0).scramble,2)
 b.plot.plotMode_(\points)
 //process
-FluidBufScale.process(s,b,c,-20,20,0,1)
+FluidBufScale.process(s, b, destination: c, inputLow: -20, inputHigh: 20, outputLow: 0, outputHigh:1)
 //enjoy - same shape, different range
 c.plot.plotMode_(\points)
+
+//also works with a subset of the input, resizing the output
+b = Buffer.sendCollection(s,0.0.series(0.1,3.0).reshape(3,10).flop.flat,3)
+b.plot(separately: true).plotMode_(\points)
+//process
+FluidBufScale.process(s, b, startFrame: 3,numFrames: 4,startChan: 1,numChans: 1, destination: c, inputLow: 0, inputHigh: 3, outputLow: 0, outputHigh:1)
+//enjoy
+c.plot(separately: true).plotMode_(\points)
+c.query
+c.getn(0,4,{|x|x.postln;})
 ::

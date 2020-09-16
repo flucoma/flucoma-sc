@@ -234,10 +234,10 @@ FluidBufStats.process(s, b, stats:d, numDerivs:1, action:{d.getn(0,d.numFrames,{
 FluidBufStats.process(s, b, stats:d, numDerivs:1, weights: c, action:{d.getn(0,d.numFrames * d.numChannels,{|item|item.postln})});
 
 // example 2b (run the stats above)
-e = [(1..9), 0.series(-10,-80)].flop.scramble.flop; // this has negative weights, they are capped at 0, so nothing happens
+e = [(1..9), 0.series(-10,-80)].flop.scramble.flop; // this has only negative weights, so nothing happens
 // but if we scale them up
 g = Buffer(s)
-FluidBufScale.process(s,c,g,-100,0)
+FluidBufScale.process(s,c,destination: g,inputLow: -100,inputHigh: 0)
 // look at the new values - because 0->1 and -100->0 we get the same weights as example 2a
 g.getn(0,9,{|x|x.postln})
 // run the stats - same results as example 2a

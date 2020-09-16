@@ -74,4 +74,6 @@ b.plot(separately: true).plotMode_(\points)
 FluidBufThresh.process(s, b,startFrame: 3,numFrames: 4,startChan: 1,numChans: 1,destination: c, threshold: 1.6)
 //enjoy
 c.plot(separately: true).plotMode_(\points)
+c.query
+c.getn(0,4,{|x|x.postln;})
 ::
