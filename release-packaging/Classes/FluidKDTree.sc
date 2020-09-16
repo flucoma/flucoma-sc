@@ -1,13 +1,13 @@
 FluidKDTree : FluidRTDataClient {
 
-	*new {|server,numNeighbours = 1,lookupDataSet = ""|
+	*new {|server,numNeighbours = 1, radius = 0, lookupDataSet = ""|
 		var env;
-		var names = [\numNeighbours]
+		var names = [\numNeighbours, \radius]
 		++ this.prServerString(lookupDataSet.asSymbol).collect{|x,i|
 			("lookupDataSet"++i).asSymbol;
 		};
 
-		var values  = [numNeighbours] ++ this.prServerString(lookupDataSet.asSymbol);
+		var values  = [numNeighbours, radius] ++ this.prServerString(lookupDataSet.asSymbol);
 		var params = [names,values].lace;
 
 
