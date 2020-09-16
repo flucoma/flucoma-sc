@@ -92,7 +92,7 @@ ARGUMENT:: action
 Run when done
 
 METHOD:: transformJoin
-Apply the query to a source link::Classes/FluidDataSet:: and join all items of a source2 with the same label to a destination. Can be the same. To add items at the end of a dataset instead, see the 'merge' method of link::Classes/FluidDataSet::
+Apply the query to a source link::Classes/FluidDataSet:: and join the resulting subset at the end of the items sharing the same labels in a second source. Items unique to a source dataset will be ignored. To add items at the end of a dataset instead, see the 'merge' method of link::Classes/FluidDataSet::
 ARGUMENT:: source1DataSet
 Source data, or the DataSet name
 ARGUMENT:: source2DataSet
@@ -178,7 +178,7 @@ code::
 ~joiner.transformJoin(~dsA,~dsB,~dsC)
 ~dsC.print
 
-// all the sophisticated conditions applicable to 'transform' can be done on the first dataset too
+// all the sophisticated conditions applicable to 'transform' can be done on the first dataset too. Selected columns of the first source are appended to matching items in the second source.
 ~joiner.filter(1,">",2.1)
 ~joiner.and(1,"<", 40)
 ~joiner.addColumn(0)
