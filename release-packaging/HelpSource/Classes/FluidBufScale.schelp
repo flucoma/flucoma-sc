@@ -60,13 +60,13 @@ EXAMPLES::
 
 code::
 // make a buffer of know qualities
-b = Buffer.sendCollection(s,0.0.series(0.1,1.0))
+b = Buffer.sendCollection(s,1.0.series(1.1,2.0))
 // and a destination buffer
 c = Buffer(s)
 // play with the scaling
 FluidBufScale.process(s, b, destination: c, inputLow: 0, inputHigh: 1, outputLow: 20, outputHigh:10)
 // retrieve the buffer and enjoy the results.
-c.getn(0,11,{|x|x.postln;})
+c.getn(0,10,{|x|x.postln;})
 
 // also works in multichannel - explore the following buffer
 b = Buffer.sendCollection(s,-10.0.series(-9,10.0).scramble,2)
