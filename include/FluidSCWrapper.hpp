@@ -1354,11 +1354,11 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
       auto& report = std::cout;
       report << "ERROR: " << msg->name << " type signature incorrect.\nExpect: (";
       size_t i{0};
-      ForEach(args, [&i,&expectedArgCount,&report](auto& x){
-        report << ParamReader<sc_msg_iter*>::argTypeToString(x);
-        if(i < ( expectedArgCount - 1 ) )
+      ForEach(args, [&i](auto& x){
+        std::cout << ParamReader<sc_msg_iter*>::argTypeToString(x);
+        if(i < (std::tuple_size<ArgTuple>::value - 1 ) )
         {
-          report << " ,";
+          std::cout << " ,";
         }
         i++;
       });
