@@ -29,13 +29,13 @@ FluidKDTree : FluidRTDataClient {
 	kNearest{ |buffer, action|
 		this.prSendMsg(\kNearest,
 			[buffer.asUGenInput], action,
-			this.numNeighbours.collect{string(FluidMessageResponse,_,_)}
+            [strings(FluidMessageResponse,_,_)]
 		);
 	}
 
 	kNearestDist { |buffer, action|
 		this.prSendMsg(\kNearestDist, [buffer.asUGenInput], action,
-			[numbers(FluidMessageResponse,_,this.numNeighbours,_)]
+			[numbers(FluidMessageResponse,_,nil,_)]
 		);
 	}
 }
