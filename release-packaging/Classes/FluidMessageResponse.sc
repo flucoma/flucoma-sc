@@ -23,7 +23,13 @@ FluidMessageResponse : Object
         ^[[a.copyRange(offset,split-1).keep(split).collectAs({|x|x.asInteger.asAscii},String)], split + 1]
     }
 
+    *strings {|a,offset|
+        //TODO add an n argument as with numbers() to make this less omnivorous
+        ^[a.drop(offset).drop(-1).collectAs({|x|x.asInteger.asAscii},String).split(0.asAscii)]
+    }
+
     *numbers{ |a, n, offset|
+        n = n ? a.size - offset; //send n = nil to consume everything
         ^[a.copyRange(offset, offset + n),offset + n]
     }
 
