@@ -175,7 +175,7 @@ b = Buffer.alloc(s,101,2);
 b.setn(0, Array.fill(101,{|i|[i / 100,-1.0.rand]}).flat);
 
 // plot to confirm
-b.plot
+b.plot.plotMode_(\points)
 
 // create a new buffer as destinations
 c = Buffer.new(s);
@@ -233,8 +233,12 @@ FluidBufStats.process(s, b, stats:d, numDerivs:1, action:{d.getn(0,d.numFrames,{
 // run the same array with the weights
 FluidBufStats.process(s, b, stats:d, numDerivs:1, weights: c, action:{d.getn(0,d.numFrames * d.numChannels,{|item|item.postln})});
 
-// example 2b (run the stats above)
-e = [(1..9), 0.series(-10,-80)].flop.scramble.flop; // this has only negative weights, so nothing happens
+// example 2b
+e = [(1..9), 0.series(-10,-80)].flop.scramble.flop;
+b = Buffer.loadCollection(s,e[0]);
+c = Buffer.loadCollection(s,e[1]);
+FluidBufStats.process(s, b, stats:d, numDerivs:1, weights: c, action:{d.getn(0,d.numFrames * d.numChannels,{|item|item.postln})});
+// this has only negative weights, so it bails out.
 // but if we scale them up
 g = Buffer(s)
 FluidBufScale.process(s,c,destination: g,inputLow: -100,inputHigh: 0)

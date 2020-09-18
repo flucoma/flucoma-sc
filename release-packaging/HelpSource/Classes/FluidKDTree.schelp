@@ -74,7 +74,6 @@ fork{
 ~tree.size;
 ~tree.cols;
 
-
 //Return the labels of k nearest points to a new point
 (
 ~p = [ 1.0.linrand,1.0.linrand ];
@@ -97,6 +96,7 @@ fork{
 
 // Explore changing the number of neighbourgs
 ~tree.numNeighbours = 11; // note that this value needs to be sent to the server
+~tree.kNearest(~tmpbuf,{ |a|a.postln;~nearest = a;});
 ~tree.numNeighbours = 0; // 0 will return all items in order of distance
 
 // Limit the search to an acceptable distance in a radius
@@ -129,6 +129,8 @@ code::
 ~predictPoint = Buffer.alloc(s,5);
 ~pitchingBus = Bus.control;
 ~catchingBus = Bus.control;
+~tree.numNeighbours = 5;
+~tree.radius = 0;
 )
 
 //populate the lookupDataSet
