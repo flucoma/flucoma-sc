@@ -9,6 +9,7 @@ b = Buffer.read(s,File.realpath(FluidBufPitch.class.filenameSymbol).dirname.with
 ~loudnessWeighedPitchStats = Array;
 ~confidenceWeighedPitchStats = Array;
 ~condidenceWeightedPitchIQRStats = Array;
+~pitchIQRStats = Array;
 )
 
 b.play
@@ -61,5 +62,13 @@ FluidBufStats.process(s,~pitches, stats:~stats,weights: ~scaled,outliersCutoff: 
 ~stats.getn(0,14,{|x|~condidenceWeightedPitchIQRStats = x;x.reshape(7,2).do{|y| "%\t\t\t%\n".postf(y[0].round(0.1),y[1].round(0.01))}})
 //now that is impressive!
 c = {SinOsc.ar(~condidenceWeightedPitchIQRStats[0],mul: 0.05)}.play
+b.play
+c.free
+
+//for completion, here is just with rejection of outliers - not as good, but a decent second best!
+FluidBufStats.process(s,~pitches, stats:~stats,outliersCutoff: 1.5)
+~stats.getn(0,14,{|x|~pitchIQRStats = x;x.reshape(7,2).do{|y| "%\t\t\t%\n".postf(y[0].round(0.1),y[1].round(0.01))}})
+//now that is impressive!
+c = {SinOsc.ar(~pitchIQRStats[0],mul: 0.05)}.play
 b.play
 c.free
