@@ -11,14 +11,11 @@
 ~flatbuf = 4.collect{Buffer.new};
 
 // here we instantiate a loader as per example 0
-~loader = FluidLoadFolder("/Volumes/machins/projets/newsfeed/sons/smallnum/");
-// ~loader = FluidLoadFolder("/Volumes/machins/projets/newsfeed/sons/segments/");
-// ~loader = FluidLoadFolder("/Users/pa/Desktop/RodDrums/Training/");
-// ~loader = FluidLoadFolder("/Users/pa/Desktop/HansPiano/Pianoteq-subset/");
+~loader = FluidLoadFolder(File.realpath(FluidBufPitch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/");
 
 // here we instantiate a further slicing step as per example 0
 ~slicer = FluidSliceCorpus({ |src,start,num,dest|
-	FluidBufOnsetSlice.kr(src,start,num,metric: 9, minSliceLength: 17, indices:dest, threshold:2,blocking: 1)
+	FluidBufOnsetSlice.kr(src,start,num,metric: 9, minSliceLength: 17, indices:dest, threshold:0.2,blocking: 1)
 });
 
 // here we instantiate a process of description and dataset writing, as per example 0
@@ -140,17 +137,14 @@ t = Main.elapsedTime;
 ~treeCW.fit(~curatedW,{"Fitted".postln;});
 
 //select a sound to match
+// EITHER retrieve a random slice
 ~targetsound = Buffer(s);
-// EITHER retrieve the last slice
-~targetname = ~slicer.index.keys.asArray.last.asSymbol;
+~targetname = ~slicer.index.keys.asArray.scramble.last.asSymbol;
 #a,b = ~slicer.index[~targetname][\bounds];
-// OR a given source item
-#a,b = ~slicer.index["subset_Pno-PteqRand03_1s_HT-Bb4-p.wav".asSymbol][\bounds];
-// retrieve compose a buffer
 FluidBufCompose.process(s,~loader.buffer,a,(b-a),numChans: 1, destination: ~targetsound,action: {~targetsound.play;})
 
-// or just load a file in that buffer
-~targetsound = Buffer.read(s,"/Users/pa/Desktop/RodDrums/Testing/TestingSnareHits_351_TRIMMED.wav");
+// OR just load a file in that buffer
+~targetsound = Buffer.read(s,Platform.resourceDir +/+ "sounds/a11wlk01.wav");
 
 //describe the sound to match
 (
