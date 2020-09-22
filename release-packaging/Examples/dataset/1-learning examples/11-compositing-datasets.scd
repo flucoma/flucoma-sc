@@ -1,11 +1,11 @@
 
-// define a few processes
+// define a few datasets
 (
-~globalDS = FluidDataSet(s,\global11);
 ~pitchDS = FluidDataSet(s,\pitch11);
 ~loudDS = FluidDataSet(s,\loud11);
 ~mfccDS = FluidDataSet(s,\mfcc11);
-~timbreDS = FluidDataSet(s,\timbre11);
+~durDS = FluidDataSet(s,\dur11);
+
 
 //define as many buffers as we have parallel voices/threads in the extractor processing (default is 4)
 ~pitchbuf = 4.collect{Buffer.new};
@@ -22,8 +22,8 @@
 
 // here we instantiate a loader as per example 0
 // ~loader = FluidLoadFolder(File.realpath(FluidBufPitch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/");
-~loader = FluidLoadFolder("/Volumes/machins/projets/newsfeed/sons/smallnum/");
-// ~loader = FluidLoadFolder("/Volumes/machins/projets/newsfeed/sons/segments/");
+// ~loader = FluidLoadFolder("/Volumes/machins/projets/newsfeed/sons/smallnum/");
+~loader = FluidLoadFolder("/Volumes/machins/projets/newsfeed/sons/segments/");
 
 // here we instantiate a further slicing step as per example 0
 ~slicer = FluidSliceCorpus({ |src,start,num,dest|
@@ -38,8 +38,8 @@
     voice = data.value[\voice];
 	// the pitch computation is independant so it starts right away
 	pitch = FluidBufPitch.kr(src, startFrame:start, numFrames:num, numChans:1, features:~pitchbuf[voice], unit: 1, trig:1, blocking: 1);
-	// pitchweights = FluidBufThresh.kr(~pitchbuf[voice], numChans: 1, startChan: 1, destination: ~weightPitchbuf[voice], threshold: 0.1, trig:Done.kr(pitch), blocking: 1);//pull down low conf
-	pitchweights = FluidBufScale.kr(~pitchbuf[voice], numChans: 1, startChan: 1, destination: ~weightPitchbuf[voice],inputLow: -1, trig:Done.kr(pitch), blocking: 1);
+	pitchweights = FluidBufThresh.kr(~pitchbuf[voice], numChans: 1, startChan: 1, destination: ~weightPitchbuf[voice], threshold: 0.1, trig:Done.kr(pitch), blocking: 1);//pull down low conf
+	// pitchweights = FluidBufScale.kr(~pitchbuf[voice], numChans: 1, startChan: 1, destination: ~weightPitchbuf[voice],inputLow: -1, trig:Done.kr(pitch), blocking: 1);
 	pitchstats = FluidBufStats.kr(~pitchbuf[voice], stats:~statsPitchbuf[voice], numDerivs: 1, weights: ~weightPitchbuf[voice], outliersCutoff: 1.5, trig:Done.kr(pitchweights), blocking: 1);
 	pitchflat = FluidBufFlatten.kr(~statsPitchbuf[voice],~flatPitchbuf[voice],trig:Done.kr(pitchstats),blocking: 1);
 	writePitch = FluidDataSetWr.kr(~pitchDS,label, -1, ~flatPitchbuf[voice], Done.kr(pitchflat),blocking: 1);
@@ -81,10 +81,19 @@ t = Main.elapsedTime;
 //////////////////////////////////////////////////////////////////////////
 // description process
 
-// run the descriptor extractor
+// run the descriptor extractor (errors will be given, this is normal: the pitch conditions are quite exacting and therefore many slices are not valid)
 (
 t = Main.elapsedTime;
 ~extractor.play(s,~loader.buffer,~slicer.index,action:{(Main.elapsedTime - t).postln;"Features done".postln});
+)
+
+// make a dataset of durations for querying that too (it could have been made in the process loop, but hey, we have dictionaries we can manipulate too!)
+(
+~dict = Dictionary.new;
+~temp = ~slicer.index.collect{ |k| [k[\bounds][1] - k[\bounds][0]]};
+~dict.add(\data -> ~temp);
+~dict.add(\cols -> 1);
+~durDS.load(~dict)
 )
 
 //////////////////////////////////////////////////////////////////////////
@@ -93,17 +102,80 @@ t = Main.elapsedTime;
 ~pitchDS.print;
 ~loudDS.print;
 ~mfccDS.print;
+~durDS.print;
 
-~loudbuf[0].query
-~statsLoudbuf[0].query
-~flatLoudbuf[0].query
+//reduce the MFCC timbral space stats (4 potential ways to explore here...)
+~tempDS = FluidDataSet(s,\temp11);
 
-~pitchbuf[0].query
-~statsPitchbuf[0].query
-~weightPitchbuf[0].query
-~flatPitchbuf[0].query
+~query = FluidDataSetQuery(s);
+~query.addRange(0,24);//add only means and stddev of the 12 coeffs...
+~query.addRange((7*12),24);// and the same stats of the first derivative (moving 7 stats x 12 mfccs to the right)
+~query.transform(~mfccDS, ~tempDS);
 
-//standardise
+//check
+~tempDS.print;
+
+//shrinking A: PCA then standardize
+~pca = FluidPCA(s,4);//shrink to 4 dimensions
+
+~timbreDSp = FluidDataSet(s,\timbreDSp11);
+~pca.fitTransform(~tempDS,~timbreDSp,{|x|x.postln;})//accuracy
+
+// shrinking B: standardize then PCA
+// https://scikit-learn.org/stable/auto_examples/preprocessing/plot_scaling_importance.html
+~stan = FluidStandardize(s);
+~stanDS = FluidDataSet(s,\stan11);
+~stan.fitTransform(~tempDS,~stanDS)
+~timbreDSsp = FluidDataSet(s,\timbreDSsp11);
+~pca.fitTransform(~stanDS,~timbreDSsp,{|x|x.postln;})//accuracy
+
+// comparing NN for fun
+~targetDSp = Buffer(s)
+~targetDSsp = Buffer(s)
+~tree = FluidKDTree(s,5)
+
+// you can run this a few times to have fun
+(
+~target = ~slicer.index.keys.asArray.scramble.[0].asSymbol;
+~timbreDSp.getPoint(~target, ~targetDSp);
+~timbreDSsp.getPoint(~target, ~targetDSsp);
+)
+
+~tree.fit(~timbreDSp,{~tree.kNearest(~targetDSp,{|x|~nearestDSp = x.postln;})})
+~tree.fit(~timbreDSsp,{~tree.kNearest(~targetDSsp,{|x|~nearestDSsp = x.postln;})})
+
+// play them in a row
+(
+Routine{
+5.do{|i|
+	var dur;
+	v = ~slicer.index[~nearestDSp[i].asSymbol];
+	dur = (v[\bounds][1] - v[\bounds][0]) / s.sampleRate;
+	{BufRd.ar(v[\numchans],~loader.buffer,Line.ar(v[\bounds][0],v[\bounds][1],dur, doneAction: 2))}.play;
+	~nearestDSp[i].postln;
+	dur.wait;
+	};
+}.play;
+)
+
+(
+Routine{
+5.do{|i|
+	var dur;
+	v = ~slicer.index[~nearestDSsp[i].asSymbol];
+	dur = (v[\bounds][1] - v[\bounds][0]) / s.sampleRate;
+	{BufRd.ar(v[\numchans],~loader.buffer,Line.ar(v[\bounds][0],v[\bounds][1],dur, doneAction: 2))}.play;
+	~nearestDSsp[i].postln;
+	dur.wait;
+	};
+}.play;
+)
+
+
+// for compositing
+~globalDS = FluidDataSet(s,\global11);
+
+
 //AE ou PCA
 
 //normalize
