@@ -124,11 +124,12 @@ t = Main.elapsedTime;
 
 // shrinking B: standardize then PCA
 // https://scikit-learn.org/stable/auto_examples/preprocessing/plot_scaling_importance.html
+~pca2 = FluidPCA(s,4);//shrink to 4 dimensions
 ~stan = FluidStandardize(s);
 ~stanDS = FluidDataSet(s,\stan11);
 ~stan.fitTransform(~tempDS,~stanDS)
 ~timbreDSsp = FluidDataSet(s,\timbreDSsp11);
-~pca.fitTransform(~stanDS,~timbreDSsp,{|x|x.postln;})//accuracy
+~pca2.fitTransform(~stanDS,~timbreDSsp,{|x|x.postln;})//accuracy
 
 // comparing NN for fun
 ~targetDSp = Buffer(s)
@@ -254,5 +255,79 @@ Routine{
 }.play;
 )
 
+///////////////////////////////////////////////////////
+// compositing queries to weigh - defining a target and analysing it
+
+// make sure to define and describe the source above (lines 178 to 201)
+
+// let's make normalised versions of the 3 datasets, keeping the normalisers separate to query later
+~loudDSn = FluidDataSet(s,\loud11n);
+~pitchDSn = FluidDataSet(s,\pitch11n);
+~timbreDSn = FluidDataSet(s,\timbre11n);
+
+~normL = FluidNormalize(s)
+~normP = FluidNormalize(s)
+~normT = FluidNormalize(s)
+
+~normL.fitTransform(~loudDS, ~loudDSn);
+~normP.fitTransform(~pitchDS, ~pitchDSn);
+~normT.fitTransform(~timbreDSp, ~timbreDSn);
+
+// let's assemble these datasets
+~query.clear
+~query.addRange(0,4)
+~query.transformJoin(~pitchDSn,~timbreDSn, ~tempDS) //appends 4 dims of pitch to 4 dims of timbre
+~query.transformJoin(~loudDSn, ~tempDS, ~globalDS) // appends 4 dims of loud to the 8 dims above
+
+~globalDS.print//12 dim: 4 timbre, 4 pitch, 4 loud, all normalised between 0 and 1
+
+// let's assemble the query
+// first let's normalise our target descriptors
+~targetPitch = Buffer(s)
+~targetLoud = Buffer(s)
+~targetMFCC = Buffer(s)
+~targetMFCCsub = Buffer(s)
+~targetTimbre = Buffer(s)
+~targetAll= Buffer(s)
+
+~normL.transformPoint(~flatLoudbuf[0], ~targetLoud) //normalise the loudness (all dims)
+~normP.transformPoint(~flatPitchbuf[0], ~targetPitch) //normalise the pitch (all dims)
+FluidBufCompose.process(s,~flatMFCCbuf[0],numFrames: 24,destination: ~targetMFCCsub) // copy the process of dimension reduction above
+FluidBufCompose.process(s,~flatMFCCbuf[0],startFrame: (7*12), numFrames: 24, destination: ~targetMFCCsub,destStartFrame: 24) //keeping 48 dims
+~pca.transformPoint(~targetMFCCsub, ~targetMFCC) //then down to 4
+~normT.transformPoint(~targetMFCC, ~targetTimbre) //then normalised
+FluidBufCompose.process(s, ~targetTimbre,destination: ~targetAll) // assembling the single query
+FluidBufCompose.process(s, ~targetPitch, numFrames: 4, destination: ~targetAll, destStartFrame: 4) // copying the 4 stats of pitch we care about
+FluidBufCompose.process(s, ~targetLoud, numFrames: 4, destination: ~targetAll, destStartFrame: 8) // same for loudness
+//check the sanity
+~targetAll.query
+
+// now let's see which is nearest that point
+~tree.fit(~globalDS,{~tree.kNearest(~targetAll,{|x|~nearest = x.postln;})}) //just the points with the right lenght conditions, with the curated stats
+
+// play them in a row
+(
+Routine{
+5.do{|i|
+	var dur;
+	v = ~slicer.index[~nearest[i].asSymbol];
+	dur = (v[\bounds][1] - v[\bounds][0]) / s.sampleRate;
+	{BufRd.ar(v[\numchans],~loader.buffer,Line.ar(v[\bounds][0],v[\bounds][1],dur, doneAction: 2))}.play;
+	~nearest[i].postln;
+	dur.wait;
+	};
+}.play;
+)
+
+// to change the relative weight of each dataset, let's change the normalisation range. Larger ranges will mean larger distance, and therefore less importance for that parameter.
+// for instance to downplay pitch, let's make it larger by a factor of 2
+~normP.max = 2
+~normP.fitTransform(~pitchDS, ~pitchDSn);
+// here we can re-run just the part that composites the pitch
+~normP.transformPoint(~flatPitchbuf[0], ~targetPitch) //normalise the pitch (all dims)
+FluidBufCompose.process(s, ~targetPitch, numFrames: 4, destination: ~targetAll, destStartFrame: 4) // copying the 4 stats of pitch we care about
+
+// now let's see which is nearest that point
+~tree.fit(~globalDS,{~tree.kNearest(~targetAll,{|x|~nearest = x.postln;})}) //just the points with the right lenght conditions, with the curated stats
 
 // todo: segment then query musaik
