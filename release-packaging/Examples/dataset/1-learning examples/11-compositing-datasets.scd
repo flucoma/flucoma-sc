@@ -104,7 +104,8 @@ t = Main.elapsedTime;
 ~mfccDS.print;
 ~durDS.print;
 
-//reduce the MFCC timbral space stats (4 potential ways to explore here...)
+///////////////////////////////////////////////////////
+//reduce the MFCC timbral space stats (many potential ways to explore here... just 2 provided for fun)
 ~tempDS = FluidDataSet(s,\temp11);
 
 ~query = FluidDataSetQuery(s);
@@ -171,15 +172,87 @@ Routine{
 }.play;
 )
 
+///////////////////////////////////////////////////////
+// compositing queries - defining a target and analysing it
 
-// for compositing
 ~globalDS = FluidDataSet(s,\global11);
 
+// define a source
+~targetsound = Buffer.read(s,Platform.resourceDir +/+ "sounds/a11wlk01.wav",startFrame: 18000,numFrames: 24000);
+~targetsound.play
 
-//AE ou PCA
+// analyse it as above, using voice 0 in the arrays of buffer to store the info
+(
+{
+	var label, voice, pitch, pitchweights, pitchstats, pitchflat, loud, statsLoud, flattenLoud, mfcc, mfccweights, mfccstats, mfccflat, writePitch, writeLoud;
+	pitch = FluidBufPitch.kr(~targetsound, numChans:1, features:~pitchbuf[0], unit: 1, trig:1, blocking: 1);
+	pitchweights = FluidBufThresh.kr(~pitchbuf[0], numChans: 1, startChan: 1, destination: ~weightPitchbuf[0], threshold: 0.1, trig:Done.kr(pitch), blocking: 1);
+	pitchstats = FluidBufStats.kr(~pitchbuf[0], stats:~statsPitchbuf[0], numDerivs: 1, weights: ~weightPitchbuf[0], outliersCutoff: 1.5, trig:Done.kr(pitchweights), blocking: 1);
+	pitchflat = FluidBufFlatten.kr(~statsPitchbuf[0],~flatPitchbuf[0],trig:Done.kr(pitchstats),blocking: 1);
+	loud = FluidBufLoudness.kr(~targetsound, numChans:1, features:~loudbuf[0], trig:Done.kr(pitchflat), blocking: 1);
+	statsLoud = FluidBufStats.kr(~loudbuf[0], stats:~statsLoudbuf[0], numDerivs: 1, trig:Done.kr(loud), blocking: 1);
+	flattenLoud = FluidBufFlatten.kr(~statsLoudbuf[0],~flatLoudbuf[0],trig:Done.kr(statsLoud),blocking: 1);
+	mfcc = FluidBufMFCC.kr(~targetsound,numChans:1,features:~mfccbuf[0],trig:Done.kr(flattenLoud),blocking: 1);
+	mfccweights = FluidBufScale.kr(~loudbuf[0],numChans: 1,destination: ~weightMFCCbuf[0],inputLow: -70,inputHigh: 0, trig: Done.kr(mfcc), blocking: 1);
+	mfccstats = FluidBufStats.kr(~mfccbuf[0], stats:~statsMFCCbuf[0], startChan: 1, numDerivs: 1, weights: ~weightMFCCbuf[0], trig:Done.kr(mfccweights), blocking: 1);
+	mfccflat = FluidBufFlatten.kr(~statsMFCCbuf[0],~flatMFCCbuf[0],trig:Done.kr(mfccstats),blocking: 1);
+	FreeSelf.kr(Done.kr(mfccflat));
+}.play;
+)
 
-//normalize
+// a first query - length and pitch
+~query.clear
+~query.filter(0,"<",22050)//column0 smaller than half a second but
+~query.and(0,">", 11025)//also larger than a quarter of second
+~query.transformJoin(~durDS, ~pitchDS, ~tempDS); //this passes to ~tempDS only the points that have the same label than those in ~durDS that satisfy the condition. No column were added so nothing from ~durDS is copied
 
-//query
+// print to see
+~tempDS.print
 
-//segquerymusaik
+// further conditions to assemble the query
+~query.clear
+~query.filter(11,">",0.7)//column11 (median of pitch confidence) larger than 0.7
+~query.addRange(0,4) //copy only mean and stddev of pitch and confidence
+~query.transform(~tempDS, ~globalDS); // pass it to the final search
+
+// print to see
+~globalDS.print
+
+// compare knearest on both globalDS and tempDS
+// assemble search buffer
+~targetPitch = Buffer(s)
+FluidBufCompose.process(s, ~flatPitchbuf[0],numFrames: 4,destination: ~targetPitch)
+
+// feed the trees
+~tree.fit(~pitchDS,{~tree.kNearest(~flatPitchbuf[0],{|x|~nearestA = x.postln;})}) //all the points with all the stats
+~tree.fit(~globalDS,{~tree.kNearest(~targetPitch,{|x|~nearestB = x.postln;})}) //just the points with the right lenght conditions, with the curated stats
+
+// play them in a row
+(
+Routine{
+5.do{|i|
+	var dur;
+	v = ~slicer.index[~nearestA[i].asSymbol];
+	dur = (v[\bounds][1] - v[\bounds][0]) / s.sampleRate;
+	{BufRd.ar(v[\numchans],~loader.buffer,Line.ar(v[\bounds][0],v[\bounds][1],dur, doneAction: 2))}.play;
+	~nearestA[i].postln;
+	dur.wait;
+	};
+}.play;
+)
+
+(
+Routine{
+5.do{|i|
+	var dur;
+	v = ~slicer.index[~nearestB[i].asSymbol];
+	dur = (v[\bounds][1] - v[\bounds][0]) / s.sampleRate;
+	{BufRd.ar(v[\numchans],~loader.buffer,Line.ar(v[\bounds][0],v[\bounds][1],dur, doneAction: 2))}.play;
+	~nearestB[i].postln;
+	dur.wait;
+	};
+}.play;
+)
+
+
+// todo: segment then query musaik
