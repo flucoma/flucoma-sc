@@ -286,6 +286,7 @@ Routine{
 ~query.transformJoin(~loudDSn, ~tempDS, ~globalDS) // appends 4 dims of loud to the 8 dims above
 
 ~globalDS.print//12 dim: 4 timbre, 4 pitch, 4 loud, all normalised between 0 and 1
+~globalDS.write("/tmp/test12dims.json") // write to file to look at the values
 
 // let's assemble the query
 // first let's normalise our target descriptors
@@ -326,14 +327,23 @@ Routine{
 )
 
 // to change the relative weight of each dataset, let's change the normalisation range. Larger ranges will mean larger distance, and therefore less importance for that parameter.
-// for instance to downplay pitch, let's make it larger by a factor of 2
-~normP.max = 2
+// for instance to downplay pitch, let's make it larger by a factor of 10 around the center of 0.5
+~normP.max = 5.5
+~normP.min = -4.5
 ~normP.fitTransform(~pitchDS, ~pitchDSn);
 // here we can re-run just the part that composites the pitch
 ~normP.transformPoint(~flatPitchbuf[0], ~targetPitch) //normalise the pitch (all dims)
 FluidBufCompose.process(s, ~targetPitch, numFrames: 4, destination: ~targetAll, destStartFrame: 4) // copying the 4 stats of pitch we care about
 
+//see that the middle 4 values are much larger in range
+~targetAll.getn(0,12,{|x|x.postln;})
+
+// let's re-assemble these datasets
+~query.transformJoin(~pitchDSn,~timbreDSn, ~tempDS) //appends 4 dims of pitch to 4 dims of timbre
+~query.transformJoin(~loudDSn, ~tempDS, ~globalDS) // appends 4 dims of loud to the 8 dims above
+
 // now let's see which is nearest that point
 ~tree.fit(~globalDS,{~tree.kNearest(~targetAll,{|x|~nearest = x.postln;})}) //just the points with the right lenght conditions, with the curated stats
 
+///////////////////////////////////////////////
 // todo: segment then query musaik
