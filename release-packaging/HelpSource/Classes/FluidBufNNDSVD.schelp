@@ -83,5 +83,4 @@ FluidBufNNDSVD.process(s, b, ~bases, ~activations, coverage: 0.5, action: {\done
 //use the bases to run NMF on
 FluidBufNMF.process(s, b, resynth: ~resynth, bases: ~bases, activations: ~activations,actMode: 2, components: ~bases.numChannels, action: {\done.postln;})
 {PlayBuf.ar(~resynth.numChannels, ~resynth)[1]}.play
-}
 ::

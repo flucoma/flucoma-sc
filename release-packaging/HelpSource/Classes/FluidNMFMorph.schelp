@@ -72,10 +72,9 @@ FluidBufNMF.process(s,~src2,bases:~src2Bases,activations:~src2Activations, compo
 ~morph = { |source, target, activations, interp, autoassign|
 	FluidNMFMorph.ar(source,target,activations,autoassign,interp) * 80
 };
+)
 
 ~synth = ~morph.play(s,args:[\source,~src1Bases,\target,~src2Bases,\activations,~src2Activations,\interp,0.5,\autoassign,1]);
-
-)
 
 //Play with different interpolation values
 ~synth.set(\interp,0.0);

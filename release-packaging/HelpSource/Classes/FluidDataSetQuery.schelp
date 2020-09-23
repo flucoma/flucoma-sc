@@ -107,7 +107,7 @@ EXAMPLES::
 
 code::
 
-s.boot;
+s.reboot;
 
 
 // Create a DataSet with random data
@@ -167,7 +167,7 @@ code::
 ~dsC = FluidDataSet.new(s,\joinC);
 )
 
-//feed them items with the same labels but with different dimensions
+//feed them items with almost overlaping label lists but with different dimensions
 ~dsA.load(Dictionary.newFrom([\cols, 2, \data, Dictionary.newFrom([\zero, [0,0], \one,[1,11],\two,[2,22], \three,[3,33],\four,[4,44]])]));
 ~dsB.load(Dictionary.newFrom([\cols, 2, \data, Dictionary.newFrom([\one,[111,1111],\two,[222,2222], \three,[333,3333],\four,[444,4444],\five,[555,5555]])]));
 ~dsA.print;

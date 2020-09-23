@@ -19,7 +19,7 @@ The number of neighbours to return. A 0 will return all points in order of dista
 ARGUMENT:: radius
 The threshold of acceptable distance for a point to be returned. A 0 will bypass this function, returning numNeighbours points.
 ARGUMENT:: lookupDataSet
-An optional link::Classes/FluidDataSet:: from which data points will be returned for realtime queries. This does not need to be the same DataSet that the tree was fitted against, but does need to have matching labels. Using this mechanism, we have a way to, e.g. associate labels with segments of playback buffers, without needing pass strings around the server. warning::This parameter can not be safely changed after the instance of FluidKDTree has been created::
+An optional link::Classes/FluidDataSet:: from which data points will be returned for realtime queries. This does not need to be the same DataSet that the tree was fitted against, but does need to have matching labels. Using this mechanism, we have a way to, e.g. associate labels with segments of playback buffers, without needing pass strings around the server. warning::This parameter can not be changed after the instance of FluidKDTree has been created::
 
 INSTANCEMETHODS::
 
@@ -51,11 +51,10 @@ code::
 
 
 // Make a DataSet of random 2D points
-s.boot;
+s.reboot;
 (
 fork{
     ~ds = FluidDataSet.new(s,\kdtree_help_rand2d);
-	~dsL = FluidDataSet.new(s,\kdtree_help_indices);// for use later in KR query
     d = Dictionary.with(
         *[\cols -> 2,\data -> Dictionary.newFrom(
             100.collect{|i| [i, [ 1.0.linrand,1.0.linrand]]}.flatten)]);
@@ -65,7 +64,7 @@ fork{
 )
 
 // Make a new tree, and fit it to the DataSet
-~tree = FluidKDTree(s,numNeighbours:5,lookupDataSet:~dsL);
+~tree = FluidKDTree(s,numNeighbours:5);
 
 //Fit it to the DataSet
 ~tree.fit(~ds);
@@ -102,7 +101,6 @@ fork{
 // Limit the search to an acceptable distance in a radius
 // Define a point, and observe typical distance values
 ~p = [ 0.2,0.2];
-~tree.numNeighbours = 20;
 (
 ~tmpbuf = Buffer.loadCollection(s, ~p, 1, {
 	~tree.kNearestDist(~tmpbuf,{ |a|a.postln;~nearest = a;});
@@ -122,6 +120,22 @@ fork{
 subsection:: Server Side Queries
 
 code::
+//populate the lookupDataSet
+//here we populate with numbers that are in effect the indicies, but it could be anything numerical that will be returned on the server-side and would be usable on that side
+(
+~dsL = FluidDataSet.new(s,\kdtree_help_indices);
+fork{
+    d = Dictionary.with(
+        *[\cols -> 1,\data -> Dictionary.newFrom(
+            100.collect{|i| [i, [ i ]]}.flatten)]);
+    s.sync;
+	~dsL.load(d, {~dsL.print});
+}
+)
+
+// instantiate a tree with a lookup dataset. Note that this 'association' has to be done at instantiation.
+~tree = FluidKDTree(s,numNeighbours:5, lookupDataSet:~dsL);
+~tree.fit(~ds)
 
 //set the buffers and busses needed
 (
@@ -129,24 +143,9 @@ code::
 ~predictPoint = Buffer.alloc(s,5);
 ~pitchingBus = Bus.control;
 ~catchingBus = Bus.control;
-~tree.numNeighbours = 5;
-~tree.radius = 0;
-)
-
-//populate the lookupDataSet
-//here we populate with numbers that are in effect the indicies, but it could be anything numerical that will be returned on the server-side and would be usable on that side
-(
-fork{
-    d = Dictionary.with(
-        *[\cols -> 1,\data -> Dictionary.newFrom(
-            100.collect{|i| [i, [ i ]]}.flatten)]);
-    s.sync;
-    ~dsL.load(d, {~dsL.print});
-}
 )
 
 (
-
 ~tree.inBus_(~pitchingBus).outBus_(~catchingBus).inBuffer_(~inputPoint).outBuffer_(~predictPoint);
 {
 	var trig = Impulse.kr(4); //can go as fast as ControlRate.ir/2
@@ -159,8 +158,5 @@ fork{
 }.play(~tree.synth,addAction:\addBefore);
 
 )
-
-
-
 ::
 
