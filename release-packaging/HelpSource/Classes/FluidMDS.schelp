@@ -17,6 +17,10 @@ METHOD:: new
 Make a new instance
 ARGUMENT:: server
 The server on which to run this model
+ARGUMENT:: numDimensions
+The number of dimensions to reduce to
+ARGUMENT:: distanceMetric
+The distance metric to use (integer, 0-6, see utility constants below)
 
 METHOD:: euclidean
 Euclidean distance (default)
@@ -49,10 +53,6 @@ ARGUMENT:: sourceDataSet
 Source data, or the DataSet name
 ARGUMENT:: destDataSet
 Destination data, or the DataSet name
-ARGUMENT:: numDimensions
-The number of dimensions to reduce to
-ARGUMENT:: distanceMetric
-The distance metric to use (integer, 0-6, see flags above)
 ARGUMENT:: action
 Run when done
 
@@ -105,8 +105,6 @@ FluidBufMFCC.process(s,~audio, features: ~mfcc_feature);
 )
 // wait for the post window to acknoledge the job is done.
 
-
-
 //First standardize our DataSet, so that the MFCC dimensions are on comensurate scales
 //Then apply the MDS in-place on the standardized data to get 2 dimensions, using a Euclidean distance metric
 //Download the DataSet contents into an array for plotting
@@ -137,4 +135,45 @@ w.drawFunc = {
 w.refresh;
 w.front;
 )
+
+//we can change the distance computation
+~mds.distanceMetric = FluidMDS.kl;
+
+//recompute the reduction and recover the points
+(
+~reducedarray2 = Array.new(100);
+~mds.fitTransform(~standardized, ~reduced, action:{
+	~reduced.dump{|x| 100.do{|i|
+		~reducedarray2.add(x["data"][i.asString])
+     }}});
+)
+
+//draw the new projection in red above the other
+//Visualise the 2D projection of our original 12D data
+(
+d = ~reducedarray.flop.deepCollect(1, { |x| x.normalize});
+e = ~reducedarray2.flop.deepCollect(1, { |x| x.normalize});
+w = Window("scatter", Rect(128, 64, 200, 200));
+w.drawFunc = {
+    Pen.use {
+		d[0].size.do{|i|
+            var x = (d[0][i]*200);
+            var y = (d[1][i]*200);
+            var r = Rect(x,y,5,5);
+            Pen.fillColor = Color.blue;
+            Pen.fillOval(r);
+        };
+        e[0].size.do{|i|
+            var x = (e[0][i]*200);
+            var y = (e[1][i]*200);
+            var r = Rect(x,y,5,5);
+            Pen.fillColor = Color.red;
+            Pen.fillOval(r);
+        }
+    }
+};
+w.refresh;
+w.front;
+)
+
 ::
