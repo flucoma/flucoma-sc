@@ -1,3 +1,4 @@
+// here we will define a process that creates and populates a series of parallel dataset, one of each 'feature-space' that we can then eventually manipulate more easily than individual dimensions.
 
 // define a few datasets
 (
@@ -5,7 +6,6 @@
 ~loudDS = FluidDataSet(s,\loud11);
 ~mfccDS = FluidDataSet(s,\mfcc11);
 ~durDS = FluidDataSet(s,\dur11);
-
 
 //define as many buffers as we have parallel voices/threads in the extractor processing (default is 4)
 ~pitchbuf = 4.collect{Buffer.new};
@@ -102,7 +102,7 @@ t = Main.elapsedTime;
 ~durDS.print;
 
 ///////////////////////////////////////////////////////
-//reduce the MFCC timbral space stats (many potential ways to explore here... just 2 provided for fun)
+//reduce the MFCC timbral space stats (many potential ways to explore here... - 2 are provided to compare, with and without the derivatives before running a dimension reduction)
 ~tempDS = FluidDataSet(s,\temp11);
 
 ~query = FluidDataSetQuery(s);
@@ -110,48 +110,57 @@ t = Main.elapsedTime;
 ~query.addRange((7*12),24);// and the same stats of the first derivative (moving 7 stats x 12 mfccs to the right)
 ~query.transform(~mfccDS, ~tempDS);
 
-//check
+//check that you end up with the expected 48 dimensions
 ~tempDS.print;
 
-//shrinking A: PCA then standardize
-~pca = FluidPCA(s,4);//shrink to 4 dimensions
-
-~timbreDSp = FluidDataSet(s,\timbreDSp11);
-~pca.fitTransform(~tempDS,~timbreDSp,{|x|x.postln;})//accuracy
-
-// shrinking B: standardize then PCA
+// standardizing before the PCA
 // https://scikit-learn.org/stable/auto_examples/preprocessing/plot_scaling_importance.html
-~pca2 = FluidPCA(s,4);//shrink to 4 dimensions
 ~stan = FluidStandardize(s);
 ~stanDS = FluidDataSet(s,\stan11);
 ~stan.fitTransform(~tempDS,~stanDS)
-~timbreDSsp = FluidDataSet(s,\timbreDSsp11);
-~pca2.fitTransform(~stanDS,~timbreDSsp,{|x|x.postln;})//accuracy
+
+//shrinking A: using 2 stats on the values, and 2 stats on the redivative (12 x 2 x 2 = 48 dim)
+~pca = FluidPCA(s,4);//shrink to 4 dimensions
+~timbreDSd = FluidDataSet(s,\timbreDSd11);
+~pca.fitTransform(~stanDS,~timbreDSd,{|x|x.postln;})//accuracy
+
+//shrinking B: using only the 2 stats on the values
+~query.clear;
+~query.addRange(0,24);//add only means and stddev of the 12 coeffs...
+~query.transform(~stanDS, ~tempDS);//retrieve the values from the already standardized dataset
+
+//check you have the expected 24 dimensions
+~tempDS.print;
+
+//keep its own PCA so we can keep the various states for later transforms
+~pca2 = FluidPCA(s,4);//shrink to 4 dimensions
+~timbreDS = FluidDataSet(s,\timbreDS11);
+~pca2.fitTransform(~tempDS,~timbreDS,{|x|x.postln;})//accuracy
 
 // comparing NN for fun
-~targetDSp = Buffer(s)
-~targetDSsp = Buffer(s)
+~targetDSd = Buffer(s)
+~targetDS = Buffer(s)
 ~tree = FluidKDTree(s,5)
 
 // you can run this a few times to have fun
 (
 ~target = ~slicer.index.keys.asArray.scramble.[0].asSymbol;
-~timbreDSp.getPoint(~target, ~targetDSp);
-~timbreDSsp.getPoint(~target, ~targetDSsp);
+~timbreDSd.getPoint(~target, ~targetDSd);
+~timbreDS.getPoint(~target, ~targetDS);
 )
 
-~tree.fit(~timbreDSp,{~tree.kNearest(~targetDSp,{|x|~nearestDSp = x.postln;})})
-~tree.fit(~timbreDSsp,{~tree.kNearest(~targetDSsp,{|x|~nearestDSsp = x.postln;})})
+~tree.fit(~timbreDSd,{~tree.kNearest(~targetDSd,{|x|~nearestDSd = x.postln;})})
+~tree.fit(~timbreDS,{~tree.kNearest(~targetDS,{|x|~nearestDS = x.postln;})})
 
 // play them in a row
 (
 Routine{
 5.do{|i|
 	var dur;
-	v = ~slicer.index[~nearestDSp[i].asSymbol];
+	v = ~slicer.index[~nearestDSd[i].asSymbol];
 	dur = (v[\bounds][1] - v[\bounds][0]) / s.sampleRate;
 	{BufRd.ar(v[\numchans],~loader.buffer,Line.ar(v[\bounds][0],v[\bounds][1],dur, doneAction: 2))}.play;
-	~nearestDSp[i].postln;
+	~nearestDSd[i].postln;
 	dur.wait;
 	};
 }.play;
@@ -161,10 +170,10 @@ Routine{
 Routine{
 5.do{|i|
 	var dur;
-	v = ~slicer.index[~nearestDSsp[i].asSymbol];
+	v = ~slicer.index[~nearestDS[i].asSymbol];
 	dur = (v[\bounds][1] - v[\bounds][0]) / s.sampleRate;
 	{BufRd.ar(v[\numchans],~loader.buffer,Line.ar(v[\bounds][0],v[\bounds][1],dur, doneAction: 2))}.play;
-	~nearestDSsp[i].postln;
+	~nearestDS[i].postln;
 	dur.wait;
 	};
 }.play;
@@ -204,7 +213,7 @@ Routine{
 ~query.and(0,">", 11025)//also larger than a quarter of second
 ~query.transformJoin(~durDS, ~pitchDS, ~tempDS); //this passes to ~tempDS only the points that have the same label than those in ~durDS that satisfy the condition. No column were added so nothing from ~durDS is copied
 
-// print to see
+// print to see how many slices (rows) we have
 ~tempDS.print
 
 // further conditions to assemble the query
@@ -213,7 +222,7 @@ Routine{
 ~query.addRange(0,4) //copy only mean and stddev of pitch and confidence
 ~query.transform(~tempDS, ~globalDS); // pass it to the final search
 
-// print to see
+// print to see that we have less items, with only their pitch
 ~globalDS.print
 
 // compare knearest on both globalDS and tempDS
@@ -268,7 +277,7 @@ Routine{
 
 ~normL.fitTransform(~loudDS, ~loudDSn);
 ~normP.fitTransform(~pitchDS, ~pitchDSn);
-~normT.fitTransform(~timbreDSp, ~timbreDSn);
+~normT.fitTransform(~timbreDSd, ~timbreDSn);
 
 // let's assemble these datasets
 ~query.clear
