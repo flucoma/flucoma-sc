@@ -238,7 +238,7 @@ e = [(1..9), 0.series(-10,-80)].flop.scramble.flop;
 b = Buffer.loadCollection(s,e[0]);
 c = Buffer.loadCollection(s,e[1]);
 FluidBufStats.process(s, b, stats:d, numDerivs:1, weights: c, action:{d.getn(0,d.numFrames * d.numChannels,{|item|item.postln})});
-// this has only negative weights, so it bails out.
+// this has only negative weights, so it bails out, outputing all 0s. It also publishes a warning if the server options on verbosity are on.
 // but if we scale them up
 g = Buffer(s)
 FluidBufScale.process(s,c,destination: g,inputLow: -100,inputHigh: 0)
