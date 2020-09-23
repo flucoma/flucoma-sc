@@ -72,9 +72,6 @@ t = Main.elapsedTime;
 ~slicer.play(s,~loader.buffer,~loader.index,action:{(Main.elapsedTime - t).postln;"Slicing done".postln});
 )
 
-// or just pass in the loader
-~slicer = ~loader;
-
 //slice count
 ~slicer.index.keys.size
 
@@ -123,6 +120,7 @@ t = Main.elapsedTime;
 
 //check the dimension count
 ~ds.print
+~dsW.print
 ~curated.print
 ~curatedW.print
 
@@ -232,4 +230,4 @@ t = Main.elapsedTime;
 )
 ~norm = FluidNormalize.new(s)
 ~norm.fit(~dsL)
-~norm.dump({|x|x["data_min"][[8,12]].postln;x["data_max"][[8,12]].postln;})
+~norm.dump({|x|x["data_min"][[8,12]].postln;x["data_max"][[8,12]].postln;})//here we extract the stats from the dataset by retrieving the stored maxima of the fitting process in FluidNormalize

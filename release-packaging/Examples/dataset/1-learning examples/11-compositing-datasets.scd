@@ -21,9 +21,7 @@
 ~flatMFCCbuf = 4.collect{Buffer.new};
 
 // here we instantiate a loader as per example 0
-// ~loader = FluidLoadFolder(File.realpath(FluidBufPitch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/");
-// ~loader = FluidLoadFolder("/Volumes/machins/projets/newsfeed/sons/smallnum/");
-~loader = FluidLoadFolder("/Volumes/machins/projets/newsfeed/sons/segments/");
+~loader = FluidLoadFolder(File.realpath(FluidBufPitch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/");
 
 // here we instantiate a further slicing step as per example 0
 ~slicer = FluidSliceCorpus({ |src,start,num,dest|
@@ -38,8 +36,7 @@
     voice = data.value[\voice];
 	// the pitch computation is independant so it starts right away
 	pitch = FluidBufPitch.kr(src, startFrame:start, numFrames:num, numChans:1, features:~pitchbuf[voice], unit: 1, trig:1, blocking: 1);
-	pitchweights = FluidBufThresh.kr(~pitchbuf[voice], numChans: 1, startChan: 1, destination: ~weightPitchbuf[voice], threshold: 0.1, trig:Done.kr(pitch), blocking: 1);//pull down low conf
-	// pitchweights = FluidBufScale.kr(~pitchbuf[voice], numChans: 1, startChan: 1, destination: ~weightPitchbuf[voice],inputLow: -1, trig:Done.kr(pitch), blocking: 1);
+	pitchweights = FluidBufThresh.kr(~pitchbuf[voice], numChans: 1, startChan: 1, destination: ~weightPitchbuf[voice], threshold: 0.5, trig:Done.kr(pitch), blocking: 1);//pull down low conf
 	pitchstats = FluidBufStats.kr(~pitchbuf[voice], stats:~statsPitchbuf[voice], numDerivs: 1, weights: ~weightPitchbuf[voice], outliersCutoff: 1.5, trig:Done.kr(pitchweights), blocking: 1);
 	pitchflat = FluidBufFlatten.kr(~statsPitchbuf[voice],~flatPitchbuf[voice],trig:Done.kr(pitchstats),blocking: 1);
 	writePitch = FluidDataSetWr.kr(~pitchDS,label, -1, ~flatPitchbuf[voice], Done.kr(pitchflat),blocking: 1);
@@ -179,7 +176,7 @@ Routine{
 ~globalDS = FluidDataSet(s,\global11);
 
 // define a source
-~targetsound = Buffer.read(s,Platform.resourceDir +/+ "sounds/a11wlk01.wav",startFrame: 18000,numFrames: 24000);
+~targetsound = Buffer.read(s,File.realpath(FluidBufPitch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-ASWINE-ScratchySynth-M.wav",42250,44100);
 ~targetsound.play
 
 // analyse it as above, using voice 0 in the arrays of buffer to store the info
