@@ -40,7 +40,7 @@ FluidLoadFolder {
 				},"/done",server.addr,argTemplate:["/b_readChannel"]).oneShot;
 				if(channelFunc.notNil)
 				{  channelMap = channelFunc.value(channels[i],maxChan,i) }
-				{  channelMap = Array.series(channels[i]).wrapExtend(maxChan) };
+				{  channelMap = Array.series(channels[i]) ++ -1.dup(maxChan - channels[i])}; //using -1 as a silence channel ID to fill the blanks (see SC_BufReadCommand::CopyChannels)
 				buffer.readChannel(f.path,bufStartFrame:startEnd[i][0], channels:channelMap);
 			}
 		};
