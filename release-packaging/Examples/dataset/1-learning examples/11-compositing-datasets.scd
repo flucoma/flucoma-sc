@@ -25,9 +25,8 @@
 
 // here we instantiate a further slicing step as per example 0
 ~slicer = FluidSliceCorpus({ |src,start,num,dest|
-	FluidBufOnsetSlice.kr(src,start,num,metric: 9, minSliceLength: 17, indices:dest, threshold:0.2,blocking: 1)
+	FluidBufOnsetSlice.kr(src ,start, num, indices:dest, metric: 9, threshold:0.2, minSliceLength: 17, blocking: 1)
 });
-
 
 // here we make the full processor building our 3 source datasets
 ~extractor = FluidProcessSlices({|src,start,num,data|
@@ -36,7 +35,7 @@
     voice = data.value[\voice];
 	// the pitch computation is independant so it starts right away
 	pitch = FluidBufPitch.kr(src, startFrame:start, numFrames:num, numChans:1, features:~pitchbuf[voice], unit: 1, trig:1, blocking: 1);
-	pitchweights = FluidBufThresh.kr(~pitchbuf[voice], numChans: 1, startChan: 1, destination: ~weightPitchbuf[voice], threshold: 0.5, trig:Done.kr(pitch), blocking: 1);//pull down low conf
+	pitchweights = FluidBufThresh.kr(~pitchbuf[voice], numChans: 1, startChan: 1, destination: ~weightPitchbuf[voice], threshold: 0.7, trig:Done.kr(pitch), blocking: 1);//pull down low conf
 	pitchstats = FluidBufStats.kr(~pitchbuf[voice], stats:~statsPitchbuf[voice], numDerivs: 1, weights: ~weightPitchbuf[voice], outliersCutoff: 1.5, trig:Done.kr(pitchweights), blocking: 1);
 	pitchflat = FluidBufFlatten.kr(~statsPitchbuf[voice],~flatPitchbuf[voice],trig:Done.kr(pitchstats),blocking: 1);
 	writePitch = FluidDataSetWr.kr(~pitchDS,label, -1, ~flatPitchbuf[voice], Done.kr(pitchflat),blocking: 1);
@@ -113,7 +112,7 @@ t = Main.elapsedTime;
 //check that you end up with the expected 48 dimensions
 ~tempDS.print;
 
-// standardizing before the PCA
+// standardizing before the PCA, as argued here:
 // https://scikit-learn.org/stable/auto_examples/preprocessing/plot_scaling_importance.html
 ~stan = FluidStandardize(s);
 ~stanDS = FluidDataSet(s,\stan11);
@@ -193,7 +192,7 @@ Routine{
 {
 	var label, voice, pitch, pitchweights, pitchstats, pitchflat, loud, statsLoud, flattenLoud, mfcc, mfccweights, mfccstats, mfccflat, writePitch, writeLoud;
 	pitch = FluidBufPitch.kr(~targetsound, numChans:1, features:~pitchbuf[0], unit: 1, trig:1, blocking: 1);
-	pitchweights = FluidBufThresh.kr(~pitchbuf[0], numChans: 1, startChan: 1, destination: ~weightPitchbuf[0], threshold: 0.1, trig:Done.kr(pitch), blocking: 1);
+	pitchweights = FluidBufThresh.kr(~pitchbuf[0], numChans: 1, startChan: 1, destination: ~weightPitchbuf[0], threshold: 0.7, trig:Done.kr(pitch), blocking: 1);
 	pitchstats = FluidBufStats.kr(~pitchbuf[0], stats:~statsPitchbuf[0], numDerivs: 1, weights: ~weightPitchbuf[0], outliersCutoff: 1.5, trig:Done.kr(pitchweights), blocking: 1);
 	pitchflat = FluidBufFlatten.kr(~statsPitchbuf[0],~flatPitchbuf[0],trig:Done.kr(pitchstats),blocking: 1);
 	loud = FluidBufLoudness.kr(~targetsound, numChans:1, features:~loudbuf[0], trig:Done.kr(pitchflat), blocking: 1);
@@ -209,8 +208,8 @@ Routine{
 
 // a first query - length and pitch
 ~query.clear
-~query.filter(0,"<",22050)//column0 smaller than half a second but
-~query.and(0,">", 11025)//also larger than a quarter of second
+~query.filter(0,"<",44100+22050)//column0 a little smaller than our source
+~query.and(0,">", 44100-22050)//also as far as a little larger than the source
 ~query.transformJoin(~durDS, ~pitchDS, ~tempDS); //this passes to ~tempDS only the points that have the same label than those in ~durDS that satisfy the condition. No column were added so nothing from ~durDS is copied
 
 // print to see how many slices (rows) we have
@@ -248,6 +247,7 @@ Routine{
 }.play;
 )
 
+// with our duration limits, strange results appear eventually
 (
 Routine{
 5.do{|i|
