@@ -293,16 +293,18 @@ Routine{
 ~targetPitch = Buffer(s)
 ~targetLoud = Buffer(s)
 ~targetMFCC = Buffer(s)
-~targetMFCCsub = Buffer(s)
+~targetMFCCs = Buffer(s)
+~targetMFCCsp = Buffer(s)
 ~targetTimbre = Buffer(s)
 ~targetAll= Buffer(s)
 
 ~normL.transformPoint(~flatLoudbuf[0], ~targetLoud) //normalise the loudness (all dims)
 ~normP.transformPoint(~flatPitchbuf[0], ~targetPitch) //normalise the pitch (all dims)
-FluidBufCompose.process(s,~flatMFCCbuf[0],numFrames: 24,destination: ~targetMFCCsub) // copy the process of dimension reduction above
-FluidBufCompose.process(s,~flatMFCCbuf[0],startFrame: (7*12), numFrames: 24, destination: ~targetMFCCsub,destStartFrame: 24) //keeping 48 dims
-~pca.transformPoint(~targetMFCCsub, ~targetMFCC) //then down to 4
-~normT.transformPoint(~targetMFCC, ~targetTimbre) //then normalised
+FluidBufCompose.process(s,~flatMFCCbuf[0],numFrames: 24,destination: ~targetMFCC) // copy the process of dimension reduction above
+FluidBufCompose.process(s,~flatMFCCbuf[0],startFrame: (7*12), numFrames: 24, destination: ~targetMFCC,destStartFrame: 24) //keeping 48 dims
+~stan.transformPoint(~targetMFCC,~targetMFCCs) //standardize with the same coeffs
+~pca.transformPoint(~targetMFCCs, ~targetMFCCsp) //then down to 4
+~normT.transformPoint(~targetMFCCsp, ~targetTimbre) //then normalised
 FluidBufCompose.process(s, ~targetTimbre,destination: ~targetAll) // assembling the single query
 FluidBufCompose.process(s, ~targetPitch, numFrames: 4, destination: ~targetAll, destStartFrame: 4) // copying the 4 stats of pitch we care about
 FluidBufCompose.process(s, ~targetLoud, numFrames: 4, destination: ~targetAll, destStartFrame: 8) // same for loudness

@@ -59,9 +59,9 @@ b.play
 c.free
 // much better! it is even better when we move the threshold above but 0.8 confidence is quite high...  If we look at our stats we see that there are still minima in the low hundreds, and maxima in the very top...These must be statistically far enough and few enough just to mess a bit our stats, so let's use the inter-quantile range to first remove them then compute the stats.
 FluidBufStats.process(s,~pitches, stats:~stats,weights: ~scaled,outliersCutoff: 1.5)
-~stats.getn(0,14,{|x|~condidenceWeightedPitchIQRStats = x;x.reshape(7,2).do{|y| "%\t\t\t%\n".postf(y[0].round(0.1),y[1].round(0.01))}})
+~stats.getn(0,14,{|x|~confidenceWeightedPitchIQRStats = x;x.reshape(7,2).do{|y| "%\t\t\t%\n".postf(y[0].round(0.1),y[1].round(0.01))}})
 //now that is impressive!
-c = {SinOsc.ar(~condidenceWeightedPitchIQRStats[0],mul: 0.05)}.play
+c = {SinOsc.ar(~confidenceWeightedPitchIQRStats[0],mul: 0.05)}.play
 b.play
 c.free
 
