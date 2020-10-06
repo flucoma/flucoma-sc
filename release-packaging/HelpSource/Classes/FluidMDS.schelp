@@ -32,10 +32,10 @@ METHOD:: manhattan
 Manhattan distance
 
 METHOD:: max
-Minowski max
+Minkowski max
 
 METHOD:: min
-Minowski max
+Minkowski max
 
 METHOD:: kl
 Symmetric Kulback Leiber divergance (only makes sense with non-negative data)
