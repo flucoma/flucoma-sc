@@ -12,6 +12,7 @@
 #include <clients/nrt/StandardizeClient.hpp>
 #include <clients/nrt/PCAClient.hpp>
 #include <clients/nrt/MDSClient.hpp>
+#include <clients/nrt/UMAPClient.hpp>
 #include <clients/nrt/MLPRegressorClient.hpp>
 #include <clients/nrt/MLPClassifierClient.hpp>
 #include <clients/rt/AudioTransportClient.hpp>
@@ -34,7 +35,7 @@ PluginLoad(FluidSTFTUGen)
   makeSCWrapper<RTNormalizeClient>("FluidNormalize",ft);
   makeSCWrapper<RTStandardizeClient>("FluidStandardize",ft);
   makeSCWrapper<RTPCAClient>("FluidPCA",ft);
-  makeSCWrapper<NRTThreadedMDSClient>("FluidMDS",ft);
+  makeSCWrapper<NRTThreadedMDSClient>("FluidMDS",ft);  makeSCWrapper<NRTThreadedUMAPClient>("FluidUMAP",ft);
   makeSCWrapper<RTAudioTransportClient>("FluidAudioTransport",ft);
   makeSCWrapper<NRTThreadedAudioTransportClient>("FluidBufAudioTransport",ft);
   makeSCWrapper<NRTThreadedDataSetWriter>("FluidDataSetWr", ft);

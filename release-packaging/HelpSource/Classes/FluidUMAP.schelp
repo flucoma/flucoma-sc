@@ -1,0 +1,95 @@
+TITLE:: FluidUMAP
+summary:: Dimensionality Reduction with Uniform Manifold Approximation and Projection
+categories:: Dimensionality Reduction, Data Processing
+related:: Classes/FluidMDS, Classes/FluidDataSet
+
+DESCRIPTION::
+
+Multidimensional scaling of a link::Classes/FluidDataSet:: using Uniform Manifold Approximation and Projection (UMAP)
+
+https://umap-learn.readthedocs.io/en/latest/parameters.html
+
+CLASSMETHODS::
+
+METHOD:: new
+Make a new instance
+ARGUMENT:: server
+The server on which to run this model
+ARGUMENT:: numDimensions
+The number of dimensions to reduce to
+ARGUMENT:: numNeighbours
+The number of neighbours considered by the algorithm to balance local vs global structures to conserve. Low values will prioritise on local structure more, high values will consider the wider picture more.
+ARGUMENT:: minDist
+The minimum distance each point is allowed to be from the others in the low dimension space. Low values will make tighter clumps, and higher will spread the points more.
+ARGUMENT:: maxIter
+The number of iterations that the algorithm will go through to optimise the new representation
+ARGUMENT:: learnRate
+The learning rate of the algorithm, aka how much of the error it uses to guestimate the next iteration.
+
+INSTANCEMETHODS::
+
+PRIVATE:: init
+
+METHOD:: fitTransform
+Fit the model to a link::Classes/FluidDataSet:: and write the new projected data to a destination FluidDataSet.
+ARGUMENT:: sourceDataSet
+Source data, or the DataSet name
+ARGUMENT:: destDataSet
+Destination data, or the DataSet name
+ARGUMENT:: action
+Run when done
+
+EXAMPLES::
+
+code::
+
+//Preliminaries: we want some points, a couple of FluidDataSets, a FluidStandardize and a FluidUMAP
+(
+~raw = FluidDataSet(s,\umap_help_3D);
+~standardized = FluidDataSet(s,\umap_help_3Ds);
+~reduced = FluidDataSet(s,\umap_help_2D);
+~normalized = FluidDataSet(s,\umap_help_2Dn);
+~standardizer  = FluidStandardize(s);
+~normalizer = FluidNormalize(s);
+~umap = FluidUMAP(s, numDimensions: 2, numNeighbours: 5, minDist: 0.2, maxIter: 50, learnRate: 0.2);
+)
+
+
+// build a dataset of 400 points in 3D (colour in RGB)
+~colours = Dictionary.newFrom(400.collect{|i|[("entry"++i).asSymbol, 3.collect{1.0.rand}]}.flatten(1));
+~raw.load(Dictionary.newFrom([\cols, 3, \data, ~colours]));
+
+// check the entries
+~raw.print;
+
+//First standardize our DataSet, then apply the UMAP to get 2 dimensions, then normalise these 2 for drawing in the full window size
+
+~standardizer.fitTransform(~raw,~standardized)
+~umap.fitTransform(~standardized,~reduced)
+~normalizer.fitTransform(~reduced,~normalized)
+
+//we recover the reduced dataset
+~normalized.dump{|x| ~normalizedDict = x["data"]};
+
+~normalizedDict.postln
+
+//Visualise the 2D projection of our original 4D data
+(
+w = Window("scatter", Rect(128, 64, 200, 200));
+w.drawFunc = {
+    Pen.use {
+        ~normalizedDict.keysValuesDo{|key, val|
+			Pen.fillColor = Color.new(~colours[key.asSymbol][0], ~colours[key.asSymbol][1],~colours[key.asSymbol][2]);
+			Pen.fillOval(Rect((val[0] * 200), (val[1] * 200), 5, 5));
+			~colours[key.asSymbol].flat.postln;
+        }
+    }
+};
+w.refresh;
+w.front;
+)
+
+//play with parameters
+~umap.numNeighbours = 10;
+~umap.minDist =5
+::
