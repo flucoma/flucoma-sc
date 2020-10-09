@@ -1,12 +1,13 @@
 FluidUMAP : FluidDataClient {
 
-	*new {|server,numDimensions = 2, numNeighbours = 15, minDist = 0.1, maxIter = 200, learnRate = 0.1|
+	*new {|server,numDimensions = 2, numNeighbours = 15, minDist = 0.1, iterations = 200, learnRate = 0.1, batchSize = 50|
 		^super.new1(server,[
 			\numDimensions,numDimensions,
 			\numNeighbours, numNeighbours,
 			\minDist, minDist,
-			\maxIter, maxIter,
-			\learnRate, learnRate
+			\iterations, iterations,
+			\learnRate, learnRate,
+			\batchSize, batchSize
 		])
 	}
 

@@ -7,7 +7,7 @@ DESCRIPTION::
 
 Multidimensional scaling of a link::Classes/FluidDataSet:: using Uniform Manifold Approximation and Projection (UMAP)
 
-https://umap-learn.readthedocs.io/en/latest/parameters.html
+Please refer to https://umap-learn.readthedocs.io/ for more information on the algorithm.
 
 CLASSMETHODS::
 
@@ -18,13 +18,15 @@ The server on which to run this model
 ARGUMENT:: numDimensions
 The number of dimensions to reduce to
 ARGUMENT:: numNeighbours
-The number of neighbours considered by the algorithm to balance local vs global structures to conserve. Low values will prioritise on local structure more, high values will consider the wider picture more.
+The number of neighbours considered by the algorithm to balance local vs global structures to conserve. Low values will prioritise preserving local structure, high values will help preserving the global structure.
 ARGUMENT:: minDist
 The minimum distance each point is allowed to be from the others in the low dimension space. Low values will make tighter clumps, and higher will spread the points more.
-ARGUMENT:: maxIter
+ARGUMENT:: iterations
 The number of iterations that the algorithm will go through to optimise the new representation
 ARGUMENT:: learnRate
-The learning rate of the algorithm, aka how much of the error it uses to guestimate the next iteration.
+The learning rate of the algorithm, aka how much of the error it uses to estimate the next iteration.
+ARGUMENT:: batchSize
+The training batch size.
 
 INSTANCEMETHODS::
 
@@ -51,7 +53,7 @@ code::
 ~normalized = FluidDataSet(s,\umap_help_2Dn);
 ~standardizer  = FluidStandardize(s);
 ~normalizer = FluidNormalize(s);
-~umap = FluidUMAP(s, numDimensions: 2, numNeighbours: 5, minDist: 0.2, maxIter: 50, learnRate: 0.2);
+~umap = FluidUMAP(s, numDimensions: 2, numNeighbours: 5, minDist: 0.2,iterations: 50, learnRate: 0.2,batchSize: 50);
 )
 
 
@@ -71,6 +73,7 @@ code::
 //we recover the reduced dataset
 ~normalized.dump{|x| ~normalizedDict = x["data"]};
 
+~normalized.print
 ~normalizedDict.postln
 
 //Visualise the 2D projection of our original 4D data
@@ -91,5 +94,6 @@ w.front;
 
 //play with parameters
 ~umap.numNeighbours = 10;
-~umap.minDist =5
+~umap.minDist =5;
+~umap.batchSize = 10;
 ::
