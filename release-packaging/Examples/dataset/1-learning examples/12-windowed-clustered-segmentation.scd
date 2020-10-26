@@ -47,24 +47,24 @@ Routine{
 )
 
 ~slices.print
-~slices.clear
 
 //run a window over consecutive segments, forcing them in 2 classes, and merging the consecutive segments of similar class
 //we overlap the analysis with the last (original) slice to check for continuity
 (
-~winSize = 6;//the number of consecutive items to split in 2 classes;
+~winSize = 4;//the number of consecutive items to split in 2 classes;
 ~query = FluidDataSetQuery(s);
 ~kmeans = FluidKMeans(s,2,100);
+~windowDS = FluidDataSet(s,\windowDS);
+~windowLS = FluidLabelSet(s,\windowLS);
+)
 
+(
 Routine{
 	~indices = [0];
 	~head = 0;
-	~windowDS = FluidDataSet(s,\windowDS);
-	~windowLS = FluidLabelSet(s,\windowLS);
-	~sliceDict = Dictionary;
-	~tempDict = Dictionary.new;
 
-	s.sync;
+	~sliceDict = Dictionary.new(4);
+	~tempDict = Dictionary.new(4);
 
 	~slices.dump{|x|~sliceDict = x;};
 	s.sync;
@@ -72,19 +72,28 @@ Routine{
 	while ( {~head <= (~originalslicesarray.size - ~winSize)},
 		{
 			var step = ~winSize - 1;
+			var nbass = [];
 			//run a process on ~winSize items from ~head (with an overlap of 1)
 			//copy the items to a subdataset
 			~winSize.do{|i|
 				~tempDict.put((i.asString), ~sliceDict["data"][(i+~head).asString]);//here one could curate which stats to take
+				"whichslices:%\n".postf(i+~head);
 			};
 			~windowDS.load(Dictionary.newFrom([\cols, 133, \data, ~tempDict]));
 			s.sync;
+			"% - loaded\n".postf(~head);
 
 			//kmeans 2 and retrieve ordered array of class assignations
-			~kmeans.fitPredict(~windowDS,~windowLS, {
-				~windowLS.dump{|x|~assignments = x.at("data").atAll(x.at("data").keys.asArray.sort{|a,b|a.asInteger < b.asInteger}).flatten;};
-			});
+			~kmeans.fitPredict(~windowDS, ~windowLS, {|x| nbass = x;});
 			s.sync;
+			"% - fitted1: ".postf(~head); nbass.postln;
+
+			// if (nbass.includes(0.0), { Routine{~kmeans.fitPredict(~windowDS, ~windowLS, {|x| nbass = x; "% - fitted2: ".postf(~head); nbass.postln; s.sync;});}.play; });
+
+			~windowLS.dump{|x|~assignments = x.at("data").asSortedArray.flop[1].flatten;};
+			s.sync;
+			"% - assigned ".postf(~head);
+
 			~assignments.postln;
 
 			step.do{|i|
@@ -92,13 +101,14 @@ Routine{
 			};
 
 			~head = ~head + step;
+			"-----------------".postln;
 	});
 
 	//leftovers
 	if ( (~originalslicesarray.size - ~head) > 1, {
 		//run a process on (a.size - ~head) items from ~head
 		(~originalslicesarray.size - ~head - 1).do{|i|
-				if (~assignments[i+1] != ~assignments[i], {~indices= ~indices ++ (~originalslicesarray[~head+i+1])});
+			if (~assignments[i+1] != ~assignments[i], {~indices= ~indices ++ (~originalslicesarray[~head+i+1])});
 			// (~head+i).postln;
 		};
 	});
@@ -108,3 +118,5 @@ Routine{
 
 {var i = 8;BufRd.ar(1,b,Line.ar(~originalslicesarray[i],~originalslicesarray[i+1],(~originalslicesarray[i+1] - ~originalslicesarray[i])/b.sampleRate, doneAction: 2))}.play;
 {var i = 4;BufRd.ar(1,b,Line.ar(~indices[i],~indices[i+1],(~indices[i+1] - ~indices[i])/b.sampleRate, doneAction: 2))}.play;
+
+//export to reaper
