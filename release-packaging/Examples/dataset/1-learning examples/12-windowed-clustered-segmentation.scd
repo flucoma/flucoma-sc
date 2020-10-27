@@ -56,6 +56,7 @@ Routine{
 ~kmeans = FluidKMeans(s,2,100);
 ~windowDS = FluidDataSet(s,\windowDS);
 ~windowLS = FluidLabelSet(s,\windowLS);
+~slices.dump{|x|~sliceDict = x;};
 )
 
 (
@@ -63,47 +64,45 @@ Routine{
 	~indices = [0];
 	~head = 0;
 
-	~sliceDict = Dictionary.new(4);
-	~tempDict = Dictionary.new(4);
-
-	~slices.dump{|x|~sliceDict = x;};
-	s.sync;
+	~tempDict = ();
 
 	while ( {~head <= (~originalslicesarray.size - ~winSize)},
 		{
 			var step = ~winSize - 1;
 			var nbass = [];
+			~assignments = [];
 			//run a process on ~winSize items from ~head (with an overlap of 1)
 			//copy the items to a subdataset
 			~winSize.do{|i|
 				~tempDict.put((i.asString), ~sliceDict["data"][(i+~head).asString]);//here one could curate which stats to take
 				"whichslices:%\n".postf(i+~head);
 			};
-			~windowDS.load(Dictionary.newFrom([\cols, 133, \data, ~tempDict]));
+			~windowDS.load(Dictionary.newFrom([\cols, 133, \data, ~tempDict]), action: {
+				"% - loaded\n".postf(~head);
+
+				//kmeans 2 and retrieve ordered array of class assignations
+				~kmeans.fitPredict(~windowDS, ~windowLS, action: {|x|
+					nbass = x;
+					"% - fitted1: ".postf(~head); nbass.postln;
+
+					// if (nbass.includes(0.0), { Routine{~kmeans.fitPredict(~windowDS, ~windowLS, {|x| nbass = x; "% - fitted2: ".postf(~head); nbass.postln; s.sync;});}.play; });
+
+					~windowLS.dump{|x|
+						~assignments = x.at("data").asSortedArray.flop[1].flatten;
+						"% - assigned ".postf(~head);
+
+						~assignments.postln;
+
+						step.do{|i|
+							if (~assignments[i+1] != ~assignments[i], {~indices= ~indices ++ (~originalslicesarray[~head+i+1])});
+						};
+					};
+				});
+			});
 			s.sync;
-			"% - loaded\n".postf(~head);
-
-			//kmeans 2 and retrieve ordered array of class assignations
-			~kmeans.fitPredict(~windowDS, ~windowLS, {|x| nbass = x;});
-			s.sync;
-			"% - fitted1: ".postf(~head); nbass.postln;
-
-			// if (nbass.includes(0.0), { Routine{~kmeans.fitPredict(~windowDS, ~windowLS, {|x| nbass = x; "% - fitted2: ".postf(~head); nbass.postln; s.sync;});}.play; });
-
-			~windowLS.dump{|x|~assignments = x.at("data").asSortedArray.flop[1].flatten;};
-			s.sync;
-			"% - assigned ".postf(~head);
-
-			~assignments.postln;
-
-			step.do{|i|
-				if (~assignments[i+1] != ~assignments[i], {~indices= ~indices ++ (~originalslicesarray[~head+i+1])});
-			};
-
 			~head = ~head + step;
 			"-----------------".postln;
 	});
-
 	//leftovers
 	if ( (~originalslicesarray.size - ~head) > 1, {
 		//run a process on (a.size - ~head) items from ~head
