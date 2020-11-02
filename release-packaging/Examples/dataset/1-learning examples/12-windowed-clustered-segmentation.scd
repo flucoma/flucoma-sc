@@ -117,13 +117,52 @@ Routine{
 	});
 	//leftovers (half baked, needs to run it all properly but hey, let's fix it first
 	if ( (~originalslicesarray.size - ~head) > 1, {
+		var nbass = [];
+		var cond = Condition.new;
+		~assignments = [];
 		//run a process on (a.size - ~head) items from ~head
-		(~originalslicesarray.size - ~head - 1).do{|i|
-			if (~assignments[i+1] != ~assignments[i], {~indices= ~indices ++ (~originalslicesarray[~head+i+1])});
-			// (~head+i).postln;
+		//copy the items to a subdataset
+		(~originalslicesarray.size - ~head).do{|i|
+			~tempDict.put((i.asString), ~sliceDict["data"][(i+~head).asString]);//here one could curate which stats to take
+			"whichslices:%\n".postf(i+~head);
 		};
+		~windowDS.load(Dictionary.newFrom([\cols, 133, \data, ~tempDict]), action: {
+			"% - loaded\n".postf(~head);
+
+			//kmeans 2 and retrieve ordered array of class assignations
+			~kmeans.fitPredict(~windowDS, ~windowLS, action: {|x|
+				nbass = x;
+				"% - fitted1: ".postf(~head); nbass.postln;
+
+				if (nbass.includes(0.0), {
+					~kmeans.fitPredict(~windowDS, ~windowLS, {|x|
+						nbass = x; "% - fitted2: ".postf(~head); nbass.postln;
+						if (nbass.includes(0.0), {
+							~kmeans.fitPredict(~windowDS, ~windowLS, {|x|
+								nbass = x; "% - fitted3: ".postf(~head); nbass.postln;
+							});
+						});
+					});
+				});
+
+				~windowLS.dump{|x|
+					~assignments = x.at("data").asSortedArray.flop[1].flatten;
+					"% - assigned ".postf(~head);
+
+					~assignments.postln;
+
+					(~originalslicesarray.size - ~head - 1).do{|i|
+						if (~assignments[i+1] != ~assignments[i], {~indices= ~indices ++ (~originalslicesarray[~head+i+1])});
+
+					};
+					cond.unhang;
+				};
+			});
+		});
+		cond.hang;
+		"done".postln;
 	});
-		//add the endoffile indice to the array
+	//add the endoffile indice to the array
 	~indices = ~indices ++ (b.numFrames);
 
 	~indices.postln;
