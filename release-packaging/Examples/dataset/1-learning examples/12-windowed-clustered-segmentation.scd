@@ -115,7 +115,7 @@ Routine{
 			~head = ~head + step;
 			"-----------------".postln;
 	});
-	//leftovers
+	//leftovers (half baked, needs to run it all properly but hey, let's fix it first
 	if ( (~originalslicesarray.size - ~head) > 1, {
 		//run a process on (a.size - ~head) items from ~head
 		(~originalslicesarray.size - ~head - 1).do{|i|
@@ -123,6 +123,9 @@ Routine{
 			// (~head+i).postln;
 		};
 	});
+		//add the endoffile indice to the array
+	~indices = ~indices ++ (b.numFrames);
+
 	~indices.postln;
 }.play;
 )
@@ -131,3 +134,32 @@ Routine{
 {var i = 4;BufRd.ar(1,b,Line.ar(~indices[i],~indices[i+1],(~indices[i+1] - ~indices[i])/b.sampleRate, doneAction: 2))}.play;
 
 //export to reaper
+(
+//first create a new file that ends with rpp - it will overwrite if the file exists
+f = File.new("/tmp/clusteredslices.rpp","w+");
+
+if (f.isOpen , {
+	//write the header
+	f.write("<REAPER_PROJECT 0.1 \"5.99/OSX64\" 1603037150\n\n");
+
+	//a first track with the originalslicearray
+	//write the track header
+	f.write("<TRACK\nNAME \"novelty output\"\n");
+	// iterate through the items in the track
+	(~originalslicesarray.size - 1).do{|i| f.write("<ITEM\nPOSITION " ++ (~originalslicesarray[i] / b.sampleRate) ++ "\nLENGTH " ++ ((~originalslicesarray[i+1] - ~originalslicesarray[i]) / b.sampleRate) ++ "\nNAME \"slice-" ++ i ++ "\"\nSOFFS " ++ (~originalslicesarray[i] / b.sampleRate) ++ "\n<SOURCE WAVE\nFILE \"" ++ b.path ++ "\"\n>\n>\n");};
+	//write the track footer
+	f.write(">\n");
+
+	// a second track with the new ~indices
+	//write the track header
+	f.write("<TRACK\nNAME \"clustered output\"\n");
+	// iterate through the items in the track
+	(~indices.size - 1).do{|i| f.write("<ITEM\nPOSITION " ++ (~indices[i] / b.sampleRate) ++ "\nLENGTH " ++ ((~indices[i+1] - ~indices[i]) / b.sampleRate) ++ "\nNAME \"slice-" ++ i ++ "\"\nSOFFS " ++ (~indices[i] / b.sampleRate) ++ "\n<SOURCE WAVE\nFILE \"" ++ b.path ++ "\"\n>\n>\n");};
+	//write the track footer
+	f.write(">\n");
+
+	//write the footer
+	f.write(">\n");
+	f.close;
+});
+)
