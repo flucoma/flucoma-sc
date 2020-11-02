@@ -70,6 +70,7 @@ Routine{
 		{
 			var step = ~winSize - 1;
 			var nbass = [];
+			var cond = Condition.new;
 			~assignments = [];
 			//run a process on ~winSize items from ~head (with an overlap of 1)
 			//copy the items to a subdataset
@@ -85,7 +86,16 @@ Routine{
 					nbass = x;
 					"% - fitted1: ".postf(~head); nbass.postln;
 
-					// if (nbass.includes(0.0), { Routine{~kmeans.fitPredict(~windowDS, ~windowLS, {|x| nbass = x; "% - fitted2: ".postf(~head); nbass.postln; s.sync;});}.play; });
+					if (nbass.includes(0.0), {
+						~kmeans.fitPredict(~windowDS, ~windowLS, {|x|
+							nbass = x; "% - fitted2: ".postf(~head); nbass.postln;
+							if (nbass.includes(0.0), {
+								~kmeans.fitPredict(~windowDS, ~windowLS, {|x|
+									nbass = x; "% - fitted3: ".postf(~head); nbass.postln;
+								});
+							});
+						});
+					});
 
 					~windowLS.dump{|x|
 						~assignments = x.at("data").asSortedArray.flop[1].flatten;
@@ -95,11 +105,13 @@ Routine{
 
 						step.do{|i|
 							if (~assignments[i+1] != ~assignments[i], {~indices= ~indices ++ (~originalslicesarray[~head+i+1])});
+
 						};
+						cond.unhang;
 					};
 				});
 			});
-			s.sync;
+			cond.hang;
 			~head = ~head + step;
 			"-----------------".postln;
 	});
