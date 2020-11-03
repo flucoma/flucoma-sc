@@ -52,16 +52,30 @@ Routine{
 //we overlap the analysis with the last (original) slice to check for continuity
 (
 ~winSize = 4;//the number of consecutive items to split in 2 classes;
+~curated = FluidDataSet(s,\curatedDS);
 ~query = FluidDataSetQuery(s);
+~stan = FluidStandardize(s);
 ~kmeans = FluidKMeans(s,2,100);
 ~windowDS = FluidDataSet(s,\windowDS);
 ~windowLS = FluidLabelSet(s,\windowLS);
-~slices.dump{|x|~sliceDict = x;};
 )
+
+//normalise and curate stats
+~query.clear
+~query.addRange((5*19),19);
+~query.transform(~slices,~curated);
+~stan.fitTransform(~curated, ~curated);
+
+~curated.print
+~curated.dump{|x|~sliceDict = x;};
+
+//or
+~curated.dump{|x|~sliceDict = x;};
+
 
 //the windowed function
 (
-~windowedFunct = {arg head, winSize;
+~windowedFunct = {arg head, winSize, overlap;
 	var nbass = [], assignments = [], tempDict = ();
 	//check the size of everything to not overrun
 	winSize = (~originalslicesarray.size - head).min(winSize);
@@ -70,7 +84,7 @@ Routine{
 		tempDict.put((i.asString), ~sliceDict["data"][(i+head).asString]);//here one could curate which stats to take
 		"whichslices:%\n".postf(i+head);
 	};
-	~windowDS.load(Dictionary.newFrom([\cols, 133, \data, tempDict]), action: {
+	~windowDS.load(Dictionary.newFrom([\cols, 19, \data, tempDict]), action: {
 		"% - loaded\n".postf(head);
 
 		//kmeans 2 and retrieve ordered array of class assignations
@@ -100,9 +114,9 @@ Routine{
 
 				};
 				//if we still have some frames to do, do them
-				if (((head+winSize) < ~originalslicesarray.size), {
+				if (((winSize + head) < ~originalslicesarray.size), {
 					"-----------------".postln;
-					~windowedFunct.value(head + winSize, winSize);
+					~windowedFunct.value(head + winSize - overlap, winSize, overlap);
 				}, {~indices = ~indices ++ (b.numFrames); "done".postln;});//if we're done close the books
 			};
 		});
@@ -113,8 +127,12 @@ Routine{
 //the job
 
 ~indices = [0];
-~windowedFunct.value(0, 5);
+~windowedFunct.value(0, 4, 1);
+
+//try again with more clusters
+~indices = [0];
 ~kmeans.numClusters = 3;
+~windowedFunct.value(0, 6,2);
 
 ~indices.postln;
 
