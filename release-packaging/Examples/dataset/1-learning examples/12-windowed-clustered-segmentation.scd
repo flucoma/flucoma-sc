@@ -62,15 +62,15 @@ Routine{
 //the windowed function
 (
 ~windowedFunct = {arg head, winSize;
-	var nbass = [], assignments = [], tempDict;
+	var nbass = [], assignments = [], tempDict = ();
 	//check the size of everything to not overrun
 	winSize = (~originalslicesarray.size - head).min(winSize);
 	//copy the items to a subdataset from hear
 	winSize.do{|i|
-		~tempDict.put((i.asString), ~sliceDict["data"][(i+head).asString]);//here one could curate which stats to take
+		tempDict.put((i.asString), ~sliceDict["data"][(i+head).asString]);//here one could curate which stats to take
 		"whichslices:%\n".postf(i+head);
 	};
-	~windowDS.load(Dictionary.newFrom([\cols, 133, \data, ~tempDict]), action: {
+	~windowDS.load(Dictionary.newFrom([\cols, 133, \data, tempDict]), action: {
 		"% - loaded\n".postf(head);
 
 		//kmeans 2 and retrieve ordered array of class assignations
@@ -78,10 +78,10 @@ Routine{
 			nbass = x;
 			"% - fitted1: ".postf(head); nbass.postln;
 
-			if (nbass.includes(0.0), {
+			if (nbass.includes(winSize.asFloat), {
 				~kmeans.fitPredict(~windowDS, ~windowLS, {|x|
 					nbass = x; "% - fitted2: ".postf(head); nbass.postln;
-					if (nbass.includes(0.0), {
+					if (nbass.includes(winSize.asFloat), {
 						~kmeans.fitPredict(~windowDS, ~windowLS, {|x|
 							nbass = x; "% - fitted3: ".postf(head); nbass.postln;
 						});
@@ -90,13 +90,13 @@ Routine{
 			});
 
 			~windowLS.dump{|x|
-				~assignments = x.at("data").asSortedArray.flop[1].flatten;
+				var assignments = x.at("data").asSortedArray.flop[1].flatten;
 				"% - assigned ".postf(head);
 
-				~assignments.postln;
+				assignments.postln;
 
 				(winSize-1).do{|i|
-					if (~assignments[i+1] != ~assignments[i], {~indices= ~indices ++ (~originalslicesarray[head+i+1])});
+					if (assignments[i+1] != assignments[i], {~indices= ~indices ++ (~originalslicesarray[head+i+1])});
 
 				};
 				//if we still have some frames to do, do them
@@ -110,12 +110,11 @@ Routine{
 }
 )
 
-//the function
+//the job
 
 ~indices = [0];
-~tempDict = ();
-
-~windowedFunct.value(0, 4);
+~windowedFunct.value(0, 5);
+~kmeans.numClusters = 3;
 
 ~indices.postln;
 
