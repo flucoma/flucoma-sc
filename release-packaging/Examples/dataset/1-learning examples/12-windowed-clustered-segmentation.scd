@@ -55,23 +55,19 @@ Routine{
 ~curated = FluidDataSet(s,\curatedDS);
 ~query = FluidDataSetQuery(s);
 ~stan = FluidStandardize(s);
-~kmeans = FluidKMeans(s,2,100);
+~kmeans = FluidKMeans(s,2,1000);
 ~windowDS = FluidDataSet(s,\windowDS);
 ~windowLS = FluidLabelSet(s,\windowLS);
 )
 
 //normalise and curate stats
 ~query.clear
-~query.addRange((5*19),19);
+~query.addRange((0*19),19);
 ~query.transform(~slices,~curated);
 ~stan.fitTransform(~curated, ~curated);
 
 ~curated.print
 ~curated.dump{|x|~sliceDict = x;};
-
-//or
-~curated.dump{|x|~sliceDict = x;};
-
 
 //the windowed function
 (
@@ -110,14 +106,14 @@ Routine{
 				assignments.postln;
 
 				(winSize-1).do{|i|
-					if (assignments[i+1] != assignments[i], {~indices= ~indices ++ (~originalslicesarray[head+i+1])});
+					if (assignments[i+1] != assignments[i], {~indices= ~indices ++ (~originalslicesarray[head+i+1]).asInteger});
 
 				};
 				//if we still have some frames to do, do them
 				if (((winSize + head) < ~originalslicesarray.size), {
 					"-----------------".postln;
 					~windowedFunct.value(head + winSize - overlap, winSize, overlap);
-				}, {~indices = ~indices ++ (b.numFrames); "done".postln;});//if we're done close the books
+				}, {~indices = ~indices.asSet.asArray.sort ++ (b.numFrames); "done".postln;});//if we're done close the books
 			};
 		});
 	});
@@ -132,19 +128,19 @@ Routine{
 //try again with more clusters
 ~indices = [0];
 ~kmeans.numClusters = 3;
-~windowedFunct.value(0, 6,2);
+~windowedFunct.value(0,6,2);
 
 ~indices.postln;
 
-~windowDS.print
-
+//check
 {var i = 8;BufRd.ar(1,b,Line.ar(~originalslicesarray[i],~originalslicesarray[i+1],(~originalslicesarray[i+1] - ~originalslicesarray[i])/b.sampleRate, doneAction: 2))}.play;
 {var i = 4;BufRd.ar(1,b,Line.ar(~indices[i],~indices[i+1],(~indices[i+1] - ~indices[i])/b.sampleRate, doneAction: 2))}.play;
 
 //export to reaper
 (
 //first create a new file that ends with rpp - it will overwrite if the file exists
-f = File.new("/tmp/clusteredslices.rpp","w+");
+f = File.new("/tmp/clusteredslices-" ++ Date.getDate.stamp
+	++".rpp","w+");
 
 if (f.isOpen , {
 	//write the header
@@ -171,4 +167,3 @@ if (f.isOpen , {
 	f.close;
 });
 )
-
