@@ -59,115 +59,67 @@ Routine{
 ~slices.dump{|x|~sliceDict = x;};
 )
 
+//the windowed function
 (
-Routine{
-	~indices = [0];
-	~head = 0;
+~windowedFunct = {arg head, winSize;
+	var nbass = [], assignments = [], tempDict;
+	//check the size of everything to not overrun
+	winSize = (~originalslicesarray.size - head).min(winSize);
+	//copy the items to a subdataset from hear
+	winSize.do{|i|
+		~tempDict.put((i.asString), ~sliceDict["data"][(i+head).asString]);//here one could curate which stats to take
+		"whichslices:%\n".postf(i+head);
+	};
+	~windowDS.load(Dictionary.newFrom([\cols, 133, \data, ~tempDict]), action: {
+		"% - loaded\n".postf(head);
 
-	~tempDict = ();
+		//kmeans 2 and retrieve ordered array of class assignations
+		~kmeans.fitPredict(~windowDS, ~windowLS, action: {|x|
+			nbass = x;
+			"% - fitted1: ".postf(head); nbass.postln;
 
-	while ( {~head <= (~originalslicesarray.size - ~winSize)},
-		{
-			var step = ~winSize - 1;
-			var nbass = [];
-			var cond = Condition.new;
-			~assignments = [];
-			//run a process on ~winSize items from ~head (with an overlap of 1)
-			//copy the items to a subdataset
-			~winSize.do{|i|
-				~tempDict.put((i.asString), ~sliceDict["data"][(i+~head).asString]);//here one could curate which stats to take
-				"whichslices:%\n".postf(i+~head);
-			};
-			~windowDS.load(Dictionary.newFrom([\cols, 133, \data, ~tempDict]), action: {
-				"% - loaded\n".postf(~head);
-
-				//kmeans 2 and retrieve ordered array of class assignations
-				~kmeans.fitPredict(~windowDS, ~windowLS, action: {|x|
-					nbass = x;
-					"% - fitted1: ".postf(~head); nbass.postln;
-
+			if (nbass.includes(0.0), {
+				~kmeans.fitPredict(~windowDS, ~windowLS, {|x|
+					nbass = x; "% - fitted2: ".postf(head); nbass.postln;
 					if (nbass.includes(0.0), {
 						~kmeans.fitPredict(~windowDS, ~windowLS, {|x|
-							nbass = x; "% - fitted2: ".postf(~head); nbass.postln;
-							if (nbass.includes(0.0), {
-								~kmeans.fitPredict(~windowDS, ~windowLS, {|x|
-									nbass = x; "% - fitted3: ".postf(~head); nbass.postln;
-								});
-							});
+							nbass = x; "% - fitted3: ".postf(head); nbass.postln;
 						});
 					});
-
-					~windowLS.dump{|x|
-						~assignments = x.at("data").asSortedArray.flop[1].flatten;
-						"% - assigned ".postf(~head);
-
-						~assignments.postln;
-
-						step.do{|i|
-							if (~assignments[i+1] != ~assignments[i], {~indices= ~indices ++ (~originalslicesarray[~head+i+1])});
-
-						};
-						cond.unhang;
-					};
 				});
 			});
-			cond.hang;
-			~head = ~head + step;
-			"-----------------".postln;
-	});
-	//leftovers (half baked, needs to run it all properly but hey, let's fix it first
-	if ( (~originalslicesarray.size - ~head) > 1, {
-		var nbass = [];
-		var cond = Condition.new;
-		~assignments = [];
-		//run a process on (a.size - ~head) items from ~head
-		//copy the items to a subdataset
-		(~originalslicesarray.size - ~head).do{|i|
-			~tempDict.put((i.asString), ~sliceDict["data"][(i+~head).asString]);//here one could curate which stats to take
-			"whichslices:%\n".postf(i+~head);
-		};
-		~windowDS.load(Dictionary.newFrom([\cols, 133, \data, ~tempDict]), action: {
-			"% - loaded\n".postf(~head);
 
-			//kmeans 2 and retrieve ordered array of class assignations
-			~kmeans.fitPredict(~windowDS, ~windowLS, action: {|x|
-				nbass = x;
-				"% - fitted1: ".postf(~head); nbass.postln;
+			~windowLS.dump{|x|
+				~assignments = x.at("data").asSortedArray.flop[1].flatten;
+				"% - assigned ".postf(head);
 
-				if (nbass.includes(0.0), {
-					~kmeans.fitPredict(~windowDS, ~windowLS, {|x|
-						nbass = x; "% - fitted2: ".postf(~head); nbass.postln;
-						if (nbass.includes(0.0), {
-							~kmeans.fitPredict(~windowDS, ~windowLS, {|x|
-								nbass = x; "% - fitted3: ".postf(~head); nbass.postln;
-							});
-						});
-					});
-				});
+				~assignments.postln;
 
-				~windowLS.dump{|x|
-					~assignments = x.at("data").asSortedArray.flop[1].flatten;
-					"% - assigned ".postf(~head);
+				(winSize-1).do{|i|
+					if (~assignments[i+1] != ~assignments[i], {~indices= ~indices ++ (~originalslicesarray[head+i+1])});
 
-					~assignments.postln;
-
-					(~originalslicesarray.size - ~head - 1).do{|i|
-						if (~assignments[i+1] != ~assignments[i], {~indices= ~indices ++ (~originalslicesarray[~head+i+1])});
-
-					};
-					cond.unhang;
 				};
-			});
+				//if we still have some frames to do, do them
+				if (((head+winSize) < ~originalslicesarray.size), {
+					"-----------------".postln;
+					~windowedFunct.value(head + winSize, winSize);
+				}, {~indices = ~indices ++ (b.numFrames); "done".postln;});//if we're done close the books
+			};
 		});
-		cond.hang;
-		"done".postln;
 	});
-	//add the endoffile indice to the array
-	~indices = ~indices ++ (b.numFrames);
-
-	~indices.postln;
-}.play;
+}
 )
+
+//the function
+
+~indices = [0];
+~tempDict = ();
+
+~windowedFunct.value(0, 4);
+
+~indices.postln;
+
+~windowDS.print
 
 {var i = 8;BufRd.ar(1,b,Line.ar(~originalslicesarray[i],~originalslicesarray[i+1],(~originalslicesarray[i+1] - ~originalslicesarray[i])/b.sampleRate, doneAction: 2))}.play;
 {var i = 4;BufRd.ar(1,b,Line.ar(~indices[i],~indices[i+1],(~indices[i+1] - ~indices[i])/b.sampleRate, doneAction: 2))}.play;
@@ -202,3 +154,4 @@ if (f.isOpen , {
 	f.close;
 });
 )
+
