@@ -34,6 +34,7 @@ FluidLoadFolder {
 					entry.add(\bounds->startEnd[i]);
 					entry.add(\numchans->f.numChannels);
 					entry.add(\sr->f.sampleRate);
+					entry.add(\path->f.path);
 					index.add(label->entry);
 					counter = counter + 1;
 					if(counter == (files.size)) {action !? action.value(index)};
