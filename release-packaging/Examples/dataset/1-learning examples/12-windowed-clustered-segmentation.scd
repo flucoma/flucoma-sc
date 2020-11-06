@@ -24,25 +24,31 @@ a = Slider(w, Rect(10, 20, 330, 20))
 });
 )
 
-//analyse each segment with 20 MFCCs in a dataset
+//analyse each segment with 20 MFCCs in a dataset and spectralshapes in another one
 (
-~mfccbuf = 4.collect{Buffer.new};
+~featuresbuf = 4.collect{Buffer.new};
 ~statsbuf = 4.collect{Buffer.new};
 ~flatbuf = 4.collect{Buffer.new};
-~slices = FluidDataSet(s,\slices);
+~slicesMFCC = FluidDataSet(s,\slicesM);
+~slicesShapes = FluidDataSet(s,\slicesS);
 ~extractor = FluidProcessSlices({|src,start,num,data|
-	var mfcc, stats, writer, flatten,mfccBuf, statsBuf, flatBuf, label, voice;
+	var features, stats, writer, flatten,mfccBuf, statsBuf, flatBuf, label, voice;
 	label = data.key;
 	voice = data.value[\voice];
-	mfcc = FluidBufMFCC.kr(src,startFrame:start,numFrames:num,numChans:1, numCoeffs: 20, features:~mfccbuf[voice],trig:1,blocking: 1);
-	stats = FluidBufStats.kr(~mfccbuf[voice],stats:~statsbuf[voice],trig:Done.kr(mfcc),blocking: 1);
+	features = FluidBufMFCC.kr(src,startFrame:start,numFrames:num,numChans:1, numCoeffs: 20, features:~featuresbuf[voice],trig:1,blocking: 1);
+	stats = FluidBufStats.kr(~featuresbuf[voice],stats:~statsbuf[voice],trig:Done.kr(features),blocking: 1);
 	flatten = FluidBufFlatten.kr(~statsbuf[voice],~flatbuf[voice],trig:Done.kr(stats),blocking: 1);
-	writer = FluidDataSetWr.kr(~slices,label, -1, ~flatbuf[voice], Done.kr(flatten),blocking: 1)
+	writer = FluidDataSetWr.kr(~slicesMFCC,label, -1, ~flatbuf[voice], Done.kr(flatten),blocking: 1);
+	features = FluidBufSpectralShape.kr(src,startFrame:start,numFrames:num,numChans:1, features:~featuresbuf[voice],trig:Done.kr(writer),blocking: 1);
+	stats = FluidBufStats.kr(~featuresbuf[voice],stats:~statsbuf[voice],trig:Done.kr(features),blocking: 1);
+	flatten = FluidBufFlatten.kr(~statsbuf[voice],~flatbuf[voice],trig:Done.kr(stats),blocking: 1);
+	writer = FluidDataSetWr.kr(~slicesShapes,label, -1, ~flatbuf[voice], Done.kr(flatten),blocking: 1);
 });
 )
 ~extractor.play(s,~loader.buffer, ~slicer.index);
 
-~slices.print
+~slicesMFCC.print
+~slicesShapes.print
 
 //run a window over consecutive segments, forcing them in 2 classes, and merging the consecutive segments of similar class
 //we overlap the analysis with the last (original) slice to check for continuity
@@ -56,10 +62,26 @@ a = Slider(w, Rect(10, 20, 330, 20))
 ~windowLS = FluidLabelSet(s,\windowLS);
 )
 
-//normalise and curate stats
+//curate stats (MFCCs)
 ~query.clear
-~query.addRange((0*20)+1,19);
-~query.transform(~slices,~curated);
+~query.addRange((0*20)+1,10);
+~query.transform(~slicesMFCC,~curated);
+
+//OR
+//curate stats (moments)
+~query.clear
+~query.addRange(0,3);
+~query.transform(~slicesShapes,~curated);
+
+//OR
+//curate both
+~query.clear
+~query.addColumn(0);//add col 0 (mean of mfcc0 as 'loudness')
+~query.transform(~slicesMFCC,~curated);//mfcc0 as loudness
+~query.clear;
+~query.addRange(0,3);//add some spectral moments
+~query.transformJoin(~slicesShapes, ~curated, ~curated);//join in centroids
+
 ~stan.fitTransform(~curated, ~curated);
 
 ~curated.print
@@ -79,7 +101,7 @@ a = Slider(w, Rect(10, 20, 330, 20))
 		tempDict.put((i.asString), ~sliceDict["data"][(~orginalkeys[(i+head)]).asString]);//here one could curate which stats to take
 		"whichslices:%\n".postf(i+head);
 	};
-	~windowDS.load(Dictionary.newFrom([\cols, 19, \data, tempDict]), action: {
+	~windowDS.load(Dictionary.newFrom([\cols, ~sliceDict["cols"].asInteger, \data, tempDict]), action: {
 		"% - loaded\n".postf(head);
 
 		//kmeans 2 and retrieve ordered array of class assignations
@@ -146,8 +168,7 @@ a = Slider(w, Rect(10, 20, 330, 20))
 //export to reaper
 (
 //first create a new file that ends with rpp - it will overwrite if the file exists
-f = File.new("/tmp/clusteredslices-" ++ Date.getDate.stamp
-	++".rpp","w+");
+f = File.new("/tmp/clusteredslices-" ++ Date.getDate.stamp ++".rpp","w+");
 
 if (f.isOpen , {
 	var path, prevpath ="", sr, count, dur;
@@ -166,7 +187,7 @@ if (f.isOpen , {
 			count = 0;
 		});
 		dur = ~originalslicesarray[i+1] - ~originalslicesarray[i];
-		if (dur > 0, {
+		if ( dur > 0, {
 			f.write("<ITEM\nPOSITION " ++ (~originalslicesarray[i] / sr) ++ "\nLENGTH " ++ (dur / sr) ++ "\nNAME \"" ++ v ++ "\"\nSOFFS " ++ (count / sr) ++ "\n<SOURCE WAVE\nFILE \"" ++ path ++ "\"\n>\n>\n");
 		});
 		count = count + dur;
