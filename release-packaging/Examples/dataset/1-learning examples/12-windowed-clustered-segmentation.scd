@@ -166,7 +166,9 @@ if (f.isOpen , {
 			count = 0;
 		});
 		dur = ~originalslicesarray[i+1] - ~originalslicesarray[i];
-		f.write("<ITEM\nPOSITION " ++ (~originalslicesarray[i] / sr) ++ "\nLENGTH " ++ (dur / sr) ++ "\nNAME \"" ++ v ++ "\"\nSOFFS " ++ (count / sr) ++ "\n<SOURCE WAVE\nFILE \"" ++ path ++ "\"\n>\n>\n");
+		if (dur > 0, {
+			f.write("<ITEM\nPOSITION " ++ (~originalslicesarray[i] / sr) ++ "\nLENGTH " ++ (dur / sr) ++ "\nNAME \"" ++ v ++ "\"\nSOFFS " ++ (count / sr) ++ "\n<SOURCE WAVE\nFILE \"" ++ path ++ "\"\n>\n>\n");
+		});
 		count = count + dur;
 	};
 	//write the track footer
@@ -185,7 +187,9 @@ if (f.isOpen , {
 			count = 0;
 		});
 		dur = ~newindices[i+1] - ~newindices[i];
-		f.write("<ITEM\nPOSITION " ++ (~newindices[i] / sr) ++ "\nLENGTH " ++ (dur / sr) ++ "\nNAME \"" ++ v ++ "\"\nSOFFS " ++ (count / sr) ++ "\n<SOURCE WAVE\nFILE \"" ++ path ++ "\"\n>\n>\n");
+		if (dur > 0, {
+			f.write("<ITEM\nPOSITION " ++ (~newindices[i] / sr) ++ "\nLENGTH " ++ (dur / sr) ++ "\nNAME \"" ++ v ++ "\"\nSOFFS " ++ (count / sr) ++ "\n<SOURCE WAVE\nFILE \"" ++ path ++ "\"\n>\n>\n");
+		});
 		count = count + dur;
 	};
 	//write the track footer
