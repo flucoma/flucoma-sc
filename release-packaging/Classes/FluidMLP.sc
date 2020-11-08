@@ -21,7 +21,7 @@ FluidMLPRegressor : FluidRTDataClient {
 			\maxIter, maxIter,
 			\learnRate,learnRate,
 			\momentum, momentum,
-			\batchsize,batchSize,
+			\batchSize,batchSize,
 			\validation,validation,
 		])
 	}
@@ -72,7 +72,7 @@ FluidMLPClassifier : FluidRTDataClient {
 			\maxIter, maxIter,
 			\learnRate,learnRate,
 			\momentum, momentum,
-			\batchsize,batchSize,
+			\batchSize,batchSize,
 			\validation,validation,
 		])
 	}
