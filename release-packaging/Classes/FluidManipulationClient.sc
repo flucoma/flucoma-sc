@@ -53,8 +53,17 @@ FluidManipulationClient {
 		if(server.serverRunning.not,{
 			(this.asString + "– server not running").error; ^nil
 		});
+
+        NotificationCenter.register(server, \newAllocators, this, {
+            this.flush(server);
+        });
+
 		^super.newCopyArgs(server ?? {Server.default});//.baseinit(objectID,*args)
 	}
+
+    *flush { |s|
+        s.sendMsg("/cmd","flush"++this.name);
+    }
 
 	makeDef { |defName,objectID,args|
 		var initialVals = [];
