@@ -698,6 +698,7 @@ struct LifetimePolicy<Client, Wrapper,std::false_type, std::false_type>
   }
   static void destroyClass(Unit* unit) { static_cast<Wrapper*>(unit)->~Wrapper(); }
   static void setup(InterfaceTable*, const char*){}
+  static void unload(){}
 };
 
 /// Model objects
@@ -763,7 +764,18 @@ struct LifetimePolicy<Client, Wrapper,std::true_type, std::false_type>
           auto pos = mRegistry.find(objectID);
           if(pos != mRegistry.end()) mRegistry.erase(objectID);
        }, &mRegistry);
+              
+       auto flushName = std::stringstream(); 
+       flushName << "flush" << name; 
+              
+      ft->fDefinePlugInCmd(flushName.str().c_str(),
+          [](World*, void*, sc_msg_iter*,void*)
+          {
+            unload(); 
+          },nullptr);
   }
+  
+  static void unload(){ mRegistry.clear(); }
 
 private:
   static std::unordered_map<index,CacheRecord> mRegistry;
@@ -825,8 +837,24 @@ struct LifetimePolicy<Client, Wrapper,std::false_type, std::true_type>
           mClientRegistry.erase(objectName);
           mParamsRegistry.erase(objectName);
        }, &mClientRegistry);
-    
+       
+       
+      auto flushName = std::stringstream();
+      flushName << "flush" << name;
+              
+      ft->fDefinePlugInCmd(flushName.str().c_str(),
+          [](World*, void*, sc_msg_iter*,void*)
+          {
+            unload(); 
+          },nullptr);
   }
+  
+  static void unload()
+  { 
+    mClientRegistry.clear(); 
+    mParamsRegistry.clear();     
+  }
+  
 private:
   static  ClientPointer getClientPointer(Wrapper* wrapper)
   {
