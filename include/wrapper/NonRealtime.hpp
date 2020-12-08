@@ -1,0 +1,940 @@
+#pragma once 
+
+#include "BufferFuncs.hpp"
+#include "Meta.hpp"
+#include "SCBufferAdaptor.hpp"
+#include "CopyReplyAddress.hpp"
+#include "Messaging.hpp"
+#include "RealTimeBase.hpp"
+
+#include <clients/common/FluidBaseClient.hpp>
+#include <SC_PlugIn.hpp>
+#include <SC_ReplyImpl.hpp>
+#include <map>
+
+namespace fluid {
+namespace client {
+namespace impl { 
+  
+  /// Non Real Time Processor
+  
+  template <typename Client, typename Wrapper>
+  class NonRealTime : public SCUnit
+  {
+    using Params =  typename Client::ParamSetType;
+    
+    template<typename T,typename...Args>
+    static T* rtalloc(World* world,Args&&...args)
+    {
+      void* space = getInterfaceTable()->fRTAlloc(world, sizeof(T));
+      return new (space) T{std::forward<Args>(args)...};
+    }
+    
+    /// Instance cache
+    struct CacheEntry
+    {
+      
+      CacheEntry(Params& p):mParams{p},mClient{mParams}
+      {}
+      
+      Params mParams;
+      Client mClient;
+    };
+    
+    using CacheEntryPointer = std::shared_ptr<CacheEntry>; 
+    using WeakCacheEntryPointer = std::weak_ptr<CacheEntry>; //could use weak_type in 17
+    using Cache = std::map<index,CacheEntryPointer>; 
+    
+    static bool isNull(WeakCacheEntryPointer const& weak) {
+      return !weak.owner_before(WeakCacheEntryPointer{}) && !WeakCacheEntryPointer{}.owner_before(weak);
+    }
+    
+    static Cache mCache;
+  
+  public:
+    static WeakCacheEntryPointer get(index id)
+    {
+      auto   lookup  = mCache.find(id);
+      return lookup == mCache.end() ? WeakCacheEntryPointer() : lookup->second;
+    }
+    
+    static WeakCacheEntryPointer add(index id, CacheEntry&& entry)
+    {
+      if(isNull(get(id)))
+      {
+        auto result =  mCache.emplace(id,
+                               std::make_shared<CacheEntry>(std::move(entry)));
+                               
+        return result.second ? (result.first)->second : WeakCacheEntryPointer(); //sob
+      }
+      else //client has screwed up
+      {
+          std::cout << "ERROR: ID " << id << " already in use\n";
+          return {};
+      }
+    }
+    
+    static void remove(index id)
+    {
+      mCache.erase(id);
+    }
+    
+    static void printNotFound(index id)
+    {
+      std::cout << "ERROR: " << Wrapper::getName() << " no instance with ID " << id << std::endl;
+    }
+    
+  private:
+    static InterfaceTable* getInterfaceTable() { return Wrapper::getInterfaceTable() ;}
+    
+    template <size_t N, typename T>
+    using ParamsFromOSC = typename ClientParams<Wrapper>::template Setter<sc_msg_iter, N, T>;
+
+    template <size_t N, typename T>
+    using ParamsFromSynth = typename ClientParams<Wrapper>::template Setter<impl::FloatControlsIter, N, T>;
+
+
+    struct NRTCommand
+    {
+      NRTCommand(World*, sc_msg_iter* args, bool consumeID = true)
+      {
+        auto count = args->count;
+        auto pos = args->rdpos;
+        
+        mID = args->geti();
+        
+        if(!consumeID)
+        {
+          args->count = count;
+          args->rdpos = pos;
+        }
+      }
+      
+      NRTCommand(){}
+      
+      explicit NRTCommand(index id):mID{id}{}
+      
+      bool stage2(World*) { std::cout << "Nope\n"; return true; } //nrt
+      bool stage3(World*) { return true; } //rt
+      bool stage4(World*) { return true; } //nrt
+      void cleanup(World*) {} //rt
+      
+      void sendReply(World* world, const char* name,bool success)
+      {
+        if(mID < 0) return;
+        auto ft = getInterfaceTable();
+        auto root = ft->fGetNode(world,0);
+        float res[2] = {static_cast<float>(success),static_cast<float>(mID)};
+        std::string slashname = std::string{'/'} + name;
+        ft->fSendNodeReply(root,0, slashname.c_str(), 2, res);
+      }
+//      protected:
+      index mID;
+    };
+    
+    struct CommandNew : public NRTCommand
+    {
+      CommandNew(World* world, sc_msg_iter* args)
+        : NRTCommand{world,args, !IsNamedShared_v<Client>},
+          mParams{Client::getParameterDescriptors()}
+      {
+        mParams.template setParameterValuesRT<ParamsFromOSC>(nullptr, world, *args);
+      }
+
+      CommandNew(index id, World*, FloatControlsIter& args, Unit* x)
+        :NRTCommand{id},
+         mParams{Client::getParameterDescriptors()}
+      {
+        mParams.template setParameterValuesRT<ParamsFromSynth>(nullptr, x, args);
+      }
+
+      static const char* name()
+      {
+        static std::string cmd = std::string(Wrapper::getName()) + "/new";
+        return cmd.c_str();
+      }
+
+      bool stage2(World*)
+      {
+//        auto entry = ;
+        mResult = (!isNull(add(NRTCommand::mID, CacheEntry{mParams})));
+                
+        //Sigh. The cache entry above has both the client instance and main params instance.
+        // The client is linked to the params by reference; I've not got the in-place constrction
+        // working properly so that params are in their final resting place by the time we make the client
+        // so (for) now we need to manually repoint the client to the correct place. Or badness.
+        if(mResult)
+        {
+           auto ptr = get(NRTCommand::mID).lock();
+           ptr->mClient.setParams(ptr->mParams);
+        }
+        return mResult;
+      }
+      
+      bool stage3(World* w)
+      {
+        NRTCommand::sendReply(w, name(), mResult);
+        return true;
+      }
+
+    private:
+      bool mResult;
+      Params mParams;
+    };
+    
+    struct CommandFree: public NRTCommand
+    {
+      using NRTCommand::NRTCommand;
+      
+      
+      template<bool b>
+      struct CancelCheck{
+        void operator()(index id)
+        {
+          if(auto ptr = get(id).lock())
+          {
+            auto& client = ptr->mClient;
+            if(!client.synchronous() && client.state() == ProcessState::kProcessing)
+              std::cout << Wrapper::getName()
+              << ": Processing cancelled"
+              << std::endl;
+          }
+        }
+      };
+      
+      template<>
+      struct CancelCheck<true>{
+        void operator()(index)
+        {}
+      };
+            
+      static const char* name()
+      {
+        static std::string cmd = std::string(Wrapper::getName()) + "/free";
+        return cmd.c_str();
+      }
+      
+      bool stage2(World*)
+      {
+        CancelCheck<IsRTQueryModel>()(NRTCommand::mID);
+        remove(NRTCommand::mID);
+        return true;
+      }
+
+      bool stage3(World* w)
+      {
+        NRTCommand::sendReply(w, name(), true);
+        return true;
+      }
+    };
+    
+    
+    /// Not registered as a PlugInCmd. Triggered by  worker thread callback
+    struct CommandAsyncComplete: public NRTCommand
+    {
+      CommandAsyncComplete(World*, index id, void* replyAddress)
+      {
+        NRTCommand::mID = id;
+        mReplyAddress = replyAddress;
+      }
+      
+      static const char* name() { return CommandProcess::name(); }
+      
+      bool stage2(World* world)
+      {
+        
+        std::cout << "In Async completion\n";
+        if(auto ptr = get(NRTCommand::mID).lock())
+        {
+          Result       r;
+          auto& client = ptr->mClient;
+          ProcessState s = client.checkProgress(r);
+          if (s == ProcessState::kDone || s == ProcessState::kDoneStillProcessing)
+          {
+            if (r.status() == Result::Status::kCancelled)
+            {
+              std::cout << Wrapper::getName()
+                        << ": Processing cancelled"
+                        << std::endl;
+              return false;
+            }
+            
+            client.checkProgress(r);
+            mSuccess = !(r.status() == Result::Status::kError);
+            if (!r.ok())
+            {
+              Wrapper::printResult(world,r);
+              if(r.status() == Result::Status::kError) return false;
+            }
+            return true;
+          }
+        }
+        return false;
+      }
+      
+      bool stage3(World* world)
+      {
+        if(auto ptr = get(NRTCommand::mID).lock())
+        {
+          auto& params = ptr->mParams;
+          params.template forEachParamType<BufferT, AssignBuffer>(world);
+          //NRTCommand::sendReply(world, name(), true);
+          return true;
+        }
+        return false;
+      }
+      
+      bool stage4(World*) //nrt
+      {
+        if(auto ptr = get(NRTCommand::mID).lock())
+        {
+          ptr->mParams.template forEachParamType<BufferT, impl::CleanUpBuffer>();
+          return true;
+        }
+        return false;
+      }
+      
+      void cleanup(World* world) {
+        if(auto ptr = get(NRTCommand::mID).lock() && NRTCommand::mID >= 0)
+          NRTCommand::sendReply(world, name(), mSuccess);
+        if(mReplyAddress)
+        {
+          ReplyAddress* r = static_cast<ReplyAddress*>(mReplyAddress);
+          delete r;
+        }
+      } //rt
+      
+      bool mSuccess;
+      void* mReplyAddress{nullptr};
+      
+    };
+    
+    static void doProcessCallback(World* world, index id,size_t completionMsgSize,char* completionMessage,void* replyAddress)
+    {
+        std::cout << "In callback\n"; 
+        auto ft = getInterfaceTable();
+      
+        struct Context{
+          World* mWorld;
+          index  mID;
+          size_t    mCompletionMsgSize;
+          char*  mCompletionMessage;
+          void*  mReplyAddress;
+        };
+        
+        Context* c = new Context{world,id,completionMsgSize,completionMessage,replyAddress};
+      
+        auto runCompletion = [](FifoMsg* msg){
+          std::cout << "In FIFOMsg\n";
+          Context* c = static_cast<Context*>(msg->mData);
+          World* world = c->mWorld;
+          index id = c->mID;
+          auto ft = getInterfaceTable();
+          void* space = ft->fRTAlloc(world,sizeof(CommandAsyncComplete));
+          CommandAsyncComplete* cmd = new (space) CommandAsyncComplete(world, id,c->mReplyAddress);          
+          runAsyncCommand(world, cmd, c->mReplyAddress, c->mCompletionMsgSize, c->mCompletionMessage);
+        };
+        
+        auto tidyup = [](FifoMsg* msg)
+        {
+          Context* c = static_cast<Context*>(msg->mData);
+          delete c;
+        };
+        
+        FifoMsg msg;
+        msg.Set(world, runCompletion, tidyup, c);
+        ft->fSendMsgToRT(world,msg);
+    }
+        
+    struct CommandProcess: public NRTCommand
+    {
+      CommandProcess(World* world, sc_msg_iter* args): NRTCommand{world, args}
+      {
+        auto& ar = *args;
+        
+        if(auto ptr = get(NRTCommand::mID).lock())
+        {
+           ptr->mParams.template setParameterValuesRT<ParamsFromOSC>(nullptr, world, ar);
+           mSynchronous = static_cast<bool>(ar.geti());
+        } //if this fails, we'll hear about it in stage2 anyway
+      }
+
+      explicit CommandProcess(index id,bool synchronous):NRTCommand{id},mSynchronous(synchronous)
+      {}
+      
+      
+      static const char* name()
+      {
+        static std::string cmd = std::string(Wrapper::getName()) + "/process";
+        return cmd.c_str();
+      }
+      
+      bool stage2(World* world)
+      {
+        if(auto ptr = get(NRTCommand::mID).lock())
+        {
+          auto& params = ptr->mParams;
+          auto& client = ptr->mClient;
+          
+//          if(mOSCData)
+//          {
+//             params.template setParameterValuesRT<ParamsFromOSC>(nullptr, world, *mOSCData);
+//             mSynchronous = static_cast<bool>(mOSCData->geti());
+//          }
+                    
+          Result result = validateParameters(params);
+          Wrapper::printResult(world, result);
+          if (result.status() != Result::Status::kError)
+          {
+//            client.done()
+            client.setSynchronous(mSynchronous);
+            index id = NRTCommand::mID;
+            size_t completionMsgSize = mCompletionMsgSize;
+            char* completionMessage = mCompletionMessage;
+            void* replyAddress = copyReplyAddress(mReplyAddr);
+            
+            auto callback = [world,id,completionMsgSize,completionMessage,replyAddress](){
+              doProcessCallback(world,id,completionMsgSize,completionMessage,replyAddress);
+            };
+                    
+            result = mSynchronous ? client.enqueue(params) : client.enqueue(params,callback);
+            Wrapper::printResult(world, result);
+            
+            if(result.ok())
+            {
+              mResult = client.process();
+              Wrapper::printResult(world,mResult);
+              return mSynchronous && mResult.ok();
+            }
+          }
+        }
+        else
+        {
+          mResult = Result{Result::Status::kError, "No ", Wrapper::getName(), " with ID ", NRTCommand::mID};
+          Wrapper::printResult(world,mResult);
+        }
+        return false;
+      }
+
+      //Only for blocking execution
+      bool stage3(World* world) //rt
+      {
+        if(auto ptr = get(NRTCommand::mID).lock())
+        {
+          ptr->mParams.template forEachParamType<BufferT, AssignBuffer>(world);
+//          NRTCommand::sendReply(world, name(), mResult.ok());
+          return true;
+        }
+        std::cout << "Ohno\n";
+        return false;
+      }
+      
+      //Only for blocking execution
+      bool stage4(World*) //nrt
+      {
+        if(auto ptr = get(NRTCommand::mID).lock())
+        {
+          ptr->mParams.template forEachParamType<BufferT, impl::CleanUpBuffer>();
+          return true;
+        }
+        return false;
+      }
+      
+      void cleanup(World* world) {
+        if(auto ptr = get(NRTCommand::mID).lock() && NRTCommand::mID >= 0 && mSynchronous)
+          NRTCommand::sendReply(world, name(), mResult.ok());
+        if(mReplyAddr)
+            deleteReplyAddress(mReplyAddr);
+//          getInterfaceTable()->fRTFree(world,mReplyAddr);
+      } //rt
+      
+      bool synchronous()
+      {
+        return mSynchronous;
+      }
+
+      void addCompletionMessage(size_t size, char* message, void* addr)
+      {
+        mCompletionMsgSize = size;
+        mCompletionMessage = message;
+        mReplyAddr = copyReplyAddress(addr);
+//        ReplyAddress* rr = static_cast<ReplyAddress*>(addr);
+//        if(addr)mReplyAddr = *rr;
+      }
+       
+//      private:
+        Result mResult;
+        bool mSynchronous;
+        size_t mCompletionMsgSize{0};
+        char* mCompletionMessage{nullptr};
+        void* mReplyAddr{nullptr};
+//        sc_msg_iter* mOSCData;
+    };
+    
+    struct CommandProcessNew: public NRTCommand
+    {
+      CommandProcessNew(World* world, sc_msg_iter* args)
+       : mNew{world,args},
+         mProcess{mNew.mID,false}
+     {
+        mProcess.mSynchronous = args->geti();
+     }
+      
+      CommandProcessNew(index id, World* world, FloatControlsIter& args, Unit* x)
+        : mNew{id, world, args, x},
+          mProcess{id}
+      {}
+              
+      static const char* name()
+      {
+        static std::string cmd = std::string(Wrapper::getName()) + "/processNew";
+        return cmd.c_str();
+      }
+      
+      bool stage2(World* world)
+      {
+        return mNew.stage2(world) ? mProcess.stage2(world) : false;
+      }
+      
+      bool stage3(World* world) //rt
+      {
+        return mProcess.stage3(world);
+      }
+
+      bool stage4(World* world) //rt
+      {
+        return mProcess.stage4(world);
+      }
+      
+      void cleanup(World* world)
+      {
+        mProcess.cleanup(world); 
+      }
+      
+      bool synchronous()
+      {
+        return mProcess.synchronous();
+      }
+      
+      void addCompletionMessage(size_t size, char* message,void* addr)
+      {
+        mProcess.addCompletionMessage(size, message,addr);
+      }
+
+    private:
+        CommandNew mNew;
+        CommandProcess mProcess;
+    };
+    
+    
+    struct CommandCancel: public NRTCommand
+    {
+      CommandCancel(World* world, sc_msg_iter* args): NRTCommand{world, args}
+      {}
+      
+      static const char* name()
+      {
+        static std::string cmd = std::string(Wrapper::getName()) + "/cancel";
+        return cmd.c_str();
+      }
+      
+      bool stage2(World*)
+      {
+        if(auto ptr = get(NRTCommand::mID).lock())
+        {
+          auto& client = ptr->mClient;
+          if(!client.synchronous())
+          {
+            client.cancel();
+            return true;
+          }
+        }
+        return false;
+      }
+    };
+    
+    struct CommandSetParams: public NRTCommand
+    {
+      CommandSetParams(World* world, sc_msg_iter* args)
+        : NRTCommand{world, args}
+      {
+        auto& ar = *args;
+        if(auto ptr = get(NRTCommand::mID).lock())
+        {
+           ptr->mParams.template setParameterValuesRT<ParamsFromOSC>(nullptr, world, ar);
+           Result result = validateParameters(ptr->mParams);
+           ptr->mClient.setParams(ptr->mParams);
+           NRTCommand::sendReply(world, name(), result.ok());
+        } else printNotFound(NRTCommand::mID);
+      }
+      
+      static const char* name()
+      {
+        static std::string cmd = std::string(Wrapper::getName()) + "/setParams";
+        return cmd.c_str();
+      }
+    };
+    
+        
+    template<typename Command>
+    static auto runAsyncCommand(World* world, Command* cmd, void* replyAddr,
+                                      size_t completionMsgSize, char* completionMsgData)
+    {
+          auto ft = getInterfaceTable();
+
+          return ft->fDoAsynchronousCommand(world, replyAddr,Command::name(),cmd,
+          [](World* w, void* d) { return static_cast<Command*>(d)->stage2(w); },
+          [](World* w, void* d) { return static_cast<Command*>(d)->stage3(w); },
+          [](World* w, void* d) { return static_cast<Command*>(d)->stage4(w); },
+          [](World* w, void* d)
+          {
+              auto cmd = static_cast<Command*>(d);
+              cmd->cleanup(w);
+              cmd->~Command();
+              getInterfaceTable()->fRTFree(w,d);
+          },
+          static_cast<int>(completionMsgSize), completionMsgData);
+    }
+    
+   
+    static auto runAsyncCommand(World* world, CommandProcess* cmd, void* replyAddr,
+                                      size_t completionMsgSize, char* completionMsgData)
+    {
+          if(!cmd->synchronous())
+          {
+            cmd->addCompletionMessage(completionMsgSize,completionMsgData,replyAddr);
+            return runAsyncCommand<CommandProcess>(world, cmd, replyAddr, 0, nullptr);
+          }
+          else return runAsyncCommand<CommandProcess>(world, cmd, replyAddr, completionMsgSize, completionMsgData);
+    }
+   
+    static auto runAsyncCommand(World* world, CommandProcessNew* cmd, void* replyAddr,
+                                      size_t completionMsgSize, char* completionMsgData)
+    {
+          if(!cmd->synchronous())
+          {
+            cmd->addCompletionMessage(completionMsgSize,completionMsgData,replyAddr);
+            return runAsyncCommand<CommandProcessNew>(world, cmd, replyAddr, 0, nullptr);
+          }
+          else return runAsyncCommand<CommandProcessNew>(world, cmd, replyAddr, completionMsgSize, completionMsgData);
+    }
+  
+  
+    template<typename Command>
+    static void defineNRTCommand()
+    {
+      auto ft = getInterfaceTable();
+      auto commandRunner = [](World* world, void*, struct sc_msg_iter* args, void* replyAddr)
+      {
+          
+          auto ft = getInterfaceTable();
+          void* space = ft->fRTAlloc(world,sizeof(Command));
+          Command* cmd = new (space) Command(world, args);
+          //This is brittle, but can't think of something better offhand
+          //This is the only place we can check for a completion message at the end of the OSC packet
+          //beause it has to be passed on to DoAsynhronousCommand at this point. However, detecting correctly
+          //relies on the Command type having fully consumed arguments from the args iterator in the constructor for cmd
+          size_t completionMsgSize{args ? args->getbsize() : 0};
+          assert(completionMsgSize <= std::numeric_limits<int>::max());
+          char* completionMsgData = nullptr;
+          
+          if (completionMsgSize) {
+            completionMsgData = (char*)ft->fRTAlloc(world, completionMsgSize);
+            args->getb(completionMsgData, completionMsgSize);
+          }
+          runAsyncCommand(world, cmd, replyAddr, completionMsgSize, completionMsgData);
+      };
+      ft->fDefinePlugInCmd(Command::name(),commandRunner,nullptr);
+    }
+    
+    
+    
+    struct NRTProgressUnit: SCUnit
+    {
+    
+      static const char* name()
+      {
+        static std::string n = std::string(Wrapper::getName()) + "Monitor";
+        return n.c_str();
+      }
+    
+      NRTProgressUnit()
+      {
+        mInterval = static_cast<index>(0.02 / controlDur());
+        set_calc_function<NRTProgressUnit, &NRTProgressUnit::next>();
+        Wrapper::getInterfaceTable()->fClearUnitOutputs(this, 1);
+      }
+      
+      void next(int)
+      {
+        if (0 == mCounter++)
+        {
+          index id = static_cast<index>(mInBuf[0][0]);
+          if(auto ptr = get(id).lock())
+          {
+            if(ptr->mClient.done()) mDone = 1;
+            out0(0) = static_cast<float>(ptr->mClient.progress());
+          }
+          else
+            std::cout << "WARNING: No " << Wrapper::getName() << " with ID " << id << std::endl;
+        }
+        mCounter %= mInterval;
+      }
+      
+    private:
+      index mInterval;
+      index mCounter{0};
+    };
+    
+    
+    struct NRTTriggerUnit: SCUnit
+    {
+      
+      static index count(){
+        static index counter = -1;
+        return counter--;
+      }
+      
+      index ControlOffset() { return mSpecialIndex + 1; }
+      
+      index ControlSize()
+      {
+        return index(mNumInputs)
+                - mSpecialIndex //used for oddball cases
+                - 3; //id + trig + blocking;
+      }
+      
+      static const char* name()
+      {
+        static std::string n = std::string(Wrapper::getName()) + "Trigger";
+        return n.c_str();
+      }
+      
+      NRTTriggerUnit()
+      : mControlsIterator{mInBuf + ControlOffset(),ControlSize()}
+      {
+        mID = static_cast<index>(mInBuf[0][0]);
+        if(mID == -1) mID = count();
+        auto cmd = NonRealTime::rtalloc<CommandNew>(mWorld,mID,mWorld, mControlsIterator, this);
+        runAsyncCommand(mWorld, cmd, nullptr, 0, nullptr);
+        set_calc_function<NRTTriggerUnit, &NRTTriggerUnit::next>();
+        Wrapper::getInterfaceTable()->fClearUnitOutputs(this, 1);
+      }
+      
+      ~NRTTriggerUnit()
+      {
+        if(auto ptr = get(mID).lock())
+        {
+          auto cmd = NonRealTime::rtalloc<CommandFree>(mWorld,mID);
+          runAsyncCommand(mWorld, cmd, nullptr, 0, nullptr); 
+        }
+      }
+      
+      void next(int)
+      {
+        index triggerInput = static_cast<index>(mInBuf[static_cast<index>(mNumInputs) - 2][0]);
+        mTrigger = mTrigger || triggerInput;
+        
+        if(auto ptr = get(mID).lock())
+        {
+          bool  trigger = (mPreviousTrigger <= 0) && mTrigger > 0;          
+          mPreviousTrigger = mTrigger;
+          mTrigger = 0;
+          auto& client = ptr->mClient;
+          
+          if(trigger)
+          {
+            mDone = 0;
+            client.resetDone();
+            mControlsIterator.reset(1 + mInBuf); //add one for ID
+            auto& params = ptr->mParams;
+            Wrapper::setParams(this,params,mControlsIterator,true,false);
+            bool blocking = mInBuf[mNumInputs - 1][0] > 0;
+            CommandProcess* cmd = rtalloc<CommandProcess>(mWorld,mID,blocking);
+            runAsyncCommand(mWorld,cmd, nullptr,0, nullptr);
+            mRunCount++;
+          }
+          else
+          {
+              mDone = mRunCount && client.done() ;
+              out0(0) = mDone ? 1 : static_cast<float>(client.progress());
+          }
+        }
+//        else printNotFound(id);
+      }
+      
+    private:
+      bool mPreviousTrigger{0};
+      bool mTrigger{0};
+      Result mResult;
+      impl::FloatControlsIter mControlsIterator;
+      index mID;
+      index mRunCount{0};
+    };
+    
+    struct NRTModelQueryUnit: SCUnit
+    {
+      using Delegate = impl::RealTimeBase<Client,Wrapper>;
+      
+      index ControlOffset() { return mSpecialIndex + 2; }
+      index ControlSize()
+      { 
+        return index(mNumInputs)
+                - mSpecialIndex //used for oddball cases
+                - 2; // trig + id
+      }
+      
+      static const char* name()
+      {
+        static std::string n = std::string(Wrapper::getName()) + "/query";
+        return n.c_str();
+      }
+            
+      NRTModelQueryUnit()
+        //Offset controls by 1 to account for ID
+      : mControls{mInBuf + ControlOffset(),ControlSize()}
+      {
+        index id = static_cast<index>(in0(1));
+        if(auto ptr = get(id).lock())
+        {
+          auto& client = ptr->mClient;
+          mDelegate.init(*this,client,mControls);
+          set_calc_function<NRTModelQueryUnit, &NRTModelQueryUnit::next>();
+          Wrapper::getInterfaceTable()->fClearUnitOutputs(this, 1);
+        }else printNotFound(id);
+      }
+      
+      void next(int)
+      {
+        index id = static_cast<index>(in0(1));
+        if(auto ptr = get(id).lock())
+        {
+          auto& client = ptr->mClient;
+          auto& params = ptr->mParams;
+          mControls.reset(mInBuf + ControlOffset());
+          mDelegate.next(*this,client,params,mControls);
+        }else printNotFound(id);
+      }
+      
+    private:
+      Delegate mDelegate;
+      FloatControlsIter mControls;
+      index mID;
+    };
+    
+    
+    using ParamSetType = typename Client::ParamSetType;
+    
+    template <size_t N, typename T>
+    using SetupMessageCmd = typename FluidSCMessaging<Wrapper,Client>::template SetupMessageCmd<N,T>;
+  
+  
+    template<bool, typename CommandType>
+    struct DefineCommandIf
+    {
+      void operator()() { }
+    };
+
+
+    template<typename CommandType>
+    struct DefineCommandIf<true, CommandType>
+    {
+      void operator()() {
+        std::cout << CommandType::name() << std::endl; 
+        defineNRTCommand<CommandType>();
+      }
+    };
+    
+    template<bool, typename UnitType>
+    struct RegisterUnitIf
+    {
+      void operator()(InterfaceTable*) {}
+    };
+
+    template<typename UnitType>
+    struct RegisterUnitIf<true, UnitType>
+    {
+      void operator()(InterfaceTable* ft) { registerUnit<UnitType>(ft,UnitType::name()); }
+    };
+
+    
+    using IsRTQueryModel_t = typename Client::isRealTime;
+    static constexpr bool IsRTQueryModel = IsRTQueryModel_t::value;
+       
+    static constexpr bool IsModel =  Client::isModelObject::value;
+       
+  
+  public:
+    static void setup(InterfaceTable* ft, const char* name)
+    {
+      defineNRTCommand<CommandNew>();
+      DefineCommandIf<!IsRTQueryModel, CommandProcess>()();
+      DefineCommandIf<!IsRTQueryModel, CommandProcessNew>()();
+      DefineCommandIf<!IsRTQueryModel, CommandCancel>()();
+      
+      DefineCommandIf<IsModel,CommandSetParams>()();
+//      DefineCommandIf<IsRTQueryModel,CommandGetParams>()();
+      
+      defineNRTCommand<CommandFree>();
+      RegisterUnitIf<!IsRTQueryModel,NRTProgressUnit>()(ft);
+      RegisterUnitIf<!IsRTQueryModel,NRTTriggerUnit>()(ft);
+
+      RegisterUnitIf<IsRTQueryModel,NRTModelQueryUnit>()(ft);
+      Client::getMessageDescriptors().template iterate<SetupMessageCmd>();
+    }
+
+
+    void init(){};
+
+  private:
+    static Result validateParameters(ParamSetType& p)
+    {
+      auto results = p.constrainParameterValues();
+      for (auto& r : results)
+      {
+        if (!r.ok()) return r;
+      }
+      return {};
+    }
+
+    template <size_t N, typename T>
+    struct AssignBuffer
+    {
+      void operator()(const typename BufferT::type& p, World* w)
+      {
+        if (auto b = static_cast<SCBufferAdaptor*>(p.get())) b->assignToRT(w);
+      }
+    };
+
+    template <size_t N, typename T>
+    struct CleanUpBuffer
+    {
+      void operator()(const typename BufferT::type& p)
+      {
+        if (auto b = static_cast<SCBufferAdaptor*>(p.get())) b->cleanUp();
+      }
+    };
+
+    FifoMsg           mFifoMsg;
+    char*             mCompletionMessage = nullptr;
+    void*             mReplyAddr = nullptr;
+    const char*       mName = nullptr;
+    index             checkThreadInterval;
+    index             pollCounter{0};
+    index             mPreviousTrigger{0};  
+
+    bool         mSynchronous{true};
+    Wrapper*     mWrapper{static_cast<Wrapper*>(this)};
+    Result       mResult;
+  };
+  
+  //initialize static cache
+  template<typename Client, typename Wrapper>
+  using Cache = typename NonRealTime<Client,Wrapper>::Cache;
+  
+  template<typename Client, typename Wrapper>
+  Cache<Client,Wrapper> NonRealTime<Client,Wrapper>::mCache{};
+  
+} 
+}
+}
