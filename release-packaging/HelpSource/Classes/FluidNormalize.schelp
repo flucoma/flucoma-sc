@@ -92,17 +92,17 @@ FluidBufPitch.process(s,~audio, features: ~pitch_feature);
 	var chunkLen = (~pitch_feature.numFrames / 10).asInteger;
 	var stats = FluidBufStats.kr(
 			source: ~pitch_feature, startFrame: count * chunkLen,
-			numFrames: chunkLen, stats: ~stats, trig: trig
+        numFrames: chunkLen, stats: ~stats, trig: (trig * (count <=9)), blocking:1
 	);
 	var rd = BufRd.kr(2, ~stats, DC.kr(0), 0, 1);// pick only mean pitch and confidence
 	var wr1 = BufWr.kr(rd[0], buf, DC.kr(0));
 	var wr2 = BufWr.kr(rd[1], buf, DC.kr(1));
-	var dsWr = FluidDataSetWr.kr(\norm_help_raw, buf: buf, trig: Done.kr(stats));
+	var dsWr = FluidDataSetWr.kr(~raw, buf: buf, trig: Done.kr(stats));
 	LocalOut.kr( Done.kr(dsWr));
+    Poll.kr(trig,count,\count);
 	FreeSelf.kr(count - 9);
 }.play;
 )
-
 
 // Normalize and load to language-side array
 (
@@ -130,42 +130,28 @@ FluidBufPitch.process(s,~audio, features: ~pitch_feature);
 ~inbuf = Buffer.loadCollection(s,0.5.dup);
 ~outbuf = Buffer.new(s);
 ~normalizer.transformPoint(~inbuf,~outbuf,{|x|x.postln;x.getn(0,2,{|y|y.postln;};)});
-
+OSCFunc.trace(false,true)
 
 //Server side queries
-//Setup
 (
-~tempPoint = Buffer.alloc(s,2);
-~predictPoint = Buffer.alloc(s,2);
-~avgBuf = Buffer.alloc(s,100,2);
-~pitchingBus = Bus.control;
-~catchingBus = Bus.control;
-)
-(
-~normalizer.inBus_(~pitchingBus).outBus_(~catchingBus).inBuffer_(~tempPoint).outBuffer_(~predictPoint);
-//Pitching (no pun intended): read frames out of buffer and pass to standardize
 {
 	var audio = BufRd.ar(1,~audio,LFSaw.ar(BufDur.ir(~audio).reciprocal).range(0, BufFrames.ir(~audio)));
 	var counter = Stepper.ar(Impulse.ar(ControlRate.ir),max:99);
-	var trig = HPZ1.ar(counter) < 0;
+    var trig = A2K.kr(HPZ1.ar(counter) < 0);
 	//average 100 frames: one could use the MovingAverage extension here
 	var avg;
-	BufWr.kr(FluidPitch.kr(audio),~avgBuf,phase:counter);
-	avg = Mix.new(BufRd.kr(2, ~avgBuf, phase:100.collect{|x|x})) * 0.01;
+    var inputPoint = LocalBuf(2);
+    var outputPoint = LocalBuf(2);
+    var avgBuf = LocalBuf(100,2);
+    //running average of pitch features
+	BufWr.kr(FluidPitch.kr(audio),avgBuf,phase:counter);
+	avg = Mix.new(BufRd.kr(2, avgBuf, phase:100.collect{|x|x})) * 0.01;
 	//assemble data point
-	BufWr.kr(avg[0],~tempPoint,0);
-	BufWr.kr(avg[1],~tempPoint,1);
-	Poll.kr(T2K.kr(trig),BufRd.kr(1,~tempPoint,[0,1]),["pitch (raw)", "confidence (raw)"]);
-	Out.kr(~pitchingBus.index,[T2K.kr(trig)]);
-}.play(~normalizer.synth,addAction:\addBefore);
-
-{
-	Poll.kr(In.kr(~catchingBus.index),BufRd.kr(1,~predictPoint,[0,1]),["pitch (normalized)", "confidence (normalized)"])
-}.play(~normalizer.synth,addAction:\addAfter);
-
+	BufWr.kr(avg[0],inputPoint,0);
+	BufWr.kr(avg[1],inputPoint,1);
+    ~normalizer.kr(trig,inputPoint,outputPoint);
+	Poll.kr(trig,BufRd.kr(1,inputPoint,[0,1]),["pitch (raw)", "confidence (raw)"]);
+    Poll.kr(trig,BufRd.kr(1,outputPoint,[0,1]),["pitch (normalized)", "confidence (normalized)"])
+}.play;
 )
-
-
-
-
 ::

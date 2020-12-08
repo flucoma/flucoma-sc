@@ -79,7 +79,7 @@ c = Buffer.new(s);
 (
 Routine{
 	t = Main.elapsedTime;
-	FluidBufMelBands.process(s, b, features: c, numBands:10);
+	FluidBufMelBands.process(s, b, features: c, numBands:10).wait;
 	(Main.elapsedTime - t).postln;
 }.play
 )
@@ -109,7 +109,7 @@ c = Buffer.new(s);
 (
 Routine{
     t = Main.elapsedTime;
-	FluidBufMelBands.process(s, b, features: c, numBands:10);
+	FluidBufMelBands.process(s, b, features: c, numBands:10).wait;
     (Main.elapsedTime - t).postln;
 }.play
 )

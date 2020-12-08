@@ -89,6 +89,7 @@ FluidBufAudioTransport.process(s,b,source2:c,destination:d,interpolation:0.5,act
 // listen to the source and the result
 b.play
 c.play
+d.updateInfo
 d.play
 
 // more interesting sources: two cardboard bowing gestures

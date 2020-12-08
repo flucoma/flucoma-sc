@@ -73,7 +73,6 @@ code::
 ~mds = FluidMDS(s);
 )
 
-
 // Load audio and run an mfcc analysis, which gives us 13 points (we'll throw the 0th away)
 (
 ~audio = Buffer.read(s,~audiofile);
@@ -90,16 +89,16 @@ FluidBufMFCC.process(s,~audio, features: ~mfcc_feature);
 	var chunkLen = (~mfcc_feature.numFrames / 100).asInteger;
 	var stats = FluidBufStats.kr(
 			source: ~mfcc_feature, startFrame: count * chunkLen,
-		    startChan:1, numFrames: chunkLen, stats: ~stats, trig: trig
+		    startChan:1, numFrames: chunkLen, stats: ~stats, trig: trig,blocking:1
 	);
 	var rd = BufRd.kr(12, ~stats, DC.kr(0), 0, 1);
 	var bufWr, dsWr;
 	12.do{|i|
 		bufWr = BufWr.kr(rd[i], buf, DC.kr(i));
 	};
-	dsWr = FluidDataSetWr.kr(\mds_help_12D, buf: buf, trig: Done.kr(stats));
-	LocalOut.kr( Done.kr(dsWr));
-	FreeSelf.kr(count - 99);
+	dsWr = FluidDataSetWr.kr(~raw, buf: buf, trig: Done.kr(stats),blocking:1);
+    LocalOut.kr(Done.kr(dsWr));
+    FreeSelf.kr(count - 99);
 	Poll.kr(trig,count);
 }.play;
 )
@@ -109,12 +108,14 @@ FluidBufMFCC.process(s,~audio, features: ~mfcc_feature);
 //Then apply the MDS in-place on the standardized data to get 2 dimensions, using a Euclidean distance metric
 //Download the DataSet contents into an array for plotting
 (
+
 ~reducedarray = Array.new(100);
 ~standardizer.fitTransform(~raw, ~standardized);
 ~mds.fitTransform(~standardized, ~reduced, action:{
-	~reduced.dump{|x| 100.do{|i|
-		~reducedarray.add(x["data"][i.asString])
-     }}});
+    "HETE".postln;
+    ~reduced.dump{|x| 100.do{|i|
+        ~reducedarray.add(x["data"][i.asString])
+}}});
 )
 
 //Visualise the 2D projection of our original 12D data
@@ -175,5 +176,4 @@ w.drawFunc = {
 w.refresh;
 w.front;
 )
-
 ::

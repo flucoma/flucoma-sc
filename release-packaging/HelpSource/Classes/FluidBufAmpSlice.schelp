@@ -143,14 +143,16 @@ b.play
 c = Buffer.new(s);
 
 //run the process on them
-(
-// with basic params
-Routine{
-	t = Main.elapsedTime;
-	FluidBufAmpSlice.process(s,b, indices: c, fastRampUp: 10,fastRampDown: 2205,slowRampUp: 4410,slowRampDown: 4410, onThreshold: 10,offThreshold: 5);
-	(Main.elapsedTime - t).postln;
-}.play
-)
+    (
+        // with basic params
+        Routine{
+            var t = Main.elapsedTime;
+            var proc = FluidBufAmpSlice.process(s,b, indices: c, fastRampUp: 10,fastRampDown: 2205,slowRampUp: 4410,slowRampDown: 4410, onThreshold: 10,offThreshold: 5);
+            proc.wait;
+            c.query;
+            (Main.elapsedTime - t).postln;
+        }.play
+    )
 
 // list the indicies of detected attacks - the two input channels have been summed.
 c.getn(0,c.numFrames,{|item|(item * 2).postln;})

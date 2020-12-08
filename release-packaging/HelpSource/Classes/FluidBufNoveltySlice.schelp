@@ -87,7 +87,7 @@ c = Buffer.new(s);
 // with basic params, with a minimum slight length to avoid over
 Routine{
 	t = Main.elapsedTime;
-	FluidBufNoveltySlice.process(s,b, indices: c, threshold:0.4,filterSize: 4, minSliceLength: 8);
+	FluidBufNoveltySlice.process(s,b, indices: c, threshold:0.4,filterSize: 4, minSliceLength: 8).wait;
 	(Main.elapsedTime - t).postln;
 }.play
 )
@@ -120,11 +120,13 @@ c = Buffer.new(s);
 )
 
 // process with a given filterSize
-FluidBufNoveltySlice.process(s,b, indices: c, kernelSize:31, threshold:0.1, filterSize:1)
-
+(
+Routine{
+    FluidBufNoveltySlice.process(s,b, indices: c, kernelSize:31, threshold:0.1, filterSize:1).wait;
 //check the number of slices: it is the number of frames in the transBuf minus the boundary index.
-c.query;
-
+    c.query;
+}.play;
+)
 //play slice number 3
 (
 {
@@ -164,7 +166,7 @@ c = Buffer.new(s);
 // with basic params
 Routine{
     t = Main.elapsedTime;
-    FluidBufNoveltySlice.process(s,b, indices: c, threshold:0.3);
+    FluidBufNoveltySlice.process(s,b, indices: c, threshold:0.3).wait;
     (Main.elapsedTime - t).postln;
 }.play
 )

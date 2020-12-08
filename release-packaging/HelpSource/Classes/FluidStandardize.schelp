@@ -59,8 +59,8 @@ s.boot;
 //Preliminaries: we want some audio, a couple of FluidDataSets, some Buffers and a FluidStandardize
 (
 ~audiofile = File.realpath(FluidBufPitch.class.filenameSymbol).dirname +/+ "../AudioFiles/Tremblay-ASWINE-ScratchySynth-M.wav";
-~raw = FluidDataSet(s,\stand_help_raw);
-~stand = FluidDataSet(s,\stand_help_standd);
+~raw = FluidDataSet(s);
+~stand = FluidDataSet(s);
 ~audio = Buffer.read(s,~audiofile);
 ~pitch_feature = Buffer.new(s);
 ~stats = Buffer.alloc(s, 7, 2);
@@ -71,10 +71,10 @@ s.boot;
 // Load audio and run a pitch analysis, which gives us pitch and pitch confidence (so a 2D datum)
 (
 ~audio = Buffer.read(s,~audiofile);
-FluidBufPitch.process(s,~audio, features: ~pitch_feature);
+FluidBufPitch.process(s,~audio, features: ~pitch_feature,action:{"Analysed Pitch".postln});
 )
 
-// Divide the time series in to 10, and take the mean of each segment and add this as a point to
+// Divide the time series in to 10, and take the mean of each s"egment and add this as a point to
 // the 'raw' FluidDataSet
 (
 {
@@ -83,18 +83,19 @@ FluidBufPitch.process(s,~audio, features: ~pitch_feature);
     var count = PulseCount.kr(trig) - 1;
 	var chunkLen = (~pitch_feature.numFrames / 10).asInteger;
 	var stats = FluidBufStats.kr(
-			source: ~pitch_feature, startFrame: count * chunkLen,
-			numFrames: chunkLen, stats: ~stats, trig: trig
+        source: ~pitch_feature, startFrame: count * chunkLen,
+        numFrames: chunkLen, stats: ~stats,
+        trig: trig * (count < 10), blocking: 1
 	);
 	var rd = BufRd.kr(2, ~stats, DC.kr(0), 0, 1);// pick only mean pitch and confidence
 	var wr1 = BufWr.kr(rd[0], buf, DC.kr(0));
 	var wr2 = BufWr.kr(rd[1], buf, DC.kr(1));
-	var dsWr = FluidDataSetWr.kr(\stand_help_raw, buf: buf, trig: Done.kr(stats));
+	var dsWr = FluidDataSetWr.kr(~raw, buf: buf, trig: Done.kr(stats));
 	LocalOut.kr( Done.kr(dsWr));
 	FreeSelf.kr(count - 9);
+    Poll.kr(trig,count, \count);
 }.play;
 )
-
 
 // Standardize and load to language-side array
 (
@@ -123,41 +124,27 @@ FluidBufPitch.process(s,~audio, features: ~pitch_feature);
 ::
 
 subsection::Server Side Querying
-
-Because FluidStandardize runs in its own link::Classes/Synth:: on the server, communication is done via control-rate link::Classes/Bus:: objects for triggering and link::Classes/Buffer:: objects for passing and retreiving data.
-
 code::
-//Setup
 (
-~tempPoint = Buffer.alloc(s,2);
-~predictPoint = Buffer.alloc(s,2);
-~avgBuf = Buffer.alloc(s,100,2);
-~pitchingBus = Bus.control;
-~catchingBus = Bus.control;
-)
-
-(
-~standardizer.inBus_(~pitchingBus).outBus_(~catchingBus).inBuffer_(~tempPoint).outBuffer_(~predictPoint);
-//Pitching (no pun intended): read frames out of buffer and pass to standardize
+// read frames out of buffer and pass to standardize
 {
 	var audio = BufRd.ar(1,~audio,LFSaw.ar(BufDur.ir(~audio).reciprocal).range(0, BufFrames.ir(~audio)));
 	var counter = Stepper.ar(Impulse.ar(ControlRate.ir),max:99);
-	var trig = HPZ1.ar(counter) < 0;
+    var trig = A2K.kr(HPZ1.ar(counter) < 0);
 	//average 10 frames: one could use the MovingAverage extension here
 	var avg;
-	BufWr.kr(FluidPitch.kr(audio),~avgBuf,phase:counter);
-	avg = Mix.new(BufRd.kr(2, ~avgBuf, phase:100.collect{|x|x})) * 0.01;
+    var inputPoint= LocalBuf(2);
+    var outputPoint = LocalBuf(2);
+    var avgBuf = LocalBuf(100,2);
+    //average of pitch features
+	BufWr.kr(FluidPitch.kr(audio),avgBuf,phase:counter);
+	avg = Mix.new(BufRd.kr(2, avgBuf, phase:100.collect{|x|x})) * 0.01;
 	//assemble data point
-	BufWr.kr(avg[0],~tempPoint,0);
-	BufWr.kr(avg[1],~tempPoint,1);
-	Poll.kr(T2K.kr(trig),BufRd.kr(1,~tempPoint,[0,1]),["pitch (raw)", "confidence (raw)"]);
-	Out.kr(~pitchingBus.index,[T2K.kr(trig)]);
-}.play(~standardizer.synth,addAction:\addBefore);
-
-//catching
-{
-	Poll.kr(In.kr(~catchingBus.index),BufRd.kr(1,~predictPoint,[0,1]),["pitch (standardized)", "confidence (standardized)"])
-}.play(~standardizer.synth,addAction:\addAfter);
-
+	BufWr.kr(avg[0],inputPoint,0);
+	BufWr.kr(avg[1],inputPoint,1);
+	Poll.kr(trig,BufRd.kr(1,inputPoint,[0,1]),["pitch (raw)", "confidence (raw)"]);
+    ~standardizer.kr(trig,inputPoint,outputPoint);
+    Poll.kr(trig,BufRd.kr(1,outputPoint,[0,1]),["pitch (standardized)", "confidence (standardized)"]);
+}.play;
 )
 ::

@@ -78,7 +78,7 @@ c = Buffer.new(s);
 (
 Routine{
 	t = Main.elapsedTime;
-	FluidBufMFCC.process(s, b, features: c);
+	FluidBufMFCC.process(s, b, features: c).wait;
 	(Main.elapsedTime - t).postln;
 }.play
 )
@@ -108,7 +108,7 @@ c = Buffer.new(s);
 (
 Routine{
     t = Main.elapsedTime;
-    FluidBufMFCC.process(s, b, numCoeffs:5, features: c);
+    FluidBufMFCC.process(s, b, numCoeffs:5, features: c).wait;
     (Main.elapsedTime - t).postln;
 }.play
 )

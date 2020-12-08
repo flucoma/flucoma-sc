@@ -82,15 +82,17 @@ CODE::
 s.boot;
 (
 fork{
-	~ds = FluidDataSet.new(s,\simple1d_1);
+	~ds = FluidDataSet.new(s);
 	~point = Buffer.alloc(s,1,1);
 	s.sync;
 	10.do{|i|
         ~point.set(0,i);
         ~ds.addPoint(i.asString,~point,{("addPoint"+i).postln});
-		s.sync;
+        s.sync;
     };
-	~ds.dump; s.sync; ~ds.free;
+    ~ds.dump;
+      s.sync;
+    ~ds.free;
 };
 )
 
@@ -100,39 +102,39 @@ d = Dictionary.new;
 d.add(\cols -> 1);
 d.add(\data -> Dictionary.newFrom(10.collect{|i|[i.asString, [i.asFloat]]}.flatten));
 fork{
-	~ds = FluidDataSet.new(s,\simple1d_2); s.sync;
-	~ds.load(d); s.sync;
-	~ds.dump; s.sync; ~ds.free;
+    ~ds = FluidDataSet.new(s); s.sync;
+    ~ds.load(d); s.sync;
+    ~ds.dump; s.sync; ~ds.free;
 }
 )
 
-// Using synth
+// Using a synth
 (
-~ds = FluidDataSet.new(s,\simple1d_3);
+~ds = FluidDataSet.new(s);
 {
-	var trig = Impulse.kr(20);
-	var count = PulseCount.kr(trig) - 1;
-	var buf = LocalBuf(1);
-	BufWr.kr(count, buf);
-	FluidDataSetWr.kr(\simple1d_3, buf: buf, trig: trig);
-	FreeSelf.kr(count - 8);
-}.play.onFree{~ds.dump{|o| o.postln; ~ds.free}}
+        var trig = Impulse.kr(20);
+        var count = PulseCount.kr(trig) - 1;
+        var buf = LocalBuf(1);
+        BufWr.kr(count, buf);
+        FluidDataSetWr.kr(~ds.asUGenInput, buf: buf, trig: trig);
+        FreeSelf.kr(count - 8);
+}.play.onFree{~ds.dump{|o| o.postln;~ds.free}}
 )
 ::
 
 STRONG:: Merging Datasets::
-
+s.dumpOSC
 code::
 //this is how to add items between 2 datasets.
 //create 2 datasets
 (
-~dsA = FluidDataSet.new(s,\simple1d_4a);
-~dsB = FluidDataSet.new(s,\simple1d_4b);
+~dsA = FluidDataSet.new(s);
+~dsB = FluidDataSet.new(s);
 )
-
+Dictionary.new
 //feed them items with same dimensions but different labels
-~dsA.load(Dictionary.newFrom([\cols, 1, \data, Dictionary.newFrom([\one,[1],\two,[2]])]));
-~dsB.load(Dictionary.newFrom([\cols, 1, \data, Dictionary.newFrom([\three,[3],\four,[4]])]));
+~dsA.load(Dictionary.newFrom([\cols, 1, \data, Dictionary.newFrom([\one,1,\two,2])]));
+~dsB.load(Dictionary.newFrom([\cols, 1, \data, Dictionary.newFrom([\three,3,\four,4])]));
 ~dsA.print;
 ~dsB.print;
 
@@ -141,8 +143,8 @@ code::
 ~dsB.print;
 
 //change the content of the dataset to shared labels
-~dsA.load(Dictionary.newFrom([\cols, 1, \data, Dictionary.newFrom([\three,[333],\four,[444]])]));
-~dsB.load(Dictionary.newFrom([\cols, 1, \data, Dictionary.newFrom([\three,[3],\four,[4]])]));
+~dsA.load(Dictionary.newFrom([\cols, 1, \data, Dictionary.newFrom([\three,333,\four,444])]));
+~dsB.load(Dictionary.newFrom([\cols, 1, \data, Dictionary.newFrom([\three,3,\four,4])]));
 ~dsA.print;
 ~dsB.print;
 

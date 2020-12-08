@@ -48,8 +48,6 @@ A function that will run when the query returns, whose argument is an array of d
 EXAMPLES::
 
 code::
-
-
 // Make a DataSet of random 2D points
 s.reboot;
 (
@@ -117,13 +115,40 @@ fork{
 )
 ::
 
-subsection:: Server Side Queries
+subsection:: Queries in a Synth
+
+Input and output is done via buffers, which will need to be preallocated to the correct sizes:
+LIST::
+##Your input buffer should be sized to the input data dimension (2, in this example)
+##Your output buffer should be the number of neighbours * output dimensionality
+::
+
+We can't simply return labels (i.e. strings) from a UGen, so the query returns the actual data points from a DataSet instead. By default, this is the FluidDataSet against which the tree was fitted. However, by passing a different dataset to code::kr::'s code::lookupDataSet:: argument instead, you can return different points, so long as the labels in the two datasets match. In this way, the FluidKDTree can be used to perform nearest neighbour mappings in a synth.
+
+For instance, whilst fitting the tree against some n-dimensional descriptor data, our lookup dataset could use the same labels to map descriptor entries back to buffers, or locations in buffers, so that queries can be used to trigger audio.
 
 code::
-//populate the lookupDataSet
+
+(
+Routine{
+    var inputBuffer = Buffer.alloc(s,2);
+    var outputBuffer = Buffer.alloc(s,10);//5 neighbours * 2D data points
+    s.sync;
+    {
+        var trig = Impulse.kr(4); //can go as fast as ControlRate.ir/2
+        var point = 2.collect{TRand.kr(0,1,trig)};
+        point.collect{|p,i| BufWr.kr([p],inputBuffer,i)};
+        ~tree.kr(trig,inputBuffer,outputBuffer,5,nil);
+        Poll.kr(trig, BufRd.kr(1,outputBuffer,Array.iota(5)),5.collect{|i| "Neighbour" + i});
+        Silent.ar;
+    }.play;
+}.play;
+)
+
+//Using a lookup data set instead:
 //here we populate with numbers that are in effect the indicies, but it could be anything numerical that will be returned on the server-side and would be usable on that side
 (
-~dsL = FluidDataSet.new(s,\kdtree_help_indices);
+~dsL = FluidDataSet.new(s);
 fork{
     d = Dictionary.with(
         *[\cols -> 1,\data -> Dictionary.newFrom(
@@ -132,31 +157,23 @@ fork{
 	~dsL.load(d, {~dsL.print});
 }
 )
-
-// instantiate a tree with a lookup dataset. Note that this 'association' has to be done at instantiation.
-~tree = FluidKDTree(s,numNeighbours:5, lookupDataSet:~dsL);
-~tree.fit(~ds)
-
-//set the buffers and busses needed
+~dsL.asUGenInput
+s.dumpOSC
+// Create the buffers, and make a synth, querying our tree with some random points
 (
-~inputPoint = Buffer.alloc(s,2);
-~predictPoint = Buffer.alloc(s,5);
-~pitchingBus = Bus.control;
-~catchingBus = Bus.control;
-)
-
-(
-~tree.inBus_(~pitchingBus).outBus_(~catchingBus).inBuffer_(~inputPoint).outBuffer_(~predictPoint);
-{
-	var trig = Impulse.kr(4); //can go as fast as ControlRate.ir/2
-	var point = 2.collect{TRand.kr(0,1,trig)};
-	point.collect{|p,i| BufWr.kr([p],~inputPoint,i)};
-	Poll.kr(trig,point);
-	Out.kr(~pitchingBus.index,[trig]);
-	Poll.kr(In.kr(~catchingBus.index),BufRd.kr(1,~predictPoint,Array.iota(5)));
-	Silent.ar;
-}.play(~tree.synth,addAction:\addBefore);
-
+Routine{
+    var inputBuffer = Buffer.alloc(s,2);
+    var outputBuffer = Buffer.alloc(s,5);//5 neighbours * 1D points
+    s.sync;
+    {
+        var trig = Impulse.kr(4); //can go as fast as ControlRate.ir/2
+        var point = 2.collect{TRand.kr(0,1,trig)};
+        point.collect{|p,i| BufWr.kr([p],inputBuffer,i)};
+        ~tree.kr(trig,inputBuffer,outputBuffer,5,~dsL);
+        Poll.kr(trig, BufRd.kr(1,outputBuffer,Array.iota(5)),5.collect{|i| "Neighbour" + i});
+        Silent.ar;
+    }.play;
+}.play;
 )
 ::
 

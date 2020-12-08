@@ -108,10 +108,8 @@ EXAMPLES::
 code::
 
 s.reboot;
-
-
 // Create a DataSet with random data
-~dataSet= FluidDataSet(s,\help_fluid_dataset_query);
+~dataSet= FluidDataSet(s);
 
 (
 ~points = 100.collect{|i|5.collect{|j|j+(i/100)}};
@@ -122,8 +120,9 @@ fork{
     s.sync;
     ~points.do{|x,i|
         ~tmpbuf.setn(0,x);
+        s.sync;
         ~dataSet.addPoint(i,~tmpbuf);
-        s.sync
+        // s.sync
     }
 }
 )
@@ -133,11 +132,12 @@ fork{
 
 // Prepare a FluidDataSetQuery object
 ~query = FluidDataSetQuery.new;
-~out = FluidDataSet(s,\help_fluid_dataset_query_out);
+~out = FluidDataSet(s);
 
 // prepare a simple query
 ~query.filter(0,"<",0.04);
 ~query.addColumn(2);
+s.dumpOSC
 ~query.transform(~dataSet, ~out);
 
 // check the result

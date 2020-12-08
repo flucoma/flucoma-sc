@@ -47,13 +47,13 @@ code::
 
 //Preliminaries: we want some points, a couple of FluidDataSets, a FluidStandardize and a FluidUMAP
 (
-~raw = FluidDataSet(s,\umap_help_3D);
-~standardized = FluidDataSet(s,\umap_help_3Ds);
-~reduced = FluidDataSet(s,\umap_help_2D);
-~normalized = FluidDataSet(s,\umap_help_2Dn);
+~raw = FluidDataSet(s);
+~standardized = FluidDataSet(s);
+~reduced = FluidDataSet(s);
+~normalized = FluidDataSet(s);
 ~standardizer  = FluidStandardize(s);
 ~normalizer = FluidNormalize(s);
-~umap = FluidUMAP(s, numDimensions: 2, numNeighbours: 5, minDist: 0.2,iterations: 50, learnRate: 0.2,batchSize: 50);
+~umap = FluidUMAP(s).numDimensions_(2).numNeighbours_(5).minDist_(0.2).iterations_(50). learnRate_(0.2).batchSize_(50);
 )
 
 
@@ -65,11 +65,11 @@ code::
 ~raw.print;
 
 //First standardize our DataSet, then apply the UMAP to get 2 dimensions, then normalise these 2 for drawing in the full window size
-
-~standardizer.fitTransform(~raw,~standardized)
-~umap.fitTransform(~standardized,~reduced)
-~normalizer.fitTransform(~reduced,~normalized)
-
+(
+~standardizer.fitTransform(~raw,~standardized,action:{"Standardized".postln});
+~umap.fitTransform(~standardized,~reduced,action:{"Finished UMAP".postln});
+~normalizer.fitTransform(~reduced,~normalized,action:{"Normalized Output".postln});
+)
 //we recover the reduced dataset
 ~normalized.dump{|x| ~normalizedDict = x["data"]};
 

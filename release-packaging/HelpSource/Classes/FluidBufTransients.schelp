@@ -89,7 +89,7 @@ d = Buffer.new(s);
 (
 Routine{
 	t = Main.elapsedTime;
-	FluidBufTransients.process(s,b, transients:c, residual:d);
+	FluidBufTransients.process(s,b, transients:c, residual:d).wait;
 	(Main.elapsedTime - t).postln;
 }.play
 );
@@ -106,7 +106,7 @@ d.play;
 (
 Routine{
 	t = Main.elapsedTime;
-	FluidBufTransients.process(s,b, 0, 220500, 0, 1, c, d, 200, 2048, 1024, 1, 3, 1, 15, 30);
+	FluidBufTransients.process(s,b, 0, 220500, 0, 1, c, d, 200, 2048, 1024, 1, 3, 1, 15, 30).wait;
 	(Main.elapsedTime - t).postln;
 }.play
 )
@@ -136,7 +136,7 @@ d = Buffer.new(s); e = Buffer.new(s);
 (
 Routine{
     t = Main.elapsedTime;
-    FluidBufTransients.process(s, b, transients: d, residual:e, threshFwd:1.2, clumpLength:40);
+    FluidBufTransients.process(s, b, transients: d, residual:e, threshFwd:1.2, clumpLength:40).wait;
     (Main.elapsedTime - t).postln;
 }.play
 )

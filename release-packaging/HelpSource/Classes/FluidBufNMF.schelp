@@ -142,7 +142,7 @@ d.play //////(beware !!!! loud!!!)
 (
 // separate them in 2 components
 Routine {
-	FluidBufNMF.process(s, d, resynth:e, bases: f, activations:g, components:2);
+	FluidBufNMF.process(s, d, resynth:e, bases: f, activations:g, components:2).wait;
 	e.query;
 	f.query;
 	g.query;
@@ -179,22 +179,24 @@ y = Buffer.new(s);
 // matrix factorisation, requesting everything - wait for the computation time to appear.
 (
 Routine{
-	t = Main.elapsedTime;
-	FluidBufNMF.process(s,b, 0,-1,0,-1,c,x,0,y,0,5,100,~frame_size,~hop_size,~fft_size);
-	(Main.elapsedTime - t).postln;
+	var t = Main.elapsedTime;
+    FluidBufNMF.process(s,b, 0,-1,0,-1,c,x,0,y,0,5,100,~frame_size,~hop_size,~fft_size)
+    .wait;
+     (Main.elapsedTime - t).postln;
 }.play
 )
 
 //look at the resynthesised components, the bases and the activations
 c.plot; x.plot; y.plot;
-//null test of the sum of sources
-{(PlayBuf.ar(5,c,doneAction:2).sum)+(-1*PlayBuf.ar(1,b,doneAction:2))}.play
 
 // play the components spread in the stereo field
 {Splay.ar(PlayBuf.ar(5,c,doneAction:2))}.play
 
 //play a single source
 {PlayBuf.ar(5,c,doneAction:2)[~which_component].dup}.play
+
+//null test of the sum of sources
+{(PlayBuf.ar(5,c,doneAction:2).sum)+(-1*PlayBuf.ar(1,b,doneAction:2))}.play
 
 //play noise using one of the bases as filter.
 (
@@ -251,7 +253,7 @@ b.play
 // train using the first 2 seconds of the sound file
 (
 Routine {
-	FluidBufNMF.process(s,b,0,44100*5,0,1, ~originalNMF, ~bases, components:10);
+	FluidBufNMF.process(s,b,0,44100*5,0,1, ~originalNMF, ~bases, components:10).wait;
 	~originalNMF.query;
 }.play;
 )
@@ -296,7 +298,7 @@ z.do({|chan| FluidBufCompose.process(s, ~bases, startChan:chan, numChans: 1, des
 //process the whole file, splitting it with the 2 trained bases
 (
 Routine{
-	FluidBufNMF.process(s, b, resynth: ~sortedNMF, bases: ~trainedBases, basesMode: 2, components:2);
+	FluidBufNMF.process(s, b, resynth: ~sortedNMF, bases: ~trainedBases, basesMode: 2, components:2).wait;
 	~originalNMF.query;
 }.play;
 )
@@ -354,7 +356,7 @@ e.query
 (
 // use the seeding basis, without updating
 Routine {
-	FluidBufNMF.process(s, d, resynth:f, bases: e, basesMode: 2, activations:g, components:3);
+	FluidBufNMF.process(s, d, resynth:f, bases: e, basesMode: 2, activations:g, components:3).wait;
 	e.query;
 	f.query;
 	g.query;
@@ -373,7 +375,7 @@ g.plot;
 (
 // use the seeding bases, with updating this time
 Routine {
-	FluidBufNMF.process(s, d, resynth:f, bases: e, basesMode: 1, activations:g, components:3);
+	FluidBufNMF.process(s, d, resynth:f, bases: e, basesMode: 1, activations:g, components:3).wait;
 	e.query;
 	f.query;
 	g.query;

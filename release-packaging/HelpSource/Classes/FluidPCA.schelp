@@ -63,9 +63,9 @@ s.boot;
 //Preliminaries: we want some audio, a couple of FluidDataSets, some Buffers, a FluidStandardize and a FluidPCA
 (
 ~audiofile = File.realpath(FluidBufPitch.class.filenameSymbol).dirname +/+ "../AudioFiles/Tremblay-ASWINE-ScratchySynth-M.wav";
-~raw = FluidDataSet(s,\pca_help_12D);
-~standardized = FluidDataSet(s,\pca_help_12Ds);
-~reduced = FluidDataSet(s,\pca_help_2D);
+~raw = FluidDataSet(s);
+~standardized = FluidDataSet(s);
+~reduced = FluidDataSet(s);
 ~audio = Buffer.read(s,~audiofile);
 ~mfcc_feature = Buffer.new(s);
 ~stats = Buffer.alloc(s, 7, 12);
@@ -78,7 +78,7 @@ s.boot;
 // Load audio and run an mfcc analysis, which gives us 13 points (we'll throw the 0th away)
 (
 ~audio = Buffer.read(s,~audiofile);
-FluidBufMFCC.process(s,~audio, features: ~mfcc_feature);
+FluidBufMFCC.process(s,~audio, features: ~mfcc_feature,action:{"Done MFCCs".postln});
 )
 
 // Divide the time series in 100, and take the mean of each segment and add this as a point to
@@ -90,15 +90,16 @@ FluidBufMFCC.process(s,~audio, features: ~mfcc_feature);
     var count = PulseCount.kr(trig) - 1;
 	var chunkLen = (~mfcc_feature.numFrames / 100).asInteger;
 	var stats = FluidBufStats.kr(
-			source: ~mfcc_feature, startFrame: count * chunkLen,
-		    startChan:1, numFrames: chunkLen, stats: ~stats, trig: trig
+        source: ~mfcc_feature, startFrame: count * chunkLen,
+        startChan:1, numFrames: chunkLen, stats: ~stats,
+        trig: trig * (count < 100), blocking: 1
 	);
 	var rd = BufRd.kr(12, ~stats, DC.kr(0), 0, 1);
 	var bufWr, dsWr;
 	12.do{|i|
 		bufWr = BufWr.kr(rd[i], buf, DC.kr(i));
 	};
-	dsWr = FluidDataSetWr.kr(\pca_help_12D, buf: buf, trig: Done.kr(stats));
+	dsWr = FluidDataSetWr.kr(~raw, buf: buf, trig: Done.kr(stats));
 	LocalOut.kr( Done.kr(dsWr));
 	FreeSelf.kr(count - 99);
 	Poll.kr(trig,count);
@@ -150,29 +151,19 @@ subsection:: Server Side Queries
 Let's map our learned PCA dimensions to the controls of a processor
 
 code::
-
 (
-~inputPoint = Buffer.alloc(s,12);
-~predictPoint = Buffer.alloc(s,2);
-~pitchingBus = Bus.control;
-~catchingBus = Bus.control;
-)
-
-(
-~pca.inBus_(~pitchingBus).outBus_(~catchingBus).inBuffer_(~inputPoint).outBuffer_(~predictPoint);
-
 {
 	var mapped;
 	var audio = BufRd.ar(1,~audio,LFSaw.ar(BufDur.ir(~audio).reciprocal).range(0, BufFrames.ir(~audio)));
 	var mfcc = FluidMFCC.kr(audio)[1..12];
 	var smoothed = LagUD.kr(mfcc,1*ControlDur.ir,500*ControlDur.ir);
 	var trig = Impulse.kr(ControlRate.ir / 2);
-	smoothed.collect{|coeff,i| BufWr.kr([coeff],~inputPoint,i)};
-	Out.kr(~pitchingBus,[trig]);
-	mapped = Latch.kr(BufRd.kr(1,~predictPoint, phase:[0,1]).linlin(-3,3,0,3),In.kr(~catchingBus)).scope;
+    var inputPoint = LocalBuf(12);
+    var outputPoint = LocalBuf(2);
+	smoothed.collect{|coeff,i| BufWr.kr([coeff],inputPoint,i)};
+    ~pca.kr(trig, inputPoint, outputPoint, 2);
+	mapped = BufRd.kr(1,outputPoint, phase:[0,1]).linlin(-3,3,0,3);
 	CombC.ar(audio,3,mapped[0],mapped[1]*3)
-}.play(~pca.synth,addAction:\addBefore);
-
+}.play;
 )
-
 ::

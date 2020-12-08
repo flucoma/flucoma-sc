@@ -123,16 +123,17 @@ code::
 	d = Buffer.new(s);
 	e = Buffer.new(s);
 )
-
+OSCFunc.trace(true, true)
 // run with basic parameters
 (
 	Routine{
 		t = Main.elapsedTime;
-		FluidBufHPSS.process(s, b, harmonic: c, percussive: d);
+		FluidBufHPSS.process(s, b, harmonic: c, percussive: d).wait;
 		(Main.elapsedTime - t).postln;
 	}.play
 )
-
+c.query
+d.query
 //play the harmonic
 c.play;
 //play the percussive
@@ -143,11 +144,12 @@ d.play;
 
 //more daring parameters, in mode 2
 (
-	Routine{
-		t = Main.elapsedTime;
-          FluidBufHPSS.process(s, b, harmonic: c, percussive: d, residual:e, harmFilterSize:31, maskingMode:2, harmThreshFreq1: 0.005, harmThreshAmp1: 7.5, harmThreshFreq2: 0.168, harmThreshAmp2: 7.5, percThreshFreq1: 0.004, percThreshAmp1: 26.5, percThreshFreq2: 0.152, percThreshAmp2: 26.5,windowSize:4096,hopSize:512);
-		(Main.elapsedTime - t).postln;
-	}.play
+Routine{
+    t = Main.elapsedTime;
+    FluidBufHPSS.process(s, b, harmonic: c, percussive: d, residual:e, harmFilterSize:31, maskingMode:2, harmThreshFreq1: 0.005, harmThreshAmp1: 7.5, harmThreshFreq2: 0.168, harmThreshAmp2: 7.5, percThreshFreq1: 0.004, percThreshAmp1: 26.5, percThreshFreq2: 0.152, percThreshAmp2: 26.5,windowSize:4096,hopSize:512)
+    .wait;
+    (Main.elapsedTime - t).postln;
+}.play
 )
 
 //play the harmonic
@@ -171,9 +173,12 @@ c = Buffer.read(s,File.realpath(FluidBufHPSS.class.filenameSymbol).dirname.withT
 )
 
 // composite one on left one on right as test signals
-FluidBufCompose.process(s, c, numFrames:b.numFrames, startFrame:555000,destStartChan:1, destination:b)
-b.play
-
+(
+Routine{
+    FluidBufCompose.process(s, c, numFrames:b.numFrames, startFrame:555000,destStartChan:1, destination:b).wait;
+    b.play
+}.play
+)
 // create 2 new buffers as destinations
 d = Buffer.new(s); e = Buffer.new(s);
 
@@ -181,7 +186,7 @@ d = Buffer.new(s); e = Buffer.new(s);
 (
 Routine{
     t = Main.elapsedTime;
-    FluidBufHPSS.process(s, b, harmonic: d, percussive:e);
+    FluidBufHPSS.process(s, b, harmonic: d, percussive:e).wait;
     (Main.elapsedTime - t).postln;
 }.play
 )

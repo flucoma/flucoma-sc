@@ -71,16 +71,24 @@ b = Buffer.read(s,File.realpath(FluidBufNNDSVD.class.filenameSymbol).dirname.wit
 )
 
 //how many bases do I need to decompose the buffer with 90% accuracy
-FluidBufNNDSVD.process(s, b, ~bases, ~activations, coverage: 0.9, method: 1, action: {\done.postln;})
-
+(
+Routine{
+    FluidBufNNDSVD.process(s, b, ~bases, ~activations, coverage: 0.9, method: 1).wait;
+    "% bases".format(~bases.numChannels).postln;
+}.play;
+)
 //check how many bases we are returned:
-~bases.numChannels
+
 
 //try the same process with less accuracy
-FluidBufNNDSVD.process(s, b, ~bases, ~activations, coverage: 0.5, action: {\done.postln;})
-~bases.numChannels
+(
+Routine{
+    FluidBufNNDSVD.process(s, b, ~bases, ~activations, coverage: 0.5).wait;
+    "% bases".format(~bases.numChannels).postln;
+}.play
+)
 
 //use the bases to run NMF on
 FluidBufNMF.process(s, b, resynth: ~resynth, bases: ~bases, activations: ~activations,actMode: 2, components: ~bases.numChannels, action: {\done.postln;})
-{PlayBuf.ar(~resynth.numChannels, ~resynth)[1]}.play
+{PlayBuf.ar(~resynth.numChannels, ~resynth)[2]}.play
 ::

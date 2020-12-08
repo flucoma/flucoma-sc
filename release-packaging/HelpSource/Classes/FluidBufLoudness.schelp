@@ -73,7 +73,7 @@ b.play; b.plot;
 (
 Routine{
 	t = Main.elapsedTime;
-	FluidBufLoudness.process(s, source:b, features: c);
+	FluidBufLoudness.process(s, source:b, features: c).wait;
 	(Main.elapsedTime - t).postln;
 }.play
 )
@@ -109,7 +109,7 @@ c = Buffer.new(s);
 (
 Routine{
     t = Main.elapsedTime;
-    FluidBufLoudness.process(s, b, features: c, windowSize: 17640, hopSize:4410);
+    FluidBufLoudness.process(s, b, features: c, windowSize: 17640, hopSize:4410).wait;
     (Main.elapsedTime - t).postln;
 }.play
 )

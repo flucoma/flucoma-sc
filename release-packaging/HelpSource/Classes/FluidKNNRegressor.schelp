@@ -53,10 +53,10 @@ code::
 
 //Make a simple mapping between a ramp and a sine cycle, test with an exponentional ramp
 (
-~source = FluidDataSet(s,\knn_regress_src);
-~target = FluidDataSet(s,\knn_regress_tgt);
-~test = FluidDataSet(s,\knn_regress_test);
-~output = FluidDataSet(s,\knn_regress_out);
+~source = FluidDataSet(s);
+~target = FluidDataSet(s);
+~test = FluidDataSet(s);
+~output = FluidDataSet(s);
 ~tmpbuf = Buffer.alloc(s,1);
 ~regressor = FluidKNNRegressor(s);
 )
@@ -106,7 +106,7 @@ d = Dictionary.with(
 
 //We should see a single cycle of a chirp
 ~outputdata.plot;
-
+s.dumpOSC
 // single point transform on arbitrary value
 ~inbuf = Buffer.loadCollection(s,[0.5]);
 ~regressor.predictPoint(~inbuf,{|x|x.postln;});
@@ -117,28 +117,15 @@ subsection:: Server Side Queries
 code::
 //Setup
 (
-~inputPoint = Buffer.alloc(s,1);
-~predictPoint = Buffer.alloc(s,1);
-~pitchingBus = Bus.control;
-~catchingBus = Bus.control;
-)
-
-(
-~regressor.inBus_(~pitchingBus).outBus_(~catchingBus).inBuffer_(~inputPoint).outBuffer_(~predictPoint);
-
-~inputSynth = {
+{
 	var input = Saw.kr(2).linlin(-1,1,0,1);
 	var trig = Impulse.kr(ControlRate.ir/10);
-	BufWr.kr(input,~inputPoint,0);
-	Out.kr(~pitchingBus.index,[trig]);
-};
-
-~inputSynth.play(~regressor.synth,addAction:\addBefore);
-
-~outputSynth = {
-	Poll.kr(In.kr(~catchingBus.index),BufRd.kr(1,~predictPoint,0),"mapped value")
-};
-~outputSynth.play(~regressor.synth,addAction:\addAfter);
-~outputSynth.scope
+    var inputPoint = LocalBuf(1);
+    var outputPoint = LocalBuf(1);
+	BufWr.kr(input,inputPoint,0);
+    ~regressor.kr(trig,inputPoint,outputPoint);
+    BufRd.kr(1,outputPoint,0);//,"mapped value")
+}.scope
 )
+
 ::

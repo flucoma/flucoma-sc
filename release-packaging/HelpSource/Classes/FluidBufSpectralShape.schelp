@@ -83,7 +83,7 @@ c = Buffer.new(s);
 (
 Routine{
 	t = Main.elapsedTime;
-	FluidBufSpectralShape.process(s, b, features: c);
+	FluidBufSpectralShape.process(s, b, features: c).wait;
 	(Main.elapsedTime - t).postln;
 }.play
 )
@@ -113,7 +113,7 @@ c = Buffer.new(s);
 (
 Routine{
     t = Main.elapsedTime;
-    FluidBufSpectralShape.process(s, b, features: c);
+    FluidBufSpectralShape.process(s, b, features: c).wait;
     (Main.elapsedTime - t).postln;
 }.play
 )
