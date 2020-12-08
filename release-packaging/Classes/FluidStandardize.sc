@@ -1,29 +1,58 @@
-FluidStandardize : FluidRTDataClient {
-	*new {|server, invert = 0|
-		^super.new1(server,[\invert, invert]);
+FluidStandardize : FluidRealTimeModel {
+
+    var <>invert;
+
+    *new {|server, invert = 0|
+		^super.new(server,[invert]).invert_(invert);
 	}
 
-	fit{|dataSet, action|
-		this.prSendMsg(\fit, [dataSet.asSymbol], action);
+    prGetParams{
+        ^[this.invert, -1, 1];
+    }
+
+	fitMsg{|dataSet|
+        ^this.prMakeMsg(\fit,id,dataSet.id);
+    }
+
+    fit{|dataSet, action|
+        actions[\fit] = [nil, action];
+		this.prSendMsg(this.fitMsg(dataSet));
 	}
+
+	transformMsg{|sourceDataSet, destDataSet|
+        ^this.prMakeMsg(\transform,id,sourceDataSet.id,destDataSet.id);
+    }
 
 	transform{|sourceDataSet, destDataSet, action|
-		this.prSendMsg(\transform,
-			[sourceDataSet.asSymbol, destDataSet.asSymbol], action
-		);
+        actions[\transform] = [nil,action];
+		this.prSendMsg(this.transformMsg(sourceDataSet,destDataSet));
 	}
+
+    fitTransformMsg{|sourceDataSet, destDataSet|
+        ^this.prMakeMsg(\fitTransform,id,sourceDataSet.id,destDataSet.id)
+    }
 
 	fitTransform{|sourceDataSet, destDataSet, action|
-		this.prSendMsg(\fitTransform,
-			[sourceDataSet.asSymbol, destDataSet.asSymbol], action
-		);
+        actions[\fitTransform] = [nil,action];
+		this.prSendMsg(this.fitTransformMsg(sourceDataSet, destDataSet));
 	}
 
+
+    transformPointMsg{|sourceBuffer, destBuffer|
+        ^this.prMakeMsg(\transformPoint, id, this.prEncodeBuffer(sourceBuffer), this.prEncodeBuffer(destBuffer),["/b_query",destBuffer.asUGenInput]);
+    }
+
 	transformPoint{|sourceBuffer, destBuffer, action|
-		sourceBuffer = this.prEncodeBuffer(sourceBuffer);
-		destBuffer = this.prEncodeBuffer(destBuffer);
-		this.prSendMsg(\transformPoint,
-			[sourceBuffer, destBuffer], action, outputBuffers:[destBuffer]
-		);
+        actions[\transformPoint] = [nil, {action.value(destBuffer)}];
+        this.prSendMsg(this.transformPointMsg(sourceBuffer,destBuffer));
 	}
+
+    kr{|trig, inputBuffer,outputBuffer,invert|
+
+        invert = invert ? this.invert;
+        this.invert_(invert);
+
+        ^FluidProxyUgen.kr(this.class.name.asString++'/query', K2A.ar(trig),
+                id, this.invert, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer));
+    }
 }

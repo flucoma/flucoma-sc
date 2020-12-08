@@ -38,7 +38,7 @@ FluidMessageResponse : Object
     }
 
     *buffer{ |a,server,offset|
-        server = server ? Server.default ;
+        server = server ? Server.default ;        
         ^[Buffer.cachedBufferAt(server, a[offset]), offset + 1]
     }
 }

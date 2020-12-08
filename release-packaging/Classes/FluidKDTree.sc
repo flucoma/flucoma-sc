@@ -1,41 +1,60 @@
-FluidKDTree : FluidRTDataClient {
+FluidKDTree : FluidRealTimeModel
+ {
 
-	*new {|server,numNeighbours = 1, radius = 0, lookupDataSet = ""|
-		var env;
-		var names = [\numNeighbours, \radius]
-		++ this.prServerString(lookupDataSet.asSymbol).collect{|x,i|
-			("lookupDataSet"++i).asSymbol;
-		};
+    var neighbours,radius,lookup;
 
-		var values  = [numNeighbours, radius] ++ this.prServerString(lookupDataSet.asSymbol);
-		var params = [names,values].lace;
+    *new{ |server, numNeighbours = 1, radius = 0, lookupDataSet|
+        ^super.new(server,[numNeighbours,radius,lookupDataSet ? -1])
+        .numNeighbours_(numNeighbours)
+        .radius_(radius)
+        .lookupDataSet_(lookupDataSet);
+    }
 
+    numNeighbours_{|k|neighbours = k.asInteger; }
+    numNeighbours{ ^neighbours; }
 
-		/* env = Environment();
-		synthControls[1..].do{|x|
-			env.put(x,0);
-		};
-		env.put(\numNeighbours,1); */
+    radius_{|r| radius = r.asUGenInput;}
+    radius{ ^radius; }
 
-		^super.new1(server,params);
-			/* env,
-			[\numNeighbours]++lookupDataSet); */
-	}
+    lookupDataSet_{|ds| lookup = ds ? -1; }
+    lookupDataSet{|ds|  ^ (lookup ? -1) }
+
+    prGetParams{^[this.numNeighbours,this.radius,this.lookupDataSet,-1,-1];}
+
+    fitMsg{ |dataSet| ^this.prMakeMsg(\fit,this.id,dataSet.id);}
 
 	fit{|dataSet,action|
-		this.prSendMsg(\fit, [dataSet.asSymbol], action);
+        actions[\fit] = [nil,action];
+		this.prSendMsg(this.fitMsg(dataSet));
 	}
+
+    kNearestMsg{|buffer|
+        ^this.prMakeMsg(\kNearest,id,this.prEncodeBuffer(buffer));
+    }
 
 	kNearest{ |buffer, action|
-		this.prSendMsg(\kNearest,
-			[buffer.asUGenInput], action,
-            [strings(FluidMessageResponse,_,_)]
-		);
+        actions[\kNearest] = [strings(FluidMessageResponse,_,_),action];
+		this.prSendMsg(this.kNearestMsg(buffer));
 	}
 
+    kNearestDistMsg {|buffer|
+        ^this.prMakeMsg(\kNearestDist,id,this.prEncodeBuffer(buffer));
+    }
+
 	kNearestDist { |buffer, action|
-		this.prSendMsg(\kNearestDist, [buffer.asUGenInput], action,
-			[numbers(FluidMessageResponse,_,nil,_)]
-		);
+        actions[\kNearestDist] = [numbers(FluidMessageResponse,_,nil,_),action];
+		this.prSendMsg(this.kNearestDistMsg(buffer));
 	}
+
+    kr{|trig, inputBuffer,outputBuffer, numNeighbours = 1, lookupDataSet|
+        this.numNeighbours_(numNeighbours);
+        lookupDataSet = lookupDataSet ? -1;
+        this.lookupDataSet_(lookupDataSet);
+        this.lookupDataSet.asUGenInput.postln;
+        ^FluidProxyUgen.kr('FluidKDTree/query', K2A.ar(trig),
+                id, this.numNeighbours, this.radius, this.lookupDataSet.asUGenInput,
+                this.prEncodeBuffer(inputBuffer),
+                this.prEncodeBuffer(outputBuffer));
+    }
+
 }

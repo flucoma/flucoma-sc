@@ -1,4 +1,4 @@
-+ FluidManipulationClient {
++ FluidDataObject {
 	tmpJSONFilename{
 		^Platform.defaultTempDir++"tmp_fluid_data_"++
 		Date.localtime.stamp++"_"++UniqueID.next++".json";
@@ -6,8 +6,8 @@
 
 	dump {|action|
 		var filename = this.tmpJSONFilename;
-		action ?? {action = postit};
-			this.write(filename, {
+		action ?? {action = postResponse};
+		this.write(filename, {
 				action.value(this.parseJSON(File.readAllString(filename)));
 				File.delete(filename);
 			});

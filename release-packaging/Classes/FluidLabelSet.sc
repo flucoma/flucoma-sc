@@ -1,81 +1,52 @@
-FluidLabelSetExistsError : Exception{
-}
+FluidLabelSet : FluidDataObject {
 
-FluidLabelSet : FluidManipulationClient {
+    addLabelMsg{|identifier,label|
+        ^this.prMakeMsg(\addLabel,id,identifier.asSymbol,label.asSymbol);
+    }
 
-	var  <id;
-	classvar serverCaches;
-
-	*initClass {
-		serverCaches = FluidServerCache.new;
+	addLabel{|identifier, label, action|
+        actions[\addLabel] = [nil, action];
+		this.prSendMsg(this.addLabelMsg(identifier,label));
 	}
 
-	*at{ |server, name|
-		^serverCaches.tryPerform(\at, server, name)
+    updateLabelMsg{|identifier, label|
+        ^this.prMakeMsg(\updateLabel, id, identifier.asSymbol, label.asSymbol);
+    }
+
+	updateLabel{|identifier, label, action|
+        actions[\updateLabel] = [nil,action];
+		this.prSendMsg(this.updateLabelMsg(identifier,label));
 	}
 
-	*new { |server,name|
-		serverCaches.at(server,name) !? {
-			FluidLabelSetExistsError("A FluidLabelSet called % already exists.".format(name)).throw;
-		};
-		^super.new(server,FluidManipulationClient.prServerString(name))!?{|inst|inst.init(name);inst}
+    getLabelMsg{|identifier|
+        ^this.prMakeMsg(\getLabel, id, identifier.asSymbol);
+    }
+
+	getLabel{|identifier, action|
+        actions[\getLabel] = [string(FluidMessageResponse,_,_),action];
+		this.prSendMsg(this.getLabelMsg(identifier));
 	}
 
-	init { |name|
-		this.baseinit(FluidManipulationClient.prServerString(name));
-		id = name;
-		this.cache;
+    deleteLabelMsg{|identifier, action|
+    	^this.prMakeMsg(\deleteLabel, id, identifier.asSymbol);
+    }
+
+	deleteLabel{|identifier, action|
+        actions[\deleteLabel] = [nil, action];
+		this.prSendMsg(this.deleteLabelMsg(identifier));
 	}
 
-	cache {
-		serverCaches.initCache(server);
-		serverCaches.put(server,id,this);
-	}
+    clearMsg { ^this.prMakeMsg(\clear,id); }
 
-	asString {
-		^"FluidLabelSet(%)".format(id).asString;
-	}
+    clear { |action|
+      actions[\clear] = [nil,action];
+      this.prSendMsg(this.clearMsg);
+    }
 
-	asSymbol {
-		^id
-	}
+    printMsg { ^this.prMakeMsg(\print,id); }
 
-	*asUGenInput { |input|
-		var ascii = input.asString.ascii;
-		^[ascii.size].addAll(ascii)
-	}
-
-	addLabel{|id, label, action|
-		this.prSendMsg(\addLabel, [id.asString, label.asString],action);
-	}
-
-	updateLabel{|id, label, action|
-		this.prSendMsg(\updateLabel, [id.asString, label.asString],action);
-	}
-
-	getLabel{|id, action|
-		this.prSendMsg(\getLabel, [id.asString], action,[string(FluidMessageResponse,_,_)]);
-	}
-
-	deleteLabel{|id, action|
-		this.prSendMsg(\deleteLabel, [id.asString],action);
-	}
-
-	clear {|action|
-	 	this.prSendMsg(\clear,[], action);
-	}
-
-	free {|action|
-		serverCaches.remove(server, id);
-		super.free;
-	}
-
-	*freeAll {|server|
-		serverCaches.do(server,{|x| x.free;});
-	}
-
-	print { |action|
-		action ?? {action = postit};
-		this.prSendMsg(\print,[], action, [string(FluidMessageResponse,_,_)]);
+	print { |action=(postResponse)|
+		actions[\print] = [string(FluidMessageResponse,_,_),action];
+		this.prSendMsg(this.printMsg);
 	}
 }
