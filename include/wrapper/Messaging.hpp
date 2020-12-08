@@ -251,7 +251,7 @@ struct FluidSCMessaging{
                           std::index_sequence_for<Ts...>());
 
     auto  ft = getInterfaceTable();
-    ft->fSendNodeReply(ft->fGetNode(world,0), id, s.c_str(),
+    ft->fSendNodeReply(ft->fGetNode(world,0), static_cast<int>(id), s.c_str(),
                        static_cast<int>(numArgs), values);
     
     delete[] values;

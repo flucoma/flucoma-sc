@@ -865,7 +865,7 @@ namespace impl {
        
   
   public:
-    static void setup(InterfaceTable* ft, const char* name)
+    static void setup(InterfaceTable* ft, const char*)
     {
       defineNRTCommand<CommandNew>();
       DefineCommandIf<!IsRTQueryModel, CommandProcess>()();

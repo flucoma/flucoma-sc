@@ -24,7 +24,7 @@ class DataSetWriterClient : public FluidBaseClient, OfflineIn, OfflineOut
 {
 public:
   FLUID_DECLARE_PARAMS(
-      DataSetClientRef::makeParam("dataSet", "DataSet Name"),
+      DataSetClientRef::makeParam("dataSet", "DataSet ID"),
       StringParam("labelPrefix","Label Prefix"),
       LongParam("labelOffset", "Label Counter Offset", 0),
       BufferParam("buf", "Data Buffer")
