@@ -173,7 +173,13 @@ struct FluidSCMessaging{
           MessageData::Descriptor::template forEachArg<typename BufferT::type,
                                                  impl::AssignBuffer>(m->args,
                                                                      world);
-         
+          return true;
+        },
+        nullptr,                 // NRT Thread: No-op
+        [](World* world, void* data) // RT thread: clean up
+        {
+          MessageData* m = static_cast<MessageData*>(data);
+          
           if(m->result.status() != Result::Status::kError)
             messageOutput(m->name, m->id, m->result, world);
           else
@@ -181,12 +187,7 @@ struct FluidSCMessaging{
              auto ft = getInterfaceTable();
              ft->fSendNodeReply(ft->fGetNode(world,0),-1, m->name.c_str(),0, nullptr);
           }
-          return true;
-        },
-        nullptr,                 // NRT Thread: No-op
-        [](World* /*w*/, void* data) // RT thread: clean up
-        {
-          MessageData* m = static_cast<MessageData*>(data);
+                    
           delete m;
         },
         static_cast<int>(completionMsgSize), completionMsgData);
