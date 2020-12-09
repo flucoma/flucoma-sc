@@ -1,5 +1,5 @@
 
-FluidDataSet : FluidDataObject 
+FluidDataSet : FluidDataObject
 {
 
     addPointMsg{|label,buffer|
@@ -14,7 +14,7 @@ FluidDataSet : FluidDataObject
 
     getPointMsg{|label,buffer|
         buffer = this.prEncodeBuffer(buffer);
-        ^this.prMakeMsg(\getPoint,id,label.asSymbol,buffer);
+        ^this.prMakeMsg(\getPoint,id,label.asSymbol,buffer,["/b_query",buffer.asUGenInput]);
     }
 
     getPoint{|label, buffer, action|
@@ -24,7 +24,7 @@ FluidDataSet : FluidDataObject
 
     updatePointMsg{|label,buffer|
         buffer = this.prEncodeBuffer(buffer);
-        ^this.prMakeMsg(\updatePoint,id,label.asSymbol,buffer);
+        ^this.prMakeMsg(\updatePoint,id,label.asSymbol,buffer,["/b_query",buffer.asUGenInput]);
     }
 
     updatePoint{|label, buffer, action|
