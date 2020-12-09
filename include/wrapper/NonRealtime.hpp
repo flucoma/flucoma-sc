@@ -343,7 +343,7 @@ namespace impl {
         
         FifoMsg msg;
         msg.Set(world, runCompletion, tidyup, c);
-        ft->fSendMsgToRT(world,msg);
+        if(world->mRunning) ft->fSendMsgToRT(world,msg);
     }
         
     struct CommandProcess: public NRTCommand
