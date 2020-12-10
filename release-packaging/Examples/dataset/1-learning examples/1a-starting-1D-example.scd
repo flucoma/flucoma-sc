@@ -5,6 +5,7 @@ s.reboot
 Routine{
 	10.do{|i|
 		~point.set(0,i);
+		s.sync;
 		~ds.addPoint(i.asString,~point,{("addPoint"+i).postln});
 		s.sync;
 	}
@@ -63,3 +64,13 @@ Routine{
 
 // or simply print it
 ~labels.print
+
+// or dump and format
+(
+~labels.dump{|x|
+	var keys = x["data"].keys.asArray.sort;
+	keys.do{|key|
+		"Label for entry % is %\n".postf(key, x["data"][key][0]);
+	}
+}
+)
