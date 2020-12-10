@@ -85,6 +85,7 @@ FluidBufProcessor : FluidServerObject
 
     *cmdPeriod {
         serverCaches[this].doAll{|processor| processor.free; };
+        serverCaches[this] = nil;
         count = 0;
     }
 
