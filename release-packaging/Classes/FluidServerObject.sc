@@ -283,12 +283,12 @@ FluidModelObject : FluidDataObject
     }
 
     prSendMsg {|msg|
-        server !? { server.bind(
-            {
-                super.prSendMsg(this.prUpdateStateMsg);
-                super.prSendMsg(msg);
-            });
-        }
+        //These need to happen sequentially, but not simultaneously
+        //sending as a bundle makes reasoning about timing w/r/t other
+        //commands more awkward, unless we set the offet to 0 (in which case,
+        //noisy 'late' messages)
+        super.prSendMsg(this.prUpdateStateMsg);
+        super.prSendMsg(msg);
     }
 }
 
