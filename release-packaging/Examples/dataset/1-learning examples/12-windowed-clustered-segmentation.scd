@@ -1,122 +1,223 @@
-// load a source
-b = Buffer.read(s,"/Volumes/machins/projets/newsfeed/sons/textes/Audio/synth/fromtexttospeech-AmE-George.wav")
-b.play
+// load a source folder
+~loader = FluidLoadFolder("/Volumes/machins/projets/newsfeed/sons/textes/Audio/synth");
+~loader.play;
 
 //slightly oversegment with novelty
 //segments should still make sense but might cut a few elements in 2 or 3
-~originalslices = Buffer(s);
-FluidBufNoveltySlice.process(s, b, indices: ~originalslices, feature: 1, kernelSize: 29, threshold: 0.05, filterSize: 5, hopSize: 128, action: {~originalslices.numFrames.postln;})
+~slicer = FluidSliceCorpus({ |src,start,num,dest| FluidBufNoveltySlice.kr(src,start,num,indices:dest, feature: 1, kernelSize: 29, threshold: 0.05, filterSize: 5, hopSize: 128)});
+~slicer.play(s, ~loader.buffer,~loader.index);
 
 //test the segmentation by looping them
 (
-{
-	BufRd.ar(1, b,
-		Phasor.ar(0,1,
-			BufRd.kr(1, ~originalslices,
-				MouseX.kr(0, BufFrames.kr(~originalslices) - 1), 0, 1),
-			BufRd.kr(1, ~originalslices,
-				MouseX.kr(1, BufFrames.kr(~originalslices)), 0, 1),
-			BufRd.kr(1,~originalslices,
-				MouseX.kr(0, BufFrames.kr(~originalslices) - 1), 0, 1)), 0, 1);
+~originalindices = Array.newFrom(~slicer.index.keys).sort{|a,b| ~slicer.index[a][\bounds][0]< ~slicer.index[b][\bounds][0]}.collect{|x|~slicer.index[x][\bounds]};
+d = {arg start=0, end = 44100;
+	BufRd.ar(1, ~loader.buffer, Phasor.ar(0,1,start,end,start),0,1);
 }.play;
+
+w = Window.new.front;
+b = ControlSpec(0, ~originalindices.size - 1, \linear, 1); // min, max, mapping, step
+c = StaticText(w, Rect(340, 20, 50, 20)).align_(\center);
+a = Slider(w, Rect(10, 20, 330, 20))
+.action_({var val = b.map(a.value).asInteger;
+	c.string_(val.asString);
+	d.set(\start,~originalindices[val][0], \end, ~originalindices[val][1]);
+});
 )
 
-//analyse each segment with MFCCs in a dataset
-~originalslices.getn(0,~originalslices.numFrames, {|x|~originalslicesarray = x; if ((x.last != b.numFrames), {~originalslicesarray = ~originalslicesarray ++ (b.numFrames)}); });//retrieve the indices and add the file boundary at the end if not there already
-
-//iterates through the
-//a few buffers and our dataset - with back and forth from the language
+//analyse each segment with 20 MFCCs in a dataset and spectralshapes in another one
 (
-~mfccs = Buffer(s);
-~stats = Buffer(s);
-~flat = Buffer(s);
-~slices = FluidDataSet(s,\slices);
-
-Routine{
-	s.sync;
-	(~originalslicesarray.size - 1).do{|i|
-		FluidBufMFCC.process(s, b, startFrame: ~originalslicesarray[i], numFrames: (~originalslicesarray[i+1] - ~originalslicesarray[i]), numChans: 1,features: ~mfccs, numCoeffs: 20, action: {
-			FluidBufStats.process(s, ~mfccs, startChan: 1, stats: ~stats, action: {
-				FluidBufFlatten.process(s, ~stats, ~flat, action: {
-					~slices.addPoint(i.asSymbol, ~flat);
-				});
-			});
-		});
-	};
-}.play;
+~featuresbuf = 4.collect{Buffer.new};
+~statsbuf = 4.collect{Buffer.new};
+~flatbuf = 4.collect{Buffer.new};
+~slicesMFCC = FluidDataSet(s,\slicesM);
+~slicesShapes = FluidDataSet(s,\slicesS);
+~extractor = FluidProcessSlices({|src,start,num,data|
+	var features, stats, writer, flatten,mfccBuf, statsBuf, flatBuf, label, voice;
+	label = data.key;
+	voice = data.value[\voice];
+	features = FluidBufMFCC.kr(src,startFrame:start,numFrames:num,numChans:1, numCoeffs: 20, features:~featuresbuf[voice],trig:1,blocking: 1);
+	stats = FluidBufStats.kr(~featuresbuf[voice],stats:~statsbuf[voice],trig:Done.kr(features),blocking: 1);
+	flatten = FluidBufFlatten.kr(~statsbuf[voice],~flatbuf[voice],trig:Done.kr(stats),blocking: 1);
+	writer = FluidDataSetWr.kr(~slicesMFCC,label, -1, ~flatbuf[voice], Done.kr(flatten),blocking: 1);
+	features = FluidBufSpectralShape.kr(src,startFrame:start,numFrames:num,numChans:1, features:~featuresbuf[voice],trig:Done.kr(writer),blocking: 1);
+	stats = FluidBufStats.kr(~featuresbuf[voice],stats:~statsbuf[voice],trig:Done.kr(features),blocking: 1);
+	flatten = FluidBufFlatten.kr(~statsbuf[voice],~flatbuf[voice],trig:Done.kr(stats),blocking: 1);
+	writer = FluidDataSetWr.kr(~slicesShapes,label, -1, ~flatbuf[voice], Done.kr(flatten),blocking: 1);
+});
 )
+~extractor.play(s,~loader.buffer, ~slicer.index);
 
-~slices.print
+~slicesMFCC.print
+~slicesShapes.print
 
 //run a window over consecutive segments, forcing them in 2 classes, and merging the consecutive segments of similar class
 //we overlap the analysis with the last (original) slice to check for continuity
 (
 ~winSize = 4;//the number of consecutive items to split in 2 classes;
+~curated = FluidDataSet(s,\curatedDS);
 ~query = FluidDataSetQuery(s);
-~kmeans = FluidKMeans(s,2,100);
+~stan = FluidStandardize(s);
+~kmeans = FluidKMeans(s,2,1000);
 ~windowDS = FluidDataSet(s,\windowDS);
 ~windowLS = FluidLabelSet(s,\windowLS);
 )
 
+//curate stats (MFCCs)
+~query.clear
+~query.addRange((0*20)+1,10);
+~query.transform(~slicesMFCC,~curated);
+
+//OR
+//curate stats (moments)
+~query.clear
+~query.addRange(0,3);
+~query.transform(~slicesShapes,~curated);
+
+//OR
+//curate both
+~query.clear
+~query.addColumn(0);//add col 0 (mean of mfcc0 as 'loudness')
+~query.transform(~slicesMFCC,~curated);//mfcc0 as loudness
+~query.clear;
+~query.addRange(0,3);//add some spectral moments
+~query.transformJoin(~slicesShapes, ~curated, ~curated);//join in centroids
+
+~stan.fitTransform(~curated, ~curated);
+
+~curated.print
+~curated.dump{|x|~sliceDict = x;};
+
+~originalslicesarray = (~originalindices.flatten ++ ~loader.buffer.numFrames).asSet.asArray.sort
+~orginalkeys = Array.newFrom(~slicer.index.keys).sort{|a,b| ~slicer.index[a][\bounds][0]< ~slicer.index[b][\bounds][0]}
+
+//the windowed function
 (
-Routine{
-	~indices = [0];
-	~head = 0;
+~windowedFunct = {arg head, winSize, overlap;
+	var nbass = [], assignments = [], tempDict = ();
+	//check the size of everything to not overrun
+	winSize = (~originalslicesarray.size - head).min(winSize);
+	//copy the items to a subdataset from hear
+	winSize.do{|i|
+		tempDict.put((i.asString), ~sliceDict["data"][(~orginalkeys[(i+head)]).asString]);//here one could curate which stats to take
+		"whichslices:%\n".postf(i+head);
+	};
+	~windowDS.load(Dictionary.newFrom([\cols, ~sliceDict["cols"].asInteger, \data, tempDict]), action: {
+		"% - loaded\n".postf(head);
 
-	~sliceDict = Dictionary.new(4);
-	~tempDict = Dictionary.new(4);
+		//kmeans 2 and retrieve ordered array of class assignations
+		~kmeans.fitPredict(~windowDS, ~windowLS, action: {|x|
+			nbass = x;
+			"% - fitted1: ".postf(head); nbass.postln;
 
-	~slices.dump{|x|~sliceDict = x;};
-	s.sync;
+			if (nbass.includes(winSize.asFloat), {
+				~kmeans.fitPredict(~windowDS, ~windowLS, {|x|
+					nbass = x; "% - fitted2: ".postf(head); nbass.postln;
+					if (nbass.includes(winSize.asFloat), {
+						~kmeans.fitPredict(~windowDS, ~windowLS, {|x|
+							nbass = x; "% - fitted3: ".postf(head); nbass.postln;
+						});
+					});
+				});
+			});
 
-	while ( {~head <= (~originalslicesarray.size - ~winSize)},
-		{
-			var step = ~winSize - 1;
-			var nbass = [];
-			//run a process on ~winSize items from ~head (with an overlap of 1)
-			//copy the items to a subdataset
-			~winSize.do{|i|
-				~tempDict.put((i.asString), ~sliceDict["data"][(i+~head).asString]);//here one could curate which stats to take
-				"whichslices:%\n".postf(i+~head);
+			~windowLS.dump{|x|
+				var assignments = x.at("data").asSortedArray.flop[1].flatten;
+				"% - assigned ".postf(head);
+
+				assignments.postln;
+
+				(winSize-1).do{|i|
+					if (assignments[i+1] != assignments[i], {
+						~newindices= ~newindices ++ (~originalslicesarray[head+i+1]).asInteger;
+						~newkeys = ~newkeys ++ (~orginalkeys[head+i+1]);
+					});
+
+				};
+				//if we still have some frames to do, do them
+				if (((winSize + head) < ~originalslicesarray.size), {
+					"-----------------".postln;
+					~windowedFunct.value(head + winSize - overlap, winSize, overlap);
+				}, {~newindices = (~newindices ++ ~loader.buffer.numFrames); "done".postln;});//if we're done close the books
 			};
-			~windowDS.load(Dictionary.newFrom([\cols, 133, \data, ~tempDict]));
-			s.sync;
-			"% - loaded\n".postf(~head);
-
-			//kmeans 2 and retrieve ordered array of class assignations
-			~kmeans.fitPredict(~windowDS, ~windowLS, {|x| nbass = x;});
-			s.sync;
-			"% - fitted1: ".postf(~head); nbass.postln;
-
-			// if (nbass.includes(0.0), { Routine{~kmeans.fitPredict(~windowDS, ~windowLS, {|x| nbass = x; "% - fitted2: ".postf(~head); nbass.postln; s.sync;});}.play; });
-
-			~windowLS.dump{|x|~assignments = x.at("data").asSortedArray.flop[1].flatten;};
-			s.sync;
-			"% - assigned ".postf(~head);
-
-			~assignments.postln;
-
-			step.do{|i|
-				if (~assignments[i+1] != ~assignments[i], {~indices= ~indices ++ (~originalslicesarray[~head+i+1])});
-			};
-
-			~head = ~head + step;
-			"-----------------".postln;
+		});
 	});
-
-	//leftovers
-	if ( (~originalslicesarray.size - ~head) > 1, {
-		//run a process on (a.size - ~head) items from ~head
-		(~originalslicesarray.size - ~head - 1).do{|i|
-			if (~assignments[i+1] != ~assignments[i], {~indices= ~indices ++ (~originalslicesarray[~head+i+1])});
-			// (~head+i).postln;
-		};
-	});
-	~indices.postln;
-}.play;
+}
 )
 
-{var i = 8;BufRd.ar(1,b,Line.ar(~originalslicesarray[i],~originalslicesarray[i+1],(~originalslicesarray[i+1] - ~originalslicesarray[i])/b.sampleRate, doneAction: 2))}.play;
-{var i = 4;BufRd.ar(1,b,Line.ar(~indices[i],~indices[i+1],(~indices[i+1] - ~indices[i])/b.sampleRate, doneAction: 2))}.play;
+//the job
+
+~newindices = [~originalslicesarray[0]]; ~newkeys = [~orginalkeys[0]];
+~windowedFunct.value(0, 4, 1);
+
+//try again with more clusters
+~newindices = [~originalslicesarray[0]]; ~newkeys = [~orginalkeys[0]];
+~kmeans.numClusters = 3;
+~windowedFunct.value(0,6,2);
+
+~newindices.postln;
+~newkeys.postln;
+
+~newindices.size;
+~newkeys.size;
+
+~newindices.last;
+~newkeys.last;
+
+~slicer.index[~orginalkeys[0]]
 
 //export to reaper
+(
+//first create a new file that ends with rpp - it will overwrite if the file exists
+f = File.new("/tmp/clusteredslices-" ++ Date.getDate.stamp ++".rpp","w+");
+
+if (f.isOpen , {
+	var path, prevpath ="", sr, count, dur;
+	//write the header
+	f.write("<REAPER_PROJECT 0.1 \"5.99/OSX64\" 1603037150\n\n");
+
+	//a first track with the originalslicearray
+	//write the track header
+	f.write("<TRACK\nNAME \"novelty output\"\n");
+	// iterate through the items in the track
+	~orginalkeys.do{|v, i|
+		path = ~slicer.index[v][\path];
+		if (path != prevpath, {
+			sr = 	~slicer.index[v][\sr];
+			prevpath = path;
+			count = 0;
+		});
+		dur = ~originalslicesarray[i+1] - ~originalslicesarray[i];
+		if ( dur > 0, {
+			f.write("<ITEM\nPOSITION " ++ (~originalslicesarray[i] / sr) ++ "\nLENGTH " ++ (dur / sr) ++ "\nNAME \"" ++ v ++ "\"\nSOFFS " ++ (count / sr) ++ "\n<SOURCE WAVE\nFILE \"" ++ path ++ "\"\n>\n>\n");
+		});
+		count = count + dur;
+	};
+	//write the track footer
+	f.write(">\n");
+
+	// a second track with the new ~indices
+	prevpath = "";
+	//write the track header
+	f.write("<TRACK\nNAME \"clustered output\"\n");
+	// iterate through the items in the track
+	~newkeys.do{|v, i|
+		path = ~slicer.index[v][\path];
+		if (path != prevpath, {
+			sr = 	~slicer.index[v][\sr];
+			prevpath = path;
+			count = 0;
+		});
+		dur = ~newindices[i+1] - ~newindices[i];
+		if (dur > 0, {
+			f.write("<ITEM\nPOSITION " ++ (~newindices[i] / sr) ++ "\nLENGTH " ++ (dur / sr) ++ "\nNAME \"" ++ v ++ "\"\nSOFFS " ++ (count / sr) ++ "\n<SOURCE WAVE\nFILE \"" ++ path ++ "\"\n>\n>\n");
+		});
+		count = count + dur;
+	};
+	//write the track footer
+	f.write(">\n");
+
+	//write the footer
+	f.write(">\n");
+	f.close;
+});
+)

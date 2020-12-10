@@ -1,5 +1,5 @@
 s.reboot
-~ds = FluidDataSet.new(s,\simple1data)
+~ds = FluidDataSet.new(s)
 ~point = Buffer.alloc(s,1,1)
 (
 Routine{
@@ -21,6 +21,7 @@ Routine{
 Routine{
 	10.do{|i|
 		~point.set(0,i);
+		s.sync;
 		~tree.kNearest(~point, {|x| "Neighbours for a value of % are ".postf(i); x.postln});
 		s.sync;
 	}
@@ -29,7 +30,7 @@ Routine{
 
 /*** KMEANS ***/
 
-~kmeans = FluidKMeans.new(s,maxIter:100)
+~kmeans = FluidKMeans.new(s,maxIter:100);
 ~kmeans.numClusters = 2; //play with this
 ~kmeans.fit(~ds,action:{|x| "Done fitting with these number of items per cluster ".post;x.postln;})
 
@@ -37,6 +38,7 @@ Routine{
 Routine{
 	10.do{|i|
 		~point.set(0,i);
+		s.sync;
 		~kmeans.predictPoint(~point,{|x| ("Predicted Cluster for a value of " + i ++ ":" + x).postln});
 		s.sync;
 	}
@@ -49,7 +51,7 @@ Routine{
 
 (
 ~labels.size{|x|
-	Routine{x.asInteger.do{|i| //size does not return a value, but we can retrieve it via a function
+	Routine{x.asInteger.do{|i|
 		~labels.getLabel(i,action: {|l|
 			("Label for entry " + i ++ ":" + l).postln;
 		});
