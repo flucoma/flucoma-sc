@@ -40,6 +40,6 @@ c.postln
 b.play
 
 
-{PlayBuf.ar(1,b.bufnum,startPos:c[740])}.play
+{PlayBuf.ar(1,b.bufnum,startPos:c[15])}.play
 
 Buffer.freeAll

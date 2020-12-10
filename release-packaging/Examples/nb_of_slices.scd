@@ -7,6 +7,8 @@ c = Buffer.new(s);
 // with basic params
 Routine{
 	var startTime, target, tolerance, startThresh, prevThresh, curThresh, curVal, prevVal, iters, maxIters, dVal, dThresh;
+	var cond = Condition.new;
+
 	startTime = Main.elapsedTime;
 	prevThresh = 0.1; //initial threshold (between 0.00001 and 0.99999
 	target = 10; //number of slices desired
@@ -14,14 +16,17 @@ Routine{
 	maxIters = 100; //max number of iterations acceptable
 
 	//makes a first iteration
-	FluidBufNoveltySlice.process(s,b, indices: c, threshold:prevThresh,action:{|x|prevVal = x.numFrames});
+	FluidBufNoveltySlice.process(s,b, indices: c, threshold:prevThresh, action:{|x|prevVal = x.numFrames;\there.postln;cond.unhang;});
+	\here.postln;
+	cond.hang;
 	//makes a second iteration
 	if ( (prevVal <  target), {
 		curThresh = (prevThresh * 0.5).max(0.000001);
 	}, {
 		curThresh = (prevThresh * 2).min(0.999999);
 	});
-	FluidBufNoveltySlice.process(s,b, indices: c, threshold:curThresh,action:{|x|curVal = x.numFrames});
+	FluidBufNoveltySlice.process(s,b, indices: c, threshold:curThresh,action:{|x|curVal = x.numFrames;cond.unhang;});
+	cond.hang;
 
 	//makes further iterations until the result is achieved, or the maximum of acceptable iterations is reached
 	iters = 2;
@@ -42,7 +47,8 @@ Routine{
 			//if we have
 			curThresh = (((dThresh / dVal) * (target - curVal)) + curThresh).min(0.999999).max(0.000001);
 		});
-		FluidBufNoveltySlice.process(s,b, indices: c, threshold:curThresh,action:{|x|curVal = x.numFrames});
+		FluidBufNoveltySlice.process(s,b, indices: c, threshold:curThresh,action:{|x|curVal = x.numFrames;cond.unhang;});
+		cond.hang;
 	}
 	);
 	//depending on the outcome, gives the right info back
