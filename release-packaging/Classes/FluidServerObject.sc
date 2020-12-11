@@ -84,8 +84,10 @@ FluidBufProcessor : FluidServerObject
     classvar responder;
 
     *cmdPeriod {
-        serverCaches[this].doAll{|processor| processor.free; };
-        serverCaches[this] = nil;
+        serverCaches[this] !? {|cache|
+            cache.doAll{|processor| processor !? { processor.free;} };
+            serverCaches[this] = nil;
+        };
         count = 0;
     }
 
