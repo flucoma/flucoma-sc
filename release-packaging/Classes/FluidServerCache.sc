@@ -77,8 +77,16 @@ FluidServerCache {
 	clearCache { |server|
 		cache[server] !?
         {
-            cache[server].do(_.free);
-            cache.removeAt(server)
+            var bundle = [];
+            cache[server].values.do{|i|
+                if(i.respondsTo(\freeMsg)){
+                    bundle = bundle.add(i.freeMsg); //server objects
+                }{
+                 i.free; //OSCFunc
+                }
+            };
+            server.listSendBundle(nil,bundle);
+            cache.removeAt(server);
         };
 	}
 
