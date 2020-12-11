@@ -2,6 +2,7 @@
 
 #include "ArgsFromClient.hpp"
 #include "ArgsToClient.hpp"
+#include <scsynthsend.h>
 
 namespace fluid {
 namespace client {
@@ -27,6 +28,7 @@ struct FluidSCMessaging{
     ReturnType              result;
     std::string             name;
     IndexList               argIndices;
+    void*                   replyAddr{nullptr};
   };
   
 
@@ -123,6 +125,7 @@ struct FluidSCMessaging{
     auto msg = new MessageData();
     
     msg->id = args->geti();
+    msg->replyAddr = copyReplyAddress(replyAddr);
     ///TODO make this step contingent on verbosity or something, in the name of effieciency
     bool willContinue = validateMessageArgs(msg, args);
     
@@ -167,7 +170,7 @@ struct FluidSCMessaging{
 
           return true;
         },
-        [](World* world, void* data) // RT thread:  response
+        [](World* world, void* data) // RT thread:  buffer swap (and possible completion messages)
         {
           MessageData* m = static_cast<MessageData*>(data);
           MessageData::Descriptor::template forEachArg<typename BufferT::type,
@@ -175,19 +178,16 @@ struct FluidSCMessaging{
                                                                      world);
           return true;
         },
-        nullptr,                 // NRT Thread: No-op
-        [](World* world, void* data) // RT thread: clean up
+        [](World* world, void* data) // NRT Thread: Send reply
         {
           MessageData* m = static_cast<MessageData*>(data);
-          
           if(m->result.status() != Result::Status::kError)
-            messageOutput(m->name, m->id, m->result, world);
-          else
-          {
-             auto ft = getInterfaceTable();
-             ft->fSendNodeReply(ft->fGetNode(world,0),-1, m->name.c_str(),0, nullptr);
-          }
-                    
+            messageOutput(m->name, m->id, m->result, m->replyAddr);
+          return false;
+        },
+        [](World*, void* data) // RT thread: clean up
+        {
+          MessageData* m = static_cast<MessageData*>(data);
           delete m;
         },
         static_cast<int>(completionMsgSize), completionMsgData);
@@ -201,61 +201,67 @@ struct FluidSCMessaging{
   }
   
   template <typename T> // call from RT
-  static void messageOutput(const std::string& s, index id, MessageResult<T>& result, World* world)
+  static void messageOutput(const std::string& s, index id, MessageResult<T>& result, void* replyAddr)
   {
-    auto ft = getInterfaceTable();
-    
-    // allocate return values
-    index  numArgs = ToFloatArray::allocSize(static_cast<T>(result));
-
-    if(numArgs > 2048)
+    index  numTags = ToOSCTypes<small_scpacket>::numTags(static_cast<T>(result));
+    if(numTags > 2048)
     {
-      std::cout << "ERROR: Message response too big to send (" << asUnsigned(numArgs) * sizeof(float) << " bytes)." << std::endl;
+      std::cout << "ERROR: Message response too big to send (" << asUnsigned(numTags) * sizeof(float) << " bytes)." << std::endl;
       return;
     }
-        
-    float* values = new float[asUnsigned(numArgs)];
+
+    small_scpacket packet;
+    packet.adds(s.c_str());
+    packet.maketags(static_cast<int>(numTags) + 2);
+    packet.addtag(',');
+    packet.addtag('i');
+    ToOSCTypes<small_scpacket>::getTag(packet, static_cast<T>(result));
     
-    // copy return data
-    ToFloatArray::convert(values, static_cast<T>(result));
-
-    ft->fSendNodeReply(ft->fGetNode(world,0), static_cast<int>(id), s.c_str(),
-                       static_cast<int>(numArgs), values);
-
-    delete[] values;
+    packet.addi(static_cast<int>(id));
+    ToOSCTypes<small_scpacket>::convert(packet, static_cast<T>(result));
+    
+    if(replyAddr)
+      ::SendReply(static_cast<ReplyAddress*>(replyAddr),packet.data(),static_cast<int>(packet.size()));
   }
 
-  static void messageOutput(const std::string& s,index id, MessageResult<void>&, World* world)
+  static void messageOutput(const std::string& s,index id, MessageResult<void>&, void* replyAddr)
   {
-    auto ft = getInterfaceTable();
-    ft->fSendNodeReply(ft->fGetNode(world,0), static_cast<int>(id), s.c_str(), 0, nullptr);
+    small_scpacket packet;
+    packet.adds(s.c_str());
+    packet.maketags(2);
+    packet.addtag(',');
+    packet.addtag('i');
+    packet.addi(static_cast<int>(id));
+    
+    if(replyAddr)
+      ::SendReply(static_cast<ReplyAddress*>(replyAddr),packet.data(),static_cast<int>(packet.size()));
   }
 
   template <typename... Ts>
-  static void messageOutput(const std::string& s, index id, MessageResult<std::tuple<Ts...>>& result, World* world)
+  static void messageOutput(const std::string& s, index id, MessageResult<std::tuple<Ts...>>& result, void* replyAddr)
   {
-    std::array<index, sizeof...(Ts)> offsets;
+    using T = std::tuple<Ts...>;
     
-    index   numArgs;
-
-    std::tie(offsets, numArgs) =
-        ToFloatArray::allocSize(static_cast<std::tuple<Ts...>>(result));
-    
-    if(numArgs > 2048)
+    index  numTags = ToOSCTypes<small_scpacket>::numTags(static_cast<T>(result));
+    if(numTags > 2048)
     {
-      std::cout << "ERROR: Message response too big to send (" << asUnsigned(numArgs) * sizeof(float) << " bytes)." << std::endl;
+      std::cout << "ERROR: Message response too big to send (" << asUnsigned(numTags) * sizeof(float) << " bytes)." << std::endl;
       return;
     }
     
-    float* values = new float[asUnsigned(numArgs)];
-    ToFloatArray::convert(values, std::tuple<Ts...>(result), offsets,
-                          std::index_sequence_for<Ts...>());
-
-    auto  ft = getInterfaceTable();
-    ft->fSendNodeReply(ft->fGetNode(world,0), static_cast<int>(id), s.c_str(),
-                       static_cast<int>(numArgs), values);
+    small_scpacket packet;
+    packet.adds(s.c_str());
+    packet.maketags(static_cast<int>(numTags + 3));
+    packet.addtag(',');
+    packet.addtag('i');
+    ToOSCTypes<small_scpacket>::getTag(packet,static_cast<T>(result));
     
-    delete[] values;
+    packet.addi(static_cast<int>(id));
+    ToOSCTypes<small_scpacket>::convert(packet, static_cast<T>(result));
+    
+    if(replyAddr)
+      ::SendReply(static_cast<ReplyAddress*>(replyAddr),packet.data(),static_cast<int>(packet.size()));
+
   }
 };
 }

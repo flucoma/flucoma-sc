@@ -99,5 +99,103 @@ namespace client {
           (convert(f + offsets[Is], std::get<Is>(t)), 0)...};
     }
   };
+  
+  template<typename Packet>
+  struct ToOSCTypes
+  {
+  
+    static index numTags(typename BufferT::type) { return 1; }
+
+    template <typename T>
+    static std::enable_if_t<
+        std::is_integral<T>::value || std::is_floating_point<T>::value, index>
+        numTags(T)
+    {
+      return 1;
+    }
+
+    static index numTags(std::string)
+    {
+      return 1;;
+    }
+
+    template <typename T>
+    static index numTags(FluidTensor<T, 1> s)
+    {
+      return s.size();
+    }
+
+    template <typename... Ts>
+    static index numTags(std::tuple<Ts...>&&)
+    {
+      return std::tuple_size<std::tuple<Ts...>>::value;
+    };
+  
+  
+    static void getTag(Packet& p, typename BufferT::type) { p.addtag('i'); }
+        
+    template <typename T>
+    static std::enable_if_t<std::is_integral<std::decay_t<T>>::value>
+    getTag(Packet& p, T&&) { p.addtag('i'); }
+
+    template <typename T>
+    static std::enable_if_t<std::is_floating_point<std::decay_t<T>>::value>
+    getTag(Packet& p, T&&) { p.addtag('f'); }
+
+    static void getTag (Packet& p, std::string) { p.addtag('s'); }
+
+    template <typename T>
+    static void getTag(Packet& p, FluidTensor<T, 1> x)
+    {
+      T dummy{};
+      for (int i = 0; i < x.rows(); i++)
+        getTag(p, dummy);
+   }
+
+    template <typename... Ts, size_t... Is>
+    static void getTag(Packet& p, std::tuple<Ts...>&& t)
+    {
+        ForEach(t,[&p](auto&  x){getTag(p,x);});
+    }
+
+
+    static void convert(Packet& p, typename BufferT::type buf)
+    {
+      p.addi(static_cast<SCBufferAdaptor*>(buf.get())->bufnum());
+    }
+
+    template <typename T>
+    static std::enable_if_t<std::is_integral<T>::value>
+    convert(Packet& p, T x)
+    {
+      p.addi(x);
+    }
+
+    template <typename T>
+    static std::enable_if_t<std::is_floating_point<T>::value>
+    convert(Packet& p, T x)
+    {
+      p.addf(x);
+    }
+
+    static void convert(Packet& p, std::string s)
+    {
+      p.adds(s.c_str());
+    }
+    
+    template <typename T>
+    static void convert(Packet& p, FluidTensor<T, 1> s)
+    {
+      for(auto& x: s) convert(p,x);
+    }
+
+    template <typename... Ts, size_t... Is>
+    static void convert(Packet& p, std::tuple<Ts...>&& t)
+    {
+       ForEach(t,[&p](auto& x){ convert(p,x);});
+    }
+  };
+  
+  
 }
 }

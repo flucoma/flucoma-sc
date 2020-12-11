@@ -199,23 +199,18 @@ FluidDataObject : FluidServerObject
         if(serverCaches[this].includesKey(server,\messageResponder).not)
         {
             serverCaches[this].put(server,\messageResponder,OSCFunc.new({|m|
-                    var id = m[2].asInteger;
-                    var method;
-                // "I'm in the maccydees".postln;
-                    serverCaches[this].at(server,id) !? { |p|
-                    // "I'm in the burger king".postln ;
-                    // m.postln;
-                        method = m[0].asString.findRegexp("/"++this.name++"/(.*)")[1][1].asSymbol;
-/*                        p.postln;
-                        p.actions[method].postln;*/
-                        p.actions[method] !? {|a|
-                            //two items: parser and action
-                            var parser = a[0];
-                            var action = a[1];
-                            var result = FluidMessageResponse.collectArgs(parser,m[3..]);
-                            action.value(result);
-                        }
+                var id = m[1].asInteger;
+                var method;
+                serverCaches[this].at(server,id) !? { |p|
+                    method = m[0].asString.findRegexp("/"++this.name++"/(.*)")[1][1].asSymbol;
+                    p.actions[method] !? {|a|
+                        //two items: parser and action
+                        var parser = a[0];
+                        var action = a[1];
+                        var result = FluidMessageResponse.collectArgs(parser,m[2..]);
+                        action.value(result);
                     }
+                }
             },'/' ++ this.objectClassName ++ '/*',server.addr, dispatcher:FluidOSCPatternInversion.new).fix)
         }
     }
