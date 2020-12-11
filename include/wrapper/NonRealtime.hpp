@@ -310,11 +310,6 @@ namespace impl {
         return false;
       }
       
-      void cleanup(World*) {
-        if(NRTCommand::mReplyAddress)
-          deleteReplyAddress(NRTCommand::mReplyAddress);
-      } //rt
-      
       bool mSuccess;
     };
     
