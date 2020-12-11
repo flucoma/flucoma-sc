@@ -62,6 +62,13 @@ FluidServerObject
         msg !? {server.listSendMsg(msg)} ?? {^nil};
     }
 
+    *freeAll{|server|
+        serverCaches[this] !? {|cache|
+            cache.clearCache(server ? Server.default);
+        };
+        count = 0;
+    }
+
     asUGenInput{ ^id }
 
     asString {
