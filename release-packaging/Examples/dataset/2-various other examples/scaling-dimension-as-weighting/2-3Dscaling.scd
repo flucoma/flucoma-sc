@@ -12,14 +12,14 @@
 ~query = FluidDataSetQuery(s);
 ~stan = FluidStandardize(s);
 ~norm = FluidNormalize(s);
-~sourceR = FluidDataSet(s,\a3DsourceR);
-~sourceG = FluidDataSet(s,\a3DsourceG);
-~sourceB = FluidDataSet(s,\a3DsourceB);
-~scaledR = FluidDataSet(s,\a3DscaledR);
-~scaledG = FluidDataSet(s,\a3DscaledG);
-~scaledB = FluidDataSet(s,\a3DscaledB);
-~composited = FluidDataSet(s,\a3Dcomposited);
-~labels = FluidLabelSet(s,\a3Dlabels);
+~sourceR = FluidDataSet(s);
+~sourceG = FluidDataSet(s);
+~sourceB = FluidDataSet(s);
+~scaledR = FluidDataSet(s);
+~scaledG = FluidDataSet(s);
+~scaledB = FluidDataSet(s);
+~composited = FluidDataSet(s);
+~labels = FluidLabelSet(s);
 )
 
 //Make some random, but clustered test points, each descriptor category in a separate dataset
@@ -81,7 +81,7 @@ w.front;
 
 //Visualise:
 (
-w = Window("stanClasses", Rect(128, 64, 820, 120));
+w = Window("stanClasses", Rect(128, 204, 820, 120));
 w.drawFunc = {
 	Pen.use{
 		~compodict2["data"].keysValuesDo{|key,  colour|
@@ -115,7 +115,7 @@ w.front;
 
 //Visualise:
 (
-w = Window("normClasses", Rect(128, 64, 820, 120));
+w = Window("normClasses", Rect(128, 344, 820, 120));
 w.drawFunc = {
 	Pen.use{
 		~compodict2["data"].keysValuesDo{|key,  colour|
@@ -147,7 +147,7 @@ w.front;
 
 //Visualise:
 (
-w = Window("norm10rClasses", Rect(128, 64, 820, 120));
+w = Window("norm10rClasses", Rect(128, 484, 820, 120));
 w.drawFunc = {
 	Pen.use{
 		~compodict2["data"].keysValuesDo{|key,  colour|

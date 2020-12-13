@@ -1,10 +1,10 @@
 // load a source folder
-~loader = FluidLoadFolder("/Volumes/machins/projets/newsfeed/sons/textes/Audio/synth");
+~loader = FluidLoadFolder(File.realpath(FluidBufPitch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/");
 ~loader.play;
 
 //slightly oversegment with novelty
 //segments should still make sense but might cut a few elements in 2 or 3
-~slicer = FluidSliceCorpus({ |src,start,num,dest| FluidBufNoveltySlice.kr(src,start,num,indices:dest, feature: 1, kernelSize: 29, threshold: 0.05, filterSize: 5, hopSize: 128)});
+~slicer = FluidSliceCorpus({ |src,start,num,dest| FluidBufNoveltySlice.kr(src,start,num,indices:dest, feature: 1, kernelSize: 29, threshold: 0.1, filterSize: 5, hopSize: 128)});
 ~slicer.play(s, ~loader.buffer,~loader.index);
 
 //test the segmentation by looping them
@@ -14,7 +14,7 @@ d = {arg start=0, end = 44100;
 	BufRd.ar(1, ~loader.buffer, Phasor.ar(0,1,start,end,start),0,1);
 }.play;
 
-w = Window.new.front;
+w = Window.new(bounds:Rect(100,100,400,60)).front;
 b = ControlSpec(0, ~originalindices.size - 1, \linear, 1); // min, max, mapping, step
 c = StaticText(w, Rect(340, 20, 50, 20)).align_(\center);
 a = Slider(w, Rect(10, 20, 330, 20))
@@ -29,8 +29,8 @@ a = Slider(w, Rect(10, 20, 330, 20))
 ~featuresbuf = 4.collect{Buffer.new};
 ~statsbuf = 4.collect{Buffer.new};
 ~flatbuf = 4.collect{Buffer.new};
-~slicesMFCC = FluidDataSet(s,\slicesM);
-~slicesShapes = FluidDataSet(s,\slicesS);
+~slicesMFCC = FluidDataSet(s);
+~slicesShapes = FluidDataSet(s);
 ~extractor = FluidProcessSlices({|src,start,num,data|
 	var features, stats, writer, flatten,mfccBuf, statsBuf, flatBuf, label, voice;
 	label = data.key;
@@ -54,12 +54,12 @@ a = Slider(w, Rect(10, 20, 330, 20))
 //we overlap the analysis with the last (original) slice to check for continuity
 (
 ~winSize = 4;//the number of consecutive items to split in 2 classes;
-~curated = FluidDataSet(s,\curatedDS);
+~curated = FluidDataSet(s);
 ~query = FluidDataSetQuery(s);
 ~stan = FluidStandardize(s);
 ~kmeans = FluidKMeans(s,2,1000);
-~windowDS = FluidDataSet(s,\windowDS);
-~windowLS = FluidLabelSet(s,\windowLS);
+~windowDS = FluidDataSet(s);
+~windowLS = FluidLabelSet(s);
 )
 
 //curate stats (MFCCs)
