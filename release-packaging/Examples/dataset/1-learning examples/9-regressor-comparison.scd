@@ -2,9 +2,9 @@
 
 //Here we make a 3-points pair of dataset.
 
-~dsIN = FluidDataSet(s,\dsIN);
+~dsIN = FluidDataSet(s);
 ~dsIN.load(Dictionary.newFrom([\cols, 1, \data, Dictionary.newFrom([\point1, [10], \point2, [20], \point3, [30]])]));
-~dsOUT = FluidDataSet(s,\dsOUT);
+~dsOUT = FluidDataSet(s);
 ~dsOUT.load(Dictionary.newFrom([\cols, 1, \data, Dictionary.newFrom([\point1, [0.8], \point2, [0.2], \point3, [0.5]])]));
 
 //check the values
@@ -13,13 +13,13 @@
 (0.dup(10) ++ 0.8 ++ 0.dup(9) ++ 0.2 ++ 0.dup(9) ++ 0.5 ++ 0.dup(10)).plot(\source,discrete: true, minval:0, maxval: 1).plotMode=\bars;
 
 //Let's make a complete dataset to predict each points in our examples:
-~dsALLin = FluidDataSet(s,\dsALLin);
+~dsALLin = FluidDataSet(s);
 ~dsALLin.load(Dictionary.newFrom([\cols, 1, \data, Dictionary.newFrom(Array.fill(41,{|x| [x.asSymbol, [x]];}).flatten(1);)]));
 ~dsALLin.print
 
 //We'll regress these values via KNN and plot
 ~regK = FluidKNNRegressor(s,numNeighbours: 2,weight: 1);
-~dsALLknn = FluidDataSet(s,\dsALLknn);
+~dsALLknn = FluidDataSet(s);
 ~regK.fit(~dsIN,~dsOUT);
 ~regK.predict(~dsALLin,~dsALLknn);
 
@@ -36,7 +36,7 @@
 
 //Let's do the same process with MLP
 ~regM = FluidMLPRegressor(s,hidden: [4],activation: 1,outputActivation: 1,maxIter: 10000,learnRate: 0.1,momentum: 0,batchSize: 1,validation: 0);
-~dsALLmlp = FluidDataSet(s,\dsALLmlp);
+~dsALLmlp = FluidDataSet(s);
 ~regM.fit(~dsIN,~dsOUT,{|x|x.postln;});
 ~regM.predict(~dsALLin,~dsALLmlp);
 
@@ -86,7 +86,7 @@
 					~dsALLknn.dump{|x| 41.do{|i|
 						~knnALLval.add((x["data"][i.asString]));
 					};//draw everything
-					[~source, ~knnALLval.flatten(1), ~mlpALLval.flatten(1)].flop.flatten(1).plot(\source,numChannels: 3, discrete: false, minval:0, maxval: 1).plotMode=\bars;
+					{[~source, ~knnALLval.flatten(1), ~mlpALLval.flatten(1)].flop.flatten(1).plot(\source,numChannels: 3, discrete: false, minval:0, maxval: 1).plotMode=\bars;}.defer;
 					};
 				});
 			});

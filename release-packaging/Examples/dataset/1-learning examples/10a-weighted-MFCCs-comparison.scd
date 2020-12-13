@@ -1,8 +1,8 @@
 // define a few processes
 (
-~ds = FluidDataSet(s,\ds10);
-~dsW = FluidDataSet(s,\ds10W);
-~dsL = FluidDataSet(s,\ds10L);
+~ds = FluidDataSet(s);
+~dsW = FluidDataSet(s);
+~dsL = FluidDataSet(s);
 //define as many buffers as we have parallel voices/threads in the extractor processing (default is 4)
 ~loudbuf = 4.collect{Buffer.new};
 ~weightbuf = 4.collect{Buffer.new};

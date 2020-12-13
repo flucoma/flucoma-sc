@@ -90,7 +90,7 @@ Routine{
 ~normtree.fit(~normed_dataset)
 ~normtree.kNearest(~normbuf,  {|x| ("Labels:" + x).postln});
 ~normtree.kNearestDist(~normbuf, {|x| ("Distances:" + x).postln});
-// its nearest neighbourg is still itself as it should be, but the 2nd neighbourg will probably have changed. The distance is now different too
+// its nearest neighbourg is still itself as it should be, but the 2nd neighbourg might have changed. The distance is now different too
 
 // standardize that same point (~query_buf) to be at the right scale
 ~stdbuf = Buffer.alloc(s,~nb_of_dim);
@@ -102,7 +102,7 @@ Routine{
 ~stdtree.fit(~standardized_dataset)
 ~stdtree.kNearest(~stdbuf, {|x| ("Labels:" + x).postln});
 ~stdtree.kNearestDist(~stdbuf, {|x| ("Distances:" + x).postln});
-// its nearest neighbourg is still itself as it should be, but the 2nd neighbourg will probably have changed yet again. The distance is also different too
+// its nearest neighbourg is still itself as it should be, but the 2nd neighbourg might have changed yet again. The distance is also different too
 
 // where it starts to be interesting is when we query points that are not in our original dataset
 
