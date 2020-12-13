@@ -5,9 +5,8 @@ s.reboot
 Routine{
 	10.do{|i|
 		~point.set(0,i);
-		s.sync;
-		~ds.addPoint(i.asString,~point,{("addPoint"+i).postln});
-		s.sync;
+		~ds.addPoint(i.asString,~point,{("addPoint"+i).postln}); //because buffer.set do an immediate update in the RT thread we can take for granted it'll be updated when we call addPoint
+		s.sync; //but we need to sync to make sure everything is done on the DataSet before the next iteration
 	}
 }.play
 )
@@ -22,7 +21,6 @@ Routine{
 Routine{
 	10.do{|i|
 		~point.set(0,i);
-		s.sync;
 		~tree.kNearest(~point, {|x| "Neighbours for a value of % are ".postf(i); x.postln});
 		s.sync;
 	}
@@ -39,7 +37,6 @@ Routine{
 Routine{
 	10.do{|i|
 		~point.set(0,i);
-		s.sync;
 		~kmeans.predictPoint(~point,{|x| ("Predicted Cluster for a value of " + i ++ ":" + x).postln});
 		s.sync;
 	}

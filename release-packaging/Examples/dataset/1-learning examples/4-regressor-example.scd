@@ -9,9 +9,10 @@ n = 200
 
 // creates the dataset with these associated indices and values
 (
-~simpleInput = FluidDataSet(s,\simpleInput);
-~simpleOutput = FluidDataSet(s,\simpleOutput);
-b = Buffer.alloc(s,1,1);
+~simpleInput = FluidDataSet(s);
+~simpleOutput = FluidDataSet(s);
+b = Buffer.alloc(s,1);
+c = Buffer.alloc(s,1);
 ~mappingviz = Buffer.alloc(s,512);
 )
 
@@ -19,12 +20,11 @@ b = Buffer.alloc(s,1,1);
 Routine{
     n.do{|i|
         b.set(0,~idx[i]);
+        c.set(0,~data[i]);
         ~simpleInput.addPoint(i.asString,b,{("Added Input" + i).postln});
+        ~simpleOutput.addPoint(i.asString,c,{("Added Output" + i).postln});
+        ~mappingviz.set((~idx[i]/61).asInteger,~data[i]);
         s.sync;
-        b.set(0,~data[i]);
-        ~simpleOutput.addPoint(i.asString,b,{("Added Output" + i).postln});
-        s.sync;
-        ~mappingviz.set((~idx[i]/61).asInteger,~data[i])
     }
 }.play
 )

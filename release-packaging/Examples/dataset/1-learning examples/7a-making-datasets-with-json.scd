@@ -41,4 +41,12 @@
 ~classifier = FluidKNNClassifier.new(s, numNeighbours:2);
 ~classifier.fit(~ds,~ls, {\done.postln;})
 
-~classifier.predictPoint(~target, action: {|x|x.postln;})
+// run many times for random pleasure
+(
+fork{
+	var value = 7.rand;
+	~ds.getPoint(("entry-"++value).asSymbol,~target);
+	s.sync;
+	~classifier.predictPoint(~target, action: {|x|"entry % is an % entry.\n".postf(value,x);})
+}
+)

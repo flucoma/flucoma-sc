@@ -1,6 +1,6 @@
 (
-~simpleInput = FluidDataSet(s,\simpleInput);
-~simpleOutput = FluidLabelSet(s,\simpleOutput);
+~simpleInput = FluidDataSet(s);
+~simpleOutput = FluidLabelSet(s);
 b = Buffer.alloc(s,2);
 ~knn = FluidKNNClassifier(s);
 ~knn.numNeighbours = 3
@@ -54,6 +54,7 @@ Routine{
 		~simpleOutput.addLabel((i+50).asString,"Red",{("Added Output" + (i+50)).postln});
 		s.sync;
 	}
+	\done.postln;
 	}.play;
 )
 

@@ -1,5 +1,5 @@
 s.reboot
-~ds = FluidDataSet.new(s,\simple1data)
+~ds = FluidDataSet.new(s)
 ~point = Buffer.alloc(s,1,1)
 (
 Routine{
@@ -41,8 +41,8 @@ Routine{
 Routine{
     15.do{|i|
         ~point.set(0,i);
-        s.sync;
 		~kmeans.predictPoint(~point,{|x| ("Predicted Cluster for a value of " + i ++ ":" + x).postln});
+        s.sync;
     }
 }.play
 )

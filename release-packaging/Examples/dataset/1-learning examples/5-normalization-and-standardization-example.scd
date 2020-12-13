@@ -1,7 +1,7 @@
 (
 // set some variables
 ~nb_of_dim = 10;
-~dataset = FluidDataSet(s,\test,~nb_of_dim);
+~dataset = FluidDataSet(s);
 )
 
 (
@@ -14,6 +14,7 @@ Routine{
 		s.sync;
 	});
 	buf.free;
+	\done.postln;
 }.play
 )
 
@@ -38,7 +39,7 @@ Routine{
 ~normalize.fit(~dataset,{"done".postln;});
 
 // making an empty 'normed_dataset' which is required for the normalize function
-~normed_dataset = FluidDataSet(s,\normed,~nb_of_dim);
+~normed_dataset = FluidDataSet(s);
 
 // normalize the full dataset
 ~normalize.transform(~dataset,~normed_dataset,{"done".postln;});
@@ -55,7 +56,7 @@ Routine{
 ~standardize.fit(~dataset,{"done".postln;});
 
 // standardize the full dataset
-~standardized_dataset = FluidDataSet(s,\standardized,~nb_of_dim);
+~standardized_dataset = FluidDataSet(s);
 ~standardize.transform(~dataset,~standardized_dataset,{"done".postln;});
 
 // look at a point to see that it has points in it
