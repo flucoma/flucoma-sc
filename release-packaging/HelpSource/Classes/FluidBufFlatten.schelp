@@ -65,6 +65,8 @@ Whether to group points channel-wise or frame-wise
 ARGUMENT:: trig
 Trigger signal to defer / retrigger processing
 
+returns:: an instance of the processor
+
 EXAMPLES::
 
 code::

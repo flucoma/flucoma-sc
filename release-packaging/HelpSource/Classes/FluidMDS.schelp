@@ -63,9 +63,9 @@ code::
 //Preliminaries: we want some audio, a couple of FluidDataSets, some Buffers, a FluidStandardize and a FluidMDS
 (
 ~audiofile = File.realpath(FluidBufPitch.class.filenameSymbol).dirname +/+ "../AudioFiles/Tremblay-ASWINE-ScratchySynth-M.wav";
-~raw = FluidDataSet(s,\mds_help_12D);
-~standardized = FluidDataSet(s,\mds_help_12Ds);
-~reduced = FluidDataSet(s,\mds_help_2D);
+~raw = FluidDataSet(s);
+~standardized = FluidDataSet(s);
+~reduced = FluidDataSet(s);
 ~audio = Buffer.read(s,~audiofile);
 ~mfcc_feature = Buffer.new(s);
 ~stats = Buffer.alloc(s, 7, 12);
@@ -108,11 +108,9 @@ FluidBufMFCC.process(s,~audio, features: ~mfcc_feature);
 //Then apply the MDS in-place on the standardized data to get 2 dimensions, using a Euclidean distance metric
 //Download the DataSet contents into an array for plotting
 (
-
 ~reducedarray = Array.new(100);
 ~standardizer.fitTransform(~raw, ~standardized);
 ~mds.fitTransform(~standardized, ~reduced, action:{
-    "HETE".postln;
     ~reduced.dump{|x| 100.do{|i|
         ~reducedarray.add(x["data"][i.asString])
 }}});

@@ -56,6 +56,9 @@ ARGUMENT:: fftSize
 ARGUMENT:: action
 	A Function to be evaluated once the offline process has finished and all Buffer's instance variables have been updated on the client side. The function will be passed [destination] as an argument.
 
+returns:: an instance of the processor
+
+
 INSTANCEMETHODS::
 
 private:: synth, server

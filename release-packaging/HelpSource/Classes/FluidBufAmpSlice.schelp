@@ -70,8 +70,7 @@ ARGUMENT:: highPassFreq
 ARGUMENT:: action
 	A Function to be evaluated once the offline process has finished and indices instance variables have been updated on the client side. The metric will be passed indices as an argument.
 
-RETURNS::
-	Nothing, as the destination buffer is declared in the function call.
+returns:: an instance of the processor
 
 EXAMPLES::
 

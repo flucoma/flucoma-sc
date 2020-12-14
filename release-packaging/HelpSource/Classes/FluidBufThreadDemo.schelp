@@ -27,8 +27,7 @@ ARGUMENT:: time
 ARGUMENT:: action
 	A function that will be executed upon completion. It is passed the destination buffer as argument.
 
-RETURNS::
-	The instance of FluidNRTProcess which can be used to cancel the job.
+returns::The instance of FluidNRTProcess which can be used to cancel the job.
 
 
 METHOD:: kr
@@ -43,8 +42,7 @@ ARGUMENT:: time
 ARGUMENT:: doneAction
 	An integer representing an action to be executed when the process is finished. This can be used to free the enclosing synth, etc. See link::Classes/Done::  for more detail.
 
-RETURNS::
-	It report the approximate job progress, from 0 to 1.
+returns::It report the approximate job progress, from 0 to 1.
 
 
 EXAMPLES::

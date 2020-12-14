@@ -129,7 +129,7 @@ For instance, whilst fitting the tree against some n-dimensional descriptor data
 
 code::
 
-(
+ ,(
 Routine{
     var inputBuffer = Buffer.alloc(s,2);
     var outputBuffer = Buffer.alloc(s,10);//5 neighbours * 2D data points
@@ -157,8 +157,7 @@ fork{
 	~dsL.load(d, {~dsL.print});
 }
 )
-~dsL.asUGenInput
-s.dumpOSC
+
 // Create the buffers, and make a synth, querying our tree with some random points
 (
 Routine{

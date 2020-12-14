@@ -51,8 +51,7 @@ ARGUMENT:: destGain
 ARGUMENT:: action
 		A Function to be evaluated once the offline process has finished and destination instance variables have been updated on the client side. The function will be passed destination as an argument.
 
-RETURNS::
-	Nothing, as the destination buffer is declared in the function call.
+returns:: an instance of the processor
 
 DISCUSSION::
 	It is important to understand the rules used for determining the final desintinaiton buffer dimensions to get the most out of this object. If needs be, the destination buffer will be resized to the maxima of the requsted source numFrames and numChannels. Frames will be written up to the limit of actually available samples (meaning you can create zero padding); channels  will be written modulo the available channels, taking into account the channel offsets, meaning you can have channels repeat or loop into the source buffer's channels. See the examples below.

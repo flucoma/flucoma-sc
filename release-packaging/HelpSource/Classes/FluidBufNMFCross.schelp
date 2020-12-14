@@ -55,6 +55,7 @@ The analsyis FFT size in samples (default = winSize)
 ARGUMENT:: action
 A function to run when processing is complete, taking the output buffer as its argument
 
+returns:: an instance of the processor
 
 INSTANCEMETHODS::
 
