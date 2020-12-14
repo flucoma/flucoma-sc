@@ -3,7 +3,6 @@ FluidProxyUgen : UGen {
 	var <>pluginname;
 
 	*kr { |pluginname...args|
-        pluginname.postln;
 		^this.new1('control', pluginname,*args)
 	}
 
