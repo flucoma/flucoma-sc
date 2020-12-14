@@ -12,7 +12,7 @@ The process will, after waiting for STRONG::time:: millisecond, return its delay
 
 CLASSMETHODS::
 
-METHOD:: process
+METHOD:: process, processBlocking
 	This is the method that calls for the job to be done. In this case, simply waiting STRONG::time:: millisecond before writing a value in the destination buffer.
 
 ARGUMENT:: server

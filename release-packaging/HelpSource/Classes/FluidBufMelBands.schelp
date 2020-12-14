@@ -15,7 +15,7 @@ By default, this UGen spawns a new thread to avoid blocking the server command q
 
 CLASSMETHODS::
 
-METHOD:: process
+METHOD:: process, processBlocking
 	This is the method that calls for the spectral shape descriptors to be calculated on a given source buffer.
 
 ARGUMENT:: server

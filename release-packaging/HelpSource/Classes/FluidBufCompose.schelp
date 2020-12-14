@@ -12,7 +12,7 @@ The algorithm takes a srcBuf, and writes the information at the provided dstBuf.
 
 CLASSMETHODS::
 
-METHOD:: process
+METHOD:: process, processBlocking
 	This method triggers the compositing.
 
 ARGUMENT:: server

@@ -11,7 +11,7 @@ Henderson and Solomonm (2019) AUDIO TRANSPORT: A GENERALIZED PORTAMENTO VIA OPTI
 
 CLASSMETHODS::
 
-METHOD:: process
+METHOD:: process, processBlocking
 Process two audio link::Classes/Buffer::
 
 ARGUMENT:: server

@@ -10,7 +10,7 @@ See http://nimfa.biolab.si/nimfa.methods.seeding.nndsvd.html
 
 CLASSMETHODS::
 
-METHOD:: process
+METHOD:: process, processBlocking
 This is the method that calls for the decomposition to be calculated on a given source buffer.
 
 ARGUMENT:: server
