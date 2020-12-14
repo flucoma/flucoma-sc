@@ -16,7 +16,7 @@ FluidBufAudioTransport : FluidBufProcessor {
         destination = destination.asUGenInput;
 
 
-		^FluidProxyUgen.kr(\FluidBufAudioTransportTrigger,-1, source1, startFrame1, numFrames1, startChan1, numChans1, source2, startFrame1, numFrames1, startChan2, numChans2, destination, interpolation, bandwidth, windowSize, hopSize, fftSize, maxFFTSize, trig, blocking);
+		^FluidProxyUgen.kr(this.objectClassName++\Trigger,-1, source1, startFrame1, numFrames1, startChan1, numChans1, source2, startFrame1, numFrames1, startChan2, numChans2, destination, interpolation, bandwidth, windowSize, hopSize, fftSize, maxFFTSize, trig, blocking);
 	}
 
 

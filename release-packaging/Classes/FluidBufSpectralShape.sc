@@ -14,7 +14,7 @@ FluidBufSpectralShape : FluidBufProcessor {
 		source.isNil.if {"FluidBufSpectralShape:  Invalid source buffer".throw};
 		features.isNil.if {"FluidBufSpectralShape:  Invalid features buffer".throw};
 
-		^FluidProxyUgen.kr(\FluidBufSpectralShapeTrigger, -1, source, startFrame, numFrames, startChan, numChans, features, windowSize, hopSize, fftSize, maxFFTSize, trig, blocking);
+		^FluidProxyUgen.kr(this.objectClassName++\Trigger, -1, source, startFrame, numFrames, startChan, numChans, features, windowSize, hopSize, fftSize, maxFFTSize, trig, blocking);
 
 	}
 
