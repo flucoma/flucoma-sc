@@ -65,6 +65,9 @@ ARGUMENT:: clumpLength
 ARGUMENT:: minSliceLength
 	The minimum duration of a slice in samples.
 
+ARGUMENT:: freeWhenDone
+Free the server instance when processing complete. Default true
+
 ARGUMENT:: action
 		A Function to be evaluated once the offline process has finished and indices instance variables have been updated on the client side. The function will be passed indices as an argument.
 

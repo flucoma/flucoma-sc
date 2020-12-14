@@ -73,6 +73,9 @@ The length of the buffer kept after an offset to allow the algorithm, once the S
 ARGUMENT:: highPassFreq
 The frequency of the fourth-order link::https://en.wikipedia.org/wiki/Linkwitz%E2%80%93Riley_filter##Linkwitz–Riley high-pass filter::. This is done first on the signal to minimise low frequency intermodulation with very fast ramp lengths. A frequency of 0 bypasses the filter.
 
+ARGUMENT:: freeWhenDone
+Free the server instance when processing complete. Default true
+
 ARGUMENT:: action
 A Function to be evaluated once the offline process has finished and indices instance variables have been updated on the client side. The metric will be passed indices as an argument.
 

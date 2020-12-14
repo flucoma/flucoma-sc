@@ -41,6 +41,9 @@ The index of the buffer to use as the destination for the processed material.
 ARGUMENT:: threshold
 The threshold under which values will be zeroed
 
+ARGUMENT:: freeWhenDone
+Free the server instance when processing complete. Default true
+
 ARGUMENT:: action
 	A Function to be evaluated once the offline process has finished and indices instance variables have been updated on the client side. The metric will be passed indices as an argument.
 

@@ -24,6 +24,9 @@ ARGUMENT:: result
 ARGUMENT:: time
 	The duration in milliseconds of the delay that the background thread will wait for before yielding the value to the destination buffer.
 
+ARGUMENT:: freeWhenDone
+Free the server instance when processing complete. Default true
+
 ARGUMENT:: action
 	A function that will be executed upon completion. It is passed the destination buffer as argument.
 

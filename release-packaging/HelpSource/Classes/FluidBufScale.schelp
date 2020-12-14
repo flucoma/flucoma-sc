@@ -49,6 +49,9 @@ The output value when the input is inputLow
 ARGUMENT:: outputHigh
 The output value when the input is inputHigh
 
+ARGUMENT:: freeWhenDone
+Free the server instance when processing complete. Default true
+
 ARGUMENT:: action
 	A Function to be evaluated once the offline process has finished and indices instance variables have been updated on the client side. The metric will be passed indices as an argument.
 

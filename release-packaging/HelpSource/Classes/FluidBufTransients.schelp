@@ -69,6 +69,9 @@ ARGUMENT:: windowSize
 ARGUMENT:: clumpLength
 	The window size in sample within which positive detections will be clumped together to avoid overdetecting in time.
 
+ARGUMENT:: freeWhenDone
+Free the server instance when processing complete. Default true
+
 ARGUMENT:: action
 	A Function to be evaluated once the offline process has finished and all Buffer's instance variables have been updated on the client side. The function will be passed [transients, residual] as an argument.
 

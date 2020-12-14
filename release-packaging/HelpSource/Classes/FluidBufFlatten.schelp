@@ -47,6 +47,9 @@ The link::Classes/Buffer:: to write the flattened data to
 ARGUMENT:: axis
 Whether to group points channel-wise or frame-wise
 
+ARGUMENT:: freeWhenDone
+Free the server instance when processing complete. Default true
+
 ARGUMENT:: action
 Runs when processing is complete
 

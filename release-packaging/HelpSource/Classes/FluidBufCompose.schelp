@@ -48,6 +48,9 @@ ARGUMENT:: destStartChan
 ARGUMENT:: destGain
 	The gain applied to the samples in the region of the destination buffer over which the source is to be copied. The default value (0) will overwrite that section of the destination buffer, and a value of 1.0 would sum the source to the material that was present.
 
+ARGUMENT:: freeWhenDone
+Free the server instance when processing complete. Default true
+
 ARGUMENT:: action
 		A Function to be evaluated once the offline process has finished and destination instance variables have been updated on the client side. The function will be passed destination as an argument.
 

@@ -102,6 +102,9 @@ ARGUMENT:: windowType
 ARGUMENT:: randomSeed
 	The NMF process needs to seed its starting point. If specified, the same values will be used. The default of -1 will randomly assign them. (not implemented yet)
 
+ARGUMENT:: freeWhenDone
+Free the server instance when processing complete. Default true
+
 ARGUMENT:: action
 	A Function to be evaluated once the offline process has finished and all Buffer's instance variables have been updated on the client side. The function will be passed [resynth, bases, activations] as an argument.
 
