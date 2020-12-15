@@ -19,11 +19,11 @@ c = Buffer.alloc(s,1);
 (
 Routine{
     n.do{|i|
-        b.set(0,~idx[i]);
-        c.set(0,~data[i]);
+        b.set(0,~idx[i].postln);
+        c.set(0,~data[i].postln);
         ~simpleInput.addPoint(i.asString,b,{("Added Input" + i).postln});
         ~simpleOutput.addPoint(i.asString,c,{("Added Output" + i).postln});
-        ~mappingviz.set((~idx[i]/61).asInteger,~data[i]);
+        ~mappingviz.set((~idx[i]/61.4).asInteger,~data[i]);
         s.sync;
     }
 }.play
@@ -57,3 +57,5 @@ Routine{
 
 // look at the interpolated values
 ~mappingresult.plot
+
+(31416/61.4).asInteger

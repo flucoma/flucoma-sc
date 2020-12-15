@@ -94,10 +94,12 @@ t = Main.elapsedTime;
 
 // extracting whatever stats we want. In this case, mean/std/lowest/highest, and the same on the first derivative - excluding MFCC0 as it is mostly volume, keeping MFCC1-12
 
-~curated = FluidDataSet(s,\ds10c);
-~curatedW = FluidDataSet(s,\ds10cW);
-
+(
+~curated = FluidDataSet(s);
+~curatedW = FluidDataSet(s);
 ~curator = FluidDataSetQuery.new(s);
+)
+
 (
 ~curator.addRange(1,12,{
 	~curator.addRange(14,12,{
