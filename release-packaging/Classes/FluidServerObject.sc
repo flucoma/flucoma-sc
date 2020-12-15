@@ -89,6 +89,7 @@ FluidBufProcessor : FluidServerObject
     var <outputBuffers;
     var <freeWhenDone;
     classvar responder;
+    classvar count;
 
     *cmdPeriod {
         serverCaches[this] !? {|cache|
