@@ -25,29 +25,7 @@ under the European Union’s Horizon 2020 research and innovation programme
 
 namespace fluid {
 namespace client {
-/**
- A descendent of SndBuf that will populate itself
- from the NRT mirror buffers given a world and a bufnum
- **/
-struct NRTBuf
-{
-  NRTBuf(SndBuf* b) : mBuffer(b) {}
-  NRTBuf(World* world, index bufnum, bool rt = false)
-      : NRTBuf(rt ? World_GetBuf(world, static_cast<uint32>(bufnum))
-                  : World_GetNRTBuf(world, static_cast<uint32>(bufnum)))
-  {
-    if (mBuffer && !static_cast<bool>(mBuffer->samplerate))
-      mBuffer->samplerate = world->mFullRate.mSampleRate;
-  }
-
-protected:
-  SndBuf* mBuffer;
-};
-
-/**
- A combination of SndBuf and client::BufferAdaptor (which, in turn, exposes
- FluidTensorView<float,2>), for simple transfer of data
-
+/* 
  Given a World* and a buffer number, this will populate its SndBuf stuff
  from the NRT mirror buffers, and create a FluidTensorView wrapper of
  appropriate dimensions.
@@ -60,24 +38,27 @@ protected:
  nSamps = rows
  nChans = columns
  **/
-class SCBufferAdaptor : public NRTBuf, public client::BufferAdaptor
+class SCBufferAdaptor; 
+std::ostream& operator<<(std::ostream& os, SCBufferAdaptor& b);
+ 
+class SCBufferAdaptor :public client::BufferAdaptor
 {
 public:
-  //  SCBufferAdaptor()               = delete;
+    
   SCBufferAdaptor(const SCBufferAdaptor&) = delete;
   SCBufferAdaptor& operator=(const SCBufferAdaptor&) = delete;
 
   SCBufferAdaptor(SCBufferAdaptor&&) = default;
   
   SCBufferAdaptor(SndBuf* buf, World* world, bool local)
-      : NRTBuf{buf}, mWorld{world}, mLocal{local}
+      : mBuffer{buf}, mWorld{world}, mLocal{local}
   {}
 
-  SCBufferAdaptor(index bufnum, World* world, bool rt = false)
-      : NRTBuf(world, bufnum, rt), mBufnum(bufnum), mWorld(world)
+  SCBufferAdaptor(index bufnum, World* world)
+      : mBuffer{World_GetNRTBuf(world, static_cast<uint32>(bufnum))}, mBufnum(bufnum), mWorld(world)
   {}
 
-  ~SCBufferAdaptor() { cleanUp(); }
+//  ~SCBufferAdaptor() { cleanUp(); }
 
   void assignToRT(World* rtWorld)
   {
@@ -90,11 +71,8 @@ public:
 
   void cleanUp()
   {
-    if (mOldData)
-    {
-      boost::alignment::aligned_free(mOldData);
-      mOldData = nullptr;
-    }
+    boost::alignment::aligned_free(mOldData);
+    mOldData = nullptr;
   }
 
   // No locks in (vanilla) SC, so no-ops for these
@@ -178,24 +156,24 @@ public:
   std::string asString() const override { return std::to_string(bufnum()); }
 
   const Result resize(index frames, index channels, double sampleRate) override
-  {
-    SndBuf* thisThing = mBuffer;
-    
+  {    
     if(mLocal) // don't try and resize
     {
-      if(frames > thisThing->frames || channels > thisThing->channels)
+      if(frames > mBuffer->frames || channels > mBuffer->channels)
       {
         return {Result::Status::kError, "Local buffer must be presized adequetly, need ",
-                                                        frames, "frames, ", channels, " channels." };
+                                                        frames, " frames, ", channels, " channels." };
       }
       else return {};
     }
     
-    mOldData = thisThing->data;
+    mOldData = mBuffer->data;
     int allocResult =
         mWorld->ft->fBufAlloc(mBuffer, static_cast<int>(channels),
                               static_cast<int>(frames), sampleRate);
-
+    
+    if(mBuffer->data == mOldData) mOldData = nullptr;
+    
     Result r;
 
     if (allocResult != kSCErr_None)
@@ -210,8 +188,9 @@ public:
   void  realTime(bool rt) { mRealTime = rt; }
 
 protected:
+  SndBuf* mBuffer;
   bool   mRealTime{false};
-  float* mOldData{0};
+  float* mOldData{nullptr};
   index  mBufnum;
   World* mWorld;
   bool   mLocal{false};
