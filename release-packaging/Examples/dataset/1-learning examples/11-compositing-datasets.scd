@@ -290,13 +290,15 @@ Routine{
 
 // let's assemble the query
 // first let's normalise our target descriptors
-~targetPitch = Buffer(s)
-~targetLoud = Buffer(s)
-~targetMFCC = Buffer(s)
-~targetMFCCs = Buffer(s)
-~targetMFCCsp = Buffer(s)
-~targetTimbre = Buffer(s)
-~targetAll= Buffer(s)
+(
+~targetPitch = Buffer(s);
+~targetLoud = Buffer(s);
+~targetMFCC = Buffer(s);
+~targetMFCCs = Buffer(s);
+~targetMFCCsp = Buffer(s);
+~targetTimbre = Buffer(s);
+~targetAll= Buffer(s);
+)
 
 ~normL.transformPoint(~flatLoudbuf[0], ~targetLoud) //normalise the loudness (all dims)
 ~normP.transformPoint(~flatPitchbuf[0], ~targetPitch) //normalise the pitch (all dims)

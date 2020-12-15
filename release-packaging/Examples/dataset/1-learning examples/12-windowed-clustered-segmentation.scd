@@ -82,15 +82,18 @@ a = Slider(w, Rect(10, 20, 330, 20))
 ~query.addRange(0,3);//add some spectral moments
 ~query.transformJoin(~slicesShapes, ~curated, ~curated);//join in centroids
 
+//optionally standardize in place
 ~stan.fitTransform(~curated, ~curated);
 
 ~curated.print
+
+//retrieve the dataset as dictionary
 ~curated.dump{|x|~sliceDict = x;};
 
 ~originalslicesarray = (~originalindices.flatten ++ ~loader.buffer.numFrames).asSet.asArray.sort
 ~orginalkeys = Array.newFrom(~slicer.index.keys).sort{|a,b| ~slicer.index[a][\bounds][0]< ~slicer.index[b][\bounds][0]}
 
-//the windowed function
+//the windowed function, recursive to deal with sync dependencies
 (
 ~windowedFunct = {arg head, winSize, overlap;
 	var nbass = [], assignments = [], tempDict = ();
@@ -146,24 +149,18 @@ a = Slider(w, Rect(10, 20, 330, 20))
 
 //the job
 
+//test 1 - start at the begining, consider 4 items at a time, make 2 clusters, overlap 1
 ~newindices = [~originalslicesarray[0]]; ~newkeys = [~orginalkeys[0]];
 ~windowedFunct.value(0, 4, 1);
 
-//try again with more clusters
+//OPTIONAL: try again with more clusters (3) and a wider window (6) and more overlap (2)
 ~newindices = [~originalslicesarray[0]]; ~newkeys = [~orginalkeys[0]];
 ~kmeans.numClusters = 3;
 ~windowedFunct.value(0,6,2);
 
-~newindices.postln;
-~newkeys.postln;
-
-~newindices.size;
+//compare sizes
+~orginalkeys.size
 ~newkeys.size;
-
-~newindices.last;
-~newkeys.last;
-
-~slicer.index[~orginalkeys[0]]
 
 //export to reaper
 (
@@ -221,3 +218,5 @@ if (f.isOpen , {
 	f.close;
 });
 )
+
+(then open the time-stamped reaper file clusterdslice in the folder tmp)
