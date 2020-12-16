@@ -1,7 +1,7 @@
 TITLE:: FluidStandardize
 summary:: Standardize a FluidDataSet
 categories:: FluidManipulation
-related:: Classes/FluidDataSet, Classes/FluidStandardize
+related:: Classes/FluidDataSet, Classes/FluidStandardize, Classes/FluidRobustScale
 
 DESCRIPTION::
 Standardize a link::Classes/FluidDataSet::, i.e. rescale using its mean(s) and standard deviation(s) in each dimension.

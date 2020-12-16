@@ -1,7 +1,7 @@
-TITLE:: FluidNormalize
-summary:: Normalize a FluidDataSet
+TITLE:: FluidRobustScale
+summary:: Apply Robust Scaling to FluidDataSet
 categories:: FluidManipulation
-related:: Classes/FluidStandardize, Classes/FluidRobustScale, Classes/FluidDataSet
+related:: Classes/FluidStandardize, Classes/FluidDataSet
 
 DESCRIPTION::
 Normalize the entries of a link::Classes/FluidDataSet::, or normalize a data point according to the learned bounds of a data set. On the server.
@@ -34,7 +34,7 @@ ARGUMENT:: action
 A function to run when processing is complete
 
 METHOD:: transform
-Normalize a link::Classes/FluidDataSet:: into another link::Classes/FluidDataSet::, using the learned extrema from a previous call to link::Classes/FluidNormalize#fit::
+Normalize a link::Classes/FluidDataSet:: into another link::Classes/FluidDataSet::, using the learned extrema from a previous call to link::Classes/FluidRobustScale#fit::
 ARGUMENT:: sourceDataSet
 The link::Classes/FluidDataSet:: to normalize
 ARGUMENT:: destDataSet
@@ -54,7 +54,7 @@ A function to run when processing is complete
 
 
 METHOD:: transformPoint
-Normalize a new data point, using the learned extrema from a previous call to link::Classes/FluidNormalize#fit::
+Normalize a new data point, using the learned extrema from a previous call to link::Classes/FluidRobustScale#fit::
 ARGUMENT:: sourceBuffer
 A link::Classes/Buffer:: with the new data point
 ARGUMENT:: destBuffer
@@ -65,15 +65,15 @@ A function to run when processing is complete
 EXAMPLES::
 code::
 s.boot;
-//Preliminaries: we want some audio, a couple of FluidDataSets, some Buffers and a FluidNormalize
-// FluidNormalize.dumpAllMethods
+//Preliminaries: we want some audio, a couple of FluidDataSets, some Buffers and a FluidRobustScale
+// FluidRobustScale.dumpAllMethods
 (
 ~audiofile = File.realpath(FluidBufPitch.class.filenameSymbol).dirname +/+ "../AudioFiles/Tremblay-ASWINE-ScratchySynth-M.wav";
 ~raw = FluidDataSet(s,\norm_help_raw);
 ~norm = FluidDataSet(s,\norm_help_normd);
 ~pitch_feature = Buffer.new(s);
 ~stats = Buffer.alloc(s, 7, 2);
-~normalizer = FluidNormalize(s);
+~normalizer = FluidRobustScale(s);
 )
 
 // Load audio and run a pitch analysis, which gives us pitch and pitch confidence (so a 2D datum)
