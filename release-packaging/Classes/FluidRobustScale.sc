@@ -1,14 +1,14 @@
 FluidRobustScale : FluidRealTimeModel {
 
-    var <>min, <>max, <>invert;
+    var <>min, <>max, <>low, <>high, <>invert;
 
-	*new {|server, min = 0, max = 1, invert = 0|
-		^super.new(server,[min,max,invert])
-        .min_(min).max_(max).invert_(invert);
+	*new {|server, min = 0, max = 1, low = 0, high = 100, invert = 0|
+		^super.new(server,[min,max,low,high,invert])
+		.min_(min).max_(max).low_(low).high_(high).invert_(invert);
 	}
 
     prGetParams{
-        ^[this.min,this.max,this.invert,-1,-1];
+        ^[this.min,this.max,this.low,this.high,this.invert,-1,-1];
     }
 
 
@@ -52,16 +52,18 @@ FluidRobustScale : FluidRealTimeModel {
         this.prSendMsg(this.transformPointMsg(sourceBuffer, destBuffer));
 	}
 
-    kr{|trig, inputBuffer,outputBuffer,min,max,invert|
+    kr{|trig, inputBuffer,outputBuffer,min,max,low,high,invert|
 
         min = min ? this.min;
         max = max ? this.max;
-        invert = invert ? this.invert;
+        low = low ? this.low;
+        high = high ? this.high;
+		invert = invert ? this.invert;
 
-        this.min_(min).max_(max).invert_(invert);
+        this.min_(min).max_(max).low_(low).high_(high).invert_(invert);
 
         ^FluidProxyUgen.kr(this.class.name.asString++'/query', K2A.ar(trig),
-                id, this.min, this.max, this.invert, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer));
+                id, this.min, this.max, this.low, this.high, this.invert, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer));
     }
 
 
