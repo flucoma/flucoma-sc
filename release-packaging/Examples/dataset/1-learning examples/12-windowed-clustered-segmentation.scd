@@ -4,7 +4,7 @@
 
 //slightly oversegment with novelty
 //segments should still make sense but might cut a few elements in 2 or 3
-~slicer = FluidSliceCorpus({ |src,start,num,dest| FluidBufNoveltySlice.kr(src,start,num,indices:dest, feature: 1, kernelSize: 29, threshold: 0.1, filterSize: 5, hopSize: 128)});
+~slicer = FluidSliceCorpus({ |src,start,num,dest| FluidBufNoveltySlice.kr(src,start,num,indices:dest, feature: 1, kernelSize: 29, threshold: 0.1, filterSize: 5, hopSize: 128, blocking: 1)});
 ~slicer.play(s, ~loader.buffer,~loader.index);
 
 //test the segmentation by looping them
@@ -45,7 +45,11 @@ a = Slider(w, Rect(10, 20, 330, 20))
 	writer = FluidDataSetWr.kr(~slicesShapes,label, -1, ~flatbuf[voice], Done.kr(flatten),blocking: 1);
 });
 )
-~extractor.play(s,~loader.buffer, ~slicer.index);
+
+(
+t = Main.elapsedTime;
+~extractor.play(s,~loader.buffer, ~slicer.index, action:{(Main.elapsedTime - t).postln;"Analysis done".postln});
+)
 
 ~slicesMFCC.print
 ~slicesShapes.print
@@ -102,22 +106,24 @@ a = Slider(w, Rect(10, 20, 330, 20))
 	//copy the items to a subdataset from hear
 	winSize.do{|i|
 		tempDict.put((i.asString), ~sliceDict["data"][(~orginalkeys[(i+head)]).asString]);//here one could curate which stats to take
-		"whichslices:%\n".postf(i+head);
+		// "whichslices:%\n".postf(i+head);
 	};
 	~windowDS.load(Dictionary.newFrom([\cols, ~sliceDict["cols"].asInteger, \data, tempDict]), action: {
-		"% - loaded\n".postf(head);
+		// "% - loaded\n".postf(head);
 
 		//kmeans 2 and retrieve ordered array of class assignations
 		~kmeans.fitPredict(~windowDS, ~windowLS, action: {|x|
 			nbass = x;
-			"% - fitted1: ".postf(head); nbass.postln;
+			// "% - fitted1: ".postf(head); nbass.postln;
 
 			if (nbass.includes(winSize.asFloat), {
 				~kmeans.fitPredict(~windowDS, ~windowLS, {|x|
-					nbass = x; "% - fitted2: ".postf(head); nbass.postln;
+					nbass = x;
+					// "% - fitted2: ".postf(head); nbass.postln;
 					if (nbass.includes(winSize.asFloat), {
 						~kmeans.fitPredict(~windowDS, ~windowLS, {|x|
-							nbass = x; "% - fitted3: ".postf(head); nbass.postln;
+							nbass = x;
+							// "% - fitted3: ".postf(head); nbass.postln;
 						});
 					});
 				});

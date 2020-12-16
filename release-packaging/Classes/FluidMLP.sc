@@ -61,7 +61,7 @@ FluidMLPRegressor : FluidRealTimeModel {
 
 	predictPoint { |sourceBuffer, targetBuffer, action|
         actions[\predictPoint] = [nil,{action.value(targetBuffer)}];
-        this.predictPointMsg(sourceBuffer, targetBuffer).postln;
+        this.predictPointMsg(sourceBuffer, targetBuffer);
 		this.prSendMsg(this.predictPointMsg(sourceBuffer, targetBuffer));
 	}
 

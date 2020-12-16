@@ -211,9 +211,7 @@ fork{
 )
 
 //Above we sneakily made a dictionary of slice data for playback (bufnum,start,end). Let's throw it in a dataset
-(
 ~slicedata = FluidDataSet(s);  // will hold slice data (bufnum,start,end) for playback
-)
 
 //dict -> dataset
 (

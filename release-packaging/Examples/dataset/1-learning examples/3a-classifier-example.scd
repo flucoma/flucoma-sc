@@ -53,7 +53,7 @@ Routine{
 		~simpleInput.addPoint((i+50).asString,b,{("Added Input" + (i+50)).postln});
 		~simpleOutput.addLabel((i+50).asString,"Red",{("Added Output" + (i+50)).postln});
 		s.sync;
-	}
+	};
 	\done.postln;
 	}.play;
 )

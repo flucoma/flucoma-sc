@@ -113,7 +113,7 @@ Routine{
 ~normalize.transformPoint(~query_buf,~normbuf);
 ~standardize.transformPoint(~query_buf,~stdbuf);
 
-//query the single nearest neighbourg via 3 different data scaling. Depending on the random source at the begining, you will get small to large differences between the 3 answers!
+//query the single nearest neighbourg via 3 different data scaling. Depending on the random source at the begining, you should get (small or large) differences between the 3 answers!
 [~tree,~normtree,~stdtree].do{|t| t.numNeighbours =1  };
 ~tree.kNearest(~query_buf, {|x| ("Original:" + x).post;~tree.kNearestDist(~query_buf, {|x| (" with a distance of " + x).postln});});
 ~normtree.kNearest(~normbuf, {|x| ("Normalized:" + x).post;~normtree.kNearestDist(~normbuf, {|x| (" with a distance of " + x).postln});});
