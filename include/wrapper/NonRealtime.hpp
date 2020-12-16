@@ -70,7 +70,7 @@ namespace impl {
       }
       else //client has screwed up
       {
-          std::cout << "ERROR: ID " << id << " already in use\n";
+          std::cout << "ERROR: " <<  Wrapper::getName() << " ID " << id << " already in use\n";
           return {};
       }
     }
@@ -313,29 +313,30 @@ namespace impl {
       bool mSuccess;
     };
     
+        
     static void doProcessCallback(World* world, index id,size_t completionMsgSize,char* completionMessage,void* replyAddress)
     {
-        // std::cout << "In callback\n"; 
-        auto ft = getInterfaceTable();
+      auto ft = getInterfaceTable();
+      struct Context{
+        World* mWorld;
+        index  mID;
+        size_t    mCompletionMsgSize;
+        char*  mCompletionMessage;
+        void*  mReplyAddress;
+      };
       
-        struct Context{
-          World* mWorld;
-          index  mID;
-          size_t    mCompletionMsgSize;
-          char*  mCompletionMessage;
-          void*  mReplyAddress;
-        };
-        
-        Context* c = new Context{world,id,completionMsgSize,completionMessage,replyAddress};
+      Context* c = new Context{world,id,completionMsgSize,completionMessage,replyAddress};
       
+      auto launchCompletionFromNRT = [](FifoMsg* inmsg)
+      {        
         auto runCompletion = [](FifoMsg* msg){
-          // std::cout << "In FIFOMsg\n"; 
+          // std::cout << "In FIFOMsg\n";
           Context* c = static_cast<Context*>(msg->mData);
           World* world = c->mWorld;
           index id = c->mID;
           auto ft = getInterfaceTable();
           void* space = ft->fRTAlloc(world,sizeof(CommandAsyncComplete));
-          CommandAsyncComplete* cmd = new (space) CommandAsyncComplete(world, id,c->mReplyAddress);          
+          CommandAsyncComplete* cmd = new (space) CommandAsyncComplete(world, id,c->mReplyAddress);
           runAsyncCommand(world, cmd, c->mReplyAddress, c->mCompletionMsgSize, c->mCompletionMessage);
         };
         
@@ -345,9 +346,17 @@ namespace impl {
           delete c;
         };
         
-        FifoMsg msg;
-        msg.Set(world, runCompletion, tidyup, c);
-        if(world->mRunning) ft->fSendMsgToRT(world,msg);
+        auto ft = getInterfaceTable();
+        FifoMsg fwd = *inmsg;
+        fwd.Set(inmsg->mWorld, runCompletion, tidyup, inmsg->mData);
+        if(inmsg->mWorld->mRunning)
+          ft->fSendMsgToRT(inmsg->mWorld,fwd);
+      };
+      
+      FifoMsg msg;
+      msg.Set(world, launchCompletionFromNRT, nullptr, c);
+      
+      if(world->mRunning) ft->fSendMsgFromRT(world,msg);
     }
         
     struct CommandProcess: public NRTCommand
