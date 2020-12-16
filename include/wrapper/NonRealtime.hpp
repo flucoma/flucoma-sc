@@ -35,11 +35,12 @@ namespace impl {
     struct CacheEntry
     {
       
-      CacheEntry(Params& p):mParams{p},mClient{mParams}
+      CacheEntry(const Params& p):mParams{p},mClient{mParams}
       {}
       
       Params mParams;
       Client mClient;
+      bool mDone{false};
     };
     
     using CacheEntryPointer = std::shared_ptr<CacheEntry>; 
@@ -59,12 +60,12 @@ namespace impl {
       return lookup == mCache.end() ? WeakCacheEntryPointer() : lookup->second;
     }
     
-    static WeakCacheEntryPointer add(index id, CacheEntry&& entry)
+    static WeakCacheEntryPointer add(index id, const Params& params)
     {
       if(isNull(get(id)))
       {
         auto result =  mCache.emplace(id,
-                               std::make_shared<CacheEntry>(std::move(entry)));
+                               std::make_shared<CacheEntry>(params));
                                
         return result.second ? (result.first)->second : WeakCacheEntryPointer(); //sob
       }
@@ -175,7 +176,7 @@ namespace impl {
       bool stage2(World*)
       {
 //        auto entry = ;
-        mResult = (!isNull(add(NRTCommand::mID, CacheEntry{mParams})));
+        mResult = (!isNull(add(NRTCommand::mID, mParams)));
                 
         //Sigh. The cache entry above has both the client instance and main params instance.
         // The client is linked to the params by reference; I've not got the in-place constrction
@@ -267,6 +268,7 @@ namespace impl {
               std::cout << Wrapper::getName()
                         << ": Processing cancelled"
                         << std::endl;
+              ptr->mDone = true;
               return false;
             }
             
@@ -274,9 +276,14 @@ namespace impl {
             mSuccess = !(r.status() == Result::Status::kError);
             if (!r.ok())
             {
-              Wrapper::printResult(world,r);
-              if(r.status() == Result::Status::kError) return false;
+              Wrapper::printResult(world,r);              
+              if(r.status() == Result::Status::kError)
+              {
+                ptr->mDone = true;
+                return false;
+              }
             }
+            
             return true;
           }
         }
@@ -304,7 +311,7 @@ namespace impl {
           {
             NRTCommand::sendReply(name(),mSuccess);
           }
-          
+          ptr->mDone = true;
           return true;
         }
         return false;
@@ -367,6 +374,7 @@ namespace impl {
         
         if(auto ptr = get(NRTCommand::mID).lock())
         {
+           ptr->mDone = false;
            ptr->mParams.template setParameterValuesRT<ParamsFromOSC>(nullptr, world, ar);
            mSynchronous = static_cast<bool>(ar.geti());
         } //if this fails, we'll hear about it in stage2 anyway
@@ -417,7 +425,11 @@ namespace impl {
             {
               mResult = client.process();
               Wrapper::printResult(world,mResult);
-              return mSynchronous && mResult.ok();
+              
+              bool error =mResult.status() == Result::Status::kError;
+              
+              if(error) ptr->mDone = true;
+              return mSynchronous && !error;
             }
           }
         }
@@ -451,7 +463,7 @@ namespace impl {
           
           if(NRTCommand::mID >= 0 && mSynchronous)
             NRTCommand::sendReply(name(), mResult.ok());
-          
+          ptr->mDone = true;
           return true;
         }
         return false;
@@ -752,7 +764,6 @@ namespace impl {
           if(trigger)
           {
             mDone = 0;
-            client.resetDone();
             mControlsIterator.reset(1 + mInBuf); //add one for ID
             auto& params = ptr->mParams;
             Wrapper::setParams(this,params,mControlsIterator,true,false);
@@ -763,7 +774,7 @@ namespace impl {
           }
           else
           {
-              mDone = mRunCount && client.done() ;
+              mDone = ptr->mDone; 
               out0(0) = mDone ? 1 : static_cast<float>(client.progress());
           }
         }
