@@ -34,7 +34,7 @@ ARGUMENT:: action
 A function to run when processing is complete
 
 METHOD:: transform
-Scale a link::Classes/FluidDataSet:: into another link::Classes/FluidDataSet::, using the learned extrema from a previous call to link::Classes/FluidRobustScale#fit::
+Scale a link::Classes/FluidDataSet:: into another link::Classes/FluidDataSet::, using the learned range from a previous call to link::Classes/FluidRobustScale#fit::
 ARGUMENT:: sourceDataSet
 The link::Classes/FluidDataSet:: to scale
 ARGUMENT:: destDataSet
