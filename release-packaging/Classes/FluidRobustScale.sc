@@ -2,7 +2,7 @@ FluidRobustScale : FluidRealTimeModel {
 
     var <>low, <>high, <>invert;
 
-	*new {|server, low = 0, high = 100, invert = 0|
+	*new {|server, low = 25, high = 75, invert = 0|
 		^super.new(server,[low,high,invert])
 		.low_(low).high_(high).invert_(invert);
 	}
