@@ -66,6 +66,14 @@ public:
     getInterfaceTable(ft);
     impl::FluidSCWrapperBase<Client>::setup(ft, name);
     ft->fDefineUnitCmd(name, "version", doVersion);
+    
+    std::string commandName("/");
+    commandName += getName();
+    commandName += "/version";
+    ft->fDefinePlugInCmd(commandName.c_str(),
+      [](World*, void*, sc_msg_iter*, void*){ doVersion(nullptr,nullptr); },
+    nullptr);
+    
   }
 
   static auto& setParams(Unit* x, ParamSetType& p,

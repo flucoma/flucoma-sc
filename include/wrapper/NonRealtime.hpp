@@ -423,6 +423,7 @@ namespace impl {
             
             if(result.ok())
             {
+              ptr->mDone = false;
               mResult = client.process();
               Wrapper::printResult(world,mResult);
               
@@ -760,10 +761,9 @@ namespace impl {
           mPreviousTrigger = mTrigger;
           mTrigger = 0;
           auto& client = ptr->mClient;
-          
+                  
           if(trigger)
           {
-            mDone = 0;
             mControlsIterator.reset(1 + mInBuf); //add one for ID
             auto& params = ptr->mParams;
             Wrapper::setParams(this,params,mControlsIterator,true,false);

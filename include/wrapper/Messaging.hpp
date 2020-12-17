@@ -178,7 +178,7 @@ struct FluidSCMessaging{
                                                                      world);
           return true;
         },
-        [](World* world, void* data) // NRT Thread: Send reply
+        [](World*, void* data) // NRT Thread: Send reply
         {
           MessageData* m = static_cast<MessageData*>(data);
           if(m->result.status() != Result::Status::kError)
