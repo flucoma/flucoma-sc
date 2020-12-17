@@ -6,9 +6,18 @@ FluidUMAP : FluidDataClient {
 			\numNeighbours, numNeighbours,
 			\minDist, minDist,
 			\iterations, iterations,
-			\learnRate, learnRate,
-			\batchSize, batchSize
+			\learnRate, learnRate
 		])
+	}
+
+	fit{|sourceDataSet, action|
+		this.prSendMsg(\fit,
+			[sourceDataSet.asSymbol], action);
+	}
+
+	transform{|sourceDataSet, destDataSet, action|
+		this.prSendMsg(\transform,
+			[sourceDataSet.asSymbol,  destDataSet.asSymbol], action);
 	}
 
 
