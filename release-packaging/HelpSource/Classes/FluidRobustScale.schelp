@@ -16,10 +16,6 @@ METHOD:: new
 Create a new instance
 ARGUMENT:: server
 The link::Classes/Server:: on which to run
-ARGUMENT:: min
-Minimum output value, default 0
-ARGUMENT:: max
-Maximum output value, default 1
 ARGUMENT:: low
 Maximum output value, default 1
 ARGUMENT:: high
