@@ -104,8 +104,8 @@ FluidBufPitch.process(s,~audio, features: ~pitch_feature);
 }.play;
 )
 
+//check the dataset
 ~raw.print;
-~raw.clear;
 
 // Scale and load to language-side array
 (
@@ -133,7 +133,6 @@ FluidBufPitch.process(s,~audio, features: ~pitch_feature);
 ~inbuf = Buffer.loadCollection(s,0.5.dup);
 ~outbuf = Buffer.new(s);
 ~robust.transformPoint(~inbuf,~outbuf,{|x|x.postln;x.getn(0,2,{|y|y.postln;};)});
-OSCFunc.trace(false,true)
 
 //Server side queries
 (
