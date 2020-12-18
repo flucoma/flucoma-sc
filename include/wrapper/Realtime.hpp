@@ -53,7 +53,7 @@ public:
 
   RealTime()
     : mControls{mInBuf + ControlOffset(this),ControlSize(this)},
-      mClient{Wrapper::setParams(this, mParams, mControls)}
+      mClient{Wrapper::setParams(this, mParams, mControls,true)}
   {
     init();
   }
@@ -61,6 +61,7 @@ public:
   void init()
   {
 //    auto& client = mClient;
+  
     mDelegate.init(*this,mClient,mControls);
     mCalcFunc = make_calc_function<RealTime, &RealTime::next>();
     Wrapper::getInterfaceTable()->fClearUnitOutputs(this, 1);
@@ -111,56 +112,15 @@ public:
 
   void next(int)
   {
-//    auto& client = mWrapper->client();
-//    auto& params = mWrapper->params();
-//    const Unit* unit = this;
-    mControls.reset(mInBuf + ControlOffset(this)); 
+    mControls.reset(mInBuf + ControlOffset(this));
     mDelegate.next(*this,mClient,mParams,mControls);
-//     bool trig =  IsModel_t<Client>::value ? !mPrevTrig  && in0(0) > 0 : false;
-//     bool shouldProcess = IsModel_t<Client>::value ? trig : true;
-//     mPrevTrig = trig;
-// 
-//     if(shouldProcess)
-//     {
-//       mWrapper->mControlsIterator.reset(mInBuf + mSpecialIndex +
-//                               1); // mClient.audioChannelsIn());
-//       Wrapper::setParams(mWrapper,
-//           params, mWrapper->mControlsIterator); // forward on inputs N + audio inputs as params
-//       params.constrainParameterValues();
-//     }
-//       for (index i = 0; i < client.audioChannelsIn(); ++i)
-//       {
-//         if (mInputConnections[asUnsigned(i)])
-//         { mAudioInputs[asUnsigned(i)].reset(IN(i), 0, fullBufferSize()); }
-//       }
-//       for (index i = 0; i < client.audioChannelsOut(); ++i)
-//       {
-//         assert(i <= std::numeric_limits<int>::max());
-//         if (mOutputConnections[asUnsigned(i)])
-//           mOutputs[asUnsigned(i)].reset(out(static_cast<int>(i)), 0,
-//                                         fullBufferSize());
-//       }
-//       for (index i = 0; i < client.controlChannelsOut(); ++i)
-//       {
-//         assert(i <= std::numeric_limits<int>::max());
-//         mOutputs[asUnsigned(i)].reset(out(static_cast<int>(i)), 0, 1);
-//       }
-//       client.process(mAudioInputs, mOutputs, mContext);
-// //    }
   }
 private:
   Delegate mDelegate;
   FloatControlsIter   mControls;
   Params mParams{Client::getParameterDescriptors()};
   Client mClient;
-  // std::vector<bool>       mInputConnections;
-  // std::vector<bool>       mOutputConnections;
-  // std::vector<HostVector> mAudioInputs;
-  // std::vector<HostVector> mOutputs;
-  // FluidContext            mContext;
-  
   Wrapper* mWrapper{static_cast<Wrapper*>(this)};
-  // bool                    mPrevTrig;
 };
 
 }
