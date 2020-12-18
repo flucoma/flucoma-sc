@@ -98,7 +98,7 @@ fork{
 
 // Limit the search to an acceptable distance in a radius
 // Define a point, and observe typical distance values
-~p = [ 0.2,0.2];
+~p = [ 0.4,0.4];
 (
 ~tmpbuf = Buffer.loadCollection(s, ~p, 1, {
 	~tree.kNearestDist(~tmpbuf,{ |a|a.postln;~nearest = a;});
@@ -129,7 +129,7 @@ For instance, whilst fitting the tree against some n-dimensional descriptor data
 
 code::
 
- ,(
+(
 Routine{
     var inputBuffer = Buffer.alloc(s,2);
     var outputBuffer = Buffer.alloc(s,10);//5 neighbours * 2D data points

@@ -186,7 +186,6 @@ c = Buffer.new(s);
 
 // run the stats and send back the values
 FluidBufStats.process(s, b, stats:c, numDerivs:1, action:{c.getn(0,c.numFrames * c.numChannels,{|item|d = item; d.postln})});
-OSCFunc.allEnabled
 
 //looking at the result is not easy to grasp, since it is interleaved: first number is mean of L, second is mean of R, third is stddev of L, fourth is stddev or R
 //this will make it tidier - the first value of each line is Left, the second is Right

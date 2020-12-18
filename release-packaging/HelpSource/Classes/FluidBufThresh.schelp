@@ -59,7 +59,7 @@ c = Buffer(s)
 // play with the threshold
 FluidBufThresh.process(s, b, destination: c, threshold: 0.5)
 // retrieve the buffer and enjoy the results.
-c.getn(0,11,{|x|x.postln;})
+c.getn(0,11,{|x|x.round(0.000001).postln;})
 
 // also works in multichannel - explore the following buffer
 b = Buffer.sendCollection(s,0.0.series(0.1,2.0).scramble,2)
@@ -77,5 +77,5 @@ FluidBufThresh.process(s, b,startFrame: 3,numFrames: 4,startChan: 1,numChans: 1,
 //enjoy
 c.plot(separately: true).plotMode_(\points)
 c.query
-c.getn(0,4,{|x|x.postln;})
+c.getn(0,4,{|x|x.round(0.000001).postln;})
 ::

@@ -112,7 +112,7 @@ c = Buffer.new(s);
 // train only 2 seconds
 (
 Routine {
-    FluidBufNMF.process(s,b,0,88200,0,1, c, ~bases, components:10,fftSize:2048);
+    FluidBufNMF.process(s,b,0,88200,0,1, c, ~bases, components:10,fftSize:2048).wait;
     c.query;
 }.play;
 )
@@ -197,7 +197,7 @@ c = Buffer.new(s);
 // train only 2 seconds
 (
 Routine {
-    FluidBufNMF.process(s,b,0,88200,0,1, c, ~bases, components:8, hopSize:256, fftSize:2048);
+    FluidBufNMF.process(s,b,0,88200,0,1, c, ~bases, components:8, hopSize:256, fftSize:2048).wait;
     c.query;
 }.play;
 )

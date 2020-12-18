@@ -182,7 +182,6 @@ b.play
 
 // create a new buffer as destinations
 c = Buffer.new(s);
-OSCFunc.trace(false)
 //run the process on them
 (
     // with basic params

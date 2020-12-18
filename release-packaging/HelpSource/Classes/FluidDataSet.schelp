@@ -123,7 +123,6 @@ fork{
 ::
 
 STRONG:: Merging Datasets::
-s.dumpOSC
 code::
 //this is how to add items between 2 datasets.
 //create 2 datasets
@@ -131,7 +130,7 @@ code::
 ~dsA = FluidDataSet.new(s);
 ~dsB = FluidDataSet.new(s);
 )
-Dictionary.new
+
 //feed them items with same dimensions but different labels
 ~dsA.load(Dictionary.newFrom([\cols, 1, \data, Dictionary.newFrom([\one,1,\two,2])]));
 ~dsB.load(Dictionary.newFrom([\cols, 1, \data, Dictionary.newFrom([\three,3,\four,4])]));

@@ -62,7 +62,7 @@ code::
 ~test = FluidDataSet(s);
 ~mapping = FluidLabelSet(s);
 )
-s.dumpOSC
+
 //Make some clumped 2D points and place into a DataSet
 (
 ~examplepoints = [[0.5,0.5],[-0.5,0.5],[0.5,-0.5],[-0.5,-0.5]];
@@ -93,7 +93,7 @@ d = Dictionary.with(
 ~classifier.predict(~test, ~mapping, 1);
 )
 
-//Return labels of clustered points
+//Return labels of clustered points - wait for the dump to be done
 (
 ~assignments = Array.new(~testpoints.size);
 fork{
@@ -175,7 +175,7 @@ code::
     var outputPoint = LocalBuf(1);
 	point.collect{|p,i| BufWr.kr([p],inputPoint,i)};
     ~classifier.kr(trig,inputPoint,outputPoint);
-    SinOsc.ar((BufRd.kr(1,outputPoint,0,interpolation:0) + 69).midicps,mul: 0.1);
+    SinOsc.ar((BufRd.kr(1,outputPoint,0,interpolation:0) + 69).midicps, mul: 0.1);
 }.play
 )
 ::

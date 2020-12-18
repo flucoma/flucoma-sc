@@ -175,7 +175,7 @@ y = Buffer.new(s);
 ~fft_size = 1024;
 ~frame_size = 512;
 ~hop_size = 256;
-~which_component = 3;
+~which_component = 1;
 )
 
 // matrix factorisation, requesting everything - wait for the computation time to appear.

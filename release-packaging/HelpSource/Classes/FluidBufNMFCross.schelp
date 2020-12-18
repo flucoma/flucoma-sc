@@ -72,5 +72,6 @@ b = Buffer.read(s,~path+/+"Nicol-LoopE-M.wav")
 t = Buffer.read(s,~path+/+"Tremblay-SA-UprightPianoPedalWide.wav")
 o = Buffer.new
 FluidBufNMFCross.process(s,t,b,o,action:{"Ding".postln})
+//wait for it to be done. It is a long process.
 o.play
 ::

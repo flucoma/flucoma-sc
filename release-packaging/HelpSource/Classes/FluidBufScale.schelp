@@ -70,7 +70,7 @@ Routine{
     // play with the scaling
     FluidBufScale.process(s, b, destination: c, inputLow: 0, inputHigh: 1, outputLow: 20, outputHigh:10).wait;
     // retrieve the buffer and enjoy the results.
-    c.getn(0,10,{|x|x.postln;})
+	c.getn(0,10,{|x|x.round(0.000001).postln;})
 }.play
 )
 

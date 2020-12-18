@@ -1,7 +1,7 @@
 FluidAudioTransport : UGen {
 
     init { |...theInputs|
-        theInputs.postln;
+        theInputs;
         inputs = theInputs;
         this.specialIndex = 1; //two audio inputs
         // ^this.initOutputs(1,rate);

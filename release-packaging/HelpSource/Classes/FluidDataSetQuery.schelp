@@ -120,9 +120,8 @@ fork{
     s.sync;
     ~points.do{|x,i|
         ~tmpbuf.setn(0,x);
-        s.sync;
         ~dataSet.addPoint(i,~tmpbuf);
-        // s.sync
+        s.sync;
     }
 }
 )
@@ -137,7 +136,6 @@ fork{
 // prepare a simple query
 ~query.filter(0,"<",0.04);
 ~query.addColumn(2);
-s.dumpOSC
 ~query.transform(~dataSet, ~out);
 
 // check the result

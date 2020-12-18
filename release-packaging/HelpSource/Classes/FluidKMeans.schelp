@@ -67,7 +67,6 @@ A function to run when complete, taking an array of the counts for each category
 
 
 EXAMPLES::
-Server.default.options.outDevice = "Built-in Output"
 code::
 
 (
@@ -105,10 +104,6 @@ fork{
 ~kmeans.cols;
 ~kmeans.size;
 ~kmeans.dump;
-
- ~clusters.getLabel(0,{|clusterID|
-            (0.asString+clusterID).postln;
-});
 
 // Retrieve labels of clustered points
 (
@@ -157,8 +152,6 @@ subsection:: Queries in a Synth
 This is the equivalent of predictPoint, but wholly on the server
 
 code::
-
-outputPoint.getToFloatArray(action:{|a|a.postln})
 (
 {
     var trig = Impulse.kr(5);
