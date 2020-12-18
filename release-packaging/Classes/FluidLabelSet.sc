@@ -1,5 +1,7 @@
 FluidLabelSet : FluidDataObject {
 
+    *new{|server| ^super.new(server) }
+
     addLabelMsg{|identifier,label|
         ^this.prMakeMsg(\addLabel,id,identifier.asSymbol,label.asSymbol);
     }

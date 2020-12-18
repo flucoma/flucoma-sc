@@ -1,6 +1,7 @@
 
 FluidDataSet : FluidDataObject
 {
+    *new{|server| ^super.new(server) }
 
     addPointMsg{|label,buffer|
         buffer = this.prEncodeBuffer(buffer);
