@@ -107,8 +107,8 @@ w.front;
 		~normalizedDict = x["data"];
 
 		{
-			w = Window("another perspective", Rect(328, 64, 200, 200));
-			w.drawFunc = {
+			u = Window("another perspective", Rect(328, 64, 200, 200));
+			u.drawFunc = {
 				Pen.use {
 					~normalizedDict.keysValuesDo{|key, val|
 						Pen.fillColor = Color.new(~colours[key.asSymbol][0], ~colours[key.asSymbol][1],~colours[key.asSymbol][2]);
@@ -117,8 +117,8 @@ w.front;
 					};
 				};
 			};
-			w.refresh;
-			w.front;
+			u.refresh;
+			u.front;
 
 		}.defer;
 
@@ -147,8 +147,8 @@ w.front;
 	~normalized.dump{|x|
 		~normalizedDict = x["data"];
 		{
-			w = Window("new material", Rect(528, 64, 200, 200));
-			w.drawFunc = {
+			t = Window("new material", Rect(528, 64, 200, 200));
+			t.drawFunc = {
 				Pen.use {
 					~normalizedDict.keysValuesDo{|key, val|
 						Pen.fillColor = Color.new(~colours2[key.asSymbol][0], ~colours2[key.asSymbol][1],~colours2[key.asSymbol][2]);
@@ -157,8 +157,8 @@ w.front;
 					};
 				};
 			};
-			w.refresh;
-			w.front;
+			t.refresh;
+			t.front;
 		}.defer;
 	};
 });
