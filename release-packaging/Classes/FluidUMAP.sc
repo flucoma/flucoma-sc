@@ -1,15 +1,14 @@
 FluidUMAP : FluidModelObject {
 
-    var <>numDimensions, <>numNeighbours, <>minDist, <>iterations, <>learnRate, <>batchSize;
+    var <>numDimensions, <>numNeighbours, <>minDist, <>iterations, <>learnRate;
 
-	*new {|server,numDimensions = 2, numNeighbours = 15, minDist = 0.1, iterations = 200, learnRate = 0.1, batchSize = 50|
-		^super.new(server,[numDimensions, numNeighbours, minDist, iterations, learnRate, batchSize])
+	*new {|server,numDimensions = 2, numNeighbours = 15, minDist = 0.1, iterations = 200, learnRate = 0.1|
+		^super.new(server,[numDimensions, numNeighbours, minDist, iterations, learnRate])
         .numDimensions_(numDimensions)
         .numNeighbours_(numNeighbours)
         .minDist_(minDist)
         .iterations_(iterations)
-        .learnRate_(learnRate)
-        .batchSize_(batchSize);
+        .learnRate_(learnRate);
 	}
 
     prGetParams{
@@ -18,8 +17,7 @@ FluidUMAP : FluidModelObject {
             this.numNeighbours,
             this.minDist,
             this.iterations,
-            this.learnRate,
-            this.batchSize
+            this.learnRate
         ]
     }
 
@@ -31,6 +29,24 @@ FluidUMAP : FluidModelObject {
         actions[\fitTransform] = [nil, action];
 		this.prSendMsg(this.fitTransformMsg(sourceDataSet,destDataSet));
 	}
+
+	fitMsg{|dataSet|
+        ^this.prMakeMsg(\fit,id, dataSet.id);
+    }
+
+    fit{|dataSet, action|
+        actions[\fit] = [nil, action];
+        this.prSendMsg(this.fitMsg(dataSet));
+    }
+
+    transformMsg{|sourceDataSet, destDataSet|
+        ^this.prMakeMsg(\transform, id, sourceDataSet.id, destDataSet.id);
+    }
+
+    transform{|sourceDataSet, destDataSet, action|
+        actions[\transform] = [nil, action];
+        this.prSendMsg(this.transformMsg(sourceDataSet,destDataSet));
+    }
 
 	// not implemented
 	cols {|action|}
