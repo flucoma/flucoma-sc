@@ -128,12 +128,12 @@ namespace impl{
      bool shouldProcess = IsModel_t<Client>::value ? trig : true;
      mPrevTrig = trig;
      
-     if(shouldProcess)
-     {
+//     if(shouldProcess)
+//     {
        // controls.reset(unit.mInBuf + unit.mSpecialIndex + 1);
        Wrapper::setParams(&unit, params, controls);
        params.constrainParameterValues();
-     }
+//     }
      
      for (index i = 0; i < client.audioChannelsIn(); ++i)
      {
