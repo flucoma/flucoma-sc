@@ -56,7 +56,10 @@ public:
 
   SCBufferAdaptor(index bufnum, World* world)
       : mBuffer{World_GetNRTBuf(world, static_cast<uint32>(bufnum))}, mBufnum(bufnum), mWorld(world)
-  {}
+  {  
+      if (mBuffer && !static_cast<bool>(mBuffer->samplerate))
+        mBuffer->samplerate = world->mFullRate.mSampleRate;
+  }
 
 //  ~SCBufferAdaptor() { cleanUp(); }
 
