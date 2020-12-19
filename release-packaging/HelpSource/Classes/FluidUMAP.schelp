@@ -94,7 +94,9 @@ w.front;
 
 //play with parameters
 ~umap.numNeighbours = 10;
-~umap.minDist =5;
+~umap.minDist = 0.5;
+~umap.learnRate = 0.1;
+~umap.iterations = 100;
 
 //rerun the UMAP
 ~umap.fitTransform(~standardized,~reduced,action:{"Finished UMAP".postln});
@@ -126,7 +128,7 @@ w.front;
 });
 )
 
-// now run new random points on the same training material. Colours should be scattered around the same space (BUT THEY DON'T RIGHT NOW)
+// now run new random points on the same training material. Colours should be scattered around the same space
 
 ~newDS = FluidDataSet(s);
 ~colours2 = Dictionary.newFrom(400.collect{|i|[("entry"++i).asSymbol, 3.collect{1.0.rand}]}.flatten(1));
