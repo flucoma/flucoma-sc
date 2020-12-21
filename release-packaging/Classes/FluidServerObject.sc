@@ -229,7 +229,7 @@ FluidDataObject : FluidServerObject
     }
 
     *cachedInstanceAt{|server,id|
-        this.initCache;
+        this.initCache(server);
         ^serverCaches[this].at(server,id);
     }
 
