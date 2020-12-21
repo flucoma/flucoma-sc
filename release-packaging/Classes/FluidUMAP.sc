@@ -1,4 +1,4 @@
-FluidUMAP : FluidDataClient {
+FluidUMAP : FluidRTDataClient {
 
 	*new {|server,numDimensions = 2, numNeighbours = 15, minDist = 0.1, iterations = 200, learnRate = 0.1, batchSize = 50|
 		^super.new1(server,[
@@ -24,6 +24,12 @@ FluidUMAP : FluidDataClient {
 	fitTransform{|sourceDataSet, destDataSet, action|
 		this.prSendMsg(\fitTransform,
 			[sourceDataSet.asSymbol,  destDataSet.asSymbol], action);
+	}
+
+	transformPoint{|sourceBuffer, destBuffer, action|
+		sourceBuffer = this.prEncodeBuffer(sourceBuffer);
+		destBuffer = this.prEncodeBuffer(destBuffer);
+		this.prSendMsg(\transformPoint,[sourceBuffer, destBuffer], action, outputBuffers:[destBuffer]);
 	}
 
 	// not implemented
