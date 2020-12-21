@@ -50,8 +50,5 @@ FluidUMAP : FluidModelObject {
 
 	// not implemented
 	cols {|action|}
-	read{|filename,action|}
-	write{|filename,action|}
 	size { |action|}
-
 }

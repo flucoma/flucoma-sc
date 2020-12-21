@@ -52,7 +52,7 @@ code::
 ~reduced = FluidDataSet(s);
 ~normalized = FluidDataSet(s);
 ~standardizer  = FluidStandardize(s);
-~normalizer = FluidNormalize(s);
+~normalizer = FluidNormalize(s, 0.05, 0.95);
 ~umap = FluidUMAP(s).numDimensions_(2).numNeighbours_(5).minDist_(0.2).iterations_(50).learnRate_(0.2);
 )
 
@@ -93,10 +93,7 @@ w.front;
 )
 
 //play with parameters
-~umap.numNeighbours = 10;
-~umap.minDist = 0.5;
-~umap.learnRate = 0.1;
-~umap.iterations = 100;
+~umap.numNeighbours_(10).minDist_(0.5).iterations_(100).learnRate_(0.1);
 
 //rerun the UMAP
 ~umap.fitTransform(~standardized,~reduced,action:{"Finished UMAP".postln});
@@ -166,6 +163,37 @@ w.front;
 });
 )
 
-//same process as above in 2 passes maybe?
+//if we process the original dataset, we will see small differences in positions
+~reduced2 = FluidDataSet(s);
+~umap.transform(~standardized, ~reduced2, action: {\done.postln;});
+
+//then we can draw and look
+(
+~normalizer.transform(~reduced2,~normalized,action:{
+	"Normalized Output".postln;
+	~normalized.dump{|x|
+		~normalizedDict = x["data"];
+		{
+			t = Window("old material", Rect(728, 64, 200, 200));
+			t.drawFunc = {
+				Pen.use {
+					~normalizedDict.keysValuesDo{|key, val|
+						Pen.fillColor = Color.new(~colours[key.asSymbol][0], ~colours[key.asSymbol][1],~colours[key.asSymbol][2]);
+						Pen.fillOval(Rect((val[0] * 200), (val[1] * 200), 5, 5));
+						~colours[key.asSymbol].flat;
+					};
+				};
+			};
+			t.refresh;
+			t.front;
+		}.defer;
+	};
+});
+)
+
+//this is because the fitTransform method has the advantage of being certain that the data it transforms is the one that has been used to fit the model. This allows for more accurate distance measurement.
+
+//poking at the data structure within
+~umap.dump{|x|x.keys.do{|i|"%: %\n".postf(i,x[i]);}}
 
 ::
