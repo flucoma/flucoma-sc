@@ -13,15 +13,6 @@ METHOD:: new
 Make a new instance of a label set, uniquely identified by its name. Creating an instance with a name already in use will throw an exception. Use link::Classes/FluidLabelSet#*at:: or free the existing instance.
 ARGUMENT:: server
 The link::Classes/Server:: on which to create the label set.
-ARGUMENT:: name
-symbol with the label set's name.
-
-METHOD:: at
-Retrieve a label set from the cache.
-ARGUMENT:: server
-The link::Classes/Server:: on which to create the label set.
-ARGUMENT:: name
-symbol or string with the label set's name.
 
 
 INSTANCEMETHODS::
@@ -30,7 +21,7 @@ PRIVATE:: init, id
 
 METHOD:: addLabel
 Add a label to the label set.
-ARGUMENT:: id
+ARGUMENT:: identifier
 symbol or string with the ID for this label.
 ARGUMENT:: label
 symbol or string with the label to add.

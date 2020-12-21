@@ -1,7 +1,7 @@
 TITLE:: FluidDataSet
 summary:: Container for labelled,  multidimensional data
 categories:: UGens>FluidManipulation
-related:: Classes/FluidLabelSet, Classes/FluidKDTree, Classes/FluidKNN, Classes/FluidKMeans
+related:: Classes/FluidLabelSet, Classes/FluidKDTree, Classes/FluidKMeans
 ​
 DESCRIPTION::
 A server-side container associating labels with multi-dimensional data. FluidDataSet is identified by its name.
@@ -15,19 +15,9 @@ Create a new instance of the DataSet, with the given name. If a DataSet with thi
 
 ARGUMENT:: server
 The link::Classes/Server:: on which to create the data set.
-ARGUMENT:: name
-A symbol with the name of the DataSet.
+
 ​
 returns:: The new instance
-
-METHOD:: at
-Retrieves a cached instance of a FluidDataSet with the given name, or returns nil if no such object exists.
-
-ARGUMENT:: server
-The server associated with this DataSet instance.
-ARGUMENT:: name
-The name of the DataSet to retrieve from the cache.
-
 
 INSTANCEMETHODS::
 ​
@@ -63,9 +53,6 @@ Destroy the object on the server.
 
 METHOD:: print
 Post an abbreviated content of the DataSet in the window by default, but you can supply a custom action instead.
-​​
-METHOD:: synth
-The internal synth the object uses to communicate with the server
 
 returns:: A link::Classes/Synth::
 ​
