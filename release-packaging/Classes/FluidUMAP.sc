@@ -1,4 +1,4 @@
-FluidUMAP : FluidModelObject {
+FluidUMAP : FluidRealTimeModel {
 
     var <>numDimensions, <>numNeighbours, <>minDist, <>iterations, <>learnRate;
 
@@ -17,7 +17,8 @@ FluidUMAP : FluidModelObject {
             this.numNeighbours,
             this.minDist,
             this.iterations,
-            this.learnRate
+            this.learnRate,
+			-1,-1
         ]
     }
 
@@ -60,6 +61,22 @@ FluidUMAP : FluidModelObject {
     transformPoint{|sourceBuffer, destBuffer, action|
         actions[\transformPoint] = [nil,{action.value(destBuffer)}];
         this.prSendMsg(this.transformPointMsg(sourceBuffer,destBuffer));
+    }
+
+	kr{|trig, inputBuffer,outputBuffer,numDimensions|
+
+        numDimensions = numDimensions ? this.numDimensions;
+        this.numDimensions_(numDimensions);
+
+        ^FluidProxyUgen.kr(this.class.name.asString++'/query', K2A.ar(trig),
+                id,
+			this.numDimensions,
+			this.numNeighbours,
+            this.minDist,
+            this.iterations,
+            this.learnRate,
+			this.prEncodeBuffer(inputBuffer),
+			this.prEncodeBuffer(outputBuffer));
     }
 
 	// not implemented

@@ -190,8 +190,8 @@ w.front;
 	~normalized.dump{|x|
 		~normalizedDict = x["data"];
 		{
-			t = Window("old material", Rect(728, 64, 200, 200));
-			t.drawFunc = {
+			z = Window("old material", Rect(728, 64, 200, 200));
+			z.drawFunc = {
 				Pen.use {
 					~normalizedDict.keysValuesDo{|key, val|
 						Pen.fillColor = Color.new(~colours[key.asSymbol][0], ~colours[key.asSymbol][1],~colours[key.asSymbol][2]);
@@ -200,8 +200,8 @@ w.front;
 					};
 				};
 			};
-			t.refresh;
-			t.front;
+			z.refresh;
+			z.front;
 		}.defer;
 	};
 });
@@ -218,15 +218,35 @@ w.front;
 )
 
 //retrieve the 3D original
-~raw.getPoint("entry50",~sourcePoint)
+~raw.getPoint("entry49",~sourcePoint)
 //retrieve the fitTransformed point as the most accurate point
-~reduced.getPoint("entry50",~original, {~original.getn(0,2,{|x|x.postln})})
+~reduced.getPoint("entry49",~original, {~original.getn(0,2,{|x|x.postln})})
 //retreive the transformed point, via the standardizer
 ~standardizer.transformPoint(~sourcePoint,~standed);
 ~umap.transformPoint(~standed, ~umaped, {~umaped.getn(0,2,{|x|x.postln})})
 
-
 //poking at the data structure within
 ~umap.dump{|x|x.keys.do{|i|"%: %\n".postf(i,x[i]);}}
+
+// one can also retrieve in control rate with Server Side Queries
+// Let's map our learned UMAP dimensions to the controls of a processor
+
+(
+{
+    var trig = Impulse.kr(1);
+	var point = WhiteNoise.kr(1.dup(3));
+    var inputPoint = LocalBuf(3);
+    var standPoint = LocalBuf(3);
+	var outputPoint = LocalBuf(2);
+	var cue1, cue2;
+	Poll.kr(trig, point, [\pointX,\pointY,\pointZ]);
+	point.collect{ |p,i| BufWr.kr([p],inputPoint,i)};
+	cue1 = ~standardizer.kr(trig,inputPoint,standPoint);
+	Poll.kr(cue1,BufRd.kr(1,standPoint,(0..2),interpolation:0),[\stdX,\stdY, \stdZ]);
+	cue2 = ~umap.kr(cue1, standPoint, outputPoint);
+	Poll.kr(cue2,BufRd.kr(1,outputPoint,[0,1],interpolation:0),[\newDimA,\newDimB]);
+    Silent.ar;
+}.play;
+)
 
 ::
