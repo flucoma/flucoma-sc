@@ -32,6 +32,22 @@ INSTANCEMETHODS::
 
 PRIVATE:: init
 
+METHOD:: fit
+Train this model on a link::Classes/FluidDataSet:: but don't transform the data
+ARGUMENT:: dataSet
+A link::Classes/FluidDataSet:: to analyse
+ARGUMENT:: action
+Run when done
+
+METHOD:: transform
+Given a trained model, apply the reduction to a source link::Classes/FluidDataSet:: and write to a destination. Can be the same for both (in-place)
+ARGUMENT:: sourceDataSet
+Source data, or the DataSet name
+ARGUMENT:: destDataSet
+Destination data, or the DataSet name
+ARGUMENT:: action
+Run when done.
+
 METHOD:: fitTransform
 Fit the model to a link::Classes/FluidDataSet:: and write the new projected data to a destination FluidDataSet.
 ARGUMENT:: sourceDataSet
