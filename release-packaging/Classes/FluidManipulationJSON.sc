@@ -46,6 +46,7 @@
 				$},{ if(inString.not){parsed[pos] = $)} }
 			)
 		});
+		parsed = parsed.replace("null","nil");
 		^this.toDict(parsed.interpret);
 	}
 
