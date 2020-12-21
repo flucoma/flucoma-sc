@@ -124,8 +124,8 @@ FluidBufPitch.process(s,~audio, features: ~pitch_feature);
 //which can be unhelpful in many cases
 
 (
-~rawarray.flatten(1).unlace.plot("Raw Data",Rect(0,0,400,400),minval:0,maxval:[5000,1]).plotMode=\bars;
-~plot2 = ~scaledarray.flatten(1).unlace.plot("Scaled",Rect(410,0,400,400)).plotMode=\bars;
+(~rawarray ++ 0).flop.plot("Raw Data",Rect(0,0,400,400),minval:0,maxval:[5000,1]).plotMode=\bars;
+(~scaledarray  ++ 0).flop.plot("Scaled",Rect(410,0,400,400), minval:-2,maxval:2).plotMode=\bars;
 )
 
 // single point transform on arbitrary value

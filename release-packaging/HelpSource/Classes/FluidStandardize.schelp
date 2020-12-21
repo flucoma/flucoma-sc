@@ -1,7 +1,7 @@
 TITLE:: FluidStandardize
 summary:: Standardize a FluidDataSet
 categories:: FluidManipulation
-related:: Classes/FluidDataSet, Classes/FluidStandardize, Classes/FluidRobustScale
+related:: Classes/FluidDataSet, Classes/FluidNormalize, Classes/FluidRobustScale
 
 DESCRIPTION::
 Standardize a link::Classes/FluidDataSet::, i.e. rescale using its mean(s) and standard deviation(s) in each dimension.
@@ -112,8 +112,8 @@ FluidBufPitch.process(s,~audio, features: ~pitch_feature,action:{"Analysed Pitch
 )
 
 (
-~rawarray.flatten(1).unlace.plot("Unstandardized",Rect(0,0,400,400),minval:0,maxval:[5000,1]).plotMode=\bars;
-~plot2 = ~stdarray.flatten(1).unlace.plot("Standardized",Rect(410,0,400,400)).plotMode=\bars;
+(~rawarray ++ 0).flop.plot("Unstandardized",Rect(0,0,400,400),minval:0,maxval:[5000,1]).plotMode=\bars;
+(~stdarray  ++ 0).flop.plot("Standardized",Rect(410,0,400,400), minval:-2,maxval:2).plotMode=\bars;
 )
 
 // single point transform on arbitrary value

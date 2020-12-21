@@ -122,8 +122,8 @@ FluidBufPitch.process(s,~audio, features: ~pitch_feature);
 //which can be unhelpful in many cases
 
 (
-~rawarray.flatten(1).unlace.plot("Unnormalized",Rect(0,0,400,400),minval:0,maxval:[5000,1]).plotMode=\bars;
-~plot2 = ~normedarray.flatten(1).unlace.plot("Normalized",Rect(410,0,400,400)).plotMode=\bars;
+(~rawarray ++ 0).flop.plot("Unnormalized",Rect(0,0,400,400),minval:0,maxval:[5000,1]).plotMode=\bars;
+(~normedarray  ++ 0).flop.plot("Normalized",Rect(410,0,400,400)).plotMode=\bars;
 )
 
 // single point transform on arbitrary value
