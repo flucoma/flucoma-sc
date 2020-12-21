@@ -209,6 +209,23 @@ w.front;
 
 //this is because the fitTransform method has the advantage of being certain that the data it transforms is the one that has been used to fit the model. This allows for more accurate distance measurement.
 
+//to check, let's retrieve a single point and predict its position
+(
+~sourcePoint = Buffer(s);
+~original = Buffer(s);
+~standed = Buffer(s);
+~umaped = Buffer(s);
+)
+
+//retrieve the 3D original
+~raw.getPoint("entry50",~sourcePoint)
+//retrieve the fitTransformed point as the most accurate point
+~reduced.getPoint("entry50",~original, {~original.getn(0,2,{|x|x.postln})})
+//retreive the transformed point, via the standardizer
+~standardizer.transformPoint(~sourcePoint,~standed);
+~umap.transformPoint(~standed, ~umaped, {~umaped.getn(0,2,{|x|x.postln})})
+
+
 //poking at the data structure within
 ~umap.dump{|x|x.keys.do{|i|"%: %\n".postf(i,x[i]);}}
 

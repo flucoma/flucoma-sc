@@ -48,6 +48,20 @@ FluidUMAP : FluidModelObject {
         this.prSendMsg(this.transformMsg(sourceDataSet,destDataSet));
     }
 
+
+    transformPointMsg{|sourceBuffer, destBuffer|
+        ^this.prMakeMsg(\transformPoint,id,
+            this.prEncodeBuffer(sourceBuffer),
+            this.prEncodeBuffer(destBuffer),
+            ["/b_query",destBuffer.asUGenInput]
+        );
+    }
+
+    transformPoint{|sourceBuffer, destBuffer, action|
+        actions[\transformPoint] = [nil,{action.value(destBuffer)}];
+        this.prSendMsg(this.transformPointMsg(sourceBuffer,destBuffer));
+    }
+
 	// not implemented
 	cols {|action|}
 	size { |action|}
