@@ -898,6 +898,13 @@ namespace impl {
 
       RegisterUnitIf<IsRTQueryModel,NRTModelQueryUnit>()(ft);
       Client::getMessageDescriptors().template iterate<SetupMessageCmd>();
+      
+      
+      static std::string flushCmd = std::string(Wrapper::getName()) + "/flush";
+      
+      ft->fDefinePlugInCmd(flushCmd.c_str(),[](World*, void*, struct sc_msg_iter*, void* ){
+        mCache.clear();
+      },nullptr);
     }
 
 
