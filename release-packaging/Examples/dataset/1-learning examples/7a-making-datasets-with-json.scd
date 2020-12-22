@@ -8,7 +8,7 @@
 ~dict.add(\cols -> 10)
 
 //create a dataset, then loading the dictionary
-~ds = FluidDataSet.new(s,\simple1data);
+~ds =  FluidDataSet(s);
 ~ds.load(~dict)
 ~ds.print
 
@@ -33,7 +33,7 @@
 ~dict2.add(\cols -> 1)
 
 // creating a labelset and loading the dictionary
-~ls = FluidLabelSet.new(s,\simplelabel);
+~ls =  FluidLabelSet(s);
 ~ls.load(~dict2)
 ~ls.print
 

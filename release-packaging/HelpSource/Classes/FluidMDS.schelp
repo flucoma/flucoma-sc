@@ -1,7 +1,7 @@
 TITLE:: FluidMDS
 summary:: Dimensionality Reduction with Multidimensional Scaling
 categories:: Dimensionality Reduction, Data Processing
-related:: Classes/FluidMDS, Classes/FluidDataSet
+related:: Classes/FluidPCA, Classes/FluidDataSet
 
 DESCRIPTION::
 
@@ -99,10 +99,10 @@ FluidBufMFCC.process(s,~audio, features: ~mfcc_feature);
 	dsWr = FluidDataSetWr.kr(~raw, buf: buf, trig: Done.kr(stats),blocking:1);
     LocalOut.kr(Done.kr(dsWr));
     FreeSelf.kr(count - 99);
-	Poll.kr(trig,count);
+	Poll.kr(trig,(100-count));
 }.play;
 )
-// wait for the post window to acknoledge the job is done.
+// wait for the count to reaches 0 in the post window.
 
 //First standardize our DataSet, so that the MFCC dimensions are on comensurate scales
 //Then apply the MDS in-place on the standardized data to get 2 dimensions, using a Euclidean distance metric

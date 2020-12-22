@@ -89,7 +89,7 @@ d = Dictionary.new;
 d.add(\cols -> 1);
 d.add(\data -> Dictionary.newFrom(10.collect{|i|[i.asString, [i.asFloat]]}.flatten));
 fork{
-    ~ds = FluidDataSet.new(s); s.sync;
+    ~ds = FluidDataSet.new(s);
     ~ds.load(d); s.sync;
     ~ds.dump; s.sync; ~ds.free;
 }

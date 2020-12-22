@@ -223,9 +223,6 @@ w.front;
 ~standardizer.transformPoint(~sourcePoint,~standed);
 ~umap.transformPoint(~standed, ~umaped, {~umaped.getn(0,2,{|x|x.postln})})
 
-//poking at the data structure within
-~umap.dump{|x|x.keys.do{|i|"%: %\n".postf(i,x[i]);}}
-
 // one can also retrieve in control rate with Server Side Queries
 // Let's map our learned UMAP dimensions to the controls of a processor
 

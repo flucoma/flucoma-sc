@@ -69,8 +69,8 @@ s.boot;
 // FluidNormalize.dumpAllMethods
 (
 ~audiofile = File.realpath(FluidBufPitch.class.filenameSymbol).dirname +/+ "../AudioFiles/Tremblay-ASWINE-ScratchySynth-M.wav";
-~raw = FluidDataSet(s,\norm_help_raw);
-~norm = FluidDataSet(s,\norm_help_normd);
+~raw = FluidDataSet(s);
+~norm = FluidDataSet(s);
 ~pitch_feature = Buffer.new(s);
 ~stats = Buffer.alloc(s, 7, 2);
 ~normalizer = FluidNormalize(s);

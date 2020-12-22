@@ -102,10 +102,10 @@ FluidBufMFCC.process(s,~audio, features: ~mfcc_feature,action:{"Done MFCCs".post
 	dsWr = FluidDataSetWr.kr(~raw, buf: buf, trig: Done.kr(stats));
 	LocalOut.kr( Done.kr(dsWr));
 	FreeSelf.kr(count - 99);
-	Poll.kr(trig,count);
+	Poll.kr(trig,(100 - count));
 }.play;
 )
-// wait for the post window to acknoledge the job is done.
+// wait for the count to reaches 0 in the post window.
 
 //First standardize our DataSet, so that the MFCC dimensions are on comensurate scales
 //Then apply the PCA in-place on the standardized data

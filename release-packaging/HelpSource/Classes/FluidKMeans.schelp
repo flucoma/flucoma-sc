@@ -75,7 +75,7 @@ code::
 		       64.collect{(1.sum3rand) + [1,-1].choose}.clump(2)
 	       }).flatten(1) * 0.5;
 fork{
-    ~dataSet = FluidDataSet.new(s,\kmeans_help_rand2d);
+    ~dataSet =  FluidDataSet(s);
     d = Dictionary.with(
         *[\cols -> 2,\data -> Dictionary.newFrom(
 			~points.collect{|x, i| [i, x]}.flatten)]);

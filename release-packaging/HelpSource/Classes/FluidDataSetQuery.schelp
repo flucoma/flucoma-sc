@@ -160,9 +160,9 @@ code::
 //this is how to join 2 datasets, adding columns to items with the same label
 //create 3 datasets
 (
-~dsA = FluidDataSet.new(s,\joinA);
-~dsB = FluidDataSet.new(s,\joinB);
-~dsC = FluidDataSet.new(s,\joinC);
+~dsA =  FluidDataSet(s);
+~dsB =  FluidDataSet(s);
+~dsC =  FluidDataSet(s);
 )
 
 //feed them items with almost overlaping label lists but with different dimensions
