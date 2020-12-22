@@ -274,7 +274,7 @@ fork{
 ~inBuf = Buffer.readChannel(s, Platform.resourceDir +/+ "sounds/a11wlk01.wav", numFrames:15000, channels:[0]);
 ~inBuf.play
 
-//OR one from within
+//OR one from within (but just the begining so beware of the difference!)
 ~inBuf = Buffer.alloc(s,15000);
 ~randomSlice = ~slices["data"].keys.asArray.scramble[0];
 ~audio_buffers[~slices["data"][~randomSlice][0]].copyData(~inBuf,srcStartAt: ~slices["data"][~randomSlice][1], numSamples: 15000.min(~slices["data"][~randomSlice][2] - (~slices["data"][~randomSlice][1])));
@@ -323,8 +323,3 @@ fork{
 	};
 }
 )
-
-
-
-
-
