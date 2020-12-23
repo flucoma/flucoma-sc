@@ -1,29 +1,35 @@
-FluidUMAP : FluidRTDataClient {
+FluidUMAP : FluidModelObject {
+
+    var <>numDimensions, <>numNeighbours, <>minDist, <>iterations, <>learnRate, <>batchSize;
 
 	*new {|server,numDimensions = 2, numNeighbours = 15, minDist = 0.1, iterations = 200, learnRate = 0.1, batchSize = 50|
-		^super.new1(server,[
-			\numDimensions,numDimensions,
-			\numNeighbours, numNeighbours,
-			\minDist, minDist,
-			\iterations, iterations,
-			\learnRate, learnRate
-		])
+		^super.new(server,[numDimensions, numNeighbours, minDist, iterations, learnRate, batchSize])
+        .numDimensions_(numDimensions)
+        .numNeighbours_(numNeighbours)
+        .minDist_(minDist)
+        .iterations_(iterations)
+        .learnRate_(learnRate)
+        .batchSize_(batchSize);
 	}
 
-	fit{|sourceDataSet, action|
-		this.prSendMsg(\fit,
-			[sourceDataSet.asSymbol], action);
-	}
+    prGetParams{
+        ^[
+            this.numDimensions,
+            this.numNeighbours,
+            this.minDist,
+            this.iterations,
+            this.learnRate,
+            this.batchSize
+        ]
+    }
 
-	transform{|sourceDataSet, destDataSet, action|
-		this.prSendMsg(\transform,
-			[sourceDataSet.asSymbol,  destDataSet.asSymbol], action);
-	}
-
+    fitTransformMsg{|sourceDataSet, destDataSet|
+        ^this.prMakeMsg(\fitTransform, id, sourceDataSet.id, destDataSet.id)
+    }
 
 	fitTransform{|sourceDataSet, destDataSet, action|
-		this.prSendMsg(\fitTransform,
-			[sourceDataSet.asSymbol,  destDataSet.asSymbol], action);
+        actions[\fitTransform] = [nil, action];
+		this.prSendMsg(this.fitTransformMsg(sourceDataSet,destDataSet));
 	}
 
 	transformPoint{|sourceBuffer, destBuffer, action|

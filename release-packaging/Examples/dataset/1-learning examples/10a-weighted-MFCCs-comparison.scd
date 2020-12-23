@@ -1,8 +1,8 @@
 // define a few processes
 (
-~ds = FluidDataSet(s,\ds10);
-~dsW = FluidDataSet(s,\ds10W);
-~dsL = FluidDataSet(s,\ds10L);
+~ds = FluidDataSet(s);
+~dsW = FluidDataSet(s);
+~dsL = FluidDataSet(s);
 //define as many buffers as we have parallel voices/threads in the extractor processing (default is 4)
 ~loudbuf = 4.collect{Buffer.new};
 ~weightbuf = 4.collect{Buffer.new};
@@ -94,10 +94,12 @@ t = Main.elapsedTime;
 
 // extracting whatever stats we want. In this case, mean/std/lowest/highest, and the same on the first derivative - excluding MFCC0 as it is mostly volume, keeping MFCC1-12
 
-~curated = FluidDataSet(s,\ds10c);
-~curatedW = FluidDataSet(s,\ds10cW);
-
+(
+~curated = FluidDataSet(s);
+~curatedW = FluidDataSet(s);
 ~curator = FluidDataSetQuery.new(s);
+)
+
 (
 ~curator.addRange(1,12,{
 	~curator.addRange(14,12,{

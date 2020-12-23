@@ -10,7 +10,7 @@ See http://nimfa.biolab.si/nimfa.methods.seeding.nndsvd.html
 
 CLASSMETHODS::
 
-METHOD:: process
+METHOD:: process, processBlocking
 This is the method that calls for the decomposition to be calculated on a given source buffer.
 
 ARGUMENT:: server
@@ -53,8 +53,14 @@ ARGUMENT:: hopSize
 ARGUMENT:: fftSize
 	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will use the next power of 2 equal or above the highest of windowSize and (bandwidth - 1) * 2.
 
+ARGUMENT:: freeWhenDone
+Free the server instance when processing complete. Default true
+
 ARGUMENT:: action
 	A Function to be evaluated once the offline process has finished and all Buffer's instance variables have been updated on the client side. The function will be passed [destination] as an argument.
+
+returns:: an instance of the processor
+
 
 INSTANCEMETHODS::
 
@@ -71,16 +77,24 @@ b = Buffer.read(s,File.realpath(FluidBufNNDSVD.class.filenameSymbol).dirname.wit
 )
 
 //how many bases do I need to decompose the buffer with 90% accuracy
-FluidBufNNDSVD.process(s, b, ~bases, ~activations, coverage: 0.9, method: 1, action: {\done.postln;})
-
+(
+Routine{
+    FluidBufNNDSVD.process(s, b, ~bases, ~activations, coverage: 0.9, method: 1).wait;
+    "% bases".format(~bases.numChannels).postln;
+}.play;
+)
 //check how many bases we are returned:
-~bases.numChannels
+
 
 //try the same process with less accuracy
-FluidBufNNDSVD.process(s, b, ~bases, ~activations, coverage: 0.5, action: {\done.postln;})
-~bases.numChannels
+(
+Routine{
+    FluidBufNNDSVD.process(s, b, ~bases, ~activations, coverage: 0.5).wait;
+    "% bases".format(~bases.numChannels).postln;
+}.play
+)
 
 //use the bases to run NMF on
 FluidBufNMF.process(s, b, resynth: ~resynth, bases: ~bases, activations: ~activations,actMode: 2, components: ~bases.numChannels, action: {\done.postln;})
-{PlayBuf.ar(~resynth.numChannels, ~resynth)[1]}.play
+{PlayBuf.ar(~resynth.numChannels, ~resynth)[2]}.play
 ::

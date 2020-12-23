@@ -56,7 +56,7 @@ Post an abbreviated content of the label set in the window by default, but you c
 EXAMPLES::
 
 code::
-~ls = FluidLabelSet.new(s,\labelset_example);
+~ls = FluidLabelSet.new(s);
 
 ["one", "two", "three"].collect{|x,i| ~ls.addLabel(i, x);};
 ~ls.print;

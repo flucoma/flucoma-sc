@@ -101,12 +101,12 @@ code::
 
 //Make a simple mapping between a ramp and a sine cycle, test with an exponentional ramp
 (
-~source = FluidDataSet(s,\mlp_regressor_source);
-~target = FluidDataSet(s,\mlp_regressor_target);
-~test = FluidDataSet(s,\mlp_regressor_dest);
-~output = FluidDataSet(s,\mlp_regress_out);
+~source = FluidDataSet(s);
+~target = FluidDataSet(s);
+~test = FluidDataSet(s);
+~output = FluidDataSet(s);
 ~tmpbuf = Buffer.alloc(s,1);
-~regressor = FluidMLPRegressor(s,[2], FluidMLPRegressor.tanh, FluidMLPRegressor.tanh, maxIter: 1000, learnRate: 0.1, momentum: 0.1, batchSize: 1, validation: 0);
+~regressor=FluidMLPRegressor(s).hidden_([2]).activation_(FluidMLPRegressor.tanh).outputActivation_(FluidMLPRegressor.tanh).maxIter_(1000).learnRate_(0.1).momentum_(0.1).batchSize_(1).validation_(0);
 )
 
 //Make source, target and test data
@@ -153,10 +153,11 @@ d = Dictionary.with(
 (
 ~outputdata = Array(128);
 ~regressor.predict(~test, ~output, action:{
-        ~output.dump{|x| 128.do{|i|
+    ~output.dump{|x| 128.do{|i|
         ~outputdata.add(x["data"][i.asString][0])
     }};
-});
+}
+);
 )
 
 //We should see a single cycle of a chirp. If not, fit a little more epochs
@@ -166,37 +167,23 @@ d = Dictionary.with(
 ~inbuf = Buffer.loadCollection(s,[0.5]);
 ~outbuf = Buffer.new(s);
 ~regressor.predictPoint(~inbuf,~outbuf,{|x|x.postln;x.getn(0,1,{|y|y.postln;};)});
-
 ::
 
-subsection:: Server Side Queries
+subsection:: Querying in a Synth
+
+This is the equivalent of calling code::predictPoint::, except wholly on the server
 
 code::
-//Setup
 (
-~inputPoint = Buffer.alloc(s,1);
-~predictPoint = Buffer.alloc(s,1);
-~pitchingBus = Bus.control;
-~catchingBus = Bus.control;
-)
-
-(
-~regressor.inBus_(~pitchingBus).outBus_(~catchingBus).inBuffer_(~inputPoint).outBuffer_(~predictPoint);
-
-~inputSynth = {
+{
 	var input = Saw.kr(2).linlin(-1,1,0,1);
 	var trig = Impulse.kr(ControlRate.ir/10);
-	BufWr.kr(input,~inputPoint,0);
-	Out.kr(~pitchingBus.index,[trig]);
-};
-
-~inputSynth.play(~regressor.synth,addAction:\addBefore);
-
-~outputSynth = {
-	Poll.kr(In.kr(~catchingBus.index),BufRd.kr(1,~predictPoint,0),"mapped value")
-};
-~outputSynth.play(~regressor.synth,addAction:\addAfter);
-~outputSynth.scope
+    var inputPoint = LocalBuf(1);
+    var outputPoint = LocalBuf(1);
+	BufWr.kr(input,inputPoint,0);
+    ~regressor.kr(trig,inputPoint,outputPoint,0,-1);
+    Poll.kr(trig,BufRd.kr(1,outputPoint,0),"mapped value");
+}.scope;
 )
 
 

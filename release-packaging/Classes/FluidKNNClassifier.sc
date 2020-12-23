@@ -1,24 +1,47 @@
-FluidKNNClassifier : FluidRTDataClient {
+FluidKNNClassifier : FluidRealTimeModel {
+
+    var <>numNeighbours, <>weight;
 
 	*new {|server, numNeighbours = 3, weight = 1|
-		^super.new1(server,[\numNeighbours,numNeighbours,\weight,weight]);
+		^super.new(server,[numNeighbours,weight])
+        .numNeighbours_(numNeighbours)
+        .weight_(weight);
 	}
+
+    prGetParams{^[this.numNeighbours,this.weight,-1,-1];}
+
+    fitMsg{|dataSet, labelSet|
+        ^this.prMakeMsg(\fit, id, dataSet.id, labelSet.id)
+    }
 
 	fit{|dataSet, labelSet, action|
-	   this.prSendMsg(\fit,[dataSet.asSymbol, labelSet.asSymbol], action);
+        actions[\fit] = [nil,action];
+	    this.prSendMsg(this.fitMsg(dataSet, labelSet));
 	}
 
-	predict{|dataSet, labelSet, action|
-		this.prSendMsg(\predict,
-			[dataSet.asSymbol, labelSet.asSymbol],
-			action);
+    predictMsg{|dataSet, labelSet|
+        ^this.prMakeMsg(\predict, id, dataSet.id, labelSet.id)
+    }
+
+    predict{|dataSet, labelSet, action|
+        actions[\predict] = [nil, action];
+		this.prSendMsg(this.predictMsg(dataSet, labelSet));
 	}
+
+    predictPointMsg{|buffer|
+        ^this.prMakeMsg(\predictPoint, id, this.prEncodeBuffer(buffer))
+    }
 
 	predictPoint {|buffer, action|
-		buffer = this.prEncodeBuffer(buffer);
-		this.prSendMsg(\predictPoint,
-			[buffer.asUGenInput], action,
-			[string(FluidMessageResponse,_,_)]
-		);
+		actions[\predictPoint] = [string(FluidMessageResponse,_,_),action];
+		this.prSendMsg(this.predictPointMsg(buffer));
 	}
+
+    kr{|trig, inputBuffer,outputBuffer|
+        ^FluidProxyUgen.kr(this.class.name.asString++'/query', K2A.ar(trig),
+                id, this.numNeighbours, this.weight,
+                this.prEncodeBuffer(inputBuffer),
+                this.prEncodeBuffer(outputBuffer));
+    }
+
 }

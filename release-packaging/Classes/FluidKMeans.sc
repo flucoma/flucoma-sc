@@ -1,35 +1,68 @@
-FluidKMeans : FluidRTDataClient {
+FluidKMeans : FluidRealTimeModel {
+
+    var clusters, maxiter;
 
 	*new {|server, numClusters = 4, maxIter = 100|
-		^super.new1(server,[\numClusters,numClusters,\maxIter,maxIter]);
+		^super.new(server,[numClusters,maxIter])
+        .numClusters_(numClusters)
+        .maxIter_(maxIter);
 	}
 
-	fit{|dataSet,action|
-		this.prSendMsg(\fit,
-			[dataSet.asSymbol], action,
-			[numbers(FluidMessageResponse,_,this.numClusters,_)]
-		);
-	}
+    numClusters_{|n| clusters = n.asInteger}
+    numClusters{ ^clusters }
+
+    maxIter_{|i| maxiter = i.asInteger}
+    maxIter{ ^maxiter }
+
+    prGetParams{^[this.numClusters,this.maxIter,-1,-1];}
+
+    fitMsg{ |dataSet| ^this.prMakeMsg(\fit,id,dataSet.id);}
+
+    fit{|dataSet, action|
+        actions[\fit] = [
+            numbers( FluidMessageResponse, _, this.numClusters ,_),
+            action
+        ];
+        this.prSendMsg(this.fitMsg(dataSet));
+    }
+
+    fitPredictMsg{|dataSet, labelSet|
+        ^this.prMakeMsg(\fitPredict, id, dataSet.id, labelSet.id)
+    }
 
 	fitPredict{|dataSet, labelSet,action|
-		this.prSendMsg(\fitPredict,
-			[dataSet.asSymbol,labelSet.asSymbol],
-			action,[numbers(FluidMessageResponse,_,this.numClusters,_)]
-		);
+        actions[\fitPredict] = [
+            numbers(FluidMessageResponse, _, this.numClusters, _),
+            action
+        ];
+		this.prSendMsg(this.fitPredictMsg(dataSet,labelSet));
 	}
 
-	predict{ |dataSet, labelSet,action|
-		this.prSendMsg(\predict,
-			[dataSet.asSymbol, labelSet.asSymbol], action,
-			[numbers(FluidMessageResponse,_,this.numClusters,_)]
-		);
+    predictMsg{|dataSet, labelSet|
+        ^this.prMakeMsg(\predict, id, dataSet.id, labelSet.id)
+    }
+
+	predict{ |dataSet, labelSet, action|
+        actions[\predict] = [
+            numbers(FluidMessageResponse, _, this.numClusters, _),
+            action
+        ];
+		this.prSendMsg(this.predictMsg(dataSet,labelSet));
 	}
+
+    predictPointMsg{|buffer|
+        ^this.prMakeMsg(\predictPoint, id, this.prEncodeBuffer(buffer))
+    }
 
 	predictPoint { |buffer, action|
-		buffer = this.prEncodeBuffer(buffer);
-		this.prSendMsg(\predictPoint,
-			[buffer], action,
-			[number(FluidMessageResponse,_,_)]
-		);
+		actions[\predictPoint] = [number(FluidMessageResponse,_,_),action];
+		this.prSendMsg(this.predictPointMsg(buffer))
 	}
+
+    kr{|trig, inputBuffer,outputBuffer|
+        ^FluidProxyUgen.kr('FluidKMeans/query', K2A.ar(trig),
+                id, clusters, maxiter,
+                this.prEncodeBuffer(inputBuffer),
+                this.prEncodeBuffer(outputBuffer));
+    }
 }

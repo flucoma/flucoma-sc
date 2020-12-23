@@ -13,7 +13,7 @@ By default, this UGen spawns a new thread to avoid blocking the server command q
 
 CLASSMETHODS::
 
-METHOD:: process
+METHOD:: process, processBlocking
 	This is the method that calls for the scaling to be calculated on a given source buffer.
 
 ARGUMENT:: server
@@ -49,40 +49,61 @@ The output value when the input is inputLow
 ARGUMENT:: outputHigh
 The output value when the input is inputHigh
 
+ARGUMENT:: freeWhenDone
+Free the server instance when processing complete. Default true
+
 ARGUMENT:: action
 	A Function to be evaluated once the offline process has finished and indices instance variables have been updated on the client side. The metric will be passed indices as an argument.
 
-RETURNS::
-Nothing, as the destination buffer is declared in the function call.
+returns:: an instance of the processor
 
 
 EXAMPLES::
 
 code::
-// make a buffer of know qualities
-b = Buffer.sendCollection(s,1.0.series(1.1,2.0))
-// and a destination buffer
-c = Buffer(s)
-// play with the scaling
-FluidBufScale.process(s, b, destination: c, inputLow: 0, inputHigh: 1, outputLow: 20, outputHigh:10)
-// retrieve the buffer and enjoy the results.
-c.getn(0,10,{|x|x.postln;})
+(
+Routine{
+    // make a buffer of known qualities
+    b = Buffer.sendCollection(s,1.0.series(1.1,2.0));
+    // and a destination buffer
+    c = Buffer(s);
+    // play with the scaling
+    FluidBufScale.process(s, b, destination: c, inputLow: 0, inputHigh: 1, outputLow: 20, outputHigh:10).wait;
+    // retrieve the buffer and enjoy the results.
+    c.getn(0,10,{|x|x.postln;})
+}.play
+)
 
 // also works in multichannel - explore the following buffer
-b = Buffer.sendCollection(s,-10.0.series(-9,10.0).scramble,2)
-b.plot.plotMode_(\points)
+
 //process
-FluidBufScale.process(s, b, destination: c, inputLow: -20, inputHigh: 20, outputLow: 0, outputHigh:1)
-//enjoy - same shape, different range
-c.plot.plotMode_(\points)
+(
+Routine{
+    b = Buffer.sendCollection(s,-10.0.series(-9,10.0).scramble,2);
+    c = Buffer(s);
+    s.sync;
+    defer{b.plot(bounds:Rect(400,400,400,400)).plotMode_(\points).bounds};
+    FluidBufScale.process(s, b, destination: c, inputLow: -20, inputHigh: 20, outputLow: 0, outputHigh:1).wait;
+    //enjoy - same shape, different range
+    defer{c.plot(bounds:Rect(800,400,400,400)).plotMode_(\points)};
+}.play;
+)
 
 //also works with a subset of the input, resizing the output
-b = Buffer.sendCollection(s,0.0.series(0.1,3.0).reshape(3,10).flop.flat,3)
-b.plot(separately: true).plotMode_(\points)
-//process
-FluidBufScale.process(s, b, startFrame: 3,numFrames: 4,startChan: 1,numChans: 1, destination: c, inputLow: 0, inputHigh: 3, outputLow: 0, outputHigh:1)
-//enjoy
-c.plot(separately: true).plotMode_(\points)
-c.query
-c.getn(0,4,{|x|x.postln;})
+(
+Routine{
+    b = Buffer.sendCollection(s,0.0.series(0.1,3.0).reshape(3,10).flop.flat,3);
+    c = Buffer(s);
+    s.sync;
+    defer{b.plot(separately: true,bounds:Rect(400,400,400,400)).plotMode_(\points)};
+    //process
+    FluidBufScale.process(s, b, startFrame: 3,numFrames: 4,startChan: 1,numChans: 1, destination: c, inputLow: 0, inputHigh: 3, outputLow: 0, outputHigh:1).wait;
+    //enjoy
+    c.query;
+    c.getn(0,4,{|x|x.postln;});
+    defer{c.plot(separately: true,bounds:Rect(800,400,400,400)).plotMode_(\points)};
+}.play
+)
 ::
+
+

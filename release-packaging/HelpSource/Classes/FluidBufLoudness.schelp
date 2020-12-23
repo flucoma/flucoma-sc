@@ -15,7 +15,7 @@ By default, this UGen spawns a new thread to avoid blocking the server command q
 
 CLASSMETHODS::
 
-METHOD:: process
+METHOD:: process, processBlocking
 	This is the method that calls for the loudness descriptor to be calculated on a given source buffer.
 
 ARGUMENT:: server
@@ -51,11 +51,13 @@ ARGUMENT:: windowSize
 ARGUMENT:: hopSize
 	How much the buffered window moves forward, in samples. By default 512 to be similar with all other FluCoMa objects, the EBU specifies other values as per the examples below.
 
+ARGUMENT:: freeWhenDone
+Free the server instance when processing complete. Default true
+
 ARGUMENT:: action
 	A Function to be evaluated once the offline process has finished and all Buffer's instance variables have been updated on the client side. The function will be passed [features] as an argument.
 
-RETURNS::
-	Nothing, as the destination buffer is declared in the function call.
+returns:: an instance of the processor
 
 EXAMPLES::
 
@@ -73,7 +75,7 @@ b.play; b.plot;
 (
 Routine{
 	t = Main.elapsedTime;
-	FluidBufLoudness.process(s, source:b, features: c);
+	FluidBufLoudness.process(s, source:b, features: c).wait;
 	(Main.elapsedTime - t).postln;
 }.play
 )
@@ -109,7 +111,7 @@ c = Buffer.new(s);
 (
 Routine{
     t = Main.elapsedTime;
-    FluidBufLoudness.process(s, b, features: c, windowSize: 17640, hopSize:4410);
+    FluidBufLoudness.process(s, b, features: c, windowSize: 17640, hopSize:4410).wait;
     (Main.elapsedTime - t).postln;
 }.play
 )

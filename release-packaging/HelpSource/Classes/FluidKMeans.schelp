@@ -87,7 +87,7 @@ fork{
 
 
 // Create a KMeans instance and a LabelSet for the cluster labels in the server
-~clusters = FluidLabelSet(s,\kmeans_help_clusters);
+~clusters = FluidLabelSet(s);
 ~kmeans = FluidKMeans(s);
 
 // Fit into 4 clusters
@@ -101,9 +101,14 @@ fork{
 )
 
 // Cols of kmeans should match DataSet, size is the number of clusters
+
 ~kmeans.cols;
 ~kmeans.size;
 ~kmeans.dump;
+
+ ~clusters.getLabel(0,{|clusterID|
+            (0.asString+clusterID).postln;
+});
 
 // Retrieve labels of clustered points
 (
@@ -147,57 +152,38 @@ w.front;
 ~kmeans.predictPoint(~inbuf,{|x|x.postln;});
 ::
 
-subsection:: Server Side Queries
+subsection:: Queries in a Synth
 
 This is the equivalent of predictPoint, but wholly on the server
-FluidKMeans is accessed via its own synth, so we need to use
-a bus to communicate with it. The inBus receives a trigger to query, using data
-from inBuffer; a trigger is then send to outBus with the prediction in outBuffer
-code::
-(
-~ib = Bus.control(s); // input bus
-~ob = Bus.control(s); //output bus
-~tempPoint = Buffer.alloc(s,1,2);
-~inpPoint = Buffer.alloc(s,2);
-~outPoint = Buffer.alloc(s,1);
-)
 
-//We make two Synths. One, before FluidKMeans, generates a random point and sends
-//a trigger to query. The second, after FluidKMeans, gives us the predicted cluster //triggering upadtes from the outBus
+code::
+
+outputPoint.getToFloatArray(action:{|a|a.postln})
 (
-//Set properties on FluidKMeans:
-~kmeans.inBus_(~ib).outBus_(~ob).inBuffer_(~inpPoint).outBuffer_(~outPoint);
-//pitching
 {
-	var trig = Impulse.kr(5);
-	var point = WhiteNoise.kr(1.dup);
-	var copied;
-	Poll.kr(trig, point, [\pointX,\pointY]);
-	point.collect{ |p,i| BufWr.kr([p],~inpPoint,i)};
-	Out.kr(~ib.index,[trig]);
-}.play(~kmeans.synth,addAction:\addBefore);
-//catching
-{
-	Poll.kr(In.kr(~ob),Latch.kr(BufRd.kr(1,~outPoint,0,interpolation:0),In.kr(~ob)),\cluster);
-}.play(~kmeans.synth,addAction:\addAfter);
+    var trig = Impulse.kr(5);
+    var point = WhiteNoise.kr(1.dup);
+    var inputPoint = LocalBuf(2);
+    var outputPoint = LocalBuf(1);
+    Poll.kr(trig, point, [\pointX,\pointY]);
+    point.collect{ |p,i| BufWr.kr([p],inputPoint,i)};
+    ~kmeans.kr(trig,inputPoint,outputPoint);
+    Poll.kr(trig,BufRd.kr(1,outputPoint,0,interpolation:0),\cluster);
+}.play;
 )
 
 // to sonify the output, here are random values alternating quadrant, generated more quickly as the cursor moves rightwards
 (
-//Set properties on FluidKMeans:
-~kmeans.inBus_(~ib).outBus_(~ob).inBuffer_(~inpPoint).outBuffer_(~outPoint);
-//pitching
 {
 	var trig = Impulse.kr(MouseX.kr(0,1).exprange(0.5,ControlRate.ir / 2));
 	var step = Stepper.kr(trig,max:3);
 	var point = TRand.kr(-0.1, [0.1, 0.1], trig) + [step.mod(2).linlin(0,1,-0.6,0.6),step.div(2).linlin(0,1,-0.6,0.6)] ;
-	point.collect{|p,i| BufWr.kr([p],~inpPoint,i)};
-	Out.kr(~ib.index,[trig]);
-	T2A.ar(trig)*0.1;
-}.play(~kmeans.synth,addAction:\addBefore);
-//catching
-{
-	SinOsc.ar((Latch.kr(BufRd.kr(1,~outPoint,0,interpolation:0),In.kr(~ob)) + 69).midicps,mul: 0.1);
-}.play(~kmeans.synth,addAction:\addAfter);
+    var inputPoint = LocalBuf(2);
+    var outputPoint = LocalBuf(1);
+	point.collect{|p,i| BufWr.kr([p],inputPoint,i)};
+    ~kmeans.kr(trig,inputPoint,outputPoint);
+    SinOsc.ar((BufRd.kr(1,outputPoint,0,interpolation:0) + 69).midicps,mul: 0.1);
+}.play;
 )
+
 ::

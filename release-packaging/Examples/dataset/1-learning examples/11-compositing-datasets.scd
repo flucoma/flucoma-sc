@@ -2,10 +2,10 @@
 
 // define a few datasets
 (
-~pitchDS = FluidDataSet(s,\pitch11);
-~loudDS = FluidDataSet(s,\loud11);
-~mfccDS = FluidDataSet(s,\mfcc11);
-~durDS = FluidDataSet(s,\dur11);
+~pitchDS = FluidDataSet(s);
+~loudDS = FluidDataSet(s);
+~mfccDS = FluidDataSet(s);
+~durDS = FluidDataSet(s);
 
 //define as many buffers as we have parallel voices/threads in the extractor processing (default is 4)
 ~pitchbuf = 4.collect{Buffer.new};
@@ -102,7 +102,7 @@ t = Main.elapsedTime;
 
 ///////////////////////////////////////////////////////
 //reduce the MFCC timbral space stats (many potential ways to explore here... - 2 are provided to compare, with and without the derivatives before running a dimension reduction)
-~tempDS = FluidDataSet(s,\temp11);
+~tempDS = FluidDataSet(s);
 
 ~query = FluidDataSetQuery(s);
 ~query.addRange(0,24);//add only means and stddev of the 12 coeffs...
@@ -115,12 +115,12 @@ t = Main.elapsedTime;
 // standardizing before the PCA, as argued here:
 // https://scikit-learn.org/stable/auto_examples/preprocessing/plot_scaling_importance.html
 ~stan = FluidStandardize(s);
-~stanDS = FluidDataSet(s,\stan11);
+~stanDS = FluidDataSet(s);
 ~stan.fitTransform(~tempDS,~stanDS)
 
 //shrinking A: using 2 stats on the values, and 2 stats on the redivative (12 x 2 x 2 = 48 dim)
 ~pca = FluidPCA(s,4);//shrink to 4 dimensions
-~timbreDSd = FluidDataSet(s,\timbreDSd11);
+~timbreDSd = FluidDataSet(s);
 ~pca.fitTransform(~stanDS,~timbreDSd,{|x|x.postln;})//accuracy
 
 //shrinking B: using only the 2 stats on the values
@@ -133,7 +133,7 @@ t = Main.elapsedTime;
 
 //keep its own PCA so we can keep the various states for later transforms
 ~pca2 = FluidPCA(s,4);//shrink to 4 dimensions
-~timbreDS = FluidDataSet(s,\timbreDS11);
+~timbreDS = FluidDataSet(s);
 ~pca2.fitTransform(~tempDS,~timbreDS,{|x|x.postln;})//accuracy
 
 // comparing NN for fun
@@ -181,7 +181,7 @@ Routine{
 ///////////////////////////////////////////////////////
 // compositing queries - defining a target and analysing it
 
-~globalDS = FluidDataSet(s,\global11);
+~globalDS = FluidDataSet(s);
 
 // define a source
 ~targetsound = Buffer.read(s,File.realpath(FluidBufPitch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-ASWINE-ScratchySynth-M.wav",42250,44100);
@@ -267,9 +267,9 @@ Routine{
 // make sure to define and describe the source above (lines 178 to 201)
 
 // let's make normalised versions of the 3 datasets, keeping the normalisers separate to query later
-~loudDSn = FluidDataSet(s,\loud11n);
-~pitchDSn = FluidDataSet(s,\pitch11n);
-~timbreDSn = FluidDataSet(s,\timbre11n);
+~loudDSn = FluidDataSet(s);
+~pitchDSn = FluidDataSet(s);
+~timbreDSn = FluidDataSet(s);
 
 ~normL = FluidNormalize(s)
 ~normP = FluidNormalize(s)
@@ -290,13 +290,15 @@ Routine{
 
 // let's assemble the query
 // first let's normalise our target descriptors
-~targetPitch = Buffer(s)
-~targetLoud = Buffer(s)
-~targetMFCC = Buffer(s)
-~targetMFCCs = Buffer(s)
-~targetMFCCsp = Buffer(s)
-~targetTimbre = Buffer(s)
-~targetAll= Buffer(s)
+(
+~targetPitch = Buffer(s);
+~targetLoud = Buffer(s);
+~targetMFCC = Buffer(s);
+~targetMFCCs = Buffer(s);
+~targetMFCCsp = Buffer(s);
+~targetTimbre = Buffer(s);
+~targetAll= Buffer(s);
+)
 
 ~normL.transformPoint(~flatLoudbuf[0], ~targetLoud) //normalise the loudness (all dims)
 ~normP.transformPoint(~flatPitchbuf[0], ~targetPitch) //normalise the pitch (all dims)

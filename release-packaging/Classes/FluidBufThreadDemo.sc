@@ -1,29 +1,33 @@
-FluidBufThreadDemo : UGen{
+FluidBufThreadDemo : FluidBufProcessor{
 
-    *new1 {|rate, result, time, trig = 1, blocking = 0 |
-		result = result.asUGenInput;
-		result.isNil.if {this.class.name+":  Invalid output buffer".throw};
-        ^super.new1(rate, result, time, trig, blocking);
+	*kr  {|result, time, trig = 1, blocking = 0|
+
+        result = result.asUGenInput;
+        result.isNil.if {this.class.name+":  Invalid output buffer".throw};
+
+        ^FluidProxyUgen.kr(\FluidBufThreadDemoTrigger, -1, result, time, trig, blocking);
 	 }
 
+    *process { |server, result, time = 1000, freeWhenDone = true, action|
 
-	*kr  {|result, time, trig = 1, blocking = 0| 
-        ^this.new1(\control, result, time, trig, blocking);
-	 }
 
-    *process { |server, result, time = 1000, action|
-		^FluidNRTProcess.new(
-			server, this, action, [result]
-		).process(
-			result, time
+        result ?? {this.class.name+":  Invalid output buffer".throw};
+
+		^this.new(
+			server, nil, [result]
+		).processList(
+			[result.asUGenInput, time, 0], freeWhenDone, action
 		);
     }
 
-    *processBlocking { |server, result, time = 1000, action|
-		^FluidNRTProcess.new(
-			server, this, action, [result], blocking: 1
-		).process(
-			result, time
+    *processBlocking { |server, result, time = 1000, freeWhenDone = true, action|
+
+        result ?? {this.class.name+":  Invalid output buffer".throw};
+
+		^this.new(
+			server, nil, [result]
+		).processList(
+			[result.asUGenInput, time, 1], freeWhenDone, action
 		);
     }
 }

@@ -52,9 +52,13 @@ The analysus hop size in samples (default winSize / 2)
 ARGUMENT:: fftSize
 The analsyis FFT size in samples (default = winSize)
 
+ARGUMENT:: freeWhenDone
+Free the server instance when processing complete. Default true
+
 ARGUMENT:: action
 A function to run when processing is complete, taking the output buffer as its argument
 
+returns:: an instance of the processor
 
 INSTANCEMETHODS::
 

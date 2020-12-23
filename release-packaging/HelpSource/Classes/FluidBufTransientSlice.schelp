@@ -14,7 +14,7 @@ By default, this UGen spawns a new thread to avoid blocking the server command q
 
 CLASSMETHODS::
 
-METHOD:: process
+METHOD:: process, processBlocking
 	This is the method that calls for the slicing to be calculated on a given source buffer.
 
 ARGUMENT:: server
@@ -65,11 +65,13 @@ ARGUMENT:: clumpLength
 ARGUMENT:: minSliceLength
 	The minimum duration of a slice in samples.
 
+ARGUMENT:: freeWhenDone
+Free the server instance when processing complete. Default true
+
 ARGUMENT:: action
 		A Function to be evaluated once the offline process has finished and indices instance variables have been updated on the client side. The function will be passed indices as an argument.
 
-RETURNS::
-	Nothing, as the destination buffer is declared in the function call.
+returns:: an instance of the processor
 
 
 EXAMPLES::
@@ -85,7 +87,7 @@ c = Buffer.new(s);
 (
 	Routine{
 	t = Main.elapsedTime;
-	FluidBufTransientSlice.process(s,b, indices:c);
+	FluidBufTransientSlice.process(s,b, indices:c).wait;
 	(Main.elapsedTime - t).postln;
 }.play
 )
@@ -111,7 +113,7 @@ c.query;
 (
 Routine{
 	t = Main.elapsedTime;
-	FluidBufTransientSlice.process(s,b, 0, 220500, 0, 1, c, 200, 2048, 1024, 1, 3, 1, 15, 30, 4410);
+	FluidBufTransientSlice.process(s,b, 0, 220500, 0, 1, c, 200, 2048, 1024, 1, 3, 1, 15, 30, 4410).wait;
 	(Main.elapsedTime - t).postln;
 }.play
 )
@@ -138,7 +140,7 @@ c = Buffer.new(s);
 // with basic params
 Routine{
     t = Main.elapsedTime;
-    FluidBufTransientSlice.process(s,b, indices: c, threshFwd: 1.2);
+    FluidBufTransientSlice.process(s,b, indices: c, threshFwd: 1.2).wait;
     (Main.elapsedTime - t).postln;
 }.play
 )

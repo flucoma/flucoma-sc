@@ -31,7 +31,7 @@ By default, this UGen spawns a new thread to avoid blocking the server command q
 
 CLASSMETHODS::
 
-METHOD:: process
+METHOD:: process, processBlocking
 	This is the method that calls for the spectral shape descriptors to be calculated on a given source buffer.
 
 ARGUMENT:: server
@@ -64,11 +64,13 @@ ARGUMENT:: hopSize
 ARGUMENT:: fftSize
 	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will use the next power of 2 equal or above the windowSize.
 
+ARGUMENT:: freeWhenDone
+Free the server instance when processing complete. Default true
+
 ARGUMENT:: action
 	A Function to be evaluated once the offline process has finished and all Buffer's instance variables have been updated on the client side. The function will be passed [features] as an argument.
 
-RETURNS::
-	Nothing, as the destination buffer is declared in the function call.
+returns:: an instance of the processor
 
 EXAMPLES::
 
@@ -83,7 +85,7 @@ c = Buffer.new(s);
 (
 Routine{
 	t = Main.elapsedTime;
-	FluidBufSpectralShape.process(s, b, features: c);
+	FluidBufSpectralShape.process(s, b, features: c).wait;
 	(Main.elapsedTime - t).postln;
 }.play
 )
@@ -113,7 +115,7 @@ c = Buffer.new(s);
 (
 Routine{
     t = Main.elapsedTime;
-    FluidBufSpectralShape.process(s, b, features: c);
+    FluidBufSpectralShape.process(s, b, features: c).wait;
     (Main.elapsedTime - t).postln;
 }.play
 )

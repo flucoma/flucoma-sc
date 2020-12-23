@@ -1,9 +1,9 @@
 s.reboot;
 //Preliminaries: we want some audio, a couple of FluidDataSets, some Buffers
 (
-~raw = FluidDataSet(s,\Mel40);
-~norm = FluidDataSet(s,\Mel40n);
-~retrieved = FluidDataSet(s,\ae2);
+~raw = FluidDataSet(s);
+~norm = FluidDataSet(s);
+~retrieved = FluidDataSet(s);
 ~audio = Buffer.read(s,File.realpath(FluidBufMelBands.class.filenameSymbol).dirname +/+ "../AudioFiles/Tremblay-ASWINE-ScratchySynth-M.wav");
 ~melfeatures = Buffer.new(s);
 ~stats = Buffer.alloc(s, 7, 40);
@@ -56,7 +56,7 @@ FluidBufMelBands.process(s,~audio, features: ~melfeatures,action: {\done.postln;
 ~retrieved.print;
 
 //let's normalise it for display
-~normData = FluidDataSet(s,\ae2N);
+~normData = FluidDataSet(s);
 ~reducedarray = Array.new(100);
 ~normalView = FluidNormalize(s,0.1,0.9);
 (

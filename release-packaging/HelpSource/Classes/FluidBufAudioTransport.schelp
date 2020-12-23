@@ -11,7 +11,7 @@ Henderson and Solomonm (2019) AUDIO TRANSPORT: A GENERALIZED PORTAMENTO VIA OPTI
 
 CLASSMETHODS::
 
-METHOD:: process
+METHOD:: process, processBlocking
 Process two audio link::Classes/Buffer::
 
 ARGUMENT:: server
@@ -65,6 +65,9 @@ ARGUMENT:: hopSize
 ARGUMENT:: fftSize
 	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will use the next power of 2 equal or above the highest of windowSize and (bandwidth - 1) * 2.
 
+ARGUMENT:: freeWhenDone
+Free the server instance when processing complete. Default true
+
 ARGUMENT:: action
 	A Function to be evaluated once the offline process has finished and all Buffer's instance variables have been updated on the client side. The function will be passed [destination] as an argument.
 
@@ -89,6 +92,7 @@ FluidBufAudioTransport.process(s,b,source2:c,destination:d,interpolation:0.5,act
 // listen to the source and the result
 b.play
 c.play
+d.updateInfo
 d.play
 
 // more interesting sources: two cardboard bowing gestures

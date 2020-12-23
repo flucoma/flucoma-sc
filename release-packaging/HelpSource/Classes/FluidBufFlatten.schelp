@@ -47,6 +47,9 @@ The link::Classes/Buffer:: to write the flattened data to
 ARGUMENT:: axis
 Whether to group points channel-wise or frame-wise
 
+ARGUMENT:: freeWhenDone
+Free the server instance when processing complete. Default true
+
 ARGUMENT:: action
 Runs when processing is complete
 
@@ -64,6 +67,8 @@ Whether to group points channel-wise or frame-wise
 
 ARGUMENT:: trig
 Trigger signal to defer / retrigger processing
+
+returns:: an instance of the processor
 
 EXAMPLES::
 
@@ -83,7 +88,7 @@ FluidBufPitch.process(s,b,numFrames:512 * 10,numChans:1,features:~pitchdata,acti
 
 // Flatten and print the flat buffer. We expect to see larger numbers (20-2000) interleaved with smaller (0-1)
 (
-FluidBufFlatten.process(s,~pitchdata,~flatdata,action:{
+FluidBufFlatten.process(s,~pitchdata,~flatdata,axis:1,action:{
 	~flatdata.loadToFloatArray(action:{ |a|
 		a.postln;
 	})

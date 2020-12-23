@@ -4,6 +4,7 @@ FluidMFCC : MultiOutUGen {
 		^this.multiNew('control', in.asAudioRateInput(this), numCoeffs, numBands, minFreq, maxFreq,  maxNumCoeffs, windowSize, hopSize, fftSize, maxFFTSize);
 	}
 
+
 	init {arg ...theInputs;
 		inputs = theInputs;
 		^this.initOutputs(inputs.at(5),rate);

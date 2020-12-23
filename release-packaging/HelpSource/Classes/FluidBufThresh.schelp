@@ -14,7 +14,7 @@ By default, this UGen spawns a new thread to avoid blocking the server command q
 
 CLASSMETHODS::
 
-METHOD:: process
+METHOD:: process, processBlocking
 	This is the method that calls for the thresholding to be calculated on a given source buffer.
 
 ARGUMENT:: server
@@ -41,11 +41,13 @@ The index of the buffer to use as the destination for the processed material.
 ARGUMENT:: threshold
 The threshold under which values will be zeroed
 
+ARGUMENT:: freeWhenDone
+Free the server instance when processing complete. Default true
+
 ARGUMENT:: action
 	A Function to be evaluated once the offline process has finished and indices instance variables have been updated on the client side. The metric will be passed indices as an argument.
 
-RETURNS::
-Nothing, as the destination buffer is declared in the function call.
+returns:: an instance of the processor
 
 EXAMPLES::
 

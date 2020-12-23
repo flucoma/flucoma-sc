@@ -15,7 +15,7 @@ By default, this UGen spawns a new thread to avoid blocking the server command q
 
 CLASSMETHODS::
 
-METHOD:: process
+METHOD:: process, processBlocking
 This is the method that calls for the slicing to be calculated on a given source buffer.
 
 ARGUMENT:: server
@@ -61,11 +61,13 @@ ARGUMENT:: weights
 	## weights must be positive (anything lower than 0 will be rejected)
 	::
 
+ARGUMENT:: freeWhenDone
+Free the server instance when processing complete. Default true
+
 ARGUMENT:: action
 		A Function to be evaluated once the offline process has finished and indices instance variables have been updated on the client side. The function will be passed stats as an argument.
 
-RETURNS::
-	Nothing, as the destination buffer is declared in the function call.
+returns:: an instance of the processor
 
 EXAMPLES::
 
@@ -73,7 +75,7 @@ STRONG::A didactic example::
 
 CODE::
 
-// make a buffer of known lenght
+// make a buffer of known length
 b = Buffer.alloc(s,101);
 
 // add known values - here, a ramp up
@@ -86,7 +88,7 @@ c = Buffer.new(s);
 (
 Routine{
     t = Main.elapsedTime;
-    FluidBufStats.process(s, b, stats:c, numDerivs:1);
+    FluidBufStats.process(s, b, stats:c, numDerivs:1).wait;
     (Main.elapsedTime - t).postln;
 }.play
 )
@@ -144,11 +146,13 @@ g= Array.new;
 Routine({
 	e.doAdjacentPairs({
 		arg start,end;
-		FluidBufStats.processBlocking(s,c,(start/512).asInteger,((end-start)/512).max(2).asInteger,0,1,d,1, action: {d.loadToFloatArray(action: {
-			arg array;
-			g = g.add(array[12]);
-			"% % %\n".postf((start/512).asInteger,((end-start)/512).max(2).asInteger, array[12]);
-		})});
+		FluidBufStats.processBlocking(s,c,(start/512).asInteger,((end-start)/512).max(2).asInteger,0,1,d,1,
+                    action: {d.loadToFloatArray(action: {
+                        arg array;
+                        g = g.add(array[12]);
+                        "% % %\n".postf((start/512).asInteger,((end-start)/512 ).max(2).asInteger, array[12]);})
+                    }
+                ).wait;
 });
 	"Done".postln;
 }).play;
@@ -182,10 +186,11 @@ c = Buffer.new(s);
 
 // run the stats and send back the values
 FluidBufStats.process(s, b, stats:c, numDerivs:1, action:{c.getn(0,c.numFrames * c.numChannels,{|item|d = item; d.postln})});
+OSCFunc.allEnabled
 
 //looking at the result is not easy to grasp, since it is interleaved: first number is mean of L, second is mean of R, third is stddev of L, fourth is stddev or R
 //this will make it tidier - the first value of each line is Left, the second is Right
-d.reshape(14,2).do({|x,i|["mean\t\t","stddev\t\t","skew\t\t\t", "kurtosis\t", "min\t\t\t", "median\t\t", "max\t\t\t","d-mean\t","d-stddev\t","d-skew\t\t", "d-kurtosis", "d-min\t\t", "d-median\t", "d-max\t\t"].at(i).post;x.round(0.01).postln});"".postln;
+d.reshape(14,2).do({|x,i|["mean\t\t","stddev\t\t","skew\t\t", "kurtosis\t\t", "min\t\t\t", "median\t\t", "max\t\t\t","d-mean\t","d-stddev\t","d-skew\t\t", "d-kurtosis", "d-min\t\t", "d-median\t", "d-max\t\t"].at(i).post;x.round(0.01).postln});"".postln;
 ::
 
 STRONG::Outliers and Weights::

@@ -41,11 +41,12 @@ endif()
 
 target_link_libraries(
   ${PLUGIN}
-  PRIVATE
+  PRIVATE  
   FLUID_DECOMPOSITION
   # FLUID_MANIP
   FLUID_SC_WRAPPER  
   HISSTools_FFT
+  # FLUID_SC_COPYREPLYADDR  
 )
 
 target_include_directories(
@@ -59,8 +60,15 @@ target_include_directories(
 
 file(GLOB_RECURSE FLUID_MANIPULATION_HEADERS CONFIGURE_DEPENDS "${FLUID_M_PATH}/include/**/*.hpp")
 
+file(GLOB_RECURSE FLUID_SC_HEADERS CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/include/wrapper/*.hpp")
+
 target_sources(
   ${PLUGIN} PUBLIC ${FLUID_MANIPULATION_HEADERS}
+ ${FLUID_SC_HEADERS}
+  #bah. We need to know how big a ReplyAddress struct is, and so this nonsense:
+  "${SC_PATH}/common/SC_Reply.cpp"
+  "${SC_PATH}/external_libraries/boost/libs/system/src/error_code.cpp"
+  # $<TARGET_OBJECTS:FLUID_SC_COPYREPLYADDR>
 )
 
 target_include_directories(
@@ -74,6 +82,8 @@ target_include_directories(
 
 get_property(HEADERS TARGET FLUID_DECOMPOSITION PROPERTY INTERFACE_SOURCES)
 source_group(TREE "${flucoma-core_SOURCE_DIR}/include" FILES ${HEADERS})
+source_group(TREE "${FLUID_M_PATH}/include" FILES ${FLUID_MANIPULATION_HEADERS})
+source_group(TREE "${CMAKE_SOURCE_DIR}/include/wrapper" PREFIX wrapper FILES ${FLUID_SC_HEADERS})
 
 # get_property(HEADERS TARGET FLUID_MANIP PROPERTY INTERFACE_SOURCES)
 # source_group(TREE "${fluid_manipulation_SOURCE_DIR}/include" FILES ${HEADERS})

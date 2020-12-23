@@ -1,91 +1,65 @@
 
-FluidDataSetExistsError : Exception{
-}
+FluidDataSet : FluidDataObject
+{
+    *new{|server| ^super.new(server) }
 
-FluidDataSet : FluidManipulationClient {
-
-  var <id;
-	classvar serverCaches;
-
-	*initClass {
-		serverCaches = FluidServerCache.new;
-	}
-
-	*at{ |server, name|
-		^serverCaches.tryPerform(\at, server, name)
-	}
-
-	*new { |server, name|
-		if(this.at(server,name).notNil){
-			FluidDataSetExistsError("A FluidDataset called % already exists.".format(name)).throw;
-			^nil
-		}
-		^super.new(server,FluidManipulationClient.prServerString(name))!?{|inst|inst.init(name);inst}
-	}
-
-	init {|name|
-		this.baseinit(FluidManipulationClient.prServerString(name));
-		id = name;
-		this.cache;
-	}
-
-	cache {
-		serverCaches.initCache(server);
-		serverCaches.put(server,id,this);
-	}
-
-	*asUGenInput { |input|
-		var ascii = input.asString.ascii;
-		^[ascii.size].addAll(ascii)
-	}
-
-	asString {
-		^"FluidDataSet(%)".format(id).asString;
-	}
-
-	asSymbol {
-		^id.asSymbol
-	}
+    addPointMsg{|label,buffer|
+        buffer = this.prEncodeBuffer(buffer);
+        ^this.prMakeMsg(\addPoint,id,label.asSymbol,buffer);
+    }
 
 	addPoint{|label, buffer, action|
-    buffer = this.prEncodeBuffer(buffer);
-	  this.prSendMsg(\addPoint,[label.asSymbol,buffer],action);
+      actions[\addPoint] = [nil,action];
+	  this.prSendMsg(this.addPointMsg(label,buffer));
 	}
 
-	getPoint{|label, buffer, action|
-		buffer = this.prEncodeBuffer(buffer);
-		this.prSendMsg(\getPoint,[label.asSymbol,buffer],action,outputBuffers:[buffer]);
+    getPointMsg{|label,buffer|
+        buffer = this.prEncodeBuffer(buffer);
+        ^this.prMakeMsg(\getPoint,id,label.asSymbol,buffer,["/b_query",buffer.asUGenInput]);
+    }
+
+    getPoint{|label, buffer, action|
+      actions[\getPoint] = [nil,action];
+      this.prSendMsg(this.getPointMsg(label,buffer));
+    }
+
+    updatePointMsg{|label,buffer|
+        buffer = this.prEncodeBuffer(buffer);
+        ^this.prMakeMsg(\updatePoint,id,label.asSymbol,buffer,["/b_query",buffer.asUGenInput]);
+    }
+
+    updatePoint{|label, buffer, action|
+      actions[\updatePoint] = [nil,action];
+      this.prSendMsg(this.updatePointMsg(label,buffer));
+    }
+
+    deletePointMsg{|label| ^this.prMakeMsg(\deletePoint,id,label.asSymbol);}
+
+    deletePoint{|label, buffer, action|
+      actions[\deletePoint] = [nil,action];
+      this.prSendMsg(this.deletePointMsg(label));
+    }
+
+    clearMsg { ^this.prMakeMsg(\clear,id); }
+
+    clear { |action|
+      actions[\clear] = [nil,action];
+	  this.prSendMsg(this.clearMsg);
 	}
 
-	updatePoint{|label, buffer, action|
-    buffer = this.prEncodeBuffer(buffer);
-	  this.prSendMsg(\updatePoint,[label.asSymbol,buffer],action,outputBuffers:[buffer]);
-	}
-
-	deletePoint{|label, action|
-	  this.prSendMsg(\deletePoint,[label.asSymbol],action);
-	}
-
-	clear { |action|
-	  this.prSendMsg(\clear,[],action);
-	}
+    mergeMsg{|sourceDataSet, overwrite = 0|
+        ^this.prMakeMsg(\merge,id,sourceDataSet.asUGenInput,overwrite);
+    }
 
 	merge{|sourceDataSet, overwrite = 0, action|
-		this.prSendMsg(\merge,
-			[sourceDataSet.asSymbol,  overwrite], action);
+        actions[\merge] = [nil,action];
+		this.prSendMsg(this.mergeMsg(sourceDataSet,overwrite));
 	}
 
-	print { |action|
-		action ?? {action = postit};
-		this.prSendMsg(\print,[],action,[string(FluidMessageResponse,_,_)]);
-	}
+    printMsg { ^this.prMakeMsg(\print,id); }
 
-	free {
-		serverCaches.remove(server,id);
-		super.free;
-	}
-
-	*freeAll { |server|
-		serverCaches.do(server,{|x|x.free;});
+	print { |action=(postResponse)|
+		actions[\print] = [string(FluidMessageResponse,_,_),action];
+		this.prSendMsg(this.printMsg);
 	}
 }

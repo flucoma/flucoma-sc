@@ -7,8 +7,8 @@ var output = Buffer.alloc(s,10);
 var mlp = FluidMLPRegressor(s,[6],activation: 1,outputActivation: 1,maxIter: 1000,learnRate: 0.1,momentum: 0,batchSize: 1,validation: 0);
 var entry = 0;
 
-~inData = FluidDataSet(s,\indata);
-~outData = FluidDataSet(s,\outdata);
+~inData = FluidDataSet(s);
+~outData = FluidDataSet(s);
 
 w = Window("ChaosSynth", Rect(10, 10, 790, 320)).front;
 a = MultiSliderView(w,Rect(10, 10, 400, 300)).elasticMode_(1).isFilled_(1);
@@ -42,8 +42,10 @@ f.action = {arg x,y; //if trained, predict the point f.x f.y
 c = Button(w, Rect(730,240,50, 20)).states_([["train", Color.red, Color.white], ["trained", Color.white, Color.grey]]).action_{
 	mlp.fit(~inData,~outData,{|x|
 		trained = 1;
-		c.value = 1;
-		e.value = x.round(0.001).asString;
+		{
+			c.value = 1;
+			e.value = x.round(0.001).asString;
+		}.defer;
 	});//train the network
 };
 d = Button(w, Rect(730,10,50, 20)).states_([["entry", Color.white, Color.grey], ["entry",  Color.red, Color.white]]).action_{

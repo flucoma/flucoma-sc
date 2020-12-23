@@ -19,7 +19,11 @@ FluidBufCompose.process(s,b, numChans: 1, gain: -3.0.dbamp * -1.0, startChan: 1,
 
 // (optional) compare auraly the stereo with the MS
 b.play;
-{PlayBuf.ar(1,[c,d])}.play;
+{PlayBuf.ar(1, [c,d])}.play;
+
+//check nullsum with real-time versions
+{PlayBuf.ar(1, c) - PlayBuf.ar(2, b).madd(-3.0.dbamp).sum}.play;
+{PlayBuf.ar(1, d) - PlayBuf.ar(2, b).madd(-3.0.dbamp * [1,-1]).sum}.play;
 
 // The geeky bit: copy the side (buffer d) on itself with specific amplitudes and delays, in effect applying a FIR filter through expensive convolution
 

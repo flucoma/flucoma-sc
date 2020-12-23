@@ -1,7 +1,7 @@
 (
 // set some variables
 ~nb_of_dim = 10;
-~dataset = FluidDataSet(s,\test,~nb_of_dim);
+~dataset = FluidDataSet(s);
 )
 
 (
@@ -14,6 +14,7 @@ Routine{
 		s.sync;
 	});
 	buf.free;
+	\done.postln;
 }.play
 )
 
@@ -38,7 +39,7 @@ Routine{
 ~normalize.fit(~dataset,{"done".postln;});
 
 // making an empty 'normed_dataset' which is required for the normalize function
-~normed_dataset = FluidDataSet(s,\normed,~nb_of_dim);
+~normed_dataset = FluidDataSet(s);
 
 // normalize the full dataset
 ~normalize.transform(~dataset,~normed_dataset,{"done".postln;});
@@ -55,7 +56,7 @@ Routine{
 ~standardize.fit(~dataset,{"done".postln;});
 
 // standardize the full dataset
-~standardized_dataset = FluidDataSet(s,\standardized,~nb_of_dim);
+~standardized_dataset = FluidDataSet(s);
 ~standardize.transform(~dataset,~standardized_dataset,{"done".postln;});
 
 // look at a point to see that it has points in it
@@ -89,7 +90,7 @@ Routine{
 ~normtree.fit(~normed_dataset)
 ~normtree.kNearest(~normbuf,  {|x| ("Labels:" + x).postln});
 ~normtree.kNearestDist(~normbuf, {|x| ("Distances:" + x).postln});
-// its nearest neighbourg is still itself as it should be, but the 2nd neighbourg will probably have changed. The distance is now different too
+// its nearest neighbourg is still itself as it should be, but the 2nd neighbourg might have changed. The distance is now different too
 
 // standardize that same point (~query_buf) to be at the right scale
 ~stdbuf = Buffer.alloc(s,~nb_of_dim);
@@ -101,7 +102,7 @@ Routine{
 ~stdtree.fit(~standardized_dataset)
 ~stdtree.kNearest(~stdbuf, {|x| ("Labels:" + x).postln});
 ~stdtree.kNearestDist(~stdbuf, {|x| ("Distances:" + x).postln});
-// its nearest neighbourg is still itself as it should be, but the 2nd neighbourg will probably have changed yet again. The distance is also different too
+// its nearest neighbourg is still itself as it should be, but the 2nd neighbourg might have changed yet again. The distance is also different too
 
 // where it starts to be interesting is when we query points that are not in our original dataset
 
@@ -112,7 +113,7 @@ Routine{
 ~normalize.transformPoint(~query_buf,~normbuf);
 ~standardize.transformPoint(~query_buf,~stdbuf);
 
-//query the single nearest neighbourg via 3 different data scaling. Depending on the random source at the begining, you will get small to large differences between the 3 answers!
+//query the single nearest neighbourg via 3 different data scaling. Depending on the random source at the begining, you should get (small or large) differences between the 3 answers!
 [~tree,~normtree,~stdtree].do{|t| t.numNeighbours =1  };
 ~tree.kNearest(~query_buf, {|x| ("Original:" + x).post;~tree.kNearestDist(~query_buf, {|x| (" with a distance of " + x).postln});});
 ~normtree.kNearest(~normbuf, {|x| ("Normalized:" + x).post;~normtree.kNearestDist(~normbuf, {|x| (" with a distance of " + x).postln});});
