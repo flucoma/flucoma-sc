@@ -89,7 +89,7 @@ x = {arg type = 0;
 
 // change the wave types, observe the amplitude invariance of the descriptors, apart from the leftmost coefficient
 x.set(\type, 1)
-~winRange = 50; //adjust the range above and below 0 to zoom in or out on the MFCC
+~winRange = 5; //adjust the range above and below 0 to zoom in or out on the MFCC
 x.set(\type, 2)
 x.set(\type, 0)
 // free this source

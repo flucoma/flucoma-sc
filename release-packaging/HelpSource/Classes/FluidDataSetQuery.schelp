@@ -120,9 +120,8 @@ fork{
     s.sync;
     ~points.do{|x,i|
         ~tmpbuf.setn(0,x);
-        s.sync;
         ~dataSet.addPoint(i,~tmpbuf);
-        // s.sync
+        s.sync;
     }
 }
 )
@@ -137,7 +136,6 @@ fork{
 // prepare a simple query
 ~query.filter(0,"<",0.04);
 ~query.addColumn(2);
-s.dumpOSC
 ~query.transform(~dataSet, ~out);
 
 // check the result
@@ -162,9 +160,9 @@ code::
 //this is how to join 2 datasets, adding columns to items with the same label
 //create 3 datasets
 (
-~dsA = FluidDataSet.new(s,\joinA);
-~dsB = FluidDataSet.new(s,\joinB);
-~dsC = FluidDataSet.new(s,\joinC);
+~dsA =  FluidDataSet(s);
+~dsB =  FluidDataSet(s);
+~dsC =  FluidDataSet(s);
 )
 
 //feed them items with almost overlaping label lists but with different dimensions

@@ -106,7 +106,7 @@ d = Dictionary.with(
 
 //We should see a single cycle of a chirp
 ~outputdata.plot;
-s.dumpOSC
+
 // single point transform on arbitrary value
 ~inbuf = Buffer.loadCollection(s,[0.5]);
 ~regressor.predictPoint(~inbuf,{|x|x.postln;});
@@ -115,7 +115,7 @@ s.dumpOSC
 subsection:: Server Side Queries
 
 code::
-//Setup
+//we are here querying with a saw in control rate, all on the server, via a buffer interface
 (
 {
 	var input = Saw.kr(2).linlin(-1,1,0,1);
@@ -124,7 +124,7 @@ code::
     var outputPoint = LocalBuf(1);
 	BufWr.kr(input,inputPoint,0);
     ~regressor.kr(trig,inputPoint,outputPoint);
-    BufRd.kr(1,outputPoint,0);//,"mapped value")
+    BufRd.kr(1,outputPoint,0);
 }.scope
 )
 

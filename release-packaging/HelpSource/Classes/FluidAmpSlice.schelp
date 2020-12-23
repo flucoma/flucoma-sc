@@ -70,7 +70,7 @@ code::
 // another solution: minslicelength
 (
 {var env, source = SinOsc.ar(320,0,LFSaw.ar(20, 0, -0.4, 0.6));
-	env = FluidAmpSlice.ar(source,fastRampUp: 5,fastRampDown: 50,slowRampUp: 220,slowRampDown: 220, onThreshold: 10, offThreshold: 7,floor: -60, minSliceLength: 220);
+	env = FluidAmpSlice.ar(source,fastRampUp: 5,fastRampDown: 50,slowRampUp: 220,slowRampDown: 220, onThreshold: 10, offThreshold: 7,floor: -60, minSliceLength: 441);
 	[source, env]
 }.plot(0.08);
 )

@@ -47,7 +47,7 @@ Routine{
 }.play
 )
 
-~labels = FluidLabelSet(s,\simple1label);
+~labels = FluidLabelSet(s);
 
 ~kmeans.predict(~ds,~labels, {|x| ("Size of each cluster" +  x).postln})
 

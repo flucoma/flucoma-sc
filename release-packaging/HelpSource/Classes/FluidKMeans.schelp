@@ -67,7 +67,6 @@ A function to run when complete, taking an array of the counts for each category
 
 
 EXAMPLES::
-Server.default.options.outDevice = "Built-in Output"
 code::
 
 (
@@ -76,7 +75,7 @@ code::
 		       64.collect{(1.sum3rand) + [1,-1].choose}.clump(2)
 	       }).flatten(1) * 0.5;
 fork{
-    ~dataSet = FluidDataSet.new(s,\kmeans_help_rand2d);
+    ~dataSet =  FluidDataSet(s);
     d = Dictionary.with(
         *[\cols -> 2,\data -> Dictionary.newFrom(
 			~points.collect{|x, i| [i, x]}.flatten)]);
@@ -105,10 +104,6 @@ fork{
 ~kmeans.cols;
 ~kmeans.size;
 ~kmeans.dump;
-
- ~clusters.getLabel(0,{|clusterID|
-            (0.asString+clusterID).postln;
-});
 
 // Retrieve labels of clustered points
 (
@@ -157,8 +152,6 @@ subsection:: Queries in a Synth
 This is the equivalent of predictPoint, but wholly on the server
 
 code::
-
-outputPoint.getToFloatArray(action:{|a|a.postln})
 (
 {
     var trig = Impulse.kr(5);

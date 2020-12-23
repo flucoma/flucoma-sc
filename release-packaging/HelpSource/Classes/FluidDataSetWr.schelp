@@ -45,7 +45,7 @@ EXAMPLES::
 code::
 s.reboot;
 (
-~ds = FluidDataSet(s,\FluidDataSetWr);
+~ds = FluidDataSet(s);
 )
 
 (

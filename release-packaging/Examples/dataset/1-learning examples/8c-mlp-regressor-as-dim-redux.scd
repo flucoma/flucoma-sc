@@ -34,10 +34,10 @@ FluidBufMelBands.process(s,~audio, features: ~melfeatures,action: {\done.postln;
 	dsWr = FluidDataSetWr.kr(~raw, buf: buf, trig: Done.kr(stats));
 	LocalOut.kr( Done.kr(dsWr));
 	FreeSelf.kr(count - 99);
-	Poll.kr(trig,count);
+	Poll.kr(trig,(100-count));
 }.play;
 )
-// wait for the post window to acknoledge the job is done. Check the dataset if curious (loads of small numbers)
+// wait for the count to reaches 0 in the post window. Check the dataset if curious (loads of small numbers)
 ~raw.print;
 
 // normalize the input

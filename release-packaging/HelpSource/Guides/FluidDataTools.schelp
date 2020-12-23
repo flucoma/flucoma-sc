@@ -36,6 +36,8 @@ link::Classes/FluidNormalize::
 
 link::Classes/FluidStandardize::
 
+link::Classes/FluidRobustScale::
+
 section:: Dimension Reduction
 
 Compress data to fewer dimensions for visualisation / efficiency / preprocessing

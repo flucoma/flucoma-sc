@@ -15,6 +15,7 @@ FluidServerObject
         serverCaches[this] ?? {serverCaches[this] = FluidServerCache.new};
         serverCaches[this].initCache(server);
         NotificationCenter.register(server,\newAllocators,this,{ count = 0; });
+        ServerBoot.add({this.flush(Server.internal)},Server.internal);
     }
 
     *newMsg{|id, params|
@@ -81,6 +82,9 @@ FluidServerObject
 
     *objectClassName { ^this.name.asSymbol }
 
+    *flushMsg { ^['/cmd',this.objectClassName ++ '/flush'] }
+
+    *flush {|server| server.listSendMsg(this.flushMsg)}
 }
 
 FluidBufProcessor : FluidServerObject
@@ -229,7 +233,7 @@ FluidDataObject : FluidServerObject
     }
 
     *cachedInstanceAt{|server,id|
-        this.initCache;
+        this.initCache(server);
         ^serverCaches[this].at(server,id);
     }
 

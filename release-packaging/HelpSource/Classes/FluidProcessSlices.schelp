@@ -93,7 +93,7 @@ s.reboot;
 ~slicer = FluidSliceCorpus({ |src,start,num,dest|
 		FluidBufOnsetSlice.kr(src,start,num,indices:dest, threshold:2)
 });
-~pitchdata = FluidDataSet(s,\FluidProcessSlicesHelp);
+~pitchdata = FluidDataSet(s);
 ~pitchbufs = 4.collect{Buffer.new};
 ~statsbufs = 4.collect{Buffer.new};
 )

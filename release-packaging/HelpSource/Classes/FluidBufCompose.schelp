@@ -72,8 +72,9 @@ d = Buffer.new(s);
 // with basic params (basic summing of each full buffer in all dimensions)
 (
 Routine{
-    FluidBufCompose.process(s, source: b,  destination: d).wait;
-    FluidBufCompose.process(s, source: c,  destination: d, destGain: 1.0).wait;
+    FluidBufCompose.process(s, source: b,  destination: d);
+    FluidBufCompose.process(s, source: c,  destination: d, destGain: 1.0);
+	s.sync;
     d.query;
     d.play;
 }.play;

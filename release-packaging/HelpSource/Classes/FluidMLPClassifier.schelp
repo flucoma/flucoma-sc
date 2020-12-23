@@ -124,10 +124,9 @@ code::
 
 //Run the test data through the network, into the predicted labelset
 ~classifier.predict(~testdata,~predictedlabels,action:{"Test complete".postln});
-OSCFunc.trace(true,true)
-OSCFunc.allEnabled
+
 //get labels from server
-~predictedlabels.dump(action:{|d|~labelsdict = d["data"]};~labelsdict.postln);
+~predictedlabels.dump(action:{|d| ~labelsdict = d["data"]; ~labelsdict.postln});
 
 //Visualise: we're hoping to see colours neatly mapped to quandrants...
 (

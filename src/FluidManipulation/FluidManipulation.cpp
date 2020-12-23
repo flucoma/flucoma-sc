@@ -9,6 +9,7 @@
 #include <clients/nrt/KNNClassifierClient.hpp>
 #include <clients/nrt/KNNRegressorClient.hpp>
 #include <clients/nrt/NormalizeClient.hpp>
+#include <clients/nrt/RobustScaleClient.hpp>
 #include <clients/nrt/StandardizeClient.hpp>
 #include <clients/nrt/PCAClient.hpp>
 #include <clients/nrt/MDSClient.hpp>
@@ -33,6 +34,7 @@ PluginLoad(FluidSTFTUGen)
   makeSCWrapper<RTKNNClassifierClient>("FluidKNNClassifier",ft);
   makeSCWrapper<RTKNNRegressorClient>("FluidKNNRegressor",ft);
   makeSCWrapper<RTNormalizeClient>("FluidNormalize",ft);
+  makeSCWrapper<RTRobustScaleClient>("FluidRobustScale",ft);
   makeSCWrapper<RTStandardizeClient>("FluidStandardize",ft);
   makeSCWrapper<RTPCAClient>("FluidPCA",ft);
   makeSCWrapper<NRTThreadedMDSClient>("FluidMDS",ft);
