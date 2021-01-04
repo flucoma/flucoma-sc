@@ -152,7 +152,7 @@ namespace client {
         getTag(p, dummy);
    }
 
-    template <typename... Ts, size_t... Is>
+    template <typename... Ts>
     static void getTag(Packet& p, std::tuple<Ts...>&& t)
     {
         ForEach(t,[&p](auto&  x){getTag(p,x);});
@@ -189,7 +189,7 @@ namespace client {
       for(auto& x: s) convert(p,x);
     }
 
-    template <typename... Ts, size_t... Is>
+    template <typename... Ts>
     static void convert(Packet& p, std::tuple<Ts...>&& t)
     {
        ForEach(t,[&p](auto& x){ convert(p,x);});
