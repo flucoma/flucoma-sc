@@ -43,7 +43,7 @@ namespace impl{
           
           if(c.remain())
           {
-            index statedSize = static_cast<index>(c.next());
+            index statedSize = 1; 
           
             if(c.remain() < statedSize)
                 status =  {Result::Status::kError,"Ran out of arguments at ", d.name};
