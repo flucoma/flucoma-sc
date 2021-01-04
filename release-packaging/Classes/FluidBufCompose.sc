@@ -7,8 +7,8 @@ FluidBufCompose : FluidBufProcessor {
 
         source.isNil.if {"FluidBufCompose:  Invalid source buffer".throw};
         destination.isNil.if {"FluidBufCompose:  Invalid destination buffer".throw};
-        
-        ^FluidProxyUgen.kr(\FluidBufNMFTrigger,-1, source, startFrame, numFrames, startChan, numChans, gain, destination, destStartFrame, destStartChan, destGain, trig, blocking);
+
+        ^FluidProxyUgen.kr(\FluidBufComposeTrigger,-1, source, startFrame, numFrames, startChan, numChans, gain, destination, destStartFrame, destStartChan, destGain, trig, blocking);
 	}
 
 
