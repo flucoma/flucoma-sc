@@ -663,6 +663,9 @@ namespace impl {
             args->getb(completionMsgData, completionMsgSize);
           }
           runAsyncCommand(world, cmd, replyAddr, completionMsgSize, completionMsgData);
+          
+          if(completionMsgSize) ft->fRTFree(world, completionMsgData); 
+          
       };
       ft->fDefinePlugInCmd(Command::name(),commandRunner,nullptr);
     }

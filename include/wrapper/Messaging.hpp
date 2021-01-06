@@ -152,8 +152,9 @@ struct FluidSCMessaging{
       args->getb(completionMsgData, completionMsgSize);
     }
     
-     
-    getInterfaceTable()->fDoAsynchronousCommand(inWorld, replyAddr, getName(), msg,
+    auto ft = getInterfaceTable();
+    
+    ft->fDoAsynchronousCommand(inWorld, replyAddr, getName(), msg,
         [](World* world, void* data) // NRT thread: invocation
         {
           MessageData* m = static_cast<MessageData*>(data);
@@ -191,6 +192,9 @@ struct FluidSCMessaging{
           delete m;
         },
         static_cast<int>(completionMsgSize), completionMsgData);
+        
+        if(completionMsgSize) ft->fRTFree(inWorld, completionMsgData);
+        
   }
   
   template <size_t N, typename ArgsTuple, size_t... Is> // Call from NRT
