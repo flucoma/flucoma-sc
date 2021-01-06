@@ -44,13 +44,16 @@ namespace impl {
     
     using CacheEntryPointer = std::shared_ptr<CacheEntry>; 
     using WeakCacheEntryPointer = std::weak_ptr<CacheEntry>; //could use weak_type in 17
+
+   public:
     using Cache = std::map<index,CacheEntryPointer>; 
-    
+    static Cache mCache;
+   private:
     static bool isNull(WeakCacheEntryPointer const& weak) {
       return !weak.owner_before(WeakCacheEntryPointer{}) && !WeakCacheEntryPointer{}.owner_before(weak);
     }
     
-    static Cache mCache;
+
   
   public:
     static WeakCacheEntryPointer get(index id)
@@ -201,27 +204,20 @@ namespace impl {
     {
       using NRTCommand::NRTCommand;
       
-      
-      template<bool b>
-      struct CancelCheck{
-        void operator()(index id)
+      void cancelCheck(std::false_type, index id)
+      {
+        if(auto ptr = get(id).lock())
         {
-          if(auto ptr = get(id).lock())
-          {
-            auto& client = ptr->mClient;
-            if(!client.synchronous() && client.state() == ProcessState::kProcessing)
-              std::cout << Wrapper::getName()
-              << ": Processing cancelled"
-              << std::endl;
-          }
+          auto& client = ptr->mClient;
+          if(!client.synchronous() && client.state() == ProcessState::kProcessing)
+            std::cout << Wrapper::getName()
+            << ": Processing cancelled"
+            << std::endl;
         }
-      };
+      }
       
-      template<>
-      struct CancelCheck<true>{
-        void operator()(index)
-        {}
-      };
+      void cancelCheck(std::true_type, index){}
+      
             
       static const char* name()
       {
@@ -231,7 +227,7 @@ namespace impl {
       
       bool stage2(World*)
       {
-        CancelCheck<IsRTQueryModel>()(NRTCommand::mID);
+        cancelCheck(IsRTQueryModel_t(),NRTCommand::mID);
         remove(NRTCommand::mID);
         NRTCommand::sendReply(name(), true);
         return true;
@@ -759,7 +755,7 @@ namespace impl {
         
         if(auto ptr = get(mID).lock())
         {
-          bool  trigger = (mPreviousTrigger <= 0) && mTrigger > 0;          
+          bool  trigger = (!mPreviousTrigger) && mTrigger;          
           mPreviousTrigger = mTrigger;
           mTrigger = 0;
           auto& client = ptr->mClient;
@@ -784,8 +780,8 @@ namespace impl {
       }
       
     private:
-      bool mPreviousTrigger{0};
-      bool mTrigger{0};
+      bool mPreviousTrigger{false};
+      bool mTrigger{false};
       Result mResult;
       impl::FloatControlsIter mControlsIterator;
       index mID;
@@ -941,25 +937,19 @@ namespace impl {
       }
     };
 
-    FifoMsg           mFifoMsg;
-    char*             mCompletionMessage = nullptr;
-    void*             mReplyAddr = nullptr;
-    const char*       mName = nullptr;
-    index             checkThreadInterval;
-    index             pollCounter{0};
-    index             mPreviousTrigger{0};  
-
+    FifoMsg      mFifoMsg;
+    char*        mCompletionMessage = nullptr;
+    void*        mReplyAddr = nullptr;
+    const char*  mName = nullptr;
+    index        checkThreadInterval;
+    index        pollCounter{0};
+    index        mPreviousTrigger{0};
     bool         mSynchronous{true};
-    Wrapper*     mWrapper{static_cast<Wrapper*>(this)};
     Result       mResult;
   };
   
-  //initialize static cache
   template<typename Client, typename Wrapper>
-  using Cache = typename NonRealTime<Client,Wrapper>::Cache;
-  
-  template<typename Client, typename Wrapper>
-  Cache<Client,Wrapper> NonRealTime<Client,Wrapper>::mCache{};
+  typename NonRealTime<Client, Wrapper>::Cache  NonRealTime<Client,Wrapper>::mCache{};
   
 } 
 }
