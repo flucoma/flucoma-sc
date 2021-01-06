@@ -18,3 +18,7 @@ target_link_libraries(
 )
 
 include(${CMAKE_CURRENT_LIST_DIR}/../../scripts/target_post.cmake)
+
+if(MSVC)
+  target_compile_options(${PLUGIN} PRIVATE /bigobj)
+endif()
