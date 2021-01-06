@@ -30,6 +30,22 @@ endif()
 ################################################################################
 # Main project
 project (flucoma-sc LANGUAGES CXX)
+
+if(NOT MSVC)
+  add_compile_options(-fdiagnostics-color=always)
+endif() 
+
+#set correct std lib linking for Windows (in CMake 3.15 this has a native function)
+if(MSVC) #needs to be after project()
+  foreach(flag_var
+      CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
+      CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+    if(${flag_var} MATCHES "/MD")
+      string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
+    endif()
+  endforeach()
+endif()
+
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(CMAKE_XCODE_GENERATE_TOP_LEVEL_PROJECT_ONLY ON)
 
@@ -86,7 +102,36 @@ endif()
 #needed for complaint-free static linking with GCC
 if(CMAKE_COMPILER_IS_GNUCXX)
   target_compile_options( HISSTools_FFT PUBLIC -fPIC )
-ENDIF()
+endif()
+
+#sandbox regrettable dependency on SC internals for SendReply()
+add_library(FLUID_SC_COPYREPLYADDR STATIC
+  "${CMAKE_SOURCE_DIR}/include/wrapper/CopyReplyAddress.cpp"
+  "${SC_PATH}/common/SC_Reply.cpp"
+  "${SC_PATH}/external_libraries/boost/libs/system/src/error_code.cpp"
+)
+
+target_include_directories(FLUID_SC_COPYREPLYADDR SYSTEM PRIVATE 
+  "${SC_PATH}/include/plugin_interface"
+  "${SC_PATH}/include/common"
+  "${SC_PATH}/common"
+  "${SC_PATH}/external_libraries/boost"
+)
+set_target_properties(FLUID_SC_COPYREPLYADDR PROPERTIES
+    CXX_STANDARD 14
+    CXX_STANDARD_REQUIRED YES
+    CXX_EXTENSIONS NO
+)
+
+if(CMAKE_COMPILER_IS_GNUCXX)
+  target_compile_options(FLUID_SC_COPYREPLYADDR PUBLIC -fPIC )
+endif()
+
+if(APPLE)
+  target_compile_options(FLUID_SC_COPYREPLYADDR PRIVATE -stdlib=libc++)
+endif()
+
+target_compile_definitions(FLUID_SC_COPYREPLYADDR PRIVATE BOOST_ALL_NO_LIB  BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE)
 
 add_library(FLUID_SC_WRAPPER INTERFACE)
 target_include_directories(FLUID_SC_WRAPPER 
@@ -100,6 +145,8 @@ target_sources(FLUID_SC_WRAPPER
   "${CMAKE_CURRENT_SOURCE_DIR}/include/SCBufferAdaptor.hpp"
 )
 
+target_link_libraries(FLUID_SC_WRAPPER INTERFACE FLUID_SC_COPYREPLYADDR)
+
 SUBDIRLIST(PROJECT_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src")
 foreach (project_dir ${PROJECT_DIRS})
 	if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/${project_dir}/CMakeLists.txt")
@@ -107,6 +154,8 @@ foreach (project_dir ${PROJECT_DIRS})
 		add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/${project_dir}")
 	endif ()
 endforeach ()
+
+
 
 #install bits. 
 

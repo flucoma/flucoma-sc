@@ -1,15 +1,14 @@
 #pragma once 
 
 #include "BufferFuncs.hpp"
-#include "Meta.hpp"
-#include "SCBufferAdaptor.hpp"
 #include "CopyReplyAddress.hpp"
 #include "Messaging.hpp"
+#include "Meta.hpp"
 #include "RealTimeBase.hpp"
-
+#include "SCBufferAdaptor.hpp"
 #include <clients/common/FluidBaseClient.hpp>
+#include <data/FluidMeta.hpp>
 #include <SC_PlugIn.hpp>
-#include <SC_ReplyImpl.hpp>
 #include <scsynthsend.h>
 #include <map>
 
@@ -143,7 +142,7 @@ namespace impl {
           packet.addi(success);
           packet.addi(static_cast<int>(mID));
           
-          ::SendReply(static_cast<ReplyAddress*>(mReplyAddress),packet.data(), static_cast<int>(packet.size()));
+          SendReply(mReplyAddress,packet.data(), static_cast<int>(packet.size()));
         }
       }
 //      protected:
