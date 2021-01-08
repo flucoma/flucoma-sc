@@ -147,9 +147,10 @@ FluidBufProcessor : FluidServerObject
 
     wait {
         var condition = Condition.new;
+        id ?? {Error("% already freed".format(this.class.name)).throw};
         OSCFunc({
             condition.unhang;
-        },this.class.done,server.addr).oneShot;
+        },this.class.done,server.addr,argTemplate:[nil,id]).oneShot;
         condition.hang;
     }
 
