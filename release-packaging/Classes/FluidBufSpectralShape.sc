@@ -52,3 +52,4 @@ FluidBufSpectralShape : FluidBufProcessor {
 		);
 	}
 }
+FluidBufSpectralShapeTrigger : FluidProxyUgen {}

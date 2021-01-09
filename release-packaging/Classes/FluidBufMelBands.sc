@@ -48,3 +48,4 @@ FluidBufMelBands : FluidBufProcessor {
         );
 	}
 }
+FluidBufMelBandsTrigger : FluidProxyUgen {}

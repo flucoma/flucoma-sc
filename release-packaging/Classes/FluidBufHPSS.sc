@@ -49,3 +49,4 @@ FluidBufHPSS : FluidBufProcessor {
 
  	}
 }
+FluidBufHPSSTrigger : FluidProxyUgen {}

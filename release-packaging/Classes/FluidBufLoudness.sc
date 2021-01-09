@@ -46,3 +46,4 @@ FluidBufLoudness : FluidBufProcessor{
 		);
     }
 }
+FluidBufLoudnessTrigger : FluidProxyUgen {}

@@ -31,3 +31,4 @@ FluidBufThreadDemo : FluidBufProcessor{
 		);
     }
 }
+FluidBufThreadDemoTrigger : FluidProxyUgen {}

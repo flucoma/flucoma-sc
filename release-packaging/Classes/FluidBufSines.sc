@@ -48,3 +48,4 @@ FluidBufSines : FluidBufProcessor {
 	}
 
 }
+FluidBufSinesTrigger : FluidProxyUgen {}

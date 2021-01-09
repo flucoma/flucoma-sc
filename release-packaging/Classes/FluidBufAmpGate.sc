@@ -41,3 +41,4 @@ FluidBufAmpGate : FluidBufProcessor {
    }
    
 }
+FluidBufAmpGateTrigger : FluidProxyUgen {}

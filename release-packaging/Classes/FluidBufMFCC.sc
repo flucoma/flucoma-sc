@@ -43,3 +43,4 @@ FluidBufMFCC : FluidBufProcessor{
 		);
     }
 }
+FluidBufMFCCTrigger : FluidProxyUgen {}

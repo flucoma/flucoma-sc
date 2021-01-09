@@ -43,3 +43,4 @@ FluidBufThresh : FluidBufProcessor {
 
 	}
 }
+FluidBufThreshTrigger : FluidProxyUgen {}

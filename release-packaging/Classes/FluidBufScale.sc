@@ -41,3 +41,4 @@ FluidBufScale : FluidBufProcessor {
 		);
 	}
 }
+FluidBufScaleTrigger : FluidProxyUgen {}

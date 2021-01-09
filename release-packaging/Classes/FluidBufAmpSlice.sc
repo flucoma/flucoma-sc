@@ -37,3 +37,4 @@ FluidBufAmpSlice : FluidBufProcessor {
 		);
 	}
 }
+FluidBufAmpSliceTrigger : FluidProxyUgen {}
