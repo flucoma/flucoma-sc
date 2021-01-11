@@ -345,6 +345,7 @@ namespace impl {
           void* space = ft->fRTAlloc(world,sizeof(CommandAsyncComplete));
           CommandAsyncComplete* cmd = new (space) CommandAsyncComplete(world, id,c->mReplyAddress);
           runAsyncCommand(world, cmd, c->mReplyAddress, c->mCompletionMsgSize, c->mCompletionMessage);
+          if(c->mCompletionMsgSize) ft->fRTFree(world,c->mCompletionMessage); 
         };
         
         auto tidyup = [](FifoMsg* msg)
@@ -622,7 +623,10 @@ namespace impl {
     {
           if(!cmd->synchronous())
           {
-            cmd->addCompletionMessage(completionMsgSize,completionMsgData);
+            
+            auto msgcopy = (char*)getInterfaceTable()->fRTAlloc(world,completionMsgSize);
+            memcpy(msgcopy, completionMsgData, completionMsgSize);
+            cmd->addCompletionMessage(completionMsgSize,msgcopy);
             return runAsyncCommand<CommandProcess>(world, cmd, replyAddr, 0, nullptr);
           }
           else return runAsyncCommand<CommandProcess>(world, cmd, replyAddr, completionMsgSize, completionMsgData);
@@ -633,7 +637,9 @@ namespace impl {
     {
           if(!cmd->synchronous())
           {
-            cmd->addCompletionMessage(completionMsgSize,completionMsgData);
+            auto msgcopy = (char*)getInterfaceTable()->fRTAlloc(world,completionMsgSize);
+            memcpy(msgcopy, completionMsgData, completionMsgSize);
+            cmd->addCompletionMessage(completionMsgSize,msgcopy);
             return runAsyncCommand<CommandProcessNew>(world, cmd, replyAddr, 0, nullptr);
           }
           else return runAsyncCommand<CommandProcessNew>(world, cmd, replyAddr, completionMsgSize, completionMsgData);
