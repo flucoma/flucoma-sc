@@ -60,9 +60,11 @@ FluidNormalize : FluidRealTimeModel {
 
         this.min_(min).max_(max).invert_(invert);
 
-        ^FluidProxyUgen.kr(this.class.name.asString++'/query', K2A.ar(trig),
-                id, this.min, this.max, this.invert, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer));
+        ^FluidNormalizeQuery.kr( K2A.ar(trig),
+                this, this.min, this.max, this.invert, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer)); 
     }
 
 
 }
+
+FluidNormalizeQuery : FluidRTQuery {}

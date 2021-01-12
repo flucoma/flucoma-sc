@@ -38,9 +38,11 @@ FluidKNNRegressor : FluidRealTimeModel {
 	}
 
     kr{|trig, inputBuffer,outputBuffer|
-        ^FluidProxyUgen.kr(this.class.name.asString++'/query', K2A.ar(trig),
-                id, this.numNeighbours, this.weight,
+        ^FluidKNNRegressorQuery.kr(K2A.ar(trig),
+                this, this.numNeighbours, this.weight,
                 this.prEncodeBuffer(inputBuffer),
                 this.prEncodeBuffer(outputBuffer));
     }
 }
+
+FluidKNNRegressorQuery : FluidRTQuery {}

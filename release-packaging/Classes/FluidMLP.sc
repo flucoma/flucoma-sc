@@ -75,12 +75,12 @@ FluidMLPRegressor : FluidRealTimeModel {
         params = this.prGetParams.drop(-2) ++ [this.prEncodeBuffer(inputBuffer),
         this.prEncodeBuffer(outputBuffer)];
 
-        ^FluidProxyUgen.kr(this.class.name.asString++'/query', K2A.ar(trig),
-                id, *params);
+        ^FluidMLPRegressorQuery.kr(K2A.ar(trig),this, *params);
     }
 
 }
 
+FluidMLPRegressorQuery : FluidRTQuery {}
 
 FluidMLPClassifier : FluidRealTimeModel {
 
@@ -145,7 +145,8 @@ FluidMLPClassifier : FluidRealTimeModel {
         var params = this.prGetParams.drop(-2) ++  [this.prEncodeBuffer(inputBuffer),
         this.prEncodeBuffer(outputBuffer)];
 
-        ^FluidProxyUgen.kr(this.class.name.asString++'/query', K2A.ar(trig),
-                id, *params);
+        ^FluidMLPClassifierQuery.kr(K2A.ar(trig),this, *params);
     }
 }
+
+FluidMLPClassifierQuery : FluidRTQuery {}

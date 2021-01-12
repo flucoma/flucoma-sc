@@ -60,9 +60,11 @@ FluidKMeans : FluidRealTimeModel {
 	}
 
     kr{|trig, inputBuffer,outputBuffer|
-        ^FluidProxyUgen.kr('FluidKMeans/query', K2A.ar(trig),
-                id, clusters, maxiter,
+        ^FluidKMeansQuery.kr(K2A.ar(trig),
+                this, clusters, maxiter,
                 this.prEncodeBuffer(inputBuffer),
                 this.prEncodeBuffer(outputBuffer));
     }
 }
+
+FluidKMeansQuery : FluidRTQuery {}
