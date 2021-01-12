@@ -9,3 +9,5 @@ FluidDataSetWr : FluidBufProcessor {
         ^FluidProxyUgen.kr(\FluidDataSetWrTrigger,*args);
 	}
 }
+
+FluidDataSetWrTrigger : FluidProxyUgen {} 
