@@ -182,7 +182,7 @@ public:
     if (allocResult != kSCErr_None)
     {
       r.set(Result::Status::kError);
-      r.addMessage("Resize on buffer ", bufnum(), " failed.");
+      r.addMessage("Resize on buffer ", bufnum(), " failed. (Requested ", frames, " frames, ", channels, "channels)");
     }
     return r;
   }

@@ -112,17 +112,17 @@ public:
       case Result::Status::kWarning: 
       {
         if (!w || w->mVerbosity > 0)
-          std::cout << "WARNING: " << r.message().c_str() << '\n';
+          std::cout << "WARNING: " << getName() << " - " << r.message().c_str() << '\n';
         break;
       }
       case Result::Status::kError: 
       {
-        std::cout << "ERROR: " << r.message().c_str() << '\n';
+        std::cout << "ERROR: " << getName() << " - " << r.message().c_str() << '\n';
         break;
       }
       case Result::Status::kCancelled: 
       {
-        std::cout << "Task cancelled\n" << '\n';
+        std::cout << getName() << ": Task cancelled\n" << '\n';
         break;
       }
       default: 

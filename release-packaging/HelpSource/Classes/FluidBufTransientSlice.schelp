@@ -109,7 +109,7 @@ c.query;
         }.play;
 )
 
-// with everything changed to make it much better, at the cost of computation time (only 10 seconds are processed here, again wait for the (longer) computation time to appear)
+// with everything changed to make it much better, at the cost of computation time (only 5 seconds are processed here, again wait for the (longer) computation time to appear)
 (
 Routine{
 	t = Main.elapsedTime;
