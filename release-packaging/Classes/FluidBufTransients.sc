@@ -41,3 +41,4 @@ FluidBufTransients : FluidBufProcessor {
        );
    }
 }
+FluidBufTransientsTrigger : FluidProxyUgen {}

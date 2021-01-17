@@ -60,9 +60,10 @@ FluidRobustScale : FluidRealTimeModel {
 
         this.low_(low).high_(high).invert_(invert);
 
-        ^FluidProxyUgen.kr(this.class.name.asString++'/query', K2A.ar(trig),
-                id, this.low, this.high, this.invert, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer));
+        ^FluidRobustScaleQuery.kr(K2A.ar(trig),this, this.low, this.high, this.invert, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer));
     }
 
 
 }
+
+FluidRobustScaleQuery : FluidRTQuery {}

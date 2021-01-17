@@ -56,3 +56,4 @@ FluidBufAudioTransport : FluidBufProcessor {
 		)
 	}
 }
+FluidBufAudioTransportTrigger : FluidProxyUgen {}

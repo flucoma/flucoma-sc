@@ -44,3 +44,4 @@ FluidBufFlatten : FluidBufProcessor {
 
    }
 }
+FluidBufFlattenTrigger : FluidProxyUgen {}

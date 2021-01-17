@@ -308,3 +308,10 @@ FluidRealTimeModel : FluidModelObject
         ^super.new(server,params++[-1,-1]);
     }
 }
+
+FluidRTQuery : FluidProxyUgen
+{
+    *kr{ |trig, obj, args|
+        ^super.kr(this.name,trig, obj.asUGenInput, *args) 
+    }
+}

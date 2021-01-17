@@ -68,8 +68,8 @@ FluidUMAP : FluidRealTimeModel {
         numDimensions = numDimensions ? this.numDimensions;
         this.numDimensions_(numDimensions);
 
-        ^FluidProxyUgen.kr(this.class.name.asString++'/query', K2A.ar(trig),
-                id,
+        ^FluidUMAPQuery.kr(K2A.ar(trig),
+            this,
 			this.numDimensions,
 			this.numNeighbours,
             this.minDist,
@@ -83,3 +83,5 @@ FluidUMAP : FluidRealTimeModel {
 	cols {|action|}
 	size { |action|}
 }
+
+FluidUMAPQuery : FluidRTQuery {}

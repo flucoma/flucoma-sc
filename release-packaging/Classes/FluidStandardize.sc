@@ -52,7 +52,8 @@ FluidStandardize : FluidRealTimeModel {
         invert = invert ? this.invert;
         this.invert_(invert);
 
-        ^FluidProxyUgen.kr(this.class.name.asString++'/query', K2A.ar(trig),
-                id, this.invert, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer));
+        ^FluidStandardizeQuery.kr(K2A.ar(trig),this, this.invert, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer));
     }
 }
+
+FluidStandardizeQuery : FluidRTQuery {}

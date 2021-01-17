@@ -51,10 +51,12 @@ FluidKDTree : FluidRealTimeModel
         lookupDataSet = lookupDataSet ? -1;
         this.lookupDataSet_(lookupDataSet);
         this.lookupDataSet.asUGenInput.postln;
-        ^FluidProxyUgen.kr('FluidKDTree/query', K2A.ar(trig),
-                id, this.numNeighbours, this.radius, this.lookupDataSet.asUGenInput,
+        ^FluidKDTreeQuery.kr(K2A.ar(trig),
+                this, this.numNeighbours, this.radius, this.lookupDataSet.asUGenInput,
                 this.prEncodeBuffer(inputBuffer),
                 this.prEncodeBuffer(outputBuffer));
     }
 
 }
+
+FluidKDTreeQuery : FluidRTQuery {}

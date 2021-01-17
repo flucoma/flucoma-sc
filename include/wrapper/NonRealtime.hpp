@@ -808,7 +808,7 @@ namespace impl {
       
       static const char* name()
       {
-        static std::string n = std::string(Wrapper::getName()) + "/query";
+        static std::string n = std::string(Wrapper::getName()) + "Query";
         return n.c_str();
       }
             
