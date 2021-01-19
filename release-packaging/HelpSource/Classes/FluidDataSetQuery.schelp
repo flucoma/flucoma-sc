@@ -177,7 +177,7 @@ code::
 ~dsC.print
 
 // all the sophisticated conditions applicable to 'transform' can be done on the first dataset too. Selected columns of the first source are appended to matching items in the second source.
-~joiner.filter(1,">",2.1)
+~joiner.filter(0,">",2.1)
 ~joiner.and(1,"<", 40)
 ~joiner.addColumn(0)
 ~joiner.transformJoin(~dsA,~dsB,~dsC)
