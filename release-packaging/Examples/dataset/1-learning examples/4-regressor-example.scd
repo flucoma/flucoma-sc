@@ -57,3 +57,18 @@ Routine{
 
 // look at the interpolated values
 ~mappingresult.plot
+
+// change the number of neighbours to regress on
+~knn.numNeighbours_(5)
+~knn.fit(~simpleInput, ~simpleOutput, action:{"fitting done".postln})
+
+// instead of doing the mapping per point, let's do a dataset of 512 points
+~target = FluidDataSet(s)
+~target.load(Dictionary.newFrom([\cols, 1, \data, Dictionary.newFrom(512.collect{|i|[i.asString, [i.asFloat * 61]]}.flatten)]))
+~regressed = FluidDataSet(s)
+~knn.predict(~target, ~regressed, action:{"prediction done".postln})
+
+//dump the regressed values
+~outputArray = Array.newClear(512);
+~regressed.dump{|x| x["data"].keysValuesDo{|key,val|~outputArray[key.asInteger] = val[0]}}
+~outputArray.plot
