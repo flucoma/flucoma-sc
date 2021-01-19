@@ -50,7 +50,7 @@ FluidKDTree : FluidRealTimeModel
         this.numNeighbours_(numNeighbours);
         lookupDataSet = lookupDataSet ? -1;
         this.lookupDataSet_(lookupDataSet);
-        this.lookupDataSet.asUGenInput.postln;
+
         ^FluidKDTreeQuery.kr(K2A.ar(trig),
                 this, this.numNeighbours, this.radius, this.lookupDataSet.asUGenInput,
                 this.prEncodeBuffer(inputBuffer),
