@@ -311,7 +311,7 @@ FluidRealTimeModel : FluidModelObject
 
 FluidRTQuery : FluidProxyUgen
 {
-    *kr{ |trig, obj, args|
-        ^super.kr(this.name,trig, obj.asUGenInput, *args) 
+    *kr{ |trig,obj...args|
+        ^super.kr(this.name,trig,obj.asUGenInput, *args)
     }
 }
