@@ -22,9 +22,9 @@ set(FLUID_PATH "" CACHE PATH "Optional path to the Fluid Decomposition repo")
 set(FLUID_M_PATH "" CACHE PATH "Optional path to the Fluid fluid_manipulation repo")
 
 if (APPLE)
-	set(CMAKE_OSX_ARCHITECTURES x86_64)
   set(CMAKE_XCODE_GENERATE_SCHEME ON)
-  set(CMAKE_OSX_DEPLOYMENT_TARGET 10.8)
+	set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "")
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "10.8" CACHE STRING "")
 endif()
 
 ################################################################################
