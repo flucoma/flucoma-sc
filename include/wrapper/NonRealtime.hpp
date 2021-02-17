@@ -175,9 +175,15 @@ namespace impl {
         return cmd.c_str();
       }
 
-      bool stage2(World*)
+      bool stage2(World* w)
       {
 //        auto entry = ;
+
+
+        Result constraintsRes =  validateParameters(mParams);
+
+        if(!constraintsRes.ok()) Wrapper::printResult(w,constraintsRes);
+
         mResult = (!isNull(add(NRTCommand::mID, mParams)));
                 
         //Sigh. The cache entry above has both the client instance and main params instance.
