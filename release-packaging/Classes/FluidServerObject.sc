@@ -6,16 +6,21 @@ FluidServerObject
     var <server,<id;
 
     *initClass {
-        // serverCaches = FluidServerCache.new;
         serverCaches = IdentityDictionary.new;
         count = 0;
+        ServerBoot.add({serverCaches[this]!?{serverCaches[this].cache.put(Server.internal,nil);}},Server.internal);
     }
 
     *initCache {|server|
-        serverCaches[this] ?? {serverCaches[this] = FluidServerCache.new};
+        serverCaches[this] ?? { serverCaches[this] = FluidServerCache.new};
+
+        if(server === Server.internal and: serverCaches[this].cache[Server.internal].isNil)
+        {
+            this.flush(Server.internal)
+        };
+
         serverCaches[this].initCache(server);
         NotificationCenter.register(server,\newAllocators,this,{ count = 0; });
-        ServerBoot.add({this.flush(Server.internal)},Server.internal);
     }
 
     *newMsg{|id, params|
