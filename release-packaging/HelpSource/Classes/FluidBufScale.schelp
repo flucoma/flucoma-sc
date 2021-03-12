@@ -49,6 +49,15 @@ The output value when the input is inputLow
 ARGUMENT:: outputHigh
 The output value when the input is inputHigh
 
+ARGUMENT:: map
+The mapping maths used. 0 is lin-lin, 1 is lin-curve, 2 is curve-lin
+
+ARGUMENT:: curvature
+The exponent used between the 2 values. positive is exponential, negative is logarythmic, 0 is linear
+
+ARGUMENT:: clipping
+Optional clipping of the input (and therefore of the output). 0 is none. 1 caps the lowest input at inputLow. 2 caps the highest input at inputHigh, 3 caps both input low and high value within the described range.
+
 ARGUMENT:: freeWhenDone
 Free the server instance when processing complete. Default true
 
