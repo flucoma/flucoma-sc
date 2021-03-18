@@ -1,0 +1,154 @@
+TITLE:: FluidBufSTFT
+summary:: (put short description here)
+categories:: Undocumented classes, UGens>Undocumented
+related:: Classes/SomeRelatedClass, Reference/SomeRelatedStuff, etc.
+
+DESCRIPTION::
+(put long description here)
+
+CLASSMETHODS::
+
+METHOD:: processBlocking
+(describe method here)
+
+ARGUMENT:: server
+(describe argument here)
+
+ARGUMENT:: source
+(describe argument here)
+
+ARGUMENT:: startFrame
+(describe argument here)
+
+ARGUMENT:: numFrames
+(describe argument here)
+
+ARGUMENT:: startChan
+(describe argument here)
+
+ARGUMENT:: magnitudeBuffer
+(describe argument here)
+
+ARGUMENT:: phaseBuffer
+(describe argument here)
+
+ARGUMENT:: resynthesisBuffer
+(describe argument here)
+
+ARGUMENT:: inverse
+(describe argument here)
+
+ARGUMENT:: freeWhenDone
+(describe argument here)
+
+ARGUMENT:: action
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: process
+(describe method here)
+
+ARGUMENT:: server
+(describe argument here)
+
+ARGUMENT:: source
+(describe argument here)
+
+ARGUMENT:: startFrame
+(describe argument here)
+
+ARGUMENT:: numFrames
+(describe argument here)
+
+ARGUMENT:: startChan
+(describe argument here)
+
+ARGUMENT:: magnitudeBuffer
+(describe argument here)
+
+ARGUMENT:: phaseBuffer
+(describe argument here)
+
+ARGUMENT:: resynthesisBuffer
+(describe argument here)
+
+ARGUMENT:: inverse
+(describe argument here)
+
+ARGUMENT:: freeWhenDone
+(describe argument here)
+
+ARGUMENT:: action
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: kr
+(describe method here)
+
+ARGUMENT:: source
+(describe argument here)
+
+ARGUMENT:: startFrame
+(describe argument here)
+
+ARGUMENT:: numFrames
+(describe argument here)
+
+ARGUMENT:: startChan
+(describe argument here)
+
+ARGUMENT:: magnitudeBuffer
+(describe argument here)
+
+ARGUMENT:: phaseBuffer
+(describe argument here)
+
+ARGUMENT:: resynthesisBuffer
+(describe argument here)
+
+ARGUMENT:: inverse
+(describe argument here)
+
+ARGUMENT:: trig
+(describe argument here)
+
+ARGUMENT:: blocking
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+
+INSTANCEMETHODS::
+
+
+EXAMPLES::
+
+code::
+s.reboot
+(
+b = Buffer.read(s,File.realpath(FluidBufSTFT.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-AcousticStrums-M.wav");
+m = Buffer.new;
+p = Buffer.new;
+r = Buffer.new;
+)
+b
+(
+fork{
+    FluidBufSTFT.process(s,source:b,magnitudeBuffer:m,phaseBuffer:p).wait;
+    FluidBufSTFT.process(s,magnitudeBuffer:m,phaseBuffer:p,resynthesisBuffer:r,inverse:1).wait;
+    "Done".postln;
+}
+)
+
+
+{ PlayBuf.ar(1,r);   }.play
+
+//null?
+{ PlayBuf.ar(1,r) - PlayBuf(1,b);   }.play
+
+
+
+
+::
