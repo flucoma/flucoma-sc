@@ -117,7 +117,7 @@ FluidBufAmpSlice.process(s,b,indices:c,fastRampUp: 10,fastRampDown: 2205,slowRam
 c.query
 c.getn(0,c.numFrames,{|item|item.postln;})
 
-//loops over a splice with the MouseX, taking the respective onset and offset of a given slice
+//loops over a splice with the MouseX
 (
 {
     BufRd.ar(1, b,

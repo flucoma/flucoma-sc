@@ -1,15 +1,14 @@
 #pragma once 
 
 #include "BufferFuncs.hpp"
-#include "Meta.hpp"
-#include "SCBufferAdaptor.hpp"
 #include "CopyReplyAddress.hpp"
 #include "Messaging.hpp"
+#include "Meta.hpp"
 #include "RealTimeBase.hpp"
-
+#include "SCBufferAdaptor.hpp"
 #include <clients/common/FluidBaseClient.hpp>
+#include <data/FluidMeta.hpp>
 #include <SC_PlugIn.hpp>
-#include <SC_ReplyImpl.hpp>
 #include <scsynthsend.h>
 #include <map>
 
@@ -45,13 +44,16 @@ namespace impl {
     
     using CacheEntryPointer = std::shared_ptr<CacheEntry>; 
     using WeakCacheEntryPointer = std::weak_ptr<CacheEntry>; //could use weak_type in 17
+
+   public:
     using Cache = std::map<index,CacheEntryPointer>; 
-    
+    static Cache mCache;
+   private:
     static bool isNull(WeakCacheEntryPointer const& weak) {
       return !weak.owner_before(WeakCacheEntryPointer{}) && !WeakCacheEntryPointer{}.owner_before(weak);
     }
     
-    static Cache mCache;
+
   
   public:
     static WeakCacheEntryPointer get(index id)
@@ -143,7 +145,7 @@ namespace impl {
           packet.addi(success);
           packet.addi(static_cast<int>(mID));
           
-          ::SendReply(static_cast<ReplyAddress*>(mReplyAddress),packet.data(), static_cast<int>(packet.size()));
+          SendReply(mReplyAddress,packet.data(), static_cast<int>(packet.size()));
         }
       }
 //      protected:
@@ -173,9 +175,15 @@ namespace impl {
         return cmd.c_str();
       }
 
-      bool stage2(World*)
+      bool stage2(World* w)
       {
 //        auto entry = ;
+
+
+        Result constraintsRes =  validateParameters(mParams);
+
+        if(!constraintsRes.ok()) Wrapper::printResult(w,constraintsRes);
+
         mResult = (!isNull(add(NRTCommand::mID, mParams)));
                 
         //Sigh. The cache entry above has both the client instance and main params instance.
@@ -202,27 +210,20 @@ namespace impl {
     {
       using NRTCommand::NRTCommand;
       
-      
-      template<bool b>
-      struct CancelCheck{
-        void operator()(index id)
+      void cancelCheck(std::false_type, index id)
+      {
+        if(auto ptr = get(id).lock())
         {
-          if(auto ptr = get(id).lock())
-          {
-            auto& client = ptr->mClient;
-            if(!client.synchronous() && client.state() == ProcessState::kProcessing)
-              std::cout << Wrapper::getName()
-              << ": Processing cancelled"
-              << std::endl;
-          }
+          auto& client = ptr->mClient;
+          if(!client.synchronous() && client.state() == ProcessState::kProcessing)
+            std::cout << Wrapper::getName()
+            << ": Processing cancelled"
+            << std::endl;
         }
-      };
+      }
       
-      template<>
-      struct CancelCheck<true>{
-        void operator()(index)
-        {}
-      };
+      void cancelCheck(std::true_type, index){}
+      
             
       static const char* name()
       {
@@ -232,7 +233,7 @@ namespace impl {
       
       bool stage2(World*)
       {
-        CancelCheck<IsRTQueryModel>()(NRTCommand::mID);
+        cancelCheck(IsRTQueryModel_t(),NRTCommand::mID);
         remove(NRTCommand::mID);
         NRTCommand::sendReply(name(), true);
         return true;
@@ -766,7 +767,7 @@ namespace impl {
         
         if(auto ptr = get(mID).lock())
         {
-          bool  trigger = (mPreviousTrigger <= 0) && mTrigger > 0;          
+          bool  trigger = (!mPreviousTrigger) && mTrigger;          
           mPreviousTrigger = mTrigger;
           mTrigger = 0;
           auto& client = ptr->mClient;
@@ -791,8 +792,8 @@ namespace impl {
       }
       
     private:
-      bool mPreviousTrigger{0};
-      bool mTrigger{0};
+      bool mPreviousTrigger{false};
+      bool mTrigger{false};
       Result mResult;
       impl::FloatControlsIter mControlsIterator;
       index mID;
@@ -813,7 +814,7 @@ namespace impl {
       
       static const char* name()
       {
-        static std::string n = std::string(Wrapper::getName()) + "/query";
+        static std::string n = std::string(Wrapper::getName()) + "Query";
         return n.c_str();
       }
             
@@ -948,25 +949,19 @@ namespace impl {
       }
     };
 
-    FifoMsg           mFifoMsg;
-    char*             mCompletionMessage = nullptr;
-    void*             mReplyAddr = nullptr;
-    const char*       mName = nullptr;
-    index             checkThreadInterval;
-    index             pollCounter{0};
-    index             mPreviousTrigger{0};  
-
+    FifoMsg      mFifoMsg;
+    char*        mCompletionMessage = nullptr;
+    void*        mReplyAddr = nullptr;
+    const char*  mName = nullptr;
+    index        checkThreadInterval;
+    index        pollCounter{0};
+    index        mPreviousTrigger{0};
     bool         mSynchronous{true};
-    Wrapper*     mWrapper{static_cast<Wrapper*>(this)};
     Result       mResult;
   };
   
-  //initialize static cache
   template<typename Client, typename Wrapper>
-  using Cache = typename NonRealTime<Client,Wrapper>::Cache;
-  
-  template<typename Client, typename Wrapper>
-  Cache<Client,Wrapper> NonRealTime<Client,Wrapper>::mCache{};
+  typename NonRealTime<Client, Wrapper>::Cache  NonRealTime<Client,Wrapper>::mCache{};
   
 } 
 }

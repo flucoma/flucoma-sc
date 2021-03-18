@@ -48,3 +48,4 @@ FluidBufNoveltySlice : FluidBufProcessor {
 		);
 	}
 }
+FluidBufNoveltySliceTrigger : FluidProxyUgen {}

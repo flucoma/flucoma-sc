@@ -39,7 +39,7 @@ namespace client {
     {
       return allocSizeImpl(std::forward<decltype(t)>(t),
                            std::index_sequence_for<Ts...>());
-    };
+    }
 
     template <typename... Ts, size_t... Is>
     static std::tuple<std::array<index, sizeof...(Ts)>, index>
@@ -53,11 +53,11 @@ namespace client {
       return std::make_tuple(res,
                              size); // array of offsets into allocated buffer &
                                     // total number of floats to alloc
-    };
+    }
 
     static void convert(float* f, typename BufferT::type buf)
     {
-      f[0] = static_cast<SCBufferAdaptor*>(buf.get())->bufnum();
+      f[0] = static_cast<float>(static_cast<SCBufferAdaptor*>(buf.get())->bufnum());
     }
 
     template <typename T>
@@ -129,8 +129,7 @@ namespace client {
     static index numTags(std::tuple<Ts...>&&)
     {
       return std::tuple_size<std::tuple<Ts...>>::value;
-    };
-  
+    }
   
     static void getTag(Packet& p, typename BufferT::type) { p.addtag('i'); }
         
@@ -152,7 +151,7 @@ namespace client {
         getTag(p, dummy);
    }
 
-    template <typename... Ts, size_t... Is>
+    template <typename... Ts>
     static void getTag(Packet& p, std::tuple<Ts...>&& t)
     {
         ForEach(t,[&p](auto&  x){getTag(p,x);});
@@ -161,21 +160,21 @@ namespace client {
 
     static void convert(Packet& p, typename BufferT::type buf)
     {
-      p.addi(static_cast<SCBufferAdaptor*>(buf.get())->bufnum());
+      p.addi(static_cast<int>(static_cast<SCBufferAdaptor*>(buf.get())->bufnum()));
     }
 
     template <typename T>
     static std::enable_if_t<std::is_integral<T>::value>
     convert(Packet& p, T x)
     {
-      p.addi(x);
+      p.addi(static_cast<int>(x));
     }
 
     template <typename T>
     static std::enable_if_t<std::is_floating_point<T>::value>
     convert(Packet& p, T x)
     {
-      p.addf(x);
+      p.addf(static_cast<float>(x));
     }
 
     static void convert(Packet& p, std::string s)
@@ -189,7 +188,7 @@ namespace client {
       for(auto& x: s) convert(p,x);
     }
 
-    template <typename... Ts, size_t... Is>
+    template <typename... Ts>
     static void convert(Packet& p, std::tuple<Ts...>&& t)
     {
        ForEach(t,[&p](auto& x){ convert(p,x);});

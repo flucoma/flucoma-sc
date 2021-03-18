@@ -55,8 +55,9 @@ FluidPCA : FluidRealTimeModel{
         numDimensions = numDimensions ? this.numDimensions;
         this.numDimensions_(numDimensions);
 
-        ^FluidProxyUgen.kr(this.class.name.asString++'/query', K2A.ar(trig),
-                id, this.numDimensions, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer));
+        ^FluidPCAQuery.kr(K2A.ar(trig),this, this.numDimensions, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer));
     }
 
 }
+
+FluidPCAQuery : FluidRTQuery {}

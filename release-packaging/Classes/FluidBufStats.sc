@@ -49,3 +49,4 @@ FluidBufStats : FluidBufProcessor {
 
 
 }
+FluidBufStatsTrigger : FluidProxyUgen {}

@@ -34,3 +34,4 @@ FluidBufNMF : FluidBufProcessor //: UGen {
         ).processList([source, startFrame, numFrames, startChan, numChans, resynth, bases, basesMode, activations, actMode, components,iterations, windowSize, hopSize, fftSize, 1],freeWhenDone,action); 
     }
 }
+FluidBufNMFTrigger : FluidProxyUgen {}

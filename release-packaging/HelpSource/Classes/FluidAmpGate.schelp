@@ -60,63 +60,63 @@ RETURNS::
 EXAMPLES::
 
 code::
-//basic tests: absThresh sanity
+//basic tests: threshold sanity
 (
 {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpGate.ar(source, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12);
 	[source, env]
 }.plot(0.1);
 )
-//basic tests: absThresh hysteresis
+//basic tests: threshold hysteresis
 (
 {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpGate.ar(source, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -16);
 	[source, env]
 }.plot(0.1);
 )
-//basic tests: absThresh min slice
+//basic tests: threshold min slice
 (
 {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpGate.ar(source, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12, minSliceLength:441);
 	[source, env]
 }.plot(0.1);
 )
-//basic tests: absThresh min silence
+//basic tests: threshold min silence
 (
 {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpGate.ar(source, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12, minSilenceLength:441);
 	[source, env]
 }.plot(0.1);
 )
-//mid tests: absThresh time hysteresis on
+//mid tests: threshold time hysteresis on
 (
 {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpGate.ar(source, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12, minLengthAbove:441);
 	[DelayN.ar(source,0.1,441/44100), env]
 }.plot(0.1);
 )
-//mid tests: absThresh time hysteresis off
+//mid tests: threshold time hysteresis off
 (
 {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpGate.ar(source, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12, minLengthBelow:441);
 	[DelayN.ar(source,0.1,441/44100), env]
 }.plot(0.1);
 )
-//mid tests: absThresh with lookBack
+//mid tests: threshold with lookBack
 (
 {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpGate.ar(source, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12, lookBack:441);
 	[DelayN.ar(source,0.1,441/44100), env]
 }.plot(0.1);
 )
-//mid tests: absThresh with lookAhead
+//mid tests: threshold with lookAhead
 (
 {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpGate.ar(source, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12, lookAhead:441);
 	[DelayN.ar(source,0.1,441/44100), env]
 }.plot(0.1);
 )
-//mid tests: absThresh with asymetrical lookBack and lookAhead
+//mid tests: threshold with asymetrical lookBack and lookAhead
 (
 {var env, source = SinOsc.ar(320,0,LFTri.ar(10).abs);
 	env = FluidAmpGate.ar(source, rampUp:5, rampDown:25, onThreshold:-12, offThreshold: -12, lookBack:221, lookAhead:441);

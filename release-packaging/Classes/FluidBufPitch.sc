@@ -48,3 +48,4 @@ FluidBufPitch : FluidBufProcessor{
 		);
 	}
 }
+FluidBufPitchTrigger : FluidProxyUgen {}

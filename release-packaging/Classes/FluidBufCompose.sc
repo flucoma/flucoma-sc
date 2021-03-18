@@ -36,3 +36,4 @@ FluidBufCompose : FluidBufProcessor {
        ).processList([source, startFrame, numFrames, startChan, numChans, gain, destination, destStartFrame, destStartChan, destGain, 1], freeWhenDone, action);
 	}
 }
+FluidBufComposeTrigger : FluidProxyUgen {}

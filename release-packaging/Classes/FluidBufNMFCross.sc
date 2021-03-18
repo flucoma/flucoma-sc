@@ -46,3 +46,4 @@ FluidBufNMFCross : FluidBufProcessor {
 		);
 	}
 }
+FluidBufNMFCrossTrigger : FluidProxyUgen {}

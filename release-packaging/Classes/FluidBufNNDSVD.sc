@@ -45,3 +45,4 @@ FluidBufNNDSVD : FluidBufProcessor{
 		)
 	}
 }
+FluidBufNNDSVDTrigger : FluidProxyUgen {}

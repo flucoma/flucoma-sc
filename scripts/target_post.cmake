@@ -8,22 +8,17 @@
 target_compile_features(${PLUGIN} PRIVATE cxx_std_14)
 
 if(MSVC)
-  foreach(flag_var
-      CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
-      CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
-    if(${flag_var} MATCHES "/MD")
-      string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
-    endif()
-  endforeach()
-endif()
-
-if(MSVC)
   target_compile_options(${PLUGIN} PRIVATE /W3)
 else()
   target_compile_options(${PLUGIN} PRIVATE 
-    -Wall -Wextra -Wpedantic -Wreturn-type -Wconversion -Wno-c++11-narrowing
+    -Wall -Wextra -Wpedantic -Wreturn-type -Wconversion
   )
-endif()
+  
+  #GCC doesn't have Wno-c++11-narrowing
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    target_compile_options(${PLUGIN} PRIVATE  -Wno-c++11-narrowing)
+  endif()
+endif() 
 
 set_target_properties(${PLUGIN} PROPERTIES
     CXX_STANDARD 14
@@ -43,10 +38,8 @@ target_link_libraries(
   ${PLUGIN}
   PRIVATE  
   FLUID_DECOMPOSITION
-  # FLUID_MANIP
   FLUID_SC_WRAPPER  
   HISSTools_FFT
-  # FLUID_SC_COPYREPLYADDR  
 )
 
 target_include_directories(
@@ -64,11 +57,7 @@ file(GLOB_RECURSE FLUID_SC_HEADERS CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/includ
 
 target_sources(
   ${PLUGIN} PUBLIC ${FLUID_MANIPULATION_HEADERS}
- ${FLUID_SC_HEADERS}
-  #bah. We need to know how big a ReplyAddress struct is, and so this nonsense:
-  "${SC_PATH}/common/SC_Reply.cpp"
-  "${SC_PATH}/external_libraries/boost/libs/system/src/error_code.cpp"
-  # $<TARGET_OBJECTS:FLUID_SC_COPYREPLYADDR>
+  ${FLUID_SC_HEADERS}
 )
 
 target_include_directories(

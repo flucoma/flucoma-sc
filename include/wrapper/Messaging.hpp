@@ -2,6 +2,7 @@
 
 #include "ArgsFromClient.hpp"
 #include "ArgsToClient.hpp"
+#include "CopyReplyAddress.hpp"
 #include <scsynthsend.h>
 
 namespace fluid {
@@ -225,7 +226,7 @@ struct FluidSCMessaging{
     ToOSCTypes<small_scpacket>::convert(packet, static_cast<T>(result));
     
     if(replyAddr)
-      ::SendReply(static_cast<ReplyAddress*>(replyAddr),packet.data(),static_cast<int>(packet.size()));
+      SendReply(replyAddr,packet.data(),static_cast<int>(packet.size()));
   }
 
   static void messageOutput(const std::string& s,index id, MessageResult<void>&, void* replyAddr)
@@ -238,7 +239,7 @@ struct FluidSCMessaging{
     packet.addi(static_cast<int>(id));
     
     if(replyAddr)
-      ::SendReply(static_cast<ReplyAddress*>(replyAddr),packet.data(),static_cast<int>(packet.size()));
+      SendReply(replyAddr,packet.data(),static_cast<int>(packet.size()));
   }
 
   template <typename... Ts>
@@ -264,7 +265,7 @@ struct FluidSCMessaging{
     ToOSCTypes<small_scpacket>::convert(packet, static_cast<T>(result));
     
     if(replyAddr)
-      ::SendReply(static_cast<ReplyAddress*>(replyAddr),packet.data(),static_cast<int>(packet.size()));
+      SendReply(replyAddr,packet.data(),static_cast<int>(packet.size()));
 
   }
 };

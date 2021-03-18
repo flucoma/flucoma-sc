@@ -125,22 +125,17 @@ namespace impl{
    void next(SCUnit& unit, Client& client,Params& params,FloatControlsIter& controls)
    {   
      bool trig =  IsModel_t<Client>::value ? !mPrevTrig  && unit.in0(0) > 0 : false;
-     bool shouldProcess = IsModel_t<Client>::value ? trig : true;
+
      mPrevTrig = trig;
      
-//     if(shouldProcess)
-//     {
-       // controls.reset(unit.mInBuf + unit.mSpecialIndex + 1);
-       Wrapper::setParams(&unit, params, controls);
-       params.constrainParameterValues();
-//     }
+     Wrapper::setParams(&unit, params, controls);
+     params.constrainParameterValues();
      
      for (index i = 0; i < client.audioChannelsIn(); ++i)
      {
         assert(i <= std::numeric_limits<int>::max());
        if (mInputConnections[asUnsigned(i)])
-         mAudioInputs[asUnsigned(i)].reset(const_cast<float*>(unit.in(static_cast<int>(i))), 0,
-                                           unit.fullBufferSize());
+         mAudioInputs[asUnsigned(i)].reset(const_cast<float*>(unit.in(static_cast<int>(i))), 0,unit.fullBufferSize());
      }
      
      for (index i = 0; i < client.audioChannelsOut(); ++i)

@@ -6,16 +6,21 @@ FluidServerObject
     var <server,<id;
 
     *initClass {
-        // serverCaches = FluidServerCache.new;
         serverCaches = IdentityDictionary.new;
         count = 0;
+        ServerBoot.add({serverCaches[this]!?{serverCaches[this].cache.put(Server.internal,nil);}},Server.internal);
     }
 
     *initCache {|server|
-        serverCaches[this] ?? {serverCaches[this] = FluidServerCache.new};
+        serverCaches[this] ?? { serverCaches[this] = FluidServerCache.new};
+
+        if(server === Server.internal and: serverCaches[this].cache[Server.internal].isNil)
+        {
+            this.flush(Server.internal)
+        };
+
         serverCaches[this].initCache(server);
         NotificationCenter.register(server,\newAllocators,this,{ count = 0; });
-        ServerBoot.add({this.flush(Server.internal)},Server.internal);
     }
 
     *newMsg{|id, params|
@@ -189,7 +194,7 @@ FluidBufProcessor : FluidServerObject
 FluidOSCPatternInversion : OSCMessageDispatcher
 {
     value {|msg, time, addr, recvPort|
-        var msgpath = msg[0];
+        var msgpath = msg[0].asSymbol;
         active.keysValuesDo({|key, func|
             if(msgpath.matchOSCAddressPattern(key), {func.value(msg, time, addr, recvPort);});
         })
@@ -306,5 +311,12 @@ FluidRealTimeModel : FluidModelObject
 {
     *new{ |server, params|
         ^super.new(server,params++[-1,-1]);
+    }
+}
+
+FluidRTQuery : FluidProxyUgen
+{
+    *kr{ |trig,obj...args|
+        ^super.kr(this.name,trig,obj.asUGenInput, *args)
     }
 }
