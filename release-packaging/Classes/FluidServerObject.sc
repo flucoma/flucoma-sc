@@ -194,7 +194,7 @@ FluidBufProcessor : FluidServerObject
 FluidOSCPatternInversion : OSCMessageDispatcher
 {
     value {|msg, time, addr, recvPort|
-        var msgpath = msg[0];
+        var msgpath = msg[0].asSymbol;
         active.keysValuesDo({|key, func|
             if(msgpath.matchOSCAddressPattern(key), {func.value(msg, time, addr, recvPort);});
         })
