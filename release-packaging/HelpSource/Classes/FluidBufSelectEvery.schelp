@@ -34,10 +34,10 @@ The number of channels from which to copy in the source buffer. This parameter w
 ARGUMENT:: destination
 The link::Classes/Buffer:: to write the selected data to
 
-ARGUMENT:: framehop
+ARGUMENT:: frameHop
 Take every `framehop` frames. Default = 1 = all frames (where 2 would be every other frame, etc.)
 
-ARGUMENT:: channelhop
+ARGUMENT:: channelHop
 Take every `channelhop` channels. Default = 1 = all channels (where 2 would be every other channel, etc.)
 
 ARGUMENT:: freeWhenDone
@@ -45,42 +45,6 @@ Free the server instance when processing complete. Default true
 
 ARGUMENT:: action
 Runs when processing is complete
-
-
-METHOD:: kr
-Run as a control rate link::Classes/UGen::
-
-ARGUMENT:: source
-The link::Classes/Buffer:: to select values from
-
-ARGUMENT:: startFrame
-The starting point (in samples) from which to copy in the source buffer.
-
-ARGUMENT:: numFrames
-The duration (in samples) to copy from the source buffer. The default (-1) copies the full lenght of the buffer.
-
-ARGUMENT:: startChan
-The first channel from which to copy in the source buffer.
-
-ARGUMENT:: numChans
-The number of channels from which to copy in the source buffer. This parameter will wrap around the number of channels in the source buffer. The default (-1) copies all of the buffer's channel.
-
-ARGUMENT:: destination
-The link::Classes/Buffer:: to write the selected data to
-
-ARGUMENT:: frameHop
-Take every `framehop` frames. Default = 1 = all frames (where 2 would be every other frame, etc.)
-
-ARGUMENT:: channelHop
-Take every `channelhop` channels. Default = 1 = all channels (where 2 would be every other channel, etc.)
-
-ARGUMENT:: trig
-Trigger signal to defer / retrigger processing
-
-ARGUMENT:: blocking
-The process will stay on the main server thread, or not if set to 0
-
-returns:: an instance of the processor
 
 EXAMPLES::
 

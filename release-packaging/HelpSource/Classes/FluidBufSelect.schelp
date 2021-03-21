@@ -34,30 +34,6 @@ Free the server instance when processing complete. Default true
 ARGUMENT:: action
 Runs when processing is complete
 
-
-METHOD:: kr
-Run as a control rate link::Classes/UGen::
-
-ARGUMENT:: source
-The link::Classes/Buffer:: to select values from
-
-ARGUMENT:: destination
-The link::Classes/Buffer:: to write the selected data to
-
-ARGUMENT:: indices
-A 0-based list of frame indices to recover. Default is [-1], meaning all frames
-
-ARGUMENT:: channels
-A 0-based list of channel numbers to recover. Default is [-1], meaning all frames
-
-ARGUMENT:: trig
-Trigger signal to defer / retrigger processing
-
-ARGUMENT:: blocking
-The process will stay on the main server thread, or not if set to 0
-
-returns:: an instance of the processor
-
 EXAMPLES::
 
 code::
