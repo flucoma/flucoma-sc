@@ -72,4 +72,34 @@ FluidDataSet : FluidDataObject
 		actions[\print] = [string(FluidMessageResponse,_,_),action];
 		this.prSendMsg(this.printMsg);
 	}
+
+	toBufferMsg{|buffer, transpose = 0, labelSet|
+        buffer = this.prEncodeBuffer(buffer);
+       ^this.prMakeMsg(\toBuffer, id, buffer, transpose, labelSet.asUGenInput);
+    }
+
+	toBuffer{|buffer, transpose = 0, labelSet, action|
+      actions[\toBuffer] = [nil,action];
+		this.prSendMsg(this.toBufferMsg(buffer, transpose, labelSet));
+	}
+
+	fromBufferMsg{|buffer, transpose = 0, labelSet|
+        buffer = this.prEncodeBuffer(buffer);
+       ^this.prMakeMsg(\fromBuffer, id, buffer, transpose, labelSet.asUGenInput);
+    }
+
+	fromBuffer{|buffer, transpose = 0, labelSet, action|
+      actions[\fromBuffer] = [nil,action];
+		this.prSendMsg(this.fromBufferMsg(buffer, transpose, labelSet));
+	}
+
+	getIdsMsg{|labelSet|
+        ^this.prMakeMsg(\getIds, id, labelSet.asUGenInput);
+    }
+
+	getIds{|labelSet, action|
+      actions[\getIds] = [nil,action];
+	  this.prSendMsg(this.getIdsMsg(labelSet));
+	}
 }
+
