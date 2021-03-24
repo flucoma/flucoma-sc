@@ -40,7 +40,17 @@ FluidDataSet : FluidDataObject
       this.prSendMsg(this.deletePointMsg(label));
     }
 
-    clearMsg { ^this.prMakeMsg(\clear,id); }
+    setPointMsg{|label,buffer|
+        buffer = this.prEncodeBuffer(buffer);
+        ^this.prMakeMsg(\setPoint,id,label.asSymbol,buffer);
+    }
+
+	setPoint{|label, buffer, action|
+      actions[\setPoint] = [nil,action];
+	  this.prSendMsg(this.setPointMsg(label,buffer));
+	}
+
+	clearMsg { ^this.prMakeMsg(\clear,id); }
 
     clear { |action|
       actions[\clear] = [nil,action];

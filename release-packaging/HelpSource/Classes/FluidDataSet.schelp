@@ -41,6 +41,9 @@ Retrieve a point from the data set into a link::Classes/Buffer::. Will report an
 
 METHOD:: deletePoint
 Remove a point from the data set. Will report an error if the label doesn't exist.
+
+METHOD:: setPoint
+Set the point: if the label exists, this method behaves like updatePoint; if the label doesn't exist, behaves like addPoint.
 ​​
 METHOD:: clear
 Empty the data set.
