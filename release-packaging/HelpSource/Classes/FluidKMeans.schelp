@@ -65,6 +65,46 @@ A link::Classes/FluidLabelSet:: to contain assignments.
 ARGUMENT:: action
 A function to run when complete, taking an array of the counts for each category as its argument.
 
+METHOD:: fitTransform
+Run link::Classes/FluidKMeans#*fit:: and link::Classes/FluidKMeans#*predict:: in a single pass: i.e. train the model on the incoming link::Classes/FluidDataSet:: and then return the learned clustering to the passed link::Classes/FluidLabelSet::
+ARGUMENT:: srcDataSet
+a link::Classes/FluidDataSet:: containing the data to fit and predict.
+ARGUMENT:: dstDataSet
+a link::Classes/FluidLabelSet:: to retrieve the predicted clusters.
+ARGUMENT:: action
+A function to run when the server responds
+
+METHOD:: transformPoint
+Given a trained object, return the cluster ID for a data point in a link::Classes/Buffer::
+ARGUMENT:: sourceBuffer
+a link::Classes/Buffer:: containing a data point.
+ARGUMENT:: targetBuffer
+a link::Classes/Buffer:: containing a data point.
+ARGUMENT:: action
+A function to run when the server responds, taking the ID of the cluster as its argument.
+
+METHOD:: transform
+Report cluster assignments for previously unseen data.
+ARGUMENT:: srcDataSet
+A link::Classes/FluidDataSet:: of data points.
+ARGUMENT:: dstDataSet
+A link::Classes/FluidLabelSet:: to contain assignments.
+ARGUMENT:: action
+A function to run when complete, taking an array of the counts for each category as its argument.
+
+METHOD:: getMeans
+Report cluster assignments for previously unseen data.
+ARGUMENT:: dataSet
+A link::Classes/FluidDataSet:: of data points.
+ARGUMENT:: action
+A function to run when complete, taking an array of the counts for each category as its argument.
+
+METHOD:: setMeans
+Report cluster assignments for previously unseen data.
+ARGUMENT:: dataSet
+A link::Classes/FluidDataSet:: of data points.
+ARGUMENT:: action
+A function to run when complete, taking an array of the counts for each category as its argument.
 
 EXAMPLES::
 code::
@@ -145,6 +185,38 @@ w.front;
 // single point transform on arbitrary value
 ~inbuf = Buffer.loadCollection(s,0.5.dup);
 ~kmeans.predictPoint(~inbuf,{|x|x.postln;});
+::
+
+subsection:: Accessing the means
+
+We can get and set the means for each cluster, their centroid.
+
+code::
+~centroids = FluidDataSet(s);
+~kmeans.getMeans(~centroids, {~centroids.print});
+
+
+
+~centroids.load(Dictionary.newFrom([\cols, 2, \data, Dictionary.newFrom([\0, [0.5,0.5], \1, [-0.5,0.5], \2, [0.5,-0.5], \3, [-0.5,-0.5]])]));
+~centroids.print
+~kmeans.setMeans(~centroids, {~kmeans.predict(~dataSet,~clusters,{~clusters.dump{|x|var count = 0.dup(4); x["data"].keysValuesDo{|k,v|count[v[0].asInteger] = count[v[0].asInteger] + 1;};count.postln}})});
+
+~kmeans.free
+~kmeans = FluidKMeans(s);
+~kmeans.predict(~dataSet,~clusters)
+
+::
+
+subsection:: Cluster-distance Space
+
+You can get the euclidian distance of a given point to each cluster.
+
+code::
+b = Buffer.sendCollection(s,[0.5,0.5])
+c = Buffer(s)
+
+~kmeans.transformPoint(b,c,{|x|x.query;x.getn(0,x.numFrames,{|y|y.postln})})
+
 ::
 
 subsection:: Queries in a Synth
