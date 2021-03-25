@@ -42,7 +42,7 @@ FluidDataSet : FluidDataObject
 
     setPointMsg{|label,buffer|
         buffer = this.prEncodeBuffer(buffer);
-        ^this.prMakeMsg(\setPoint,id,label.asSymbol,buffer);
+        ^this.prMakeMsg(\setPoint,id,label.asSymbol,buffer,["/b_query",buffer.asUGenInput]);
     }
 
 	setPoint{|label, buffer, action|
@@ -75,7 +75,7 @@ FluidDataSet : FluidDataObject
 
 	toBufferMsg{|buffer, transpose = 0, labelSet|
         buffer = this.prEncodeBuffer(buffer);
-       ^this.prMakeMsg(\toBuffer, id, buffer, transpose, labelSet.asUGenInput);
+       ^this.prMakeMsg(\toBuffer, id, buffer, transpose, labelSet.asUGenInput,["/b_query",buffer.asUGenInput]);
     }
 
 	toBuffer{|buffer, transpose = 0, labelSet, action|
@@ -85,7 +85,7 @@ FluidDataSet : FluidDataObject
 
 	fromBufferMsg{|buffer, transpose = 0, labelSet|
         buffer = this.prEncodeBuffer(buffer);
-       ^this.prMakeMsg(\fromBuffer, id, buffer, transpose, labelSet.asUGenInput);
+       ^this.prMakeMsg(\fromBuffer, id, buffer, transpose, labelSet.asUGenInput,["/b_query",buffer.asUGenInput]);
     }
 
 	fromBuffer{|buffer, transpose = 0, labelSet, action|
