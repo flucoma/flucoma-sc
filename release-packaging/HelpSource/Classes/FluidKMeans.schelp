@@ -201,8 +201,7 @@ code::
 ~centroids.print
 ~kmeans.setMeans(~centroids, {~kmeans.predict(~dataSet,~clusters,{~clusters.dump{|x|var count = 0.dup(4); x["data"].keysValuesDo{|k,v|count[v[0].asInteger] = count[v[0].asInteger] + 1;};count.postln}})});
 
-~kmeans.free
-~kmeans = FluidKMeans(s);
+~kmeans.clear
 ~kmeans.predict(~dataSet,~clusters)
 
 ::

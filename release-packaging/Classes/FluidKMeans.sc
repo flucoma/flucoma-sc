@@ -103,6 +103,13 @@ FluidKMeans : FluidRealTimeModel {
 		this.prSendMsg(this.setMeansMsg(dataSet));
 	}
 
+	clearMsg{ ^this.prMakeMsg(\clear, id) }
+
+    clear{ |action|
+        actions[\clear] = [nil, action];
+		this.prSendMsg(this.clearMsg);
+	}
+
 	kr{|trig, inputBuffer,outputBuffer|
 		^FluidKMeansQuery.kr(K2A.ar(trig),
 			this, clusters, maxiter,
