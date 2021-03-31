@@ -49,31 +49,31 @@ METHOD:: clear
 Empty the data set.
 
 METHOD:: toBuffer
-Dump the content of the dataset to a link::Classes/Buffer::, with optional transposition, and a map of channel/frames to the original IDs as link::Classes/FluidLabelSet::.
+Dump the content of the dataset to a link::Classes/Buffer::, with optional transposition, and a map of frames/channels to the original IDs as a link::Classes/FluidLabelSet::.
 
 ARGUMENT:: buffer
 The buffer to write to. It will be resized.
 
 ARGUMENT:: transpose
-If 0, each dataset point becomes a channel, and each dataset dimension becomes a frame. If 1, points become frames, and dimensions become channels.
+If 0, each dataset point becomes a buffer frame, and each dataset dimension becomes a buffer channel. If 1, points become channels, and dimensions become frames.
 
 ARGUMENT:: labelSet
-The labelset in which to dump the point's IDs associated with their reference channel number (or frame number if transposed).
+The link::Classes/FluidLabelSet:: in which to dump the point's IDs associated with their reference frame number (or channel number if transposed).
 
 ARGUMENT:: action
 A function to run when the dump is done.
 
 METHOD:: fromBuffer
-Import to the dataset the content of a link::Classes/Buffer::, with optional transposition, and a map of channel/frames to the original IDs as link::Classes/FluidLabelSet::.
+Import to the dataset the content of a link::Classes/Buffer::, with optional transposition, and a map of frames/channels to the original IDs as a link::Classes/FluidLabelSet::.
 
 ARGUMENT:: buffer
 The buffer to read from. The dataset will be resized.
 
 ARGUMENT:: transpose
-If 0, each channel becomes a dataset point, and each frame becomes a dataset dimension. If 1, frames become points, and channels become dimensions.
+If 0, each buffer frame becomes a dataset point, and each buffer channel becomes a dataset dimension. If 1, channels become points, and frames become dimensions.
 
 ARGUMENT:: labelSet
-The labelset from which to retrieve the point's IDs associated with their reference channel number (or frame number if transposed).
+The link::Classes/FluidLabelSet:: from which to retrieve the point's IDs associated with their reference frame number (or channel number if transposed).
 
 ARGUMENT:: action
 A function to run when the import is done.
@@ -143,6 +143,7 @@ fork{
 ::
 
 STRONG:: Buffer Interface::
+
 As the content of the dataset has a similar structure to buffers, namely arrays of floats in parallel, it is possible to transfer the content between the two. Careful consideration of the rotation of the buffer, as well as the relation of points to channel numbers, are needed.
 
 code::
@@ -160,12 +161,12 @@ b = Buffer(s);
 l = FluidLabelSet(s);
 d.toBuffer(b,0,l);
 
-//check the result: by default, dataset points become channels, with their associated data as sample frames
+//check the result: by default, dataset points become frames, with their associated data columns as channels
 b.query
 b.getn(0,20,{|x|x.postln})
 l.print
 
-//you can also transpose your query, where dataset points are each a sample frame, and each data column becomes a channel
+//you can also transpose your query, where dataset points are each a buffer channel, and each data column becomes a buffer frame
 d.toBuffer(b,1,l);
 b.query
 b.getn(0,20,{|x|x.postln})
