@@ -4,9 +4,9 @@ categories:: FluidManipulation
 related:: Classes/FLuidDataSet
 
 DESCRIPTION::
-A UGen that adds labelled points to a link::Classes/FluidDataSet::
+A UGen that adds labelled points to a link::Classes/FluidDataSet:: Internally, this calls code::setPoint::, so IDs that already exist will be overwritten, and new IDs will be added. The actual work is done on the server's command queue, rather than the real-thread. 
 
-By default the object generates a numerical index that gets used for the point labels. This index starts counting from link::#offset#labelOffset:: and increments each time the Ugen is retriggered with a zero to non-zero transition. The label is then concatenated with the code::labelPrefix:: symbol, which is fixed at instantiation. In this way, one can make custom, incrementing labels, e.g.
+By default the object generates a numerical index that gets used for the point labels. This index starts counting from link::#offset#labelOffset:: and increments each time the Ugen is re-triggered with a zero to non-zero transition. The label is then concatenated with the code::idPrefix:: symbol, which is fixed at instantiation. In this way, one can make custom, incrementing labels, e.g.
 
 code::
 FluidDataSetWr.kr(~somedataset,"my_data",0,~somebuffer,trig)
@@ -14,7 +14,7 @@ FluidDataSetWr.kr(~somedataset,"my_data",0,~somebuffer,trig)
 
 would add points like code::my_data0, mydata1, mydata2...:: if successively retriggered.
 
-Alternatively, for one shot use you may not want a numerical suffix at all. Setting code::indexLabel:: < 0 will bypass this and use only the labelPrefix. As such, any retriggering will result in a complaint from the link::Classes/FluidDataSet:: that the requested label is already present.
+Alternatively, for one shot use you may not want a numerical suffix at all. Setting code::idNumber:: to code:: nil:: will bypass this and use only the code::idPrefix:: string.
 
 CLASSMETHODS::
 
@@ -26,12 +26,12 @@ The equivalent of calling link::Classes/FluidDataSet#-addPoint::, but within a l
 ARGUMENT:: dataset
 An instance of link::Classes/FluidDataSet:: or an instance's name.
 
-ARGUMENT:: labelPrefix
+ARGUMENT:: idPrefix
 A string or symbol with a prefix for generated labels
 
-ARGUMENT:: labelOffset
+ARGUMENT:: idNumber
 ANCHOR::offset::
-An integer with the offset to start labeling from. If the UGen is run in a server-side loop (i.e. repeatedly retriggered), the generated labels will count upwards from this offset. If < 0, then no numerical index will be applied to the generated label (i.e. only the labelPrefix is used).
+An integer with the offset to start labeling from. If the UGen is run in a server-side loop (i.e. repeatedly re-triggered), the generated labels will count upwards from this offset. If < 0, then no numerical index will be applied to the generated label (i.e. only the labelPrefix is used).
 
 ARGUMENT:: buf
 The link::Classes/Buffer:: containing the data point.
@@ -39,6 +39,10 @@ The link::Classes/Buffer:: containing the data point.
 ARGUMENT:: trig
 
 A kr trigger signal
+
+ARGUMENT:: blocking
+
+If 0 then the job will run in its own thread (not reccomended for this object)
 
 EXAMPLES::
 
@@ -48,13 +52,24 @@ s.reboot;
 ~ds = FluidDataSet(s);
 )
 
+//Write a 100 points whose values increase
 (
-{
-	var b = LocalBuf.newFrom([0,1,2,3]);
-	FreeSelfWhenDone.kr(FluidDataSetWr.kr(~ds,"help_data_point",buf:b));
-}.play(s);
-)
+~ds.clear;
+OSCFunc({
+    "FluidDataSetWr help: all points written".postln;
+    ~ds.print
+},'/datasetwrdone').oneShot;
 
-~ds.print;
+{  |n|
+	var b = LocalBuf.newFrom([0,1,2,3]);
+    var trig = Impulse.kr(ControlRate.ir / 2);
+    var idx = Stepper.kr(trig,min:0,max:n);
+    4.collect{|i| BufWr.kr([(4 * idx) + i],b,i)};
+    FluidDataSetWr.kr(~ds,idNumber:idx,buf:b,trig:trig);
+    SendReply.kr(idx >= n, '/datasetwrdone');
+    FreeSelf.kr(idx >= n);
+
+}.play(s,args:[n:100]);
+)
 
 ::

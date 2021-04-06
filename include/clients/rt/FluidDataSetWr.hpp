@@ -20,39 +20,45 @@
 namespace fluid {
 namespace client {
 
-class DataSetWriterClient : public FluidBaseClient, OfflineIn, OfflineOut
-{
+class DataSetWriterClient : public FluidBaseClient, OfflineIn, OfflineOut {
+  enum { kDataSet, kIDPrefix, kIDNumber, kBuffer };
+  static constexpr std::initializer_list<index> idNumberDefaults{0, 0};
+
 public:
-  FLUID_DECLARE_PARAMS(
-      DataSetClientRef::makeParam("dataSet", "DataSet ID"),
-      StringParam("labelPrefix","Label Prefix"),
-      LongParam("labelOffset", "Label Counter Offset", 0),
-      BufferParam("buf", "Data Buffer")
- );
+  FLUID_DECLARE_PARAMS(DataSetClientRef::makeParam("dataSet", "DataSet ID"),
+                       StringParam("idPrefix", "ID Prefix"),
+                       LongArrayParam("idNumber", "ID Counter Offset",
+                                      idNumberDefaults),
+                       BufferParam("buf", "Data Buffer"));
 
-  DataSetWriterClient(ParamSetViewType& p) : mParams(p) {}
+  DataSetWriterClient(ParamSetViewType &p) : mParams(p) {}
 
-  template <typename T>
-  Result process(FluidContext&)
-  {
-    auto  dataset = get<0>().get();
-    if (auto datasetPtr = dataset.lock())
-    {
-      std::stringstream ss;
-      ss << get<1>(); 
-      
-      index labelOffset = get<2>(); 
-      if(labelOffset >=  0) ss << labelOffset +  (mCounter++);
-            
-      auto  buf = get<3>();
-      return datasetPtr->addPoint(ss.str(), buf);
-    }
-    else
-      return {Result::Status::kError, "No dataset"};
+  template <typename T> Result process(FluidContext &) {
+    auto dataset = get<kDataSet>().get();
+    if (auto datasetPtr = dataset.lock()) {
+      std::string &idPrefix = get<kIDPrefix>();
+      auto &idNumberArr = get<kIDNumber>();
+      if (idNumberArr.size() != 2)
+        return {Result::Status::kError, "ID number malformed"};
+      if (idPrefix.size() == 0 && idNumberArr[0] == 0)
+        return {Result::Status::kError, "No ID supplied"};
+
+      mStream.clear();
+      mStream.seekp(0);
+
+      mStream << idPrefix;
+
+      if (idNumberArr[0] > 0)
+        mStream << idNumberArr[1];
+
+      auto buf = get<kBuffer>();
+      return datasetPtr->setPoint(mStream.str(), buf);
+    } else
+      return {Result::Status::kError, "No DataSet"};
   }
-  
-  private:
-    index mCounter{0};
+
+private:
+  std::ostringstream mStream;
 };
 
 using NRTThreadedDataSetWriter =
