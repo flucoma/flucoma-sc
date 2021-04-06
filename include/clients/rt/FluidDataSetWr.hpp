@@ -43,22 +43,16 @@ public:
       if (idPrefix.size() == 0 && idNumberArr[0] == 0)
         return {Result::Status::kError, "No ID supplied"};
 
-      mStream.clear();
-      mStream.seekp(0);
-
-      mStream << idPrefix;
+      std::string id =  idPrefix;
 
       if (idNumberArr[0] > 0)
-        mStream << idNumberArr[1];
+        id += std::to_string(idNumberArr[1]);
 
       auto buf = get<kBuffer>();
-      return datasetPtr->setPoint(mStream.str(), buf);
+      return datasetPtr->setPoint(id, buf);
     } else
       return {Result::Status::kError, "No DataSet"};
   }
-
-private:
-  std::ostringstream mStream;
 };
 
 using NRTThreadedDataSetWriter =
