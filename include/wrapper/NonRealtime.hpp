@@ -10,7 +10,7 @@
 #include <data/FluidMeta.hpp>
 #include <SC_PlugIn.hpp>
 #include <scsynthsend.h>
-#include <map>
+#include <unordered_map>
 
 namespace fluid {
 namespace client {
@@ -46,7 +46,7 @@ namespace impl {
     using WeakCacheEntryPointer = std::weak_ptr<CacheEntry>; //could use weak_type in 17
 
    public:
-    using Cache = std::map<index,CacheEntryPointer>; 
+    using Cache = std::unordered_map<index,CacheEntryPointer>; 
     static Cache mCache;
    private:
     static bool isNull(WeakCacheEntryPointer const& weak) {
@@ -370,20 +370,23 @@ namespace impl {
         
     struct CommandProcess: public NRTCommand
     {
-      CommandProcess(World* world, sc_msg_iter* args, void* replyAddr): NRTCommand{world, args, replyAddr}
+      CommandProcess(World* world, sc_msg_iter* args, void* replyAddr): NRTCommand{world, args, replyAddr},mParams{Client::getParameterDescriptors()}
       {
         auto& ar = *args;
         
         if(auto ptr = get(NRTCommand::mID).lock())
         {
            ptr->mDone = false;
-           ptr->mParams.template setParameterValuesRT<ParamsFromOSC>(nullptr, world, ar);
+           mParams.template setParameterValuesRT<ParamsFromOSC>(nullptr, world, ar);
            mSynchronous = static_cast<bool>(ar.geti());
         } //if this fails, we'll hear about it in stage2 anyway
       }
 
-      explicit CommandProcess(index id,bool synchronous):NRTCommand{id},mSynchronous(synchronous)
-      {}
+      explicit CommandProcess(index id,bool synchronous,Params* params):NRTCommand{id},mSynchronous(synchronous),
+      mParams{Client::getParameterDescriptors()}
+      {
+       if(params) mParams = *params;
+      }
       
       
       static const char* name()
@@ -396,8 +399,12 @@ namespace impl {
       {
         if(auto ptr = get(NRTCommand::mID).lock())
         {
+                    
           auto& params = ptr->mParams;
+          params = mParams;
           auto& client = ptr->mClient;
+          
+
           
 //          if(mOSCData)
 //          {
@@ -489,13 +496,14 @@ namespace impl {
         bool mSynchronous;
         size_t mCompletionMsgSize{0};
         char* mCompletionMessage{nullptr};
+        Params mParams;
     };
     
     struct CommandProcessNew: public NRTCommand
     {
       CommandProcessNew(World* world, sc_msg_iter* args,void* replyAddr)
        : mNew{world, args, replyAddr},
-         mProcess{mNew.mID,false}
+         mProcess{mNew.mID,false,nullptr}
      {
         mProcess.mSynchronous = args->geti();
         mProcess.mReplyAddress = mNew.mReplyAddress;
@@ -741,19 +749,20 @@ namespace impl {
       }
       
       NRTTriggerUnit()
-      : mControlsIterator{mInBuf + ControlOffset(),ControlSize()}
+      : mControlsIterator{mInBuf + ControlOffset(),ControlSize()},mParams{Client::getParameterDescriptors()}
       {
         mID = static_cast<index>(mInBuf[0][0]);
         if(mID == -1) mID = count();
         auto cmd = NonRealTime::rtalloc<CommandNew>(mWorld,mID,mWorld, mControlsIterator, this);
         runAsyncCommand(mWorld, cmd, nullptr, 0, nullptr);
+        mInst = get(mID);
         set_calc_function<NRTTriggerUnit, &NRTTriggerUnit::next>();
         Wrapper::getInterfaceTable()->fClearUnitOutputs(this, 1);
       }
       
       ~NRTTriggerUnit()
       {
-        if(auto ptr = get(mID).lock())
+        if(auto ptr = mInst.lock())
         {
           auto cmd = NonRealTime::rtalloc<CommandFree>(mWorld,mID);
           runAsyncCommand(mWorld, cmd, nullptr, 0, nullptr); 
@@ -762,32 +771,39 @@ namespace impl {
       
       void next(int)
       {
+      
+        
         index triggerInput = static_cast<index>(mInBuf[static_cast<index>(mNumInputs) - 2][0]);
         mTrigger = mTrigger || triggerInput;
         
-        if(auto ptr = get(mID).lock())
-        {
-          bool  trigger = (!mPreviousTrigger) && mTrigger;          
-          mPreviousTrigger = mTrigger;
+//        if(auto ptr = mInst->lock())
+//        if(auto ptr = get(mID).lock())
+//        {
+          bool  trigger = (!mPreviousTrigger) && triggerInput;//mTrigger;
+          mPreviousTrigger = triggerInput;
           mTrigger = 0;
-          auto& client = ptr->mClient;
+//          auto& client = ptr->mClient;
                   
           if(trigger)
           {
             mControlsIterator.reset(1 + mInBuf); //add one for ID
-            auto& params = ptr->mParams;
-            Wrapper::setParams(this,params,mControlsIterator,true,false);
+//            auto& params = ptr->mParams;
+            Wrapper::setParams(this,mParams,mControlsIterator,true,false);
             bool blocking = mInBuf[mNumInputs - 1][0] > 0;
-            CommandProcess* cmd = rtalloc<CommandProcess>(mWorld,mID,blocking);
+            CommandProcess* cmd = rtalloc<CommandProcess>(mWorld,mID,blocking,&mParams);
             runAsyncCommand(mWorld,cmd, nullptr,0, nullptr);
             mRunCount++;
           }
           else
           {
-              mDone = ptr->mDone; 
-              out0(0) = mDone ? 1 : static_cast<float>(client.progress());
+              if(auto ptr = get(mID).lock())
+              {
+                auto& client = ptr->mClient;
+                mDone = ptr->mDone;
+                out0(0) = mDone ? 1 : static_cast<float>(client.progress());
+              }
           }
-        }
+//        }
 //        else printNotFound(id);
       }
       
@@ -798,6 +814,8 @@ namespace impl {
       impl::FloatControlsIter mControlsIterator;
       index mID;
       index mRunCount{0};
+      WeakCacheEntryPointer mInst;
+      Params mParams;
     };
     
     struct NRTModelQueryUnit: SCUnit
@@ -823,7 +841,8 @@ namespace impl {
       : mControls{mInBuf + ControlOffset(),ControlSize()}
       {
         index id = static_cast<index>(in0(1));
-        if(auto ptr = get(id).lock())
+        mInst = get(id);
+        if(auto ptr = mInst.lock())
         {
           auto& client = ptr->mClient;
           mDelegate.init(*this,client,mControls);
@@ -835,7 +854,7 @@ namespace impl {
       void next(int)
       {
         index id = static_cast<index>(in0(1));
-        if(auto ptr = get(id).lock())
+        if(auto ptr = mInst.lock())
         {
           auto& client = ptr->mClient;
           auto& params = ptr->mParams;
@@ -848,6 +867,7 @@ namespace impl {
       Delegate mDelegate;
       FloatControlsIter mControls;
       index mID;
+      WeakCacheEntryPointer mInst;
     };
     
     

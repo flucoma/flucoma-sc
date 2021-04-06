@@ -129,7 +129,7 @@ namespace impl{
      mPrevTrig = trig;
      
      Wrapper::setParams(&unit, params, controls);
-     params.constrainParameterValues();
+     params.constrainParameterValuesRT(nullptr);
      
      for (index i = 0; i < client.audioChannelsIn(); ++i)
      {
