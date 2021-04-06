@@ -58,6 +58,7 @@ s.reboot;
 }.play(s);
 )
 
+
 ~ds.print;
 ~ds.clear
 
@@ -71,12 +72,12 @@ OSCFunc({
 
 {  |n|
 	var b = LocalBuf.newFrom([0,1,2,3]);
-    var trig = Impulse.kr(ControlRate.ir / 2);
-    var idx = Stepper.kr(trig,min:0,max:n);
+    var trig = Impulse.kr(ControlRate.ir / 8);
+    var idx = Stepper.kr(trig,min:-1, max:n);
 	4.collect{|i| BufWr.kr([(4 * idx) + i],b,i)};
     FluidDataSetWr.kr(~ds,idNumber:idx,buf:b,trig:trig);
-    SendReply.kr(idx >= n, '/datasetwrdone');
-    FreeSelf.kr(idx >= n);
+    SendReply.kr(idx >= (n-1), '/datasetwrdone');
+    FreeSelf.kr(idx >= (n-1));
 }.play(s,args:[n:100]);
 )
 
@@ -89,7 +90,7 @@ OSCFunc({
 	var buf = LocalBuf.newFrom([0,1,2,3]);
 	var noise = 4.collect{WhiteNoise.kr()};
 	var trig = Impulse.kr(2);
-	var count = PulseCount.kr(trig);
+	var count = Stepper.kr(trig,min:0);
 	4.do{|i|
 		BufWr.kr(noise[i], buf, DC.kr(i));
 	};
