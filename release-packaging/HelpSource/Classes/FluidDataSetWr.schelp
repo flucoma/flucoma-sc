@@ -62,7 +62,7 @@ s.reboot;
 ~ds.print;
 ~ds.clear
 
-//Write a 100 points as fast as possible - NOT WORKING (not getting 0, then 1 2 3 4 are the same values)
+//Write a 100 points quite fast with server-side triggering
 (
 ~ds.clear;
 OSCFunc({
@@ -73,7 +73,7 @@ OSCFunc({
 {  |n|
 	var b = LocalBuf.newFrom([0,1,2,3]);
     var trig = Impulse.kr(ControlRate.ir / 8);
-    var idx = Stepper.kr(trig,min:-1, max:n);
+    var idx = Stepper.kr(trig,min:-1, max:n); //we need to start at -1 to catch the first increment
 	4.collect{|i| BufWr.kr([(4 * idx) + i],b,i)};
     FluidDataSetWr.kr(~ds,idNumber:idx,buf:b,trig:trig);
     SendReply.kr(idx >= (n-1), '/datasetwrdone');
@@ -84,13 +84,37 @@ OSCFunc({
 ~ds.print;
 ~ds.clear
 
-// incremental buffer writing
+//Again, but as fast as possible using a feedback of the trigger we are given when the writing is done
+(
+~ds.clear;
+OSCFunc({
+    "FluidDataSetWr help: all points written".postln;
+    ~ds.print
+},'/datasetwrdone').oneShot;
+
+{  |n|
+    var b = LocalBuf.newFrom([0,1,2,3]);
+    var trig = LocalIn.kr(1,1);
+    var idx = Stepper.kr(trig,min:-1, max:n);
+    var wr = FluidDataSetWr.kr(~ds,idNumber:idx,buf:b,trig:trig);
+    4.collect{|i| BufWr.kr([(4 * idx) + i],b,i)};
+    LocalOut.kr(Done.kr(wr));
+    SendReply.kr(idx >= (n-1), '/datasetwrdone');
+    FreeSelf.kr(idx >= (n-1));
+}.play(s,args:[n:100]);
+)
+
+~ds.print;
+~ds.clear
+
+// incremental buffer writing - sky is the limit
+// start the entry maker, trigging twice a second
 (
 {
 	var buf = LocalBuf.newFrom([0,1,2,3]);
 	var noise = 4.collect{WhiteNoise.kr()};
 	var trig = Impulse.kr(2);
-	var count = Stepper.kr(trig,min:0);
+	var count = PulseCount.kr(trig,);
 	4.do{|i|
 		BufWr.kr(noise[i], buf, DC.kr(i));
 	};
@@ -98,10 +122,10 @@ OSCFunc({
 }.play(s);
 )
 
-//print a few times (NOT WORKING - not getting the 0)
+//print a few times
 ~ds.print;
 
-//clear before flushing the writing synth to enjoy the behaviour
+//clear before flushing the writing synth
 ~ds.clear
 ~ds.print;
 
@@ -111,7 +135,7 @@ OSCFunc({
 	var buf = LocalBuf.newFrom([0,1,2,3]);
 	var noise = 4.collect{WhiteNoise.kr()};
 	var trig = Impulse.kr(2);
-	var count = Stepper.kr(trig, max: 10).poll;
+	var count = Stepper.kr(trig, min: 0, max: 9, resetval: -1); //0 to 9, starting at -1 to catch the first entry
 	4.do{|i|
 		BufWr.kr(noise[i], buf, DC.kr(i));
 	};
@@ -119,7 +143,7 @@ OSCFunc({
 }.play(s);
 )
 
-~ds.print; //NOT WORKING - after one run around, sidNumber is multiplied buy 10!
+~ds.print;
 ~ds.clear
 
 ::
