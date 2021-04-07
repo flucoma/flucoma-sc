@@ -65,8 +65,11 @@ ARGUMENT:: hopSize
 ARGUMENT:: fftSize
 	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will use the next power of 2 equal or above the windowSize.
 
+ARGUMENT:: padding
+	The padding applied to both sides of the input buffer. By default (1) it is half the windowSize to ensure that the beginning of the audio is centered on the window and that no audio is left untouched at the end. (2) will apply (windowSize - hopSize) to cover each sides by the same number of overlaps. (0) will disable and start from the beginning, with the windowing effectively scaling down the first samples.
+
 ARGUMENT:: freeWhenDone
-Free the server instance when processing complete. Default true
+    Free the server instance when processing complete. Default true
 
 ARGUMENT:: action
 	A Function to be evaluated once the offline process has finished and all Buffer's instance variables have been updated on the client side. The function will be passed [features] as an argument.
@@ -164,8 +167,8 @@ d.do({
 e.postln;
 
 //granulate only the frames that are in our buffer
-// We need to convert our indices to frame start. Their position was (index * hopSize) - (windowSize) in FluidBufPitch
-f = e.collect({arg i; (i * 512) - 1024});
+// We need to convert our indices to frame start. Their position was (index * hopSize) - (hopSize) in FluidBufPitch
+f = e.collect({arg i; (i * 512) - 512});
 
 // define a basic grain synth
 (

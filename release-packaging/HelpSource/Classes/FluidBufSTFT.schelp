@@ -53,6 +53,9 @@ How many samples there are in-between analysis windows. The -1 default value wil
 ARGUMENT:: fftSize
 The FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will use the next power of 2 equal or above the windowSize. For this object it is effectively capped at 65536.
 
+ARGUMENT:: padding
+The padding applied to both sides of the input buffer. By default (1) it is half the windowSize to ensure that the beginning of the audio is centered on the window and that no audio is left untouched at the end. (2) will apply (windowSize - hopSize) to cover each sides by the same number of overlaps. (0) will disable and start from the beginning, with the windowing effectively scaling down the first samples.
+
 ARGUMENT:: freeWhenDone
 Free the server instance when processing complete. Default true
 
@@ -80,9 +83,6 @@ fork{
 	"Done".postln;
 }
 )
-
-FluidBufSTFT.process(s,source:b,magnitude:m,phase:p)
-m.getn(4444,10,{|x|x.postln;})
 
 { PlayBuf.ar(1,r); }.play
 
