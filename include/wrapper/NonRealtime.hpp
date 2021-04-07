@@ -385,7 +385,11 @@ namespace impl {
       explicit CommandProcess(index id,bool synchronous,Params* params):NRTCommand{id},mSynchronous(synchronous),
       mParams{Client::getParameterDescriptors()}
       {
-       if(params) mParams = *params;
+       if(params)
+       {
+          mParams = *params;
+          mOverwriteParams = true;
+       }
       }
       
       
@@ -401,7 +405,7 @@ namespace impl {
         {
                     
           auto& params = ptr->mParams;
-          params = mParams;
+          if(mOverwriteParams) params = mParams;
           auto& client = ptr->mClient;
           
 
@@ -497,6 +501,7 @@ namespace impl {
         size_t mCompletionMsgSize{0};
         char* mCompletionMessage{nullptr};
         Params mParams;
+        bool mOverwriteParams{false};
     };
     
     struct CommandProcessNew: public NRTCommand
