@@ -38,11 +38,11 @@ a = Slider(w, Rect(10, 20, 330, 20))
 	features = FluidBufMFCC.kr(src,startFrame:start,numFrames:num,numChans:1, numCoeffs: 20, features:~featuresbuf[voice],trig:1,blocking: 1);
 	stats = FluidBufStats.kr(~featuresbuf[voice],stats:~statsbuf[voice],trig:Done.kr(features),blocking: 1);
 	flatten = FluidBufFlatten.kr(~statsbuf[voice],~flatbuf[voice],trig:Done.kr(stats),blocking: 1);
-	writer = FluidDataSetWr.kr(~slicesMFCC,label, -1, ~flatbuf[voice], Done.kr(flatten),blocking: 1);
+	writer = FluidDataSetWr.kr(~slicesMFCC,label, nil, ~flatbuf[voice], Done.kr(flatten),blocking: 1);
 	features = FluidBufSpectralShape.kr(src,startFrame:start,numFrames:num,numChans:1, features:~featuresbuf[voice],trig:Done.kr(writer),blocking: 1);
 	stats = FluidBufStats.kr(~featuresbuf[voice],stats:~statsbuf[voice],trig:Done.kr(features),blocking: 1);
 	flatten = FluidBufFlatten.kr(~statsbuf[voice],~flatbuf[voice],trig:Done.kr(stats),blocking: 1);
-	writer = FluidDataSetWr.kr(~slicesShapes,label, -1, ~flatbuf[voice], Done.kr(flatten),blocking: 1);
+	writer = FluidDataSetWr.kr(~slicesShapes,label, nil, ~flatbuf[voice], Done.kr(flatten),blocking: 1);
 });
 )
 

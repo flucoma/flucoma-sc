@@ -89,14 +89,14 @@ FluidBufMFCC.process(s,~audio, features: ~mfcc_feature);
 	var chunkLen = (~mfcc_feature.numFrames / 100).asInteger;
 	var stats = FluidBufStats.kr(
 			source: ~mfcc_feature, startFrame: count * chunkLen,
-		    startChan:1, numFrames: chunkLen, stats: ~stats, trig: trig,blocking:1
+		    startChan:1, numFrames: chunkLen, stats: ~stats, trig: trig, blocking:1
 	);
 	var rd = BufRd.kr(12, ~stats, DC.kr(0), 0, 1);
 	var bufWr, dsWr;
 	12.do{|i|
 		bufWr = BufWr.kr(rd[i], buf, DC.kr(i));
 	};
-	dsWr = FluidDataSetWr.kr(~raw, buf: buf, trig: Done.kr(stats),blocking:1);
+	dsWr = FluidDataSetWr.kr(~raw, buf: buf, idNumber: count, trig: Done.kr(stats),blocking:1);
     LocalOut.kr(Done.kr(dsWr));
     FreeSelf.kr(count - 99);
 	Poll.kr(trig,(100-count));
