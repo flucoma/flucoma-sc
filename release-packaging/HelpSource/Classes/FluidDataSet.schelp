@@ -77,7 +77,16 @@ The link::Classes/FluidLabelSet:: from which to retrieve the point's IDs associa
 
 ARGUMENT:: action
 A function to run when the import is done.
+
+METHOD:: getIds
+Export to the dataset IDs to a link::Classes/FluidLabelSet::.
+
+ARGUMENT:: labelSet
+The link::Classes/FluidLabelSet:: to export to. Its content will be replaced.
 ​
+ARGUMENT:: action
+A function to run when the export is done.
+
 METHOD:: merge
 Merge sourceDataSet in the current DataSet. It will update the value of points with the same label if overwrite is set to 1. To add columns instead, see the 'transformJoin' method of link::Classes/FluidDataSetQuery::
 
@@ -136,7 +145,7 @@ fork{
 	var count = PulseCount.kr(trig) - 1;
 	var buf = LocalBuf(1);
 	BufWr.kr(count, buf);
-	FluidDataSetWr.kr(~ds.asUGenInput, buf: buf, trig: trig);
+	FluidDataSetWr.kr(~ds.asUGenInput, idNumber: count, buf: buf, trig: trig);
 	FreeSelf.kr(count - 8);
 }.play.onFree{~ds.dump{|o| o.postln;~ds.free}}
 )
