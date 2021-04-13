@@ -114,7 +114,7 @@ OSCFunc({
 	var buf = LocalBuf.newFrom([0,1,2,3]);
 	var noise = 4.collect{WhiteNoise.kr()};
 	var trig = Impulse.kr(2);
-	var count = PulseCount.kr(trig,);
+	var count = PulseCount.kr(trig);
 	4.do{|i|
 		BufWr.kr(noise[i], buf, DC.kr(i));
 	};

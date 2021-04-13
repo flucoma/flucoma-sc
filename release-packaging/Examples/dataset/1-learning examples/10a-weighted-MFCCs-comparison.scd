@@ -23,10 +23,10 @@
 	var label, voice, mfcc, stats, flatten;
 	label = data.key;
     voice = data.value[\voice];
-	mfcc = FluidBufMFCC.kr(src,startFrame:start,numFrames:num,numChans:1,features:~mfccbuf[voice],trig:1,blocking: 1);
+	mfcc = FluidBufMFCC.kr(src, startFrame:start, numFrames:num, numChans:1, features:~mfccbuf[voice], padding: 2, trig:1, blocking: 1);
 	stats = FluidBufStats.kr(~mfccbuf[voice], stats:~statsbuf[voice], numDerivs: 1, trig:Done.kr(mfcc), blocking: 1);
-	flatten = FluidBufFlatten.kr(~statsbuf[voice],~flatbuf[voice],trig:Done.kr(stats),blocking: 1);
-	FluidDataSetWr.kr(~ds,label, -1, ~flatbuf[voice], Done.kr(flatten),blocking: 1);
+	flatten = FluidBufFlatten.kr(~statsbuf[voice], ~flatbuf[voice], trig:Done.kr(stats), blocking: 1);
+	FluidDataSetWr.kr(~ds, label, nil, ~flatbuf[voice], Done.kr(flatten), blocking: 1);
 });
 
 // here we make another processor, this time with doing an amplitude weighing
@@ -34,12 +34,12 @@
 	var label, voice, loud, weights, mfcc, stats, flatten;
 	label = data.key;
     voice = data.value[\voice];
-	mfcc = FluidBufMFCC.kr(src,startFrame:start,numFrames:num,numChans:1,features:~mfccbuf[voice],trig:1,blocking: 1);
-	loud = FluidBufLoudness.kr(src,startFrame:start,numFrames:num,numChans:1,features:~loudbuf[voice],trig:Done.kr(mfcc),blocking: 1);
-	weights = FluidBufScale.kr(~loudbuf[voice],numChans: 1,destination: ~weightbuf[voice],inputLow: -70,inputHigh: 0, trig: Done.kr(loud),blocking: 1);
+	mfcc = FluidBufMFCC.kr(src, startFrame:start, numFrames:num, numChans:1, features:~mfccbuf[voice], padding: 2, trig:1, blocking: 1);
+	loud = FluidBufLoudness.kr(src, startFrame:start, numFrames:num, numChans:1, features:~loudbuf[voice], padding: 2, trig:Done.kr(mfcc), blocking: 1);
+	weights = FluidBufScale.kr(~loudbuf[voice], numChans: 1, destination: ~weightbuf[voice], inputLow: -70, inputHigh: 0, trig: Done.kr(loud), blocking: 1);
 	stats = FluidBufStats.kr(~mfccbuf[voice], stats:~statsbuf[voice], numDerivs: 1, weights: ~weightbuf[voice], trig:Done.kr(weights), blocking: 1);
-	flatten = FluidBufFlatten.kr(~statsbuf[voice],~flatbuf[voice],trig:Done.kr(stats),blocking: 1);
-	FluidDataSetWr.kr(~dsW,label, -1, ~flatbuf[voice], Done.kr(flatten),blocking: 1);
+	flatten = FluidBufFlatten.kr(~statsbuf[voice], ~flatbuf[voice], trig:Done.kr(stats), blocking: 1);
+	FluidDataSetWr.kr(~dsW, label, nil, ~flatbuf[voice], Done.kr(flatten), blocking: 1);
 });
 
 // and here we make a little processor for loudness if we want to poke at it
@@ -47,10 +47,10 @@
 	var label, voice, loud, stats, flatten;
 	label = data.key;
     voice = data.value[\voice];
-	loud = FluidBufLoudness.kr(src,startFrame:start,numFrames:num,numChans:1,features:~mfccbuf[voice],trig:1,blocking: 1);
+	loud = FluidBufLoudness.kr(src, startFrame:start, numFrames:num, numChans:1, features:~mfccbuf[voice], trig:1, padding: 2, blocking: 1);
 	stats = FluidBufStats.kr(~mfccbuf[voice], stats:~statsbuf[voice], numDerivs: 1, trig:Done.kr(loud), blocking: 1);
-	flatten = FluidBufFlatten.kr(~statsbuf[voice],~flatbuf[voice],trig:Done.kr(stats),blocking: 1);
-	FluidDataSetWr.kr(~dsL,label, -1, ~flatbuf[voice], Done.kr(flatten),blocking: 1);
+	flatten = FluidBufFlatten.kr(~statsbuf[voice], ~flatbuf[voice], trig:Done.kr(stats), blocking: 1);
+	FluidDataSetWr.kr(~dsL, label, nil, ~flatbuf[voice], Done.kr(flatten), blocking: 1);
 });
 )
 
@@ -150,10 +150,10 @@ FluidBufCompose.process(s,~loader.buffer,a,(b-a),numChans: 1, destination: ~targ
 (
 {
 	var loud, weights, mfcc, stats, flatten, stats2, written;
-	mfcc = FluidBufMFCC.kr(~targetsound,features:~mfccbuf[0],trig:1);
+	mfcc = FluidBufMFCC.kr(~targetsound,features:~mfccbuf[0],padding: 2, trig:1);
 	stats = FluidBufStats.kr(~mfccbuf[0],stats:~statsbuf[0], numDerivs: 1,trig:Done.kr(mfcc));
 	flatten = FluidBufFlatten.kr(~statsbuf[0],~flatbuf[0],trig:Done.kr(stats));
-	loud = FluidBufLoudness.kr(~targetsound,features:~loudbuf[0],trig:Done.kr(flatten),blocking: 1);
+	loud = FluidBufLoudness.kr(~targetsound,features:~loudbuf[0],padding: 2,trig:Done.kr(flatten),blocking: 1);
 	weights = FluidBufScale.kr(~loudbuf[0],numChans: 1,destination: ~weightbuf[0],inputLow: -70,inputHigh: 0,trig: Done.kr(loud),blocking: 1);
 	stats2 = FluidBufStats.kr(~mfccbuf[0],stats:~statsbuf[0], numDerivs: 1, weights: ~weightbuf[0], trig:Done.kr(weights),blocking: 1);
 	written = FluidBufFlatten.kr(~statsbuf[0],~flatbuf[1],trig:Done.kr(stats2));

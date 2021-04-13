@@ -52,7 +52,7 @@ code::
 	statsbuf = LocalBuf(7);
 	pitch = FluidBufPitch.kr(src,start,num,numChans:1,features:~featurebuffers[voice]);
 	stats = FluidBufStats.kr(~featurebuffers[voice],numChans:1, stats:statsbuf,trig:Done.kr(pitch));
-	FluidDataSetWr.kr(label,statsbuf,~mydataset,Done.kr(stats))
+	FluidDataSetWr.kr(~mydataset, label, nil, statsbuf,Done.kr(stats))
 };
 ::
 
@@ -112,7 +112,7 @@ s.reboot;
     label = data.key;
     pitch = FluidBufPitch.kr(src,start,num,features:~pitchbufs[i]);
     stats = FluidBufStats.kr(~pitchbufs[i],stats:~statsbufs[i],trig:Done.kr(pitch));
-    FluidDataSetWr.kr(~pitchdata,label,-1,buf:~statsbufs[i],trig:Done.kr(stats))
+    FluidDataSetWr.kr(~pitchdata,label,nil,buf:~statsbufs[i],trig:Done.kr(stats))
 });
 )
 

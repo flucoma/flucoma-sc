@@ -34,8 +34,9 @@ public:
 
   static void setup(InterfaceTable* ft, const char* name)
   {
-    ft->fDefineUnitCmd(name, "latency", doLatency);
+    
     registerUnit<RealTime>(ft,name);
+    ft->fDefineUnitCmd(name, "latency", doLatency);
   }
 
   static void doLatency(Unit* unit, sc_msg_iter*)
@@ -47,7 +48,7 @@ public:
 
     std::stringstream ss;
     ss << '/' << Wrapper::getName() << "_latency";
-    std::cout << ss.str() << std::endl;
+    // std::cout << ss.str() << ": " << l[0] << std::endl;
     ft->fSendNodeReply(&unit->mParent->mNode, -1, ss.str().c_str(), 1, l);
   }
 
