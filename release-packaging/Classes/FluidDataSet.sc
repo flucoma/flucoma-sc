@@ -40,7 +40,17 @@ FluidDataSet : FluidDataObject
       this.prSendMsg(this.deletePointMsg(label));
     }
 
-    clearMsg { ^this.prMakeMsg(\clear,id); }
+    setPointMsg{|label,buffer|
+        buffer = this.prEncodeBuffer(buffer);
+        ^this.prMakeMsg(\setPoint,id,label.asSymbol,buffer,["/b_query",buffer.asUGenInput]);
+    }
+
+	setPoint{|label, buffer, action|
+      actions[\setPoint] = [nil,action];
+	  this.prSendMsg(this.setPointMsg(label,buffer));
+	}
+
+	clearMsg { ^this.prMakeMsg(\clear,id); }
 
     clear { |action|
       actions[\clear] = [nil,action];
@@ -62,4 +72,34 @@ FluidDataSet : FluidDataObject
 		actions[\print] = [string(FluidMessageResponse,_,_),action];
 		this.prSendMsg(this.printMsg);
 	}
+
+	toBufferMsg{|buffer, transpose = 0, labelSet|
+        buffer = this.prEncodeBuffer(buffer);
+       ^this.prMakeMsg(\toBuffer, id, buffer, transpose, labelSet.asUGenInput,["/b_query",buffer.asUGenInput]);
+    }
+
+	toBuffer{|buffer, transpose = 0, labelSet, action|
+      actions[\toBuffer] = [nil,action];
+		this.prSendMsg(this.toBufferMsg(buffer, transpose, labelSet));
+	}
+
+	fromBufferMsg{|buffer, transpose = 0, labelSet|
+        buffer = this.prEncodeBuffer(buffer);
+       ^this.prMakeMsg(\fromBuffer, id, buffer, transpose, labelSet.asUGenInput,["/b_query",buffer.asUGenInput]);
+    }
+
+	fromBuffer{|buffer, transpose = 0, labelSet, action|
+      actions[\fromBuffer] = [nil,action];
+		this.prSendMsg(this.fromBufferMsg(buffer, transpose, labelSet));
+	}
+
+	getIdsMsg{|labelSet|
+        ^this.prMakeMsg(\getIds, id, labelSet.asUGenInput);
+    }
+
+	getIds{|labelSet, action|
+      actions[\getIds] = [nil,action];
+	  this.prSendMsg(this.getIdsMsg(labelSet));
+	}
 }
+

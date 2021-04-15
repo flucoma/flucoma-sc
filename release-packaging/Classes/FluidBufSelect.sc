@@ -30,16 +30,11 @@ FluidBufSelect : FluidBufProcessor {
         source.isNil.if {"FluidBufSelect:  Invalid source buffer".throw};
         destination.isNil.if {"FluidBufSelect:  Invalid destination buffer".throw};
 
-
         indices = indices.asArray;
         channels = channels.asArray;
 
-
-
-        indices = [indices.size] ++ indices;
+		indices = [indices.size] ++ indices;
         channels = [channels.size] ++ channels;
-
-                indices.postln;
 
         ^this.new(server, nil, [destination]).processList([source, destination]++ indices ++ channels ++ [1], freeWhenDone, action);//NB always blocking
 	}

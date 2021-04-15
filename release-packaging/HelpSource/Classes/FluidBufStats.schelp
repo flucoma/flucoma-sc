@@ -129,43 +129,66 @@ STRONG::A musical example::
 CODE::
 // create some buffers
 (
-b = Buffer.read(s,File.realpath(FluidBufStats.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-ASWINE-ScratchySynth-M.wav");
+// a simple random sliding bell synth
+b = {
+	var trig = Impulse.ar(1.5);
+	SinOsc.ar(
+		Lag.ar(TRand.ar(trig: trig),
+		TRand.ar(0.5, trig: trig)).exprange(333,666),
+		mul: Decay.ar(
+			trig * TRand.ar(0.1,10,trig),
+			TRand.ar(0.5,1.1,trig)
+		)
+	).atan * 0.1;
+}.asBuffer(20);
 c = Buffer.new(s);
 d = Buffer.new(s);
+i = Buffer.new(s);
 )
 
+//play the source
+b.play;
+
 //split in various chunks, collecting the indices in an array
-FluidBufOnsetSlice.process(s,b, minSliceLength: 10, metric: 9, threshold: 0.4, filterSize: 7, indices: c, action:{c.loadToFloatArray(action: {|array| e = array.add(b.numFrames).addFirst(0);e.postln;})});
+FluidBufOnsetSlice.process(s,b, threshold: 0.01, indices: c, action:{c.loadToFloatArray(action: {|array| e = array.add(b.numFrames);e.size.postln;e.postln;})});
 
 //describe the whole input too, here using pitch, and collecting the values in an array, dismissing the (interleaved) confidence.
-FluidBufPitch.process(s,b,features:c, action:{c.loadToFloatArray(action: {|array| f = array.unlace(2)[0]; f.postln;})});
+FluidBufPitch.process(s,b,features:d, windowSize: 4096, hopSize: 512, padding:2, action:{d.loadToFloatArray(action: {|array| f = array.unlace(2)[0]; f.postln;})});
 
 // iterate through each slice, taking the median of the first derivative of the pitch of each
 (
 g= Array.new;
 Routine({
+	var nb = e.size;
 	e.doAdjacentPairs({
 		arg start,end;
-		FluidBufStats.processBlocking(s,c,(start/512).asInteger,((end-start)/512).max(2).asInteger,0,1,d,1,
-                    action: {d.loadToFloatArray(action: {
-                        arg array;
-                        g = g.add(array[12]);
-                        "% % %\n".postf((start/512).asInteger,((end-start)/512 ).max(2).asInteger, array[12]);})
-                    }
-                ).wait;
-});
-	"Done".postln;
+		FluidBufStats.processBlocking(s,d,(start/512).asInteger,((end-start)/512).asInteger + 3,0,1,i,1, action: {
+			i.loadToFloatArray( action: {
+				arg array;
+				g = g.add(array[12]);
+				"% % %\n".postf((start/512).asInteger,((end-start)/512).asInteger + 3, array[12]);//adding some of the overlap but not more to not capture too much of the next attack
+				nb = nb - 1;
+				if (nb == 1, {"Done".postln;});//check if we've done all the pairs
+			})
+		}).wait;
+	});
 }).play;
 )
 
-//obtain the order of indices that would sort the stats
-h = g.order;
+//play in loop the slice in order of pitch direction (the median of the slice's pitch variation) - mouse on the left should be descending, in the middle should be more stable, and it should be ascending on the right.
 
-//play in loop the slice in order of pitch direction (the median of the slice's pitch variation)
 (
-var which = h[5];
-{BufRd.ar(1, b, Phasor.ar(0,1,e[which],e[which+1],e[which]))}.play;
+Buffer.sendCollection(s,g.order,action: {|x| {
+	var which = BufRd.kr(1, x, MouseX.kr(0, BufFrames.kr(x) - 1), 0, 1);
+    BufRd.ar(1, b,
+        Phasor.ar(0,1,
+            BufRd.kr(1,c,which,0,1),
+			BufRd.kr(1,c,which + 1,0,1),
+			BufRd.kr(1,c,which,0,1)));
+		}.play;
+	};)
 )
+
 ::
 
 

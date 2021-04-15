@@ -38,19 +38,19 @@
 	pitchweights = FluidBufThresh.kr(~pitchbuf[voice], numChans: 1, startChan: 1, destination: ~weightPitchbuf[voice], threshold: 0.7, trig:Done.kr(pitch), blocking: 1);//pull down low conf
 	pitchstats = FluidBufStats.kr(~pitchbuf[voice], stats:~statsPitchbuf[voice], numDerivs: 1, weights: ~weightPitchbuf[voice], outliersCutoff: 1.5, trig:Done.kr(pitchweights), blocking: 1);
 	pitchflat = FluidBufFlatten.kr(~statsPitchbuf[voice],~flatPitchbuf[voice],trig:Done.kr(pitchstats),blocking: 1);
-	writePitch = FluidDataSetWr.kr(~pitchDS,label, -1, ~flatPitchbuf[voice], Done.kr(pitchflat),blocking: 1);
+	writePitch = FluidDataSetWr.kr(~pitchDS,label, nil, ~flatPitchbuf[voice], Done.kr(pitchflat),blocking: 1);
 	// the mfcc need loudness to weigh, so let's start with that
 	loud = FluidBufLoudness.kr(src,startFrame:start, numFrames:num, numChans:1, features:~loudbuf[voice], trig:Done.kr(writePitch), blocking: 1);//here trig was 1
 	//we can now flatten and write Loudness in its own trigger tree
 	statsLoud = FluidBufStats.kr(~loudbuf[voice], stats:~statsLoudbuf[voice], numDerivs: 1, trig:Done.kr(loud), blocking: 1);
 	flattenLoud = FluidBufFlatten.kr(~statsLoudbuf[voice],~flatLoudbuf[voice],trig:Done.kr(statsLoud),blocking: 1);
-	writeLoud = FluidDataSetWr.kr(~loudDS,label, -1, ~flatLoudbuf[voice], Done.kr(flattenLoud),blocking: 1);
+	writeLoud = FluidDataSetWr.kr(~loudDS,label, nil, ~flatLoudbuf[voice], Done.kr(flattenLoud),blocking: 1);
 	//we can resume from the loud computation trigger
 	mfcc = FluidBufMFCC.kr(src,startFrame:start,numFrames:num,numChans:1,features:~mfccbuf[voice],trig:Done.kr(writeLoud),blocking: 1);//here trig was loud
 	mfccweights = FluidBufScale.kr(~loudbuf[voice],numChans: 1,destination: ~weightMFCCbuf[voice],inputLow: -70,inputHigh: 0, trig: Done.kr(mfcc), blocking: 1);
 	mfccstats = FluidBufStats.kr(~mfccbuf[voice], stats:~statsMFCCbuf[voice], startChan: 1, numDerivs: 1, weights: ~weightMFCCbuf[voice], trig:Done.kr(mfccweights), blocking: 1);//remove mfcc0 and weigh by loudness instead
 	mfccflat = FluidBufFlatten.kr(~statsMFCCbuf[voice],~flatMFCCbuf[voice],trig:Done.kr(mfccstats),blocking: 1);
-	FluidDataSetWr.kr(~mfccDS,label, -1, ~flatMFCCbuf[voice], Done.kr(mfccflat),blocking: 1);
+	FluidDataSetWr.kr(~mfccDS,label, nil, ~flatMFCCbuf[voice], Done.kr(mfccflat),blocking: 1);
 });
 
 )

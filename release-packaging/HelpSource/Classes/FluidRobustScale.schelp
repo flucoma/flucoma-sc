@@ -96,7 +96,7 @@ FluidBufPitch.process(s,~audio, features: ~pitch_feature);
 	var rd = BufRd.kr(2, ~stats, DC.kr(0), 0, 1);// pick only mean pitch and confidence
 	var wr1 = BufWr.kr(rd[0], buf, DC.kr(0));
 	var wr2 = BufWr.kr(rd[1], buf, DC.kr(1));
-	var dsWr = FluidDataSetWr.kr(~raw, buf: buf, trig: Done.kr(stats));
+	var dsWr = FluidDataSetWr.kr(~raw, buf: buf, idNumber: count, trig: Done.kr(stats));
 	LocalOut.kr( Done.kr(dsWr));
     Poll.kr(trig,count,\count);
 	FreeSelf.kr(count - 9);
