@@ -38,7 +38,7 @@ The link::Classes/Buffer:: to write magnitudes to in the forward case, or read f
 ARGUMENT:: phase
 The link::Classes/Buffer:: to write phases to in the forward case, or read from in the inverse case. This is optional for the forward transform, mandatory for the inverse.
 
-ARGUMENT:: resynthesis
+ARGUMENT:: resynth
 The link::Classes/Buffer:: to write re-synthesised data to in the inverse case. Ignored for the forward transform. Mandatory in the inverse case.
 
 ARGUMENT:: inverse
@@ -79,7 +79,7 @@ r = Buffer.new;
 (
 fork{
 	FluidBufSTFT.process(s,source:b,magnitude:m,phase:p).wait;
-	FluidBufSTFT.process(s,magnitude:m,phase:p,resynthesis:r,inverse:1).wait;
+	FluidBufSTFT.process(s,magnitude:m,phase:p,resynth:r,inverse:1).wait;
 	"Done".postln;
 }
 )
