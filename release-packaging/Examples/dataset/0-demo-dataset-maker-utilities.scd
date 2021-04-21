@@ -22,7 +22,7 @@
     voice = data.value[\voice];
 	mfcc = FluidBufMFCC.kr(src, startFrame:start, numFrames:num, numChans:1, features:~mfccbuf[voice], trig:1, blocking: 1);
 	stats = FluidBufStats.kr(~mfccbuf[voice], stats:~statsbuf[voice], trig:Done.kr(mfcc), blocking: 1);
-	flatten = FluidBufFlatten.kr(~statsbuf[voice], ~flatbuf[voice], trig:Done.kr(stats), blocking: 1);
+	flatten = FluidBufFlatten.kr(~statsbuf[voice], destination:~flatbuf[voice], trig:Done.kr(stats), blocking: 1);
 	writer = FluidDataSetWr.kr(~ds, label, nil, ~flatbuf[voice], trig: Done.kr(flatten), blocking: 1)
 });
 )
@@ -144,7 +144,7 @@ FluidBufCompose.process(s,~loader.buffer,a,(b-a),numChans: 1, destination: ~targ
 	var mfcc, stats, flatten;
 	mfcc = FluidBufMFCC.kr(~targetsound,features:~mfccbuf[0],trig:1);
 	stats = FluidBufStats.kr(~mfccbuf[0],stats:~statsbuf[0],trig:Done.kr(mfcc));
-	flatten = FluidBufFlatten.kr(~statsbuf[0],~flatbuf[0],trig:Done.kr(stats));
+	flatten = FluidBufFlatten.kr(~statsbuf[0],destination:~flatbuf[0],trig:Done.kr(stats));
 	FreeSelfWhenDone.kr(flatten);
 }.play;
 )

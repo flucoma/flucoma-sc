@@ -295,7 +295,7 @@ fork{
 (
 FluidBufMelBands.process(s, ~inBuf, features: ~inBufMels, action: {
 	FluidBufStats.process(s, ~inBufMels, stats:~inBufStats, action: {
-		FluidBufFlatten.process(s, ~inBufStats, ~inBufFlat, action: {
+		FluidBufFlatten.process(s, ~inBufStats, destination:~inBufFlat, action: {
 			FluidBufCompose.process(s, ~inBufFlat, numFrames: ~numMelBands, destination: ~inBufComp, action: {
 				~standardizer.transformPoint(~inBufComp, ~inBufStand, {
 					~tree.kNearest(~inBufStand,{ |a|a.postln;~nearest = a;})
