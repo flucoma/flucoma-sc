@@ -51,6 +51,7 @@ t = Main.elapsedTime;
 ~extractor.play(s,~loader.buffer, ~slicer.index, action:{(Main.elapsedTime - t).postln;"Analysis done".postln});
 )
 
+~originalindices.size
 ~slicesMFCC.print
 ~slicesShapes.print
 
@@ -94,7 +95,7 @@ t = Main.elapsedTime;
 //retrieve the dataset as dictionary
 ~curated.dump{|x|~sliceDict = x;};
 
-~originalslicesarray = (~originalindices.flatten ++ ~loader.buffer.numFrames).asSet.asArray.sort
+~originalslicesarray = ~originalindices.flop[0] ++ ~loader.buffer.numFrames
 ~orginalkeys = Array.newFrom(~slicer.index.keys).sort{|a,b| ~slicer.index[a][\bounds][0]< ~slicer.index[b][\bounds][0]}
 
 //the windowed function, recursive to deal with sync dependencies
@@ -174,7 +175,7 @@ t = Main.elapsedTime;
 f = File.new("/tmp/clusteredslices-" ++ Date.getDate.stamp ++".rpp","w+");
 
 if (f.isOpen , {
-	var path, prevpath ="", sr, count, dur;
+	var path, prevpath ="", sr, count, dur, realDur;
 	//write the header
 	f.write("<REAPER_PROJECT 0.1 \"5.99/OSX64\" 1603037150\n\n");
 
@@ -204,17 +205,17 @@ if (f.isOpen , {
 	f.write("<TRACK\nNAME \"clustered output\"\n");
 	// iterate through the items in the track
 	~newkeys.do{|v, i|
-		path = ~slicer.index[v][\path];
-		if (path != prevpath, {
-			sr = 	~slicer.index[v][\sr];
-			prevpath = path;
-			count = 0;
-		});
 		dur = ~newindices[i+1] - ~newindices[i];
 		if (dur > 0, {
+			path = ~slicer.index[v][\path];
+			if (path != prevpath, {
+				sr = ~slicer.index[v][\sr];
+				prevpath = path;
+				count = 0;
+			});
 			f.write("<ITEM\nPOSITION " ++ (~newindices[i] / sr) ++ "\nLENGTH " ++ (dur / sr) ++ "\nNAME \"" ++ v ++ "\"\nSOFFS " ++ (count / sr) ++ "\n<SOURCE WAVE\nFILE \"" ++ path ++ "\"\n>\n>\n");
+			count = count + dur;
 		});
-		count = count + dur;
 	};
 	//write the track footer
 	f.write(">\n");
@@ -226,3 +227,4 @@ if (f.isOpen , {
 )
 
 (then open the time-stamped reaper file clusterdslice in the folder tmp)
+"open /tmp".unixCmd

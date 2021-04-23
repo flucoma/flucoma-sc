@@ -86,11 +86,11 @@ fork{
 	~slices.put("data",Dictionary());
 
 	//Collect each set of onsets into a language side array and store them in a dict
-	~index_buffers.do{|b,i| // iterate over the 4 buffers
+	~index_buffers.do{|b,i| // iterate over the input buffer array
 		{
 			b.loadToFloatArray(  // load to language side array
 				action:{|indices|
-					//Glue the first and last samples of the buffer on to the index list, and place in dictionary wiht the
+					//Glue the first and last samples of the buffer on to the index list, and place in dictionary with the
 					//Buffer object as a key
 
 					index_arrays.put(~audio_buffers[i], Array.newFrom([0] ++ indices ++ (~audio_buffers[i].numFrames - 1)));
@@ -114,7 +114,6 @@ fork{
 	index_arrays.keysValuesDo{|buffer, indices|
 		indices.doAdjacentPairs{|start,end,num|
 			var analysis = Routine({|counter|
-
 				FluidBufMelBands.processBlocking(
 					server:s,
 					source:buffer,
