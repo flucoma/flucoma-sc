@@ -1,4 +1,4 @@
-FluidProviderTest : UGen {
+FluidProviderTest : FluidModelObject {
 
 /*    var <> server;
     var <> nodeID;
@@ -9,19 +9,19 @@ FluidProviderTest : UGen {
 
     }*/
 
-    *kr{ |name,vals|
-        ^this.new1('control',name,vals);
-	}
-
-    *new1 { |rate, name,vals|
-        var ascii = name.ascii;
-		var args;
-		vals ?? {vals = []};
-		if(vals.isArray.not) {vals = [vals]};
-		args = ([rate, ascii.size].addAll(ascii) ++ vals.size).addAll(vals).addAll([1,1]);
-		args.postln;
-		^super.new1(*args);
-    }
+    // *kr{ |name,vals|
+    //     ^this.new1('control',name,vals);
+	// }
+    // 
+    // *new1 { |rate, name,vals|
+    //     var ascii = name.ascii;
+	// 	var args;
+	// 	vals ?? {vals = []};
+	// 	if(vals.isArray.not) {vals = [vals]};
+	// 	args = ([rate, ascii.size].addAll(ascii) ++ vals.size).addAll(vals).addAll([1,1]);
+	// 	args.postln;
+	// 	^super.new1(*args);
+    // }
 
 /*    init { |size...chars|
         specialIndex = -1;

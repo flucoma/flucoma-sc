@@ -11,7 +11,7 @@ FluidNRTProcess : Object{
             "FluidNRTProcess: Server not running".throw;
         });
 		if (ugen.isNil){
-			"FluidNRTProcess: UGen is nil".throw;
+			"FluidNRTProcess : FluidRTUGen is nil".throw;
 		};
 		outputBuffers = outputBuffers.collect{|b|
 			var checked = server.cachedBufferAt(b.asUGenInput);

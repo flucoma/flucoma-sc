@@ -1,11 +1,11 @@
-FluidMessageTest : UGen {
+FluidMessageTest : FluidModelObject {
 
     var server;
 
-    *kr { |trig = 1, blocking = 0| 
-
-        ^this.multiNew('control', trig, blocking);
-    }
+    // *kr { |trig = 1, blocking = 0| 
+    // 
+    //     ^this.multiNew('control', trig, blocking);
+    // }
 
     testReturnStrings { |server, nodeID, action|
 

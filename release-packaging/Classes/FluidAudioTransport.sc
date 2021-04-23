@@ -1,4 +1,4 @@
-FluidAudioTransport : UGen {
+FluidAudioTransport : FluidRTUGen {
 
     init { |...theInputs|
         theInputs;

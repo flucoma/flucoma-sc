@@ -5,6 +5,11 @@ FluidServerObject
     classvar persistent = true;
     var <server,<id;
 
+    *version{|server|
+        server ?? {server = Server.default};
+        server.sendMsg("/cmd","/"++this.objectClassName++'/version');
+    }
+
     *initClass {
         serverCaches = IdentityDictionary.new;
         count = 0;
@@ -318,5 +323,22 @@ FluidRTQuery : FluidProxyUgen
 {
     *kr{ |trig,obj...args|
         ^super.kr(this.name,trig,obj.asUGenInput, *args)
+    }
+}
+
+
+FluidRTUGen : UGen
+{
+    *version{|server|
+        server ?? {server = Server.default};
+        server.sendMsg("/cmd","/"++this.name++'/version');
+    }
+}
+
+FluidRTMultiOutUGen : MultiOutUGen
+{
+    *version{|server|
+        server ?? {server = Server.default};
+        server.sendMsg("/cmd","/"++this.name++'/version');
     }
 }

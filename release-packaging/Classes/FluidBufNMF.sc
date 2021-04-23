@@ -1,4 +1,4 @@
-FluidBufNMF : FluidBufProcessor //: UGen {
+FluidBufNMF : FluidBufProcessor 
 {
     *kr  {|source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, resynth, bases, basesMode = 0, activations, actMode = 0, components = 1, iterations = 100, windowSize = 1024, hopSize = -1, fftSize = -1, windowType = 0, randomSeed = -1, trig = 1, blocking = 0| 
 

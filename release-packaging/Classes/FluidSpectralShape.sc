@@ -1,4 +1,4 @@
-FluidSpectralShape : MultiOutUGen {
+FluidSpectralShape : FluidRTMultiOutUGen {
 
 	*kr { arg in = 0, windowSize = 1024, hopSize = -1, fftSize = -1, maxFFTSize = 16384;
 		^this.multiNew('control', in.asAudioRateInput(this), windowSize, hopSize, fftSize, maxFFTSize);
