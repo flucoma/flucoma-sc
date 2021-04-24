@@ -31,7 +31,7 @@ class FluidSCWrapper : public impl::FluidSCWrapperBase<C>
 
   static void doVersion(Unit*, sc_msg_iter*)
   {
-    std::cout << "Fluid Corpus Manipualtion Toolkit version " << fluidVersion()
+    std::cout << "Fluid Corpus Manipulation Toolkit: version " << fluidVersion()
               << std::endl;
   }
 
