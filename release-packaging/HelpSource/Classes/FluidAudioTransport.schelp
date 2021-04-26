@@ -24,9 +24,6 @@ Source B
 ARGUMENT:: interpolation
 The amount to interpolate between A and B (0-1, 0 = A, 1 = B)
 
-ARGUMENT:: bandwidth
-The width in bins of an ideal sine wave, which is correlated with the spectrum for peak detection. Larger values provide enhanced resolution, at a computational cost.
-
 ARGUMENT:: windowSize
 	The window size in samples. As AudioTransport relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
