@@ -3,6 +3,7 @@ FluidProxyUgen : UGen {
 	var <>pluginname;
 
 	*kr { |pluginname...args|
+        args = args.collect{|x| x.asUGenInput}
 		^this.new1('control', pluginname,*args)
 	}
 
