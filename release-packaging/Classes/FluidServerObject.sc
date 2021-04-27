@@ -193,7 +193,7 @@ FluidBufProcessor : FluidServerObject
         server.listSendMsg(this.cancelMsg);
     }
 
-    kr{  ^FluidProxyUgen.kr(this.objectClassName ++ "Monitor",id) }
+    kr{  ^FluidProxyUgen.kr(this.class.objectClassName ++ "Monitor",id) }
 }
 
 FluidOSCPatternInversion : OSCMessageDispatcher
