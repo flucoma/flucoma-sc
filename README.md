@@ -65,13 +65,11 @@ For ARM, we use the following default set of flags (with the Bela in mind):
 -march=armv7-a -mtune=cortex-a8 -mfloat-abi=hard -mfpu=neon
 ```
 
-# Credits 
-### FluCoMa core development team (in alphabetical order)
-Owen Green 
-Gerard Roma
-Pierre Alexandre Tremblay
+## Credits 
+#### FluCoMa core development team (in alphabetical order)
+Owen Green, Gerard Roma, Pierre Alexandre Tremblay
 
-### Other contributors:
+#### Other contributors:
 Alex Harker, Francesco Cameli
 
 --
