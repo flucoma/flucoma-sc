@@ -42,8 +42,11 @@ ARGUMENT:: result
 ARGUMENT:: time
 	The duration of the delay that the background thread will wait for before yielding the value to the destination buffer.
 
-ARGUMENT:: doneAction
-	An integer representing an action to be executed when the process is finished. This can be used to free the enclosing synth, etc. See link::Classes/Done::  for more detail.
+ARGUMENT:: trig
+	The trigger to start the job.
+
+ARGUMENT:: blocking
+    The thread on which the job is processed.
 
 returns::It report the approximate job progress, from 0 to 1.
 
@@ -64,5 +67,5 @@ c = FluidBufThreadDemo.process(s, b, 100000, action: {|x|x.get(0,{|y|y.postln});
 c.cancel;
 
 // if a simple call to the UGen is used, the progress can be monitored. The usual cmd-period will cancel the job by freeing the synth.
-{c = FluidBufThreadDemo.kr(b,10000, Done.freeSelf); Poll.kr(Impulse.kr(2),c);}.scope;
+{c = FluidBufThreadDemo.kr(b,10000); Poll.kr(Impulse.kr(2),c);}.scope;
 ::

@@ -25,7 +25,7 @@ CODE::
 b=Buffer.alloc(s,1);
 
 // a simple call, where we query the destination buffer upon completion with the action message.
-FluidBufThreadDemo.process(s, b, 1000, {|x|x.get(0,{|y|y.postln});});
+FluidBufThreadDemo.process(s, b, 1000, action: {|x|x.get(0,{|y|y.postln});});
 ::
 
 What is happening:
@@ -49,7 +49,7 @@ CODE::
 b=Buffer.alloc(s,1);
 
 //start a long process, capturing the instance of the process
-c = FluidBufThreadDemo.process(s, b, 100000, {|x|x.get(0,{|y|y.postln});});
+c = FluidBufThreadDemo.process(s, b, 100000, action: {|x|x.get(0,{|y|y.postln});});
 
 //cancel the job. Look at the Post Window
 c.cancel;
@@ -61,7 +61,7 @@ section:: .kr Usage
 
 CODE::
 // if a simple call to the UGen is used, the progress can be monitored
-{FluidBufThreadDemo.kr(b,10000, Done.freeSelf);}.scope;
+{FluidBufThreadDemo.kr(b,10000);}.scope;
 
 //or polled within a synth
 a = {FluidBufThreadDemo.kr(b,3000).poll}.play;
@@ -112,7 +112,7 @@ CODE::
 b=Buffer.alloc(s,1);
 
 //start a long job
-a = {FluidBufThreadDemo.kr(b,10000,doneAction: 2).poll}.play;
+a = {FluidBufThreadDemo.kr(b,10000).poll}.play;
 
 // set a OSC receiver function
 (
@@ -143,7 +143,7 @@ You can compare these behaviours here. The blocking will run slightly faster tha
 Routine{
     var startTime = Main.elapsedTime;
     100.do{|x,i|
-        FluidBufThreadDemo.process(s,b,10);
+        FluidBufThreadDemo.process(s,b,10).wait;
     };
     "Threaded Processes 100 iterations in % seconds.\n".postf((Main.elapsedTime - startTime).round(0.01));
 }.play;
@@ -154,7 +154,7 @@ Routine{
 Routine{
     var startTime = Main.elapsedTime;
     100.do{|x,i|
-        FluidBufThreadDemo.processBlocking(s,b,10);
+        FluidBufThreadDemo.processBlocking(s,b,10).wait;
     };
     "Blocking Processes 100 iterations in % seconds.\n".postf((Main.elapsedTime - startTime).round(0.01));
 }.play;
