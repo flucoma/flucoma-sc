@@ -47,17 +47,12 @@ target_include_directories(
   PRIVATE
   "${LOCAL_INCLUDES}"
   "${FLUID_VERSION_PATH}"
-  "${FLUID_M_PATH}/include/"
-  "${FLUID_M_PATH}/thirdparty"
 )
-
-file(GLOB_RECURSE FLUID_MANIPULATION_HEADERS CONFIGURE_DEPENDS "${FLUID_M_PATH}/include/**/*.hpp")
 
 file(GLOB_RECURSE FLUID_SC_HEADERS CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/include/wrapper/*.hpp")
 
 target_sources(
-  ${PLUGIN} PUBLIC ${FLUID_MANIPULATION_HEADERS}
-  ${FLUID_SC_HEADERS}
+  ${PLUGIN} PUBLIC ${FLUID_SC_HEADERS}
 )
 
 target_include_directories(
@@ -71,12 +66,9 @@ target_include_directories(
 
 get_property(HEADERS TARGET FLUID_DECOMPOSITION PROPERTY INTERFACE_SOURCES)
 source_group(TREE "${flucoma-core_SOURCE_DIR}/include" FILES ${HEADERS})
-source_group(TREE "${FLUID_M_PATH}/include" FILES ${FLUID_MANIPULATION_HEADERS})
 source_group(TREE "${CMAKE_SOURCE_DIR}/include/wrapper" PREFIX wrapper FILES ${FLUID_SC_HEADERS})
 
-# get_property(HEADERS TARGET FLUID_MANIP PROPERTY INTERFACE_SOURCES)
-# source_group(TREE "${fluid_manipulation_SOURCE_DIR}/include" FILES ${HEADERS})
-# 
+
 # if (SUPERNOVA)
 #     target_include_directories(
 #       ${PLUGIN}

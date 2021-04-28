@@ -19,7 +19,6 @@ if(NOT SC_PATH)
 endif()
 
 set(FLUID_PATH "" CACHE PATH "Optional path to the Fluid Decomposition repo")
-set(FLUID_M_PATH "" CACHE PATH "Optional path to the Fluid fluid_manipulation repo")
 
 if (APPLE)
   set(CMAKE_XCODE_GENERATE_SCHEME ON)
@@ -68,7 +67,7 @@ set(FETCHCONTENT_QUIET FALSE)
 
 FetchContent_Declare(
   flucoma-core
-  GIT_REPOSITORY https://bitbucket.org/flucoma/fluid_decomposition.git
+  GIT_REPOSITORY https://github.com/flucoma/flucoma-core.git
   GIT_PROGRESS TRUE
 )
 
