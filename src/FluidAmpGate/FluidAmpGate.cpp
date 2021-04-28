@@ -18,5 +18,5 @@ PluginLoad(FluidSTFTUGen)
 {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<AmpGateClient>("FluidAmpGate", ft);
+  makeSCWrapper<RTAmpGateClient>("FluidAmpGate", ft);
 }

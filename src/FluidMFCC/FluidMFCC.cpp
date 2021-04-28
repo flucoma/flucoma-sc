@@ -17,5 +17,5 @@ static InterfaceTable *ft;
 PluginLoad(FluidSTFTUGen) {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<MFCCClient>("FluidMFCC", ft);
+  makeSCWrapper<RTMFCCClient>("FluidMFCC", ft);
 }

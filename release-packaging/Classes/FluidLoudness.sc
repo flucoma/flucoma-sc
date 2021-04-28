@@ -1,4 +1,4 @@
-FluidLoudness : MultiOutUGen {
+FluidLoudness : FluidRTMultiOutUGen {
 	*kr { arg in = 0, kWeighting = 1, truePeak = 1, windowSize = 1024, hopSize = 512, maxwindowSize = 16384;
 		^this.multiNew('control', in.asAudioRateInput(this), kWeighting, truePeak, windowSize, hopSize, maxwindowSize);
 	}

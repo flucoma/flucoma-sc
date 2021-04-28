@@ -43,7 +43,7 @@ ARGUMENT:: minSliceLength
 	The length in samples that the Slice will stay ON. Changes of states during that period will be ignored.
 
 ARGUMENT:: highPassFreq
-	The frequency of the fourth-order Linkwitz–Riley high-pass filter (https://en.wikipedia.org/wiki/Linkwitz%E2%80%93Riley_filter). This is done first on the signal to minimise low frequency intermodulation with very fast ramp lengths.
+	The frequency of the fourth-order link::https://en.wikipedia.org/wiki/Linkwitz%E2%80%93Riley_filter##Linkwitz–Riley high-pass filter::. This is done first on the signal to minimise low frequency intermodulation with very fast ramp lengths. A frequency of 0 bypasses the filter.
 
 RETURNS::
 	An audio stream with square envelopes around the slices. The latency between the input and the output is dependant on the relation between the two envelope followers.
@@ -54,7 +54,8 @@ code::
 // detrending explained
 // Our source here is a sinewave that does not go to silence and has sharp-ish amplitude bumps as onsets we try to track
 (
-{var env, source = SinOsc.ar(320,0,LFSaw.ar(20, 0, -0.4, 0.6));
+{
+            var env, source = SinOsc.ar(320,0,LFSaw.ar(20, 0, -0.4, 0.6));
 	env = FluidAmpSlice.ar(source,fastRampUp: 5,fastRampDown: 50,slowRampUp: 220,slowRampDown: 220, onThreshold: 10, offThreshold: 10,floor: -60);
 	[source, env]
 }.plot(0.08);
@@ -69,7 +70,7 @@ code::
 // another solution: minslicelength
 (
 {var env, source = SinOsc.ar(320,0,LFSaw.ar(20, 0, -0.4, 0.6));
-	env = FluidAmpSlice.ar(source,fastRampUp: 5,fastRampDown: 50,slowRampUp: 220,slowRampDown: 220, onThreshold: 10, offThreshold: 7,floor: -60, minSliceLength: 220);
+	env = FluidAmpSlice.ar(source,fastRampUp: 5,fastRampDown: 50,slowRampUp: 220,slowRampDown: 220, onThreshold: 10, offThreshold: 7,floor: -60, minSliceLength: 441);
 	[source, env]
 }.plot(0.08);
 )

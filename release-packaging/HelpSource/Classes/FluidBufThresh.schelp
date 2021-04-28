@@ -1,0 +1,81 @@
+TITLE:: FluidBufThresh
+SUMMARY:: A Gate Processor for Buffers
+CATEGORIES:: Libraries>FluidDecomposition
+RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreading
+
+DESCRIPTION::
+This class implements a simple Buffer preprocessor, by replacing values under a threshold by 0s. It is part of the LINK:: Guides/FluidDecomposition:: of LINK:: Guides/FluCoMa::. For more explanations, learning material, and discussions on its musicianly uses, visit http://www.flucoma.org/
+
+The process will return a buffer with the same size and shape than the requested range.
+
+STRONG::Threading::
+
+By default, this UGen spawns a new thread to avoid blocking the server command queue, so it is free to go about with its business. For a more detailed discussion of the available threading and monitoring options, including the two undocumented Class Methods below (.processBlocking and .kr) please read the guide LINK::Guides/FluidBufMultiThreading::.
+
+CLASSMETHODS::
+
+METHOD:: process, processBlocking
+	This is the method that calls for the thresholding to be calculated on a given source buffer.
+
+ARGUMENT:: server
+	The server on which the buffer to be processed is allocated.
+
+ARGUMENT:: source
+The index of the buffer to use as the source material to be processed.
+
+ARGUMENT:: startFrame
+	The starting point (in samples) from which to copy in the source buffer.
+
+ARGUMENT:: numFrames
+	The duration (in samples) to copy from the source buffer. The default (-1) copies the full lenght of the buffer.
+
+ARGUMENT:: startChan
+	The first channel from which to copy in the source buffer.
+
+ARGUMENT:: numChans
+	The number of channels from which to copy in the source buffer. This parameter will wrap around the number of channels in the source buffer. The default (-1) copies all of the buffer's channel.
+
+ARGUMENT:: destination
+The index of the buffer to use as the destination for the processed material.
+
+ARGUMENT:: threshold
+The threshold under which values will be zeroed
+
+ARGUMENT:: freeWhenDone
+Free the server instance when processing complete. Default true
+
+ARGUMENT:: action
+	A Function to be evaluated once the offline process has finished and indices instance variables have been updated on the client side. The metric will be passed indices as an argument.
+
+returns:: an instance of the processor
+
+EXAMPLES::
+
+code::
+// make a buffer of know qualities
+b = Buffer.sendCollection(s,0.0.series(0.1,1.0))
+// and a destination buffer
+c = Buffer(s)
+// play with the threshold
+FluidBufThresh.process(s, b, destination: c, threshold: 0.5)
+// retrieve the buffer and enjoy the results.
+c.getn(0,11,{|x|x.round(0.000001).postln;})
+
+// also works in multichannel - explore the following buffer
+b = Buffer.sendCollection(s,0.0.series(0.1,2.0).scramble,2)
+b.plot.plotMode_(\points)
+//process and keep just the top values
+FluidBufThresh.process(s, b, destination: c, threshold: 1.6)
+//enjoy
+c.plot.plotMode_(\points)
+
+//also works with a subset of the input, resizing the output
+b = Buffer.sendCollection(s,0.0.series(0.1,3.0).reshape(3,10).flop.flat,3)
+b.plot(separately: true).plotMode_(\points)
+//process and keep just the top values
+FluidBufThresh.process(s, b,startFrame: 3,numFrames: 4,startChan: 1,numChans: 1,destination: c, threshold: 1.6)
+//enjoy
+c.plot(separately: true).plotMode_(\points)
+c.query
+c.getn(0,4,{|x|x.round(0.000001).postln;})
+::

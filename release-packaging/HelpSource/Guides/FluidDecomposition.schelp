@@ -1,6 +1,6 @@
 TITLE:: Fluid Decomposition Toolbox
 SUMMARY:: An overview of the FluCoMa toolbox for signal decomposition
-CATEGORIES:: Libraries>FluidDecomposition
+CATEGORIES:: Libraries>FluidDecomposition, Guides>FluCoMa
 
 DESCRIPTION::
 The Fluid Decomposition toolbox provides an open-ended, loosely coupled set of objects to break up and analyse sound in terms of slices (segments in time), layers (superpositions in time and frequency) and objects (configurable or discoverable patterns in sound). Almost all objects have audio-rate and buffer-based versions. footnote::

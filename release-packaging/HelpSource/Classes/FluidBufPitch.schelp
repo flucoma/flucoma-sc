@@ -15,7 +15,7 @@ By default, this UGen spawns a new thread to avoid blocking the server command q
 
 CLASSMETHODS::
 
-METHOD:: process
+METHOD:: process, processBlocking
 	This is the method that calls for the pitch descriptor to be calculated on a given source buffer.
 
 ARGUMENT:: server
@@ -44,7 +44,7 @@ ARGUMENT:: algorithm
 	TABLE::
 	## 0 || Cepstrum: Returns a pitch estimate as the location of the second highest peak in the Cepstrum of the signal (after DC).
 	## 1 || Harmonic Product Spectrum: Implements the Harmonic Product Spectrum algorithm for pitch detection . See e.g. FOOTNOTE:: A. Lerch, "An Introduction to Audio Content Analysis: Applications in Signal Processing and Music Informatics." John Wiley & Sons, 2012.https://onlinelibrary.wiley.com/doi/book/10.1002/9781118393550 ::
-	## 2 || YinFFT: Implements the frequency domain version of the YIN algorithm, as described in FOOTNOTE::P. M. Brossier, "Automatic Annotation of Musical Audio for Interactive Applications.” QMUL, London, UK, 2007. :: See also https://essentia.upf.edu/documentation/reference/streaming_PitchYinFFT.html
+## 2 || YinFFT: Implements the frequency domain version of the YIN algorithm, as described in FOOTNOTE::P. M. Brossier, "Automatic Annotation of Musical Audio for Interactive Applications." QMUL, London, UK, 2007. :: See also https://essentia.upf.edu/documentation/reference/streaming_PitchYinFFT.html
 	::
 
 ARGUMENT:: minFreq
@@ -65,11 +65,16 @@ ARGUMENT:: hopSize
 ARGUMENT:: fftSize
 	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will use the next power of 2 equal or above the windowSize.
 
+ARGUMENT:: padding
+	Controls the zero-padding added to either end of the source buffer or segment. Possible values are 0 (no padding), 1 (default, half the window size), or 2 (window size - hop size). Padding ensures that all input samples are completely analysed: with no padding, the first analysis window starts at time 0, and the samples at either end will be tapered by the STFT windowing function. Mode 1 has the effect of centering the first sample in the analysis window and ensuring that the very start and end of the segment are accounted for in the analysis. Mode 2 can be useful when the overlap factor (window size / hop size) is greater than 2, to ensure that the input samples at either end of the segment are covered by the same number of analysis frames as the rest of the analysed material.
+
+ARGUMENT:: freeWhenDone
+    Free the server instance when processing complete. Default true
+
 ARGUMENT:: action
 	A Function to be evaluated once the offline process has finished and all Buffer's instance variables have been updated on the client side. The function will be passed [features] as an argument.
 
-RETURNS::
-	Nothing, as the destination buffer is declared in the function call.
+returns:: an instance of the processor
 
 EXAMPLES::
 
@@ -87,7 +92,7 @@ b.play; b.plot;
 (
 Routine{
 	t = Main.elapsedTime;
-	FluidBufPitch.process(s, b, features: c);
+	FluidBufPitch.process(s, b, features: c).wait;
 	(Main.elapsedTime - t).postln;
 }.play
 )
@@ -122,7 +127,7 @@ c = Buffer.new(s);
 (
 Routine{
     t = Main.elapsedTime;
-    FluidBufPitch.process(s, b, features: c, minFreq:200, maxFreq:2000, unit:1);
+    FluidBufPitch.process(s, b, features: c, minFreq:200, maxFreq:2000, unit:1).wait;
     (Main.elapsedTime - t).postln;
 }.play
 )
@@ -143,7 +148,7 @@ c = Buffer.new(s);
 (
 Routine{
 	t = Main.elapsedTime;
-	FluidBufPitch.process(s, b, features: c,action:{c.loadToFloatArray(action: {|x| d = x.reshape((x.size()/2).asInt, 2)})});
+	FluidBufPitch.process(s, b, features: c,action:{c.loadToFloatArray(action: {|x| d = x.reshape((x.size()/2).asInteger, 2)})}).wait;
 	(Main.elapsedTime - t).postln;
 }.play
 )
@@ -156,14 +161,14 @@ d.postln
 e = Array.new;
 d.do({
 	arg val, i;
-	if ((val[0] > 500) && (val[1] > 0.666)) {e = e.add(i)}; // if pitch is greater than 500Hz and confidence higher than 0.666, keep the index
+	if ((val[0] > 500) && (val[1] > 0.98)) {e = e.add(i)}; // if pitch is greater than 500Hz and confidence higher than 0.98, keep the index
 });
 )
 e.postln;
 
 //granulate only the frames that are in our buffer
-// We need to convert our indices to frame start. Their position was (index * hopSize) - (windowSize) in FluidBufPitch
-f = e.collect({arg i; (i * 512) - 1024});
+// We need to convert our indices to frame start. Their position was (index * hopSize) - (hopSize) in FluidBufPitch
+f = e.collect({arg i; (i * 512) - 512});
 
 // define a basic grain synth
 (

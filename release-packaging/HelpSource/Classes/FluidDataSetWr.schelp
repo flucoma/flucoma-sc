@@ -1,0 +1,149 @@
+TITLE:: FluidDataSetWr
+summary:: Write to FluidDataSet on the server
+categories:: FluidManipulation
+related:: Classes/FLuidDataSet
+
+DESCRIPTION::
+A UGen that adds labelled points to a link::Classes/FluidDataSet:: Internally, this calls code::setPoint::, so IDs that already exist will be overwritten, and new IDs will be added. The actual work is done on the server's command queue, rather than the real-thread.
+
+By default the object takes a control input (code::idNumber::) as a numerical index that gets used for the point labels. This index is used to write each time the Ugen is re-triggered with a zero to non-zero transition. The label is then concatenated with the code::idPrefix:: symbol, which is fixed at instantiation. In this way, one can make custom, incrementing labels, e.g.
+
+code::
+FluidDataSetWr.kr(~somedataset,"my_data",PulseCount.kr(trig),~somebuffer,trig)
+::
+
+would add points like code::my_data0, mydata1, mydata2...:: if successively retriggered.
+
+Alternatively, for one shot use you may not want a numerical suffix at all. Setting code::idNumber:: to code:: nil:: will bypass this and use only the code::idPrefix:: string.
+
+CLASSMETHODS::
+
+private:: *new1
+
+METHOD:: kr
+The equivalent of calling link::Classes/FluidDataSet#-addPoint::, but within a link::Classes/Synth::
+
+ARGUMENT:: dataset
+An instance of link::Classes/FluidDataSet:: or an instance's name.
+
+ARGUMENT:: idPrefix
+A string or symbol with a prefix for generated labels.
+
+ARGUMENT:: idNumber
+ANCHOR::offset::
+An integer with the offset to start labeling from. If the UGen is run in a server-side loop (i.e. repeatedly re-triggered), the generated labels will count upwards from this offset. If nil, then no numerical index will be applied to the generated label (i.e. only the labelPrefix is used).
+
+ARGUMENT:: buf
+The link::Classes/Buffer:: containing the data point.
+
+ARGUMENT:: trig
+
+A kr trigger signal
+
+ARGUMENT:: blocking
+
+If 0 then the job will run in its own thread (not reccomended for this object)
+
+EXAMPLES::
+
+code::
+s.reboot;
+~ds = FluidDataSet(s);
+
+// write a single point, no counting
+(
+{
+	var b = LocalBuf.newFrom([0,1,2,3]);
+	FreeSelfWhenDone.kr(FluidDataSetWr.kr(~ds,"help_data_point", idNumber: nil, buf:b));
+}.play(s);
+)
+
+
+~ds.print;
+~ds.clear
+
+//Write a 100 points quite fast with server-side triggering
+(
+~ds.clear;
+OSCFunc({
+    "FluidDataSetWr help: all points written".postln;
+    ~ds.print
+},'/datasetwrdone').oneShot;
+
+{  |n|
+	var b = LocalBuf.newFrom([0,1,2,3]);
+    var trig = Impulse.kr(ControlRate.ir / 8);
+    var idx = Stepper.kr(trig,min:-1, max:n); //we need to start at -1 to catch the first increment
+	4.collect{|i| BufWr.kr([(4 * idx) + i],b,i)};
+    FluidDataSetWr.kr(~ds,idNumber:idx,buf:b,trig:trig);
+    SendReply.kr(idx >= (n-1), '/datasetwrdone');
+    FreeSelf.kr(idx >= (n-1));
+}.play(s,args:[n:100]);
+)
+
+~ds.print;
+~ds.clear
+
+//Again, but as fast as possible using a feedback of the trigger we are given when the writing is done
+(
+~ds.clear;
+OSCFunc({
+    "FluidDataSetWr help: all points written".postln;
+    ~ds.print
+},'/datasetwrdone').oneShot;
+
+{  |n|
+    var b = LocalBuf.newFrom([0,1,2,3]);
+    var trig = LocalIn.kr(1,1);
+    var idx = Stepper.kr(trig,min:-1, max:n);
+    var wr = FluidDataSetWr.kr(~ds,idNumber:idx,buf:b,trig:trig);
+    4.collect{|i| BufWr.kr([(4 * idx) + i],b,i)};
+    LocalOut.kr(Done.kr(wr));
+    SendReply.kr(idx >= (n-1), '/datasetwrdone');
+    FreeSelf.kr(idx >= (n-1));
+}.play(s,args:[n:100]);
+)
+
+~ds.print;
+~ds.clear
+
+// incremental buffer writing - sky is the limit
+// start the entry maker, trigging twice a second
+(
+{
+	var buf = LocalBuf.newFrom([0,1,2,3]);
+	var noise = 4.collect{WhiteNoise.kr()};
+	var trig = Impulse.kr(2);
+	var count = PulseCount.kr(trig);
+	4.do{|i|
+		BufWr.kr(noise[i], buf, DC.kr(i));
+	};
+	FluidDataSetWr.kr(~ds, idNumber: count, trig: trig, buf:buf);
+}.play(s);
+)
+
+//print a few times
+~ds.print;
+
+//clear before flushing the writing synth
+~ds.clear
+~ds.print;
+
+// circular writing
+(
+{
+	var buf = LocalBuf.newFrom([0,1,2,3]);
+	var noise = 4.collect{WhiteNoise.kr()};
+	var trig = Impulse.kr(2);
+	var count = Stepper.kr(trig, min: 0, max: 9, resetval: -1); //0 to 9, starting at -1 to catch the first entry
+	4.do{|i|
+		BufWr.kr(noise[i], buf, DC.kr(i));
+	};
+	FluidDataSetWr.kr(~ds, idNumber: count, trig: trig, buf:buf);
+}.play(s);
+)
+
+~ds.print;
+~ds.clear
+
+::

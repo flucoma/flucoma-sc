@@ -79,8 +79,7 @@ d.play //////(beware !!!! loud!!!)
 (
 // separate them in 2 components
 Routine {
-	FluidBufNMF.process(s, d, bases: e, components:2);
-	s.sync;
+	FluidBufNMF.process(s, d, bases: e, components:2).wait;
 	e.query;
 }.play
 )
@@ -89,11 +88,11 @@ Routine {
 e.plot
 
 //listen how the filter isolates each component and places them in each channel separately.
-{FluidNMFFilter.ar(SinOsc.ar(500),e,2)}.play
+{FluidNMFFilter.ar(SinOsc.ar(500, mul: 0.1),e,2)}.play
 
-{FluidNMFFilter.ar(SinOsc.ar(5000),e,2)}.play
+{FluidNMFFilter.ar(SinOsc.ar(5000, mul: 0.1),e,2)}.play
 
-{FluidNMFFilter.ar(SinOsc.ar([500,5000]).sum,e,2)}.play
+{FluidNMFFilter.ar(SinOsc.ar([500,5000], mul: 0.1).sum,e,2)}.play
 ::
 
 STRONG::A guitar processor::
@@ -112,7 +111,7 @@ c = Buffer.new(s);
 // train only 2 seconds
 (
 Routine {
-    FluidBufNMF.process(s,b,0,88200,0,1, c, ~bases, components:10,fftSize:2048);
+    FluidBufNMF.process(s,b,0,88200,0,1, c, ~bases, components:10,fftSize:2048).wait;
     c.query;
 }.play;
 )
@@ -120,14 +119,15 @@ Routine {
 // wait for the query to print
 // find the component that has the picking sound checking the median spectral centroid
 (
-FluidBufSpectralShape.process(s, c, features: ~spectralshapes, action:{
-	|shapes|FluidBufStats.process(s,shapes,stats:~stats, action:{
-		|stats|stats.getn(0, (stats.numChannels * stats.numFrames) ,{
-			|x| ~centroids = x.select({
-				|item, index| (index.mod(7) == 0) && (index.div(70) == 5);
-			})
-		})
-	})
+FluidBufSpectralShape.process(s, c, features: ~spectralshapes, action:{ |shapes|
+    FluidBufStats.process(s,shapes,stats:~stats, action:{|stats|
+        stats.getn(0, (stats.numChannels * stats.numFrames), {|x|
+            ~centroids = x.select({
+                |item, index| (index.mod(7) == 0) && (index.div(70) == 5);
+            });
+            ~centroids.postln;
+        })
+    })
 });
 )
 

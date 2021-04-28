@@ -8,22 +8,17 @@
 target_compile_features(${PLUGIN} PRIVATE cxx_std_14)
 
 if(MSVC)
-  foreach(flag_var
-      CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
-      CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
-    if(${flag_var} MATCHES "/MD")
-      string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
-    endif()
-  endforeach()
-endif()
-
-if(MSVC)
   target_compile_options(${PLUGIN} PRIVATE /W3)
 else()
   target_compile_options(${PLUGIN} PRIVATE 
-    -Wall -Wextra -Wpedantic -Wreturn-type -Wconversion -Wno-c++11-narrowing
+    -Wall -Wextra -Wpedantic -Wreturn-type -Wconversion
   )
-endif()
+  
+  #GCC doesn't have Wno-c++11-narrowing
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    target_compile_options(${PLUGIN} PRIVATE  -Wno-c++11-narrowing)
+  endif()
+endif() 
 
 set_target_properties(${PLUGIN} PROPERTIES
     CXX_STANDARD 14
@@ -41,9 +36,8 @@ endif()
 
 target_link_libraries(
   ${PLUGIN}
-  PRIVATE
+  PRIVATE  
   FLUID_DECOMPOSITION
-  # FLUID_MANIP
   FLUID_SC_WRAPPER  
   HISSTools_FFT
 )
@@ -51,8 +45,14 @@ target_link_libraries(
 target_include_directories(
   ${PLUGIN}
   PRIVATE
-  ${LOCAL_INCLUDES}
+  "${LOCAL_INCLUDES}"
   "${FLUID_VERSION_PATH}"
+)
+
+file(GLOB_RECURSE FLUID_SC_HEADERS CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/include/wrapper/*.hpp")
+
+target_sources(
+  ${PLUGIN} PUBLIC ${FLUID_SC_HEADERS}
 )
 
 target_include_directories(
@@ -66,10 +66,9 @@ target_include_directories(
 
 get_property(HEADERS TARGET FLUID_DECOMPOSITION PROPERTY INTERFACE_SOURCES)
 source_group(TREE "${flucoma-core_SOURCE_DIR}/include" FILES ${HEADERS})
+source_group(TREE "${CMAKE_SOURCE_DIR}/include/wrapper" PREFIX wrapper FILES ${FLUID_SC_HEADERS})
 
-# get_property(HEADERS TARGET FLUID_MANIP PROPERTY INTERFACE_SOURCES)
-# source_group(TREE "${fluid_manipulation_SOURCE_DIR}/include" FILES ${HEADERS})
-# 
+
 # if (SUPERNOVA)
 #     target_include_directories(
 #       ${PLUGIN}

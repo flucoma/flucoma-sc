@@ -1,0 +1,78 @@
+TITLE:: FluidLoadFolder
+summary:: Load a folder of audio into a single buffer
+categories:: FluidCorpusManipulation
+related:: Classes/FluidSliceCorpus, Classes/FluidProcessSlices
+
+DESCRIPTION::
+Given a path name, load every audio file in the path (using link::Classes/SoundFile#*collect::), allocate a link::Classes/Buffer::, and load the files top to tail into the buffer. Information about start stop points, channel counts and sample rates is then stored in link::Classes/FluidLoadFolder#index:: as a link::Classes/IdentityDictionary::.
+
+
+CLASSMETHODS::
+
+METHOD:: new
+Construct a new instance
+
+ARGUMENT:: path
+A string pointing to a folder on disk
+
+ARGUMENT:: labelFunc
+A function that determines how the chunks in the index are labelled; default is file name without path.
+
+ARGUMENT:: channelFunc
+A funciton that controls what to do with differently wide files. Default behaviour is for loaded buffer to have as many channels as the widest file in the path, and for narrower files to repeat their channels across this buffer. The funciton is passed the channels for the current file, the maximum channel count, and the current index.
+
+INSTANCEMETHODS::
+
+METHOD:: index
+A link::Classes/IdentityDictionary:: containing the metadata on the loaded files
+
+The keys of this dictionary are the labels produced by the code::labelFunc:: passed to link::Classes/FluidLoadFolder#*new:: (or the default of the filename if nil). The value for each key is a further dictionary consisting of:
+
+definitionlist::
+## bounds
+|| A two element array giving the start and end point of this files eventual position in the overall buffer (in samples).
+## sr
+|| The sampling rate of the original file
+## numchans
+|| Number of channels in the original file
+::
+
+METHOD:: files
+The list of files loaded
+
+METHOD:: buffer
+The buffer in which the files are placed, end to end.
+
+METHOD:: play
+Load the files.
+
+ARGUMENT:: server
+The server on which to run
+
+ARGUMENT:: action
+Function to execute on completion
+
+
+EXAMPLES::
+
+code::
+s.reboot;
+
+(
+// We'll load all the Fluid Corpus Manipulation audio example files
+~path = File.realpath(FluidLoadFolder.class.filenameSymbol).dirname +/+ "../AudioFiles";
+
+~loader = FluidLoadFolder(~path);
+
+~loader.play(s,action:{ |dataDictionary|
+	("Done loading into" + ~loader.buffer).postln;
+	//we get passed an IdentityDictionary of slice data, let's look at it
+	dataDictionary.pairsDo{|label,data|
+		//data is also a dictionary
+		(label ++ '(').post;
+		data.pairsDo{|k,v| (k ++ ':' + v + ' ').post };
+		')'.postln;
+	}
+});
+)
+::

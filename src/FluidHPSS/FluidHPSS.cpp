@@ -18,5 +18,5 @@ PluginLoad(FluidSTFTUGen)
 {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<HPSSClient>("FluidHPSS", ft);
+  makeSCWrapper<RTHPSSClient>("FluidHPSS", ft);
 }

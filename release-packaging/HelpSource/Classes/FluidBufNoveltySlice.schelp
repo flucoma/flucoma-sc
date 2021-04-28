@@ -14,7 +14,7 @@ By default, this UGen spawns a new thread to avoid blocking the server command q
 
 CLASSMETHODS::
 
-METHOD:: process
+METHOD:: process, processBlocking
 This is the method that calls for the slicing to be calculated on a given source buffer.
 
 ARGUMENT:: server
@@ -67,11 +67,13 @@ ARGUMENT:: hopSize
 ARGUMENT:: fftSize
 	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will use the next power of 2 equal or above the windowSize.
 
+ARGUMENT:: freeWhenDone
+Free the server instance when processing complete. Default true
+
 ARGUMENT:: action
 		A Function to be evaluated once the offline process has finished and indices instance variables have been updated on the client side. The function will be passed indices as an argument.
 
-RETURNS::
-	Nothing, as the various destination buffers are declared in the function call.
+returns:: an instance of the processor
 
 
 EXAMPLES::
@@ -87,7 +89,7 @@ c = Buffer.new(s);
 // with basic params, with a minimum slight length to avoid over
 Routine{
 	t = Main.elapsedTime;
-	FluidBufNoveltySlice.process(s,b, indices: c, threshold:0.4,filterSize: 4, minSliceLength: 8);
+	FluidBufNoveltySlice.process(s,b, indices: c, threshold:0.4,filterSize: 4, minSliceLength: 8).wait;
 	(Main.elapsedTime - t).postln;
 }.play
 )
@@ -120,11 +122,13 @@ c = Buffer.new(s);
 )
 
 // process with a given filterSize
-FluidBufNoveltySlice.process(s,b, indices: c, kernelSize:31, threshold:0.1, filterSize:1)
-
+(
+Routine{
+    FluidBufNoveltySlice.process(s,b, indices: c, kernelSize:31, threshold:0.1, filterSize:1).wait;
 //check the number of slices: it is the number of frames in the transBuf minus the boundary index.
-c.query;
-
+    c.query;
+}.play;
+)
 //play slice number 3
 (
 {
@@ -164,7 +168,7 @@ c = Buffer.new(s);
 // with basic params
 Routine{
     t = Main.elapsedTime;
-    FluidBufNoveltySlice.process(s,b, indices: c, threshold:0.3);
+    FluidBufNoveltySlice.process(s,b, indices: c, threshold:0.3).wait;
     (Main.elapsedTime - t).postln;
 }.play
 )

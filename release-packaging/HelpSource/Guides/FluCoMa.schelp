@@ -1,7 +1,7 @@
 title:: The Fluid Corpus Manipulation Project
 summary:: This section gives an overview of the Fluid Corpus Manipulation Project
 categories:: Libraries>FluidDecomposition
-related:: Classes/FluidBufNMF
+related:: Classes/FluidBufNMF, Guides/FluidDecomposition
 
 description::
 The Fluid Corpus Manipulation project (FluCoMA) instigates new musical ways of exploiting ever-growing banks of sound and gestures within the digital composition process, by bringing breakthroughs of signal decomposition DSP and machine learning to the toolset of techno-fluent computer composers, creative coders and digital artists. The first set of tools  released is the LINK:: Guides/FluidDecomposition::

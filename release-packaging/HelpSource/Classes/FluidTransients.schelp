@@ -57,7 +57,7 @@ b = Buffer.read(s,File.realpath(FluidTransients.class.filenameSymbol).dirname.wi
 // basic parameters
 {FluidTransients.ar(PlayBuf.ar(1, b, loop:1))}.play
 
-// tweaked parameterss
+// tweaked parameters
 {FluidTransients.ar(PlayBuf.ar(1, b, loop:1), 80, threshFwd:MouseX.kr(0,5), threshBack:MouseY.kr(0,2))}.play
 
 // null test (the process add a latency of (blockSize + padding - order) samples

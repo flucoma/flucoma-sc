@@ -16,7 +16,7 @@ By default, this UGen spawns a new thread to avoid blocking the server command q
 
 CLASSMETHODS::
 
-METHOD:: process
+METHOD:: process, processBlocking
 	This is the method that calls for the slicing to be calculated on a given source buffer.
 
 ARGUMENT:: server
@@ -65,13 +65,15 @@ ARGUMENT:: minSliceLength
 	The length in samples that the Slice will stay ON. Changes of states during that period will be ignored.
 
 ARGUMENT:: highPassFreq
-	The frequency of the fourth-order Linkwitz–Riley high-pass filter (https://en.wikipedia.org/wiki/Linkwitz%E2%80%93Riley_filter). This is done first on the signal to minimise low frequency intermodulation with very fast ramp lengths.
+	The frequency of the fourth-order Linkwitz–Riley high-pass filter (https://en.wikipedia.org/wiki/Linkwitz%E2%80%93Riley_filter). This is done first on the signal to minimise low frequency intermodulation with very fast ramp lengths. A frequency of 0 bypasses the filter.
+
+ARGUMENT:: freeWhenDone
+Free the server instance when processing complete. Default true
 
 ARGUMENT:: action
 	A Function to be evaluated once the offline process has finished and indices instance variables have been updated on the client side. The metric will be passed indices as an argument.
 
-RETURNS::
-	Nothing, as the destination buffer is declared in the function call.
+returns:: an instance of the processor
 
 EXAMPLES::
 
@@ -86,7 +88,7 @@ c = Buffer.new(s);
 b.play
 b.plot
 
-//
+//process with symmetrical thresholds
 FluidBufAmpSlice.process(s, b,indices: c,fastRampUp: 5,fastRampDown: 50,slowRampUp: 220,slowRampDown: 220, onThreshold: 10, offThreshold: 10,floor: -60);
 c.query
 c.getn(0,c.numFrames,{|item|item.postln;})
@@ -115,7 +117,7 @@ FluidBufAmpSlice.process(s,b,indices:c,fastRampUp: 10,fastRampDown: 2205,slowRam
 c.query
 c.getn(0,c.numFrames,{|item|item.postln;})
 
-//loops over a splice with the MouseX, taking the respective onset and offset of a given slice
+//loops over a splice with the MouseX
 (
 {
     BufRd.ar(1, b,
@@ -144,12 +146,14 @@ c = Buffer.new(s);
 
 //run the process on them
 (
-// with basic params
-Routine{
-	t = Main.elapsedTime;
-	FluidBufAmpSlice.process(s,b, indices: c, fastRampUp: 10,fastRampDown: 2205,slowRampUp: 4410,slowRampDown: 4410, onThreshold: 10,offThreshold: 5);
-	(Main.elapsedTime - t).postln;
-}.play
+	// with basic params
+	Routine{
+		var t = Main.elapsedTime;
+		var proc = FluidBufAmpSlice.process(s,b, indices: c, fastRampUp: 10,fastRampDown: 2205,slowRampUp: 4410,slowRampDown: 4410, onThreshold: 10,offThreshold: 5);
+		proc.wait;
+		c.query;
+		(Main.elapsedTime - t).postln;
+	}.play
 )
 
 // list the indicies of detected attacks - the two input channels have been summed.

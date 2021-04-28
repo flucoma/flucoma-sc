@@ -1,0 +1,247 @@
+TITLE:: FluidUMAP
+summary:: Dimensionality Reduction with Uniform Manifold Approximation and Projection
+categories:: Dimensionality Reduction, Data Processing
+related:: Classes/FluidMDS, Classes/FluidPCA, Classes/FluidDataSet
+
+DESCRIPTION::
+
+Multidimensional scaling of a link::Classes/FluidDataSet:: using Uniform Manifold Approximation and Projection (UMAP)
+
+Please refer to https://umap-learn.readthedocs.io/ for more information on the algorithm.
+
+CLASSMETHODS::
+
+METHOD:: new
+Make a new instance
+ARGUMENT:: server
+The server on which to run this model
+ARGUMENT:: numDimensions
+The number of dimensions to reduce to
+ARGUMENT:: numNeighbours
+The number of neighbours considered by the algorithm to balance local vs global structures to conserve. Low values will prioritise preserving local structure, high values will help preserving the global structure.
+ARGUMENT:: minDist
+The minimum distance each point is allowed to be from the others in the low dimension space. Low values will make tighter clumps, and higher will spread the points more.
+ARGUMENT:: iterations
+The number of iterations that the algorithm will go through to optimise the new representation
+ARGUMENT:: learnRate
+The learning rate of the algorithm, aka how much of the error it uses to estimate the next iteration.
+
+INSTANCEMETHODS::
+
+PRIVATE:: init
+
+METHOD:: fit
+Train this model on a link::Classes/FluidDataSet:: but don't transform the data
+ARGUMENT:: dataSet
+A link::Classes/FluidDataSet:: to analyse
+ARGUMENT:: action
+Run when done
+
+METHOD:: transform
+Given a trained model, apply the reduction to a source link::Classes/FluidDataSet:: and write to a destination. Can be the same for both (in-place)
+ARGUMENT:: sourceDataSet
+Source data, or the DataSet name
+ARGUMENT:: destDataSet
+Destination data, or the DataSet name
+ARGUMENT:: action
+Run when done.
+
+METHOD:: fitTransform
+Fit the model to a link::Classes/FluidDataSet:: and write the new projected data to a destination FluidDataSet.
+ARGUMENT:: sourceDataSet
+Source data, or the DataSet name
+ARGUMENT:: destDataSet
+Destination data, or the DataSet name
+ARGUMENT:: action
+Run when done
+
+EXAMPLES::
+
+code::
+
+//Preliminaries: we want some points, a couple of FluidDataSets, a FluidStandardize and a FluidUMAP
+(
+~raw = FluidDataSet(s);
+~standardized = FluidDataSet(s);
+~reduced = FluidDataSet(s);
+~normalized = FluidDataSet(s);
+~standardizer  = FluidStandardize(s);
+~normalizer = FluidNormalize(s, 0.05, 0.95);
+~umap = FluidUMAP(s).numDimensions_(2).numNeighbours_(5).minDist_(0.2).iterations_(50).learnRate_(0.2);
+)
+
+
+// build a dataset of 400 points in 3D (colour in RGB)
+~colours = Dictionary.newFrom(400.collect{|i|[("entry"++i).asSymbol, 3.collect{1.0.rand}]}.flatten(1));
+~raw.load(Dictionary.newFrom([\cols, 3, \data, ~colours]));
+
+// check the entries
+~raw.print;
+
+//First standardize our DataSet, then apply the UMAP to get 2 dimensions, then normalise these 2 for drawing in the full window size
+(
+~standardizer.fitTransform(~raw,~standardized,action:{"Standardized".postln});
+~umap.fitTransform(~standardized,~reduced,action:{"Finished UMAP".postln});
+~normalizer.fitTransform(~reduced,~normalized,action:{"Normalized Output".postln});
+)
+//we recover the reduced dataset
+~normalized.dump{|x| ~normalizedDict = x["data"]};
+
+~normalized.print
+~normalizedDict.postln
+
+//Visualise the 2D projection of our original 4D data
+(
+w = Window("a perspective", Rect(128, 64, 200, 200));
+w.drawFunc = {
+	Pen.use {
+		~normalizedDict.keysValuesDo{|key, val|
+			Pen.fillColor = Color.new(~colours[key.asSymbol][0], ~colours[key.asSymbol][1],~colours[key.asSymbol][2]);
+			Pen.fillOval(Rect((val[0] * 200), (val[1] * 200), 5, 5));
+			~colours[key.asSymbol].flat;
+		}
+	}
+};
+w.refresh;
+w.front;
+)
+
+//play with parameters
+~umap.numNeighbours_(10).minDist_(0.5).iterations_(100).learnRate_(0.1);
+
+//rerun the UMAP
+~umap.fitTransform(~standardized,~reduced,action:{"Finished UMAP".postln});
+
+//draw to compare
+(
+~normalizer.fitTransform(~reduced,~normalized,action:{
+	"Normalized Output".postln;
+	~normalized.dump{|x|
+		~normalizedDict = x["data"];
+
+		{
+			u = Window("another perspective", Rect(328, 64, 200, 200));
+			u.drawFunc = {
+				Pen.use {
+					~normalizedDict.keysValuesDo{|key, val|
+						Pen.fillColor = Color.new(~colours[key.asSymbol][0], ~colours[key.asSymbol][1],~colours[key.asSymbol][2]);
+						Pen.fillOval(Rect((val[0] * 200), (val[1] * 200), 5, 5));
+						~colours[key.asSymbol].flat;
+					};
+				};
+			};
+			u.refresh;
+			u.front;
+
+		}.defer;
+
+	};
+});
+)
+
+// now run new random points on the same training material. Colours should be scattered around the same space
+
+~newDS = FluidDataSet(s);
+~colours2 = Dictionary.newFrom(400.collect{|i|[("entry"++i).asSymbol, 3.collect{1.0.rand}]}.flatten(1));
+~newDS.load(Dictionary.newFrom([\cols, 3, \data, ~colours2]));
+
+//we need to standardize to the same space
+~newDSstan = FluidDataSet(s);
+~standardizer.transform(~newDS, ~newDSstan);
+
+//then we can run the umap
+~newDSmap = FluidDataSet(s);
+~umap.transform(~newDSstan, ~newDSmap);
+
+//then we can draw and look
+(
+~normalizer.transform(~newDSmap,~normalized,action:{
+	"Normalized Output".postln;
+	~normalized.dump{|x|
+		~normalizedDict = x["data"];
+		{
+			t = Window("new material", Rect(528, 64, 200, 200));
+			t.drawFunc = {
+				Pen.use {
+					~normalizedDict.keysValuesDo{|key, val|
+						Pen.fillColor = Color.new(~colours2[key.asSymbol][0], ~colours2[key.asSymbol][1],~colours2[key.asSymbol][2]);
+						Pen.fillOval(Rect((val[0] * 200), (val[1] * 200), 5, 5));
+						~colours2[key.asSymbol].flat;
+					};
+				};
+			};
+			t.refresh;
+			t.front;
+		}.defer;
+	};
+});
+)
+
+//if we process the original dataset, we will see small differences in positions
+~reduced2 = FluidDataSet(s);
+~umap.transform(~standardized, ~reduced2, action: {\done.postln;});
+
+//then we can draw and look
+(
+~normalizer.transform(~reduced2,~normalized,action:{
+	"Normalized Output".postln;
+	~normalized.dump{|x|
+		~normalizedDict = x["data"];
+		{
+			z = Window("old material", Rect(728, 64, 200, 200));
+			z.drawFunc = {
+				Pen.use {
+					~normalizedDict.keysValuesDo{|key, val|
+						Pen.fillColor = Color.new(~colours[key.asSymbol][0], ~colours[key.asSymbol][1],~colours[key.asSymbol][2]);
+						Pen.fillOval(Rect((val[0] * 200), (val[1] * 200), 5, 5));
+						~colours[key.asSymbol].flat;
+					};
+				};
+			};
+			z.refresh;
+			z.front;
+		}.defer;
+	};
+});
+)
+
+//this is because the fitTransform method has the advantage of being certain that the data it transforms is the one that has been used to fit the model. This allows for more accurate distance measurement.
+
+//to check, let's retrieve a single point and predict its position
+(
+~sourcePoint = Buffer(s);
+~original = Buffer(s);
+~standed = Buffer(s);
+~umaped = Buffer(s);
+)
+
+//retrieve the 3D original
+~raw.getPoint("entry49",~sourcePoint)
+//retrieve the fitTransformed point as the most accurate point
+~reduced.getPoint("entry49",~original, {~original.getn(0,2,{|x|x.postln})})
+//retreive the transformed point, via the standardizer
+~standardizer.transformPoint(~sourcePoint,~standed);
+~umap.transformPoint(~standed, ~umaped, {~umaped.getn(0,2,{|x|x.postln})})
+
+// one can also retrieve in control rate with Server Side Queries
+// Let's map our learned UMAP dimensions to the controls of a processor
+
+(
+{
+    var trig = Impulse.kr(1);
+	var point = WhiteNoise.kr(1.dup(3));
+    var inputPoint = LocalBuf(3);
+    var standPoint = LocalBuf(3);
+	var outputPoint = LocalBuf(2);
+	var cue1, cue2;
+	Poll.kr(trig, point, [\pointX,\pointY,\pointZ]);
+	point.collect{ |p,i| BufWr.kr([p],inputPoint,i)};
+	cue1 = ~standardizer.kr(trig,inputPoint,standPoint);
+	Poll.kr(cue1,BufRd.kr(1,standPoint,(0..2),interpolation:0),[\stdX,\stdY, \stdZ]);
+	cue2 = ~umap.kr(cue1, standPoint, outputPoint);
+	Poll.kr(cue2,BufRd.kr(1,outputPoint,[0,1],interpolation:0),[\newDimA,\newDimB]);
+    Silent.ar;
+}.play;
+)
+
+::

@@ -61,7 +61,7 @@ a.reference_(Array.fill(13,{0.5})); //make a center line to show 0
 
 //run the window updating routine.
 (
-~winRange = 500;
+~winRange = 200;
 
 r = Routine {
 	{
@@ -89,7 +89,7 @@ x = {arg type = 0;
 
 // change the wave types, observe the amplitude invariance of the descriptors, apart from the leftmost coefficient
 x.set(\type, 1)
-~winRange = 100; //adjust the range above and below 0 to zoom in or out on the MFCC
+~winRange = 5; //adjust the range above and below 0 to zoom in or out on the MFCC
 x.set(\type, 2)
 x.set(\type, 0)
 // free this source
@@ -106,6 +106,7 @@ x = {arg bands = 40, low = 20, high = 20000;
 	source.dup;
 }.play;
 )
+~winRange = 10; //adjust the range above and below 0 to zoom in or out on the MFCC
 
 // observe the number of bands. The unused ones at the top are not updated
 x.set(\bands,20)

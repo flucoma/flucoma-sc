@@ -112,7 +112,7 @@ c = Buffer.new(s);
 // train only 2 seconds
 (
 Routine {
-    FluidBufNMF.process(s,b,0,88200,0,1, c, ~bases, components:10,fftSize:2048);
+    FluidBufNMF.process(s,b,0,88200,0,1, c, ~bases, components:10,fftSize:2048).wait;
     c.query;
 }.play;
 )
@@ -197,7 +197,7 @@ c = Buffer.new(s);
 // train only 2 seconds
 (
 Routine {
-    FluidBufNMF.process(s,b,0,88200,0,1, c, ~bases, components:8, hopSize:256, fftSize:2048);
+    FluidBufNMF.process(s,b,0,88200,0,1, c, ~bases, components:8, hopSize:256, fftSize:2048).wait;
     c.query;
 }.play;
 )
@@ -216,7 +216,7 @@ FluidBufSpectralShape.process(s, c, features: ~spectralshapes, action:{
 });
 )
 
-//7 shapes (track) x 8 components (tracks) x 7 stats(frames)
+//the interleave format is 7 stats(frames) x 8 components in the source as tracks x 7 shapes (tracks)
 ~stats.query
 ~centroids.size()
 
@@ -230,8 +230,8 @@ x = {
 	var sound = PlayBuf.ar(1,b,loop:1);
 	var  harm, perc;
 	# harm, perc = FluidHPSS.ar(sound, maskingMode:1, harmThreshFreq1: 0.005869, harmThreshAmp1: -9.6875, harmThreshFreq2: 0.006609, harmThreshAmp2: -4.375, hopSize:256);
-	Out.ar(~splitaudio, harm);
-	Out.kr(~nmfenvs, FluidNMFMatch.kr(sound, ~bases, maxComponents:8, hopSize:256, fftSize:2048));
+	Out.ar(~splitaudio, (harm / 4) + perc);
+	Out.kr(~nmfenvs, FluidNMFMatch.kr(DelayN.ar(sound,delaytime: ((17-1)*256)/44100), ~bases, maxComponents:8, hopSize:256, fftSize:2048));
 	Out.ar(0,perc.dup)
 }.play;
 )
@@ -241,7 +241,7 @@ x = {
 8.do({
 	arg i;
 	{
-		var audio = BPF.ar(In.ar(~splitaudio,1), ~centroids[i],0.01,LagUD.kr(In.kr(~nmfenvs,8)[i],0.001,0.01,0.1));
+		var audio = BPF.ar(In.ar(~splitaudio,1), ~centroids[i],0.0015,Lag.kr(In.kr(~nmfenvs,8)[i] * 2,0.022));
 		Out.ar(0,Pan2.ar(audio, (i / 14) - 0.25));
 	}.play(x,addAction: \addAfter);
 });

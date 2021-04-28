@@ -1,0 +1,77 @@
+TITLE:: FluidBufNMFCross
+summary:: Cross Synthesis with Nonnegative Matrix Factorization
+categories:: FluidManipulation
+related:: Classes/FluidBufNMF, Classes/FluidNMFMatch, Classes/FluidNMFFilter
+
+DESCRIPTION::
+
+Produces hybridisations of two link::Classes/Buffer::s by using Nonnegative Maxtrix Factorization (NMF)
+
+See Driedger, J., Prätzlich, T., & Müller, M. (2015). Let it Bee-Towards NMF-Inspired Audio Mosaicing. ISMIR, 350–356. http://ismir2015.uma.es/articles/13_Paper.pdf
+
+The process works by attempting to reconstruct the code::target:: sound using the timbre of the code::source:: sound, resulting in a hybrid whose character depends on how well the target can be represnted by the source's spectral frames.
+
+In contrast to link::Classes/FluidBufNMF::, the size and content of the bases dictionary are fixed in this application to be the spectrogram of the code::source::. Each spectral frame of code::source:: is a template: be aware that NMF is O(N^2) in the number of templates, so longer code::source:: buffers will take dramatically longer to process.
+
+
+CLASSMETHODS::
+
+private:: kr, new1
+
+METHOD:: process, processBlocking
+
+Process two buffers. code::process:: will use its own worker thread on the server, and so avoid blocking the command FIFO queue. For very small jobs, it may be quicker to use code::processBlocking::, which runs directly in the server's queue.
+
+ARGUMENT:: server
+The link::Classes/Server:: on which to process
+
+ARGUMENT:: source
+A link::Classes/Buffer:: whose content will supply the spectral bases used in the hybrid
+
+ARGUMENT:: target
+A link::Classes/Buffer:: whose content will supply the temporal activations used in the hybrid
+
+ARGUMENT:: output
+A link::Classes/Buffer:: to contain the new sound
+
+ARGUMENT:: timeSparsity
+Control the repetition of source templates in the reconstruction by specifying a number of frames within which a template should not be re-used. Units are spectral frames.
+
+ARGUMENT:: polyphony
+Control the spectral density of the output sound by restricting the number of simultaneous templates that can be used. Units are spectral bins.
+
+ARGUMENT:: iterations
+How many iterations of NMF to run
+
+ARGUMENT:: windowSize
+The analysis window size in samples
+
+ARGUMENT:: hopSize
+The analysus hop size in samples (default winSize / 2)
+
+ARGUMENT:: fftSize
+The analsyis FFT size in samples (default = winSize)
+
+ARGUMENT:: freeWhenDone
+Free the server instance when processing complete. Default true
+
+ARGUMENT:: action
+A function to run when processing is complete, taking the output buffer as its argument
+
+returns:: an instance of the processor
+
+INSTANCEMETHODS::
+
+
+EXAMPLES::
+
+code::
+
+~path = File.realpath(FluidBufNMF.class.filenameSymbol).dirname.withTrailingSlash +/+ "../AudioFiles/"
+b = Buffer.read(s,~path+/+"Nicol-LoopE-M.wav")
+t = Buffer.read(s,~path+/+"Tremblay-SA-UprightPianoPedalWide.wav")
+o = Buffer.new
+FluidBufNMFCross.process(s,t,b,o,action:{"Ding".postln})
+//wait for it to be done. It is a long process.
+o.play
+::

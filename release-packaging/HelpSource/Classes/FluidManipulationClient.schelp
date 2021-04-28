@@ -1,0 +1,55 @@
+TITLE:: FluidManipulationClient
+summary:: A base case for FluidManipulation classes
+categories:: FluidManipulation
+
+DESCRIPTION::
+A utility base class for FluidManipulation classes, that deals with common functionality (wrapping a link::Classes/Synth:: in the instance, etc.)
+
+Not intended to be used directly.
+
+CLASSMETHODS::
+
+PRIVATE:: nonBlocking
+
+METHOD:: new
+Language-side constructor. Internally, this creates a new synth around an instance of the sub-class being constructed, and maintains a variable pointing to the synth, so that it can be communicated with.
+
+ARGUMENT:: server
+The link::Classes/Server:: this instance is running on
+
+ARGUMENT::  ... args
+Arguments specific to the sub-class at hand
+
+returns:: A new instance
+
+INSTANCEMETHODS::
+
+private:: pr_sendMsg
+
+METHOD:: synth
+Fluid Manipulation client objects are server-side entities, wrapped in a Node to manage communication between language and object. For this, a link::Classes/Synth:: is needed, as the representation of a server node.
+
+returns:: the instance's link::Classes/Synth::
+
+METHOD:: server
+The link::Classes/Server:: that our instance's object is running on
+
+returns:: a link::Classes/Server::
+
+METHOD:: read
+Read the object's data from a JSON file on disk, replacing the current contents.
+​
+METHOD:: write
+Write the object's data to disk as a JSON file.
+
+METHOD:: size
+Report the number of items currently in the object's data.
+
+METHOD:: cols
+Report the dimensionality of the object's data. If action is nil, will default to posting result.
+
+METHOD:: dump
+Get the contents of the object's data as a Dictionary (note: uses a temporary file under the hood);
+
+METHOD:: load
+Fill the object with the contents of a dictionary, replacing its current contents (note: uses a temporary file under the hood).

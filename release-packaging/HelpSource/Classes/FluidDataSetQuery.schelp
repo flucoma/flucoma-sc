@@ -1,0 +1,185 @@
+TITLE:: FluidDataSetQuery
+summary:: Query a FluidDataSet
+categories:: UGens>FluidManipulation
+related:: Classes/FluidDataSet
+
+DESCRIPTION::
+A selection of columns and a set of conditions that match rows of a FluidDataSet.
+Use to filter and search in a database of descriptors.
+
+CLASSMETHODS::
+
+METHOD:: new
+Make a new instance
+ARGUMENT:: server
+The server on which to run this object
+
+INSTANCEMETHODS::
+
+PRIVATE:: init
+
+METHOD:: addColumn
+Add a column to the query
+ARGUMENT:: column
+Column index
+ARGUMENT:: action
+Run when done
+
+METHOD:: addRange
+Add a range of columns to the query
+ARGUMENT:: start
+First index
+ARGUMENT:: count
+Number of columns
+ARGUMENT:: action
+Run when done
+
+METHOD:: filter
+Filter rows according to some condition.
+
+Example: (3, ">", 0.5) filters rows where the value of the 4th column (starting at 0) is larger than 0.5.
+ARGUMENT:: column
+Column index
+ARGUMENT:: condition
+Condition string. Possible values: "==", "!=", "<", "<=", ">", ">="
+ARGUMENT:: value
+Condition value
+ARGUMENT:: action
+Run when done
+
+METHOD:: and
+Add a condition to an existing filter with an "and" connector.
+ARGUMENT:: column
+Column index
+ARGUMENT:: condition
+Condition string. Possible values: "==", "!=", "<", "<=", ">", ">="
+ARGUMENT:: value
+Condition value
+ARGUMENT:: action
+Run when done
+
+
+METHOD:: or
+Add a condition to an existing filter with an "or" connector.
+ARGUMENT:: column
+Column index
+ARGUMENT:: condition
+Condition string. Possible values: "==", "!=", "<", "<=", ">", ">="
+ARGUMENT:: value
+Condition value
+ARGUMENT:: action
+Run when done
+
+METHOD:: limit
+Limit the number of resulting rows.
+ARGUMENT:: rows
+Maximum number of rows
+ARGUMENT:: action
+Run when done
+
+METHOD:: clear
+Clear the query, remove all columns, filters and limit.
+ARGUMENT:: action
+Run when done
+
+METHOD:: transform
+Apply the query to a source link::Classes/FluidDataSet:: and write to a destination. Can be the same.
+ARGUMENT:: sourceDataSet
+Source data, or the DataSet name
+ARGUMENT:: destDataSet
+Destination data, or the DataSet name
+ARGUMENT:: action
+Run when done
+
+METHOD:: transformJoin
+Apply the query to a source link::Classes/FluidDataSet:: and join the resulting subset at the end of the items sharing the same labels in a second source. Items unique to a source dataset will be ignored. To add items at the end of a dataset instead, see the 'merge' method of link::Classes/FluidDataSet::
+ARGUMENT:: source1DataSet
+Source data, or the DataSet name
+ARGUMENT:: source2DataSet
+Source data, or the DataSet name
+ARGUMENT:: destDataSet
+Destination data, or the DataSet name
+ARGUMENT:: action
+Run when done
+
+
+EXAMPLES::
+
+code::
+
+s.reboot;
+// Create a DataSet with random data
+~dataSet= FluidDataSet(s);
+
+(
+~points = 100.collect{|i|5.collect{|j|j+(i/100)}};
+~dataSet.clear;
+~tmpbuf = Buffer.alloc(s,5);
+
+fork{
+    s.sync;
+    ~points.do{|x,i|
+        ~tmpbuf.setn(0,x);
+        ~dataSet.addPoint(i,~tmpbuf);
+        s.sync;
+    }
+}
+)
+
+//check the source
+~dataSet.print;
+
+// Prepare a FluidDataSetQuery object
+~query = FluidDataSetQuery.new;
+~out = FluidDataSet(s);
+
+// prepare a simple query
+~query.filter(0,"<",0.04);
+~query.addColumn(2);
+~query.transform(~dataSet, ~out);
+
+// check the result
+~out.print;
+
+//prepare a more complex query
+~query.clear;
+~query.filter(0,">",0.03);
+~query.and(1,"<",1.08);
+~query.or(2,">",2.98);
+~query.addRange(2,2);
+~query.transform(~dataSet, ~out);
+
+// Check the results
+~out.print;
+
+::
+
+STRONG:: Joining Datasets::
+
+code::
+//this is how to join 2 datasets, adding columns to items with the same label
+//create 3 datasets
+(
+~dsA =  FluidDataSet(s);
+~dsB =  FluidDataSet(s);
+~dsC =  FluidDataSet(s);
+)
+
+//feed them items with almost overlaping label lists but with different dimensions
+~dsA.load(Dictionary.newFrom([\cols, 2, \data, Dictionary.newFrom([\zero, [0,0], \one,[1,11],\two,[2,22], \three,[3,33],\four,[4,44]])]));
+~dsB.load(Dictionary.newFrom([\cols, 2, \data, Dictionary.newFrom([\one,[111,1111],\two,[222,2222], \three,[333,3333],\four,[444,4444],\five,[555,5555]])]));
+~dsA.print;
+~dsB.print;
+
+// no query/filter defined, copies all items with labels common to both, and all of the defined column of the first input
+~joiner = FluidDataSetQuery.new;
+~joiner.transformJoin(~dsA,~dsB,~dsC)
+~dsC.print
+
+// all the sophisticated conditions applicable to 'transform' can be done on the first dataset too. Selected columns of the first source are appended to matching items in the second source.
+~joiner.filter(0,">",2.1)
+~joiner.and(1,"<", 40)
+~joiner.addColumn(0)
+~joiner.transformJoin(~dsA,~dsB,~dsC)
+~dsC.print
+::

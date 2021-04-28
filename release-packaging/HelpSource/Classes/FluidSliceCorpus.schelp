@@ -1,0 +1,113 @@
+TITLE:: FluidSliceCorpus
+summary:: A utility for batch slicing of a corpus
+categories:: FluidManipulation
+related:: Classes/FluidLoadFolder, Classes/FluidProcessSlices, Classes/FluidBufOnsetSlice, Classes/FluidBufNoveltySlice, Classes/FluidBufTransientSlice
+
+DESCRIPTION::
+A utility class that abstracts the boiler plate code involved with batch slicing a buffer containing distinct chunks of audio (a 'corpus' for these purposes).
+
+Whilst this class is designed to be used most easily in conjunction with link::Classes/FluidLoadFolder::, it doesn't have to be. However, it does expect to be passed an link::Classes/IdentityDictionary:: of a particular format (see link::#indexFormat#description below::).
+
+The actual mechanism for doing the slicing is provided by the user, in the form of a function that will form part of a larger link::Classes/Synth:: (see link::#sliceFuncDescription#below::).
+
+CLASSMETHODS::
+
+METHOD:: new
+Create a new instance with the specified slicing and labelling behaviour.
+
+ARGUMENT:: sliceFunc
+ANCHOR::sliceFuncDescription::
+A function that does the slicing, returning a link::Classes/UGen::. This function is passed the following arguments:
+definitionlist::
+## src
+|| The source link::Classes/Buffer:: for slicing
+## start
+|| The frame to start slicing from, in samples
+## num
+|| The number of frames to slice, in samples
+## dst
+|| The destination link::Classes/Buffer:: into which to write slice indices
+::
+
+This configuration assumes that you are using one of the link::Guides/FluidDecomposition:: buffer-based slicing objects, or at least following their conventions, notably:
+list::
+## slice points are written into a buffer as sample positions.
+## If no slices are found, then a single value of -1 is written instead
+::
+
+warning::
+This function strong::must:: return a link::Classes/UGen:: that sets a code::done:: flag (see link::Classes/Done::), in order for the iteration and housekeeping to work. All code::FluidBuf*:: objects do this.
+::
+
+A concrete example of a code::sliceFunc:: could be:
+code::
+~sliceFn = { |src,start,num,dest|
+	FluidBufOnsetSlice.kr(src,start,num,indices:dest)
+});
+::
+
+ARGUMENT:: labelFunc
+ANCHOR::labelling::
+warning::Not yet implemented::
+
+Override the default labelling behaviour for slices. The default is to append the original label with code::-<slice number>:: counting from 1.
+
+INSTANCEMETHODS::
+
+METHOD:: sliceFunc
+Retreive the link::#sliceFuncDescription#slicing function:: used by this instance.
+
+METHOD:: play
+Run the slicing function over each entry in the supplied link::#indexformat#index dictionary::
+
+ARGUMENT:: server
+The link::Classes/Server:: on which to execute
+
+ARGUMENT:: sourceBuffer
+The link::Classes/Buffer:: containing the audio to slice
+
+ARGUMENT:: bufIdx
+ANCHOR::indexformat::
+An link::Classes/IdentityDictionary:: that details labels and start-end positions for each chunk in the source buffer. See link::Classes/FluidLoadFolder#index::
+
+ARGUMENT:: action
+A function that runs on complettion, will be passed the link::Classes/IdentityDictionary:: from link::#index:: as an argument.
+
+ARGUMENT:: tasks
+ANCHOR::ntasks::
+The number of parallel processing tasks to run on the server. Default 4. This should probably never be greater than the number of available CPU cores.
+
+METHOD:: index
+A link::Classes/IdentityDictionary:: containing information about the position of each discovered slice, using labels based on those passed into link::#play:: (see link::#labelling::). This dictionary copies all other entries from the source dictionary on a per-key basis (so you can store arbitary stuff in there should you wish, and it will remain oassciated with its original source chunk).
+
+
+EXAMPLES::
+
+code::
+s.reboot
+
+(
+~path = File.realpath(FluidLoadFolder.class.filenameSymbol).dirname +/+ "../AudioFiles";
+~loader = FluidLoadFolder(~path);
+~loader.play(s,action:{ |dataDictionary| "Done loading".postln});
+)
+
+(
+~slicer = FluidSliceCorpus({ |src,start,num,dest|
+	FluidBufOnsetSlice.kr(src,start,num,indices:dest, threshold:0.7)
+});
+)
+
+(
+~slicer.play(s,~loader.buffer,~loader.index,{|dataDictionary|
+	"Slicing done".postln;
+	//we get passed an IdentityDictionary of slice data, let's look at it
+	dataDictionary.pairsDo{|label,data|
+		//data is also a dictionary
+		(label ++ '(').post;
+		data.pairsDo{|k,v| (k ++ ':' + v + ' ').post };
+		')'.postln;
+	}
+});
+)
+::

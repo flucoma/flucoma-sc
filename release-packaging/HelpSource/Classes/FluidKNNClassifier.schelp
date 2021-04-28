@@ -1,0 +1,181 @@
+TITLE:: FluidKNNClassifier
+summary:: Classify data with K Nearest Neighbours
+categories:: Classification, KNN
+related:: Classes/FluidKNNRegressor, Classes/FluidDataSet, Classes/FluidLabelSet
+
+DESCRIPTION::
+A nearest-neighbour classifier using link::Classes/FluidKDTree:: . Each point is assigned the class that is most common among its nearest neighbours.
+https://scikit-learn.org/stable/modules/neighbors.html#classification
+
+CLASSMETHODS::
+
+METHOD:: new
+Create a new KNNClassifier
+ARGUMENT:: server
+The server to make the model on
+ARGUMENT:: numNeighbours
+the number of neighours to consider
+ARGUMENT:: weight
+true / false: whether the neighbours should be weighted by distance
+
+INSTANCEMETHODS::
+
+METHOD:: fit
+Fit the model to a source link::Classes/FluidDataSet:: and a target link::Classes/FluidLabelSet::. These need to be the same size
+ARGUMENT:: dataSet
+Source data
+ARGUMENT:: labelSet
+Labels for the source data
+ARGUMENT:: action
+Run when done
+
+METHOD:: predict
+Given a fitted model, predict labels for a link::Classes/FluidDataSet:: and write these to a link::Classes/FluidLabelSet::
+ARGUMENT:: dataSet
+data to predict labels for
+ARGUMENT:: labelSet
+place to write labels
+ARGUMENT:: action
+Run when done
+
+METHOD:: predictPoint
+Given a fitted model, predict labels for a data point in a link::Classes/Buffer:: and return these to the caller
+ARGUMENT:: buffer
+A data point
+ARGUMENT:: action
+Run when done, passes predicted label as argument
+
+EXAMPLES::
+
+code::
+
+
+// Make:
+// - A KNN Classifier
+// - A DataSet of example points, and a label set of corresponding labels
+// - A DataSet of test data and a LabelSet for predicted labels
+
+(
+~classifier = FluidKNNClassifier(s);
+~source= FluidDataSet(s);
+~labels = FluidLabelSet(s);
+~test = FluidDataSet(s);
+~mapping = FluidLabelSet(s);
+)
+
+//Make some clumped 2D points and place into a DataSet
+(
+~examplepoints = [[0.5,0.5],[-0.5,0.5],[0.5,-0.5],[-0.5,-0.5]];
+~examplelabels = [\red,\orange,\green,\blue];
+d = Dictionary.new;
+d.add(\cols -> 2);
+d.add(\data -> Dictionary.newFrom(~examplepoints.collect{|x, i|[i.asString, x]}.flatten));
+~source.load(d);
+~examplelabels.collect{|x,i| ~labels.addLabel(i, x);};
+)
+
+//Make some random, but clustered test points
+(
+~testpoints = (4.collect{
+               64.collect{(1.sum3rand) + [1,-1].choose}.clump(2)
+           }).flatten(1) * 0.5;
+d = Dictionary.with(
+        *[\cols -> 2,\data -> Dictionary.newFrom(
+            ~testpoints.collect{|x, i| [i, x]}.flatten)]);
+ ~test.load(d);
+
+)
+
+
+//Fit the classifier to the example DataSet and labels, and then run prediction on the test data into our mapping label set
+(
+~classifier.fit(~source,~labels);
+~classifier.predict(~test, ~mapping, 1);
+)
+
+//Return labels of clustered points - wait for the dump to be done
+(
+~assignments = Array.new(~testpoints.size);
+fork{
+    ~testpoints.do{|x,i|
+        ~mapping.getLabel(i, action:{|l|
+            ~assignments.add(l);
+        });
+        s.sync;
+        if(i==(~testpoints.size - 1)){"Got assignments".postln;}
+    };
+    ~assignments.postln;
+}
+)
+
+//Visualise: we're hoping to see colours neatly mapped to quandrants...
+(
+c = IdentityDictionary();
+
+c.add(\red->Color.red);
+c.add(\blue->Color.blue);
+c.add(\green->Color.green);
+c.add(\orange-> Color.new255(255, 127, 0));
+
+e = 200 * ((~examplepoints + 1) * 0.5).flatten(1).unlace;
+d = ((~testpoints + 1) * 0.5).flatten(1).unlace;
+// d = [20.collect{1.0.rand}, 20.collect{1.0.rand}];
+w = Window("scatter", Rect(128, 64, 200, 200));
+~colours = [Color.blue,Color.red,Color.green,Color.magenta];
+w.drawFunc = {
+    Pen.use {
+        e[0].size.do{|i|
+            var r = Rect(e[0][i],e[1][i],10,10);
+            Pen.fillColor = c[~examplelabels[i]];
+            Pen.fillOval(r);
+        };
+        d[0].size.do{|i|
+            var x = (d[0][i]*200);
+            var y = (d[1][i]*200);
+            var r = Rect(x,y,5,5);
+            Pen.fillColor = c[~assignments[i].asSymbol].alpha_(0.3);
+            Pen.fillOval(r);
+        }
+    }
+};
+w.refresh;
+w.front;
+)
+
+// single point prediction on arbitrary value
+~inbuf = Buffer.loadCollection(s,0.5.dup);
+~classifier.predictPoint(~inbuf,{|x|x.postln;});
+::
+
+subsection::Server Side Queries
+This is the equivalent of predictPoint, but wholly on the server
+code::
+
+//Generate a random point and sends a trigger to query, and return the class that point matches
+(
+{
+	var trig = Impulse.kr(5);
+	var point = WhiteNoise.kr(1.dup);
+    var inputPoint = LocalBuf(2);
+    var outputPoint = LocalBuf(1);
+	Poll.kr(trig, point, [\pointX,\pointY]);
+	point.collect{ |p,i| BufWr.kr([p],inputPoint,i)};
+    ~classifier.kr(trig,inputPoint,outputPoint);
+	Poll.kr(trig,BufRd.kr(1,outputPoint,0,interpolation:0),\cluster);
+}.play;
+)
+
+// to sonify the output, here are random values alternating quadrant.
+(
+{
+	var trig = Impulse.kr(MouseX.kr(0,1).exprange(0.5,ControlRate.ir /2).poll(trig:2, label: "Query Frequency"));
+	var step = Stepper.kr(trig,max:3);
+	var point = TRand.kr(-0.1, [0.1, 0.1], trig) + [step.mod(2).linlin(0,1,-0.6,0.6),step.div(2).linlin(0,1,-0.6,0.6)] ;
+    var inputPoint = LocalBuf(2);
+    var outputPoint = LocalBuf(1);
+	point.collect{|p,i| BufWr.kr([p],inputPoint,i)};
+    ~classifier.kr(trig,inputPoint,outputPoint);
+    SinOsc.ar((BufRd.kr(1,outputPoint,0,interpolation:0) + 69).midicps, mul: 0.1);
+}.play
+)
+::

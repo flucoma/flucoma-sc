@@ -1,4 +1,4 @@
-FluidNMFFilter : MultiOutUGen {
+FluidNMFFilter : FluidRTMultiOutUGen {
 
 	*ar { arg in = 0, bases, maxComponents = 1, iterations = 10, windowSize = 1024, hopSize = -1, fftSize = -1, maxFFTSize = 16384;
 		^this.multiNew('audio', in.asAudioRateInput(this), bases, maxComponents, iterations, windowSize, hopSize, fftSize, maxFFTSize);

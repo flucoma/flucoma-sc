@@ -17,5 +17,5 @@ static InterfaceTable *ft;
 PluginLoad(FluidSTFTUGen) {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<LoudnessClient>("FluidLoudness", ft);
+  makeSCWrapper<RTLoudnessClient>("FluidLoudness", ft);
 }

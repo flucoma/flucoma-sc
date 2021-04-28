@@ -1,0 +1,230 @@
+TITLE:: FluidDataSet
+summary:: Container for labelled,  multidimensional data
+categories:: UGens>FluidManipulation
+related:: Classes/FluidLabelSet, Classes/FluidKDTree, Classes/FluidKMeans
+​
+DESCRIPTION::
+A server-side container associating labels with multi-dimensional data. FluidDataSet is identified by its name.
+
+CLASSMETHODS::
+​
+PRIVATE:: asUGenInput
+
+METHOD:: new
+Create a new instance of the DataSet, with the given name. If a DataSet with this name already exists, an exception will be thrown (see link::Classes/FluidDataSet#at:: to access an existant DataSet).
+
+ARGUMENT:: server
+The link::Classes/Server:: on which to create the data set.
+
+​
+returns:: The new instance
+
+INSTANCEMETHODS::
+​
+PRIVATE:: init,id,cache
+
+METHOD:: addPoint
+Add a new point to the data set. The dimensionality of the DataSet is governed by the size of the first point added.
+Will report an error if the label already exists, or if the size of the data does not match the dimensionality of the DataSet.
+ARGUMENT:: label
+A symbol or string with the label for the new point.
+ARGUMENT:: buffer
+A link::Classes/Buffer:: with the new data point.
+ARGUMENT:: action
+A function to run when the point has been added.
+​​
+METHOD:: updatePoint
+Update an existing label's data. Will report an error if the label doesn't exist, or if the size of the data does not match the given dimensionality of the DataSet.
+
+METHOD:: getPoint
+Retrieve a point from the data set into a link::Classes/Buffer::. Will report an error if the label or buffer doesn't exist​.
+
+METHOD:: deletePoint
+Remove a point from the data set. Will report an error if the label doesn't exist.
+
+METHOD:: setPoint
+Set the point: if the label exists, this method behaves like updatePoint; if the label doesn't exist, behaves like addPoint.
+​​
+METHOD:: clear
+Empty the data set.
+
+METHOD:: toBuffer
+Dump the content of the dataset to a link::Classes/Buffer::, with optional transposition, and a map of frames/channels to the original IDs as a link::Classes/FluidLabelSet::.
+
+ARGUMENT:: buffer
+The buffer to write to. It will be resized.
+
+ARGUMENT:: transpose
+If 0, each dataset point becomes a buffer frame, and each dataset dimension becomes a buffer channel. If 1, points become channels, and dimensions become frames.
+
+ARGUMENT:: labelSet
+The link::Classes/FluidLabelSet:: in which to dump the point's IDs associated with their reference frame number (or channel number if transposed).
+
+ARGUMENT:: action
+A function to run when the dump is done.
+
+METHOD:: fromBuffer
+Import to the dataset the content of a link::Classes/Buffer::, with optional transposition, and a map of frames/channels to the original IDs as a link::Classes/FluidLabelSet::.
+
+ARGUMENT:: buffer
+The buffer to read from. The dataset will be resized.
+
+ARGUMENT:: transpose
+If 0, each buffer frame becomes a dataset point, and each buffer channel becomes a dataset dimension. If 1, channels become points, and frames become dimensions.
+
+ARGUMENT:: labelSet
+The link::Classes/FluidLabelSet:: from which to retrieve the point's IDs associated with their reference frame number (or channel number if transposed).
+
+ARGUMENT:: action
+A function to run when the import is done.
+
+METHOD:: getIds
+Export to the dataset IDs to a link::Classes/FluidLabelSet::.
+
+ARGUMENT:: labelSet
+The link::Classes/FluidLabelSet:: to export to. Its content will be replaced.
+​
+ARGUMENT:: action
+A function to run when the export is done.
+
+METHOD:: merge
+Merge sourceDataSet in the current DataSet. It will update the value of points with the same label if overwrite is set to 1. To add columns instead, see the 'transformJoin' method of link::Classes/FluidDataSetQuery::
+
+METHOD:: free
+Destroy the object on the server.
+
+METHOD:: print
+Post an abbreviated content of the DataSet in the window by default, but you can supply a custom action instead.
+
+returns:: A link::Classes/Synth::
+​
+METHOD:: server
+The server instance the object uses
+​
+returns:: A link::Classes/Server::
+
+EXAMPLES::
+
+CODE::
+// Create a simple a one-dimensional data set, three ways
+// Using routine
+s.boot;
+(
+fork{
+	~ds = FluidDataSet.new(s);
+	~point = Buffer.alloc(s,1,1);
+	s.sync;
+	10.do{|i|
+		~point.set(0,i);
+		~ds.addPoint(i.asString,~point,{("addPoint"+i).postln});
+		s.sync;
+	};
+	~ds.dump;
+	s.sync;
+	~ds.free;
+};
+)
+
+//Using Dictionary
+(
+d = Dictionary.new;
+d.add(\cols -> 1);
+d.add(\data -> Dictionary.newFrom(10.collect{|i|[i.asString, [i.asFloat]]}.flatten));
+fork{
+	~ds = FluidDataSet.new(s);
+	~ds.load(d); s.sync;
+	~ds.dump; s.sync; ~ds.free;
+}
+)
+
+// Using a synth
+(
+~ds = FluidDataSet.new(s);
+{
+	var trig = Impulse.kr(20);
+	var count = PulseCount.kr(trig) - 1;
+	var buf = LocalBuf(1);
+	BufWr.kr(count, buf);
+	FluidDataSetWr.kr(~ds.asUGenInput, idNumber: count, buf: buf, trig: trig);
+	FreeSelf.kr(count - 8);
+}.play.onFree{~ds.dump{|o| o.postln;~ds.free}}
+)
+::
+
+STRONG:: Buffer Interface::
+
+As the content of the dataset has a similar structure to buffers, namely arrays of floats in parallel, it is possible to transfer the content between the two. Careful consideration of the rotation of the buffer, as well as the relation of points to channel numbers, are needed.
+
+code::
+(
+//Make a dummy data set
+d = FluidDataSet(s);
+~data = Dictionary.with(*Array.iota(20).reshape(4,5).collect{|a,i| ("row"++i)->a});
+~dsdata = Dictionary.newFrom([\cols,5,\data,~data]);
+d.load(~dsdata);
+d.print;
+)
+
+//convert to separate buffer and labelset
+b = Buffer(s);
+l = FluidLabelSet(s);
+d.toBuffer(b,0,l);
+
+//check the result: by default, dataset points become frames, with their associated data columns as channels
+b.query
+b.getn(0,20,{|x|x.postln})
+l.print
+
+//you can also transpose your query, where dataset points are each a buffer channel, and each data column becomes a buffer frame
+d.toBuffer(b,1,l);
+b.query
+b.getn(0,20,{|x|x.postln})
+//note that the IDs are still one per item, as columns are unamed in datasets
+l.print
+
+//Convert back to DS again
+e = FluidDataSet(s);
+
+//Let's use the transposed data we just got
+e.print;
+e.fromBuffer(b,1,l);
+e.print;
+//if we didn't transpose, we would get an error as the labelset is mismatched with the number of items
+e.clear
+e.print
+e.fromBuffer(b,0,l)
+::
+
+STRONG:: Merging Datasets::
+code::
+//this is how to add items between 2 datasets.
+//create 2 datasets
+(
+~dsA = FluidDataSet.new(s);
+~dsB = FluidDataSet.new(s);
+)
+
+//feed them items with same dimensions but different labels
+~dsA.load(Dictionary.newFrom([\cols, 1, \data, Dictionary.newFrom([\one,1,\two,2])]));
+~dsB.load(Dictionary.newFrom([\cols, 1, \data, Dictionary.newFrom([\three,3,\four,4])]));
+~dsA.print;
+~dsB.print;
+
+// merge and check. it works.
+~dsB.merge(~dsA)
+~dsB.print;
+
+//change the content of the dataset to shared labels
+~dsA.load(Dictionary.newFrom([\cols, 1, \data, Dictionary.newFrom([\three,333,\four,444])]));
+~dsB.load(Dictionary.newFrom([\cols, 1, \data, Dictionary.newFrom([\three,3,\four,4])]));
+~dsA.print;
+~dsB.print;
+
+//try to merge, it does not update
+~dsB.merge(~dsA)
+~dsB.print;
+
+// add the overwrite flag, and it works
+~dsB.merge(~dsA,1)
+~dsB.print;
+::

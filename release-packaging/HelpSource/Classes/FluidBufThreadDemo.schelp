@@ -12,7 +12,7 @@ The process will, after waiting for STRONG::time:: millisecond, return its delay
 
 CLASSMETHODS::
 
-METHOD:: process
+METHOD:: process, processBlocking
 	This is the method that calls for the job to be done. In this case, simply waiting STRONG::time:: millisecond before writing a value in the destination buffer.
 
 ARGUMENT:: server
@@ -24,11 +24,13 @@ ARGUMENT:: result
 ARGUMENT:: time
 	The duration in milliseconds of the delay that the background thread will wait for before yielding the value to the destination buffer.
 
+ARGUMENT:: freeWhenDone
+Free the server instance when processing complete. Default true
+
 ARGUMENT:: action
 	A function that will be executed upon completion. It is passed the destination buffer as argument.
 
-RETURNS::
-	The instance of FluidNRTProcess which can be used to cancel the job.
+returns::The instance of FluidNRTProcess which can be used to cancel the job.
 
 
 METHOD:: kr
@@ -43,8 +45,7 @@ ARGUMENT:: time
 ARGUMENT:: doneAction
 	An integer representing an action to be executed when the process is finished. This can be used to free the enclosing synth, etc. See link::Classes/Done::  for more detail.
 
-RETURNS::
-	It report the approximate job progress, from 0 to 1.
+returns::It report the approximate job progress, from 0 to 1.
 
 
 EXAMPLES::
@@ -56,12 +57,12 @@ CODE::
 b=Buffer.alloc(s,1);
 
 // a simple call, where we query the destination buffer upon completion with the action message.
-FluidBufThreadDemo.process(s, b, 1000, {|x|x.get(0,{|y|y.postln});});
+FluidBufThreadDemo.process(s, b, 1000, action:{|x|x.get(0,{|y|y.postln});});
 
-// as the 'process' returns its parent UGen, we can cancel the process easily
-c = FluidBufThreadDemo.process(s, b, 100000, {|x|x.get(0,{|y|y.postln});});
-c.cancel
+// as the 'process' returns its instance, we can cancel the process easily
+c = FluidBufThreadDemo.process(s, b, 100000, action: {|x|x.get(0,{|y|y.postln});});
+c.cancel;
 
-// if a simple call to the UGen is used, the progress can be monitored
+// if a simple call to the UGen is used, the progress can be monitored. The usual cmd-period will cancel the job by freeing the synth.
 {c = FluidBufThreadDemo.kr(b,10000, Done.freeSelf); Poll.kr(Impulse.kr(2),c);}.scope;
 ::

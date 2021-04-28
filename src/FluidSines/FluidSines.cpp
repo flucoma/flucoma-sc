@@ -18,5 +18,5 @@ PluginLoad(FluidSTFTUGen)
 {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<SinesClient>("FluidSines", ft);
+  makeSCWrapper<RTSinesClient>("FluidSines", ft);
 }
