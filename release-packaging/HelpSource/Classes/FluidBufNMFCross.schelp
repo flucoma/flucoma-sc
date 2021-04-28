@@ -1,18 +1,15 @@
 TITLE:: FluidBufNMFCross
-summary:: Cross Synthesis with Nonnegative Matrix Factorization
+summary:: Reconstructs the sound in the target buffer using components learned from the source buffer using an NMF decomposition
 categories:: FluidManipulation
 related:: Classes/FluidBufNMF, Classes/FluidNMFMatch, Classes/FluidNMFFilter
 
 DESCRIPTION::
 
-Produces hybridisations of two link::Classes/Buffer::s by using Nonnegative Maxtrix Factorization (NMF)
+The process works by attempting to reconstruct compoentns of the code::target:: sound using the timbre of the code::source:: sound, learned through a Nonnegative Matrix Factorisation. The result is a hybrid whose character depends on how well the target can be represnted by the source's spectral frames.
+
+In contrast to link::Classes/FluidBufNMF::, the size and content of the bases dictionary are fixed in this application to be the spectrogram of the `source`. Each spectral frame of `source` is a template: be aware that NMF is O(N^2) in the number of templates, so longer `source` link::Classes/Buffer::s will take dramatically longer to process.
 
 See Driedger, J., Prätzlich, T., & Müller, M. (2015). Let it Bee-Towards NMF-Inspired Audio Mosaicing. ISMIR, 350–356. http://ismir2015.uma.es/articles/13_Paper.pdf
-
-The process works by attempting to reconstruct the code::target:: sound using the timbre of the code::source:: sound, resulting in a hybrid whose character depends on how well the target can be represnted by the source's spectral frames.
-
-In contrast to link::Classes/FluidBufNMF::, the size and content of the bases dictionary are fixed in this application to be the spectrogram of the code::source::. Each spectral frame of code::source:: is a template: be aware that NMF is O(N^2) in the number of templates, so longer code::source:: buffers will take dramatically longer to process.
-
 
 CLASSMETHODS::
 
@@ -39,6 +36,9 @@ Control the repetition of source templates in the reconstruction by specifying a
 
 ARGUMENT:: polyphony
 Control the spectral density of the output sound by restricting the number of simultaneous templates that can be used. Units are spectral bins.
+
+ARGUMENT:: continuity
+Promote the use of N successive source frames, giving greater continuity in the result. This can not be bigger than the sizes of the input buffers, but useful values tend to be much lower (in the tens).
 
 ARGUMENT:: iterations
 How many iterations of NMF to run
@@ -71,7 +71,18 @@ code::
 b = Buffer.read(s,~path+/+"Nicol-LoopE-M.wav")
 t = Buffer.read(s,~path+/+"Tremblay-SA-UprightPianoPedalWide.wav")
 o = Buffer.new
-FluidBufNMFCross.process(s,t,b,o,action:{"Ding".postln})
-//wait for it to be done. It is a long process.
+FluidBufNMFCross.process(s,t,b,o,windowSize: 2048, action:{"Ding".postln})
+//wait for it to be done. It can take a while, depending on the length of your source.
+o.play
+
+//The result of the cross synthesis is a hybrid of the source and target sounds. The algorithm tries to match the target spectrum over time using components learned from the source. These parameters affect the reconstruction:
+~sparsity = 4; //Avoid reusing a component from the source for this number of time frames
+~polyphony = 3; //Avoid overlapping more than this number of source components at the same time
+~continuity = 20; //Encourage the reconstruction to use this many temporally consecutive frames from the source
+
+{FreeSelfWhenDone.kr(FluidBufNMFCross.kr(t,b,o,timeSparsity: ~sparsity, polyphony: ~polyphony, continuity: ~continuity, windowSize: 2048).poll)}.play
+//Using the UGen to run the process can be useful to monitor its progress
+o.query
 o.play
 ::
+
