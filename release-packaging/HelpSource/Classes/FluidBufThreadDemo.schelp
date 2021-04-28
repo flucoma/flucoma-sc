@@ -67,5 +67,5 @@ c = FluidBufThreadDemo.process(s, b, 100000, action: {|x|x.get(0,{|y|y.postln});
 c.cancel;
 
 // if a simple call to the UGen is used, the progress can be monitored. The usual cmd-period will cancel the job by freeing the synth.
-{c = FluidBufThreadDemo.kr(b,10000); Poll.kr(Impulse.kr(2),c);}.scope;
+{c = FluidBufThreadDemo.kr(b,10000).poll; FreeSelfWhenDone.kr(c)}.scope;
 ::
