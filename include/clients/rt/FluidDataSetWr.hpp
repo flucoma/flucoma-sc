@@ -1,6 +1,5 @@
 #pragma once
 
-#include <algorithms/KDTree.hpp>
 #include <clients/common/FluidBaseClient.hpp>
 #include <clients/common/FluidNRTClientWrapper.hpp>
 #include <clients/common/MessageSet.hpp>
