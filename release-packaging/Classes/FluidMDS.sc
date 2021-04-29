@@ -25,7 +25,7 @@ FluidMDS : FluidModelObject {
 
 	fitTransform{|sourceDataSet, destDataSet, action|
         actions[\fitTransform] = [nil,action];
-        this.fitTransformMsg(sourceDataSet,destDataSet).postln;
+        this.fitTransformMsg(sourceDataSet,destDataSet);
 
 		this.prSendMsg(this.fitTransformMsg(sourceDataSet,destDataSet));
 	}
