@@ -26,9 +26,9 @@ It is important to understand that there are multiple asyncrhonous things at wor
 
 If we wish to block sclang on a Buf* job, then this can be done in a link::Classes/Routine:: by calling code::wait:: on the instance object that code::process:: and code::processBlocking:: return.
 
-It is also possible to invoke these Buf* objects directly on the server through a code::*kr:: method, which makes a special UGen to dispatch the job from a synth. This is primarily useful for running a lot of jobs as a batch process, without needing to communicate too muchwith the language. Meanwhile, the object instances returned by code::process:: expose a instance code::kr:: method, which can be useful for monitoring the progress of a job running in a worker thread via a scope.
+It is also possible to invoke these Buf* objects directly on the server through a code::*kr:: method, which makes a special UGen to dispatch the job from a synth. This is primarily useful for running a lot of jobs as a batch process, without needing to communicate too much with the language. Meanwhile, the object instances returned by code::process:: expose a instance code::kr:: method, which can be useful for monitoring the progress of a job running in a worker thread via a code::scope::.
 
-For this tutorial, we will use a demonstrative class, LINK::Classes/FluidBufThreadDemo::, which does nothing but  wait on its thread of execution before sending back one value – the amount of time it waited – via a Buffer.
+For this tutorial, we will use a demonstrative class, LINK::Classes/FluidBufThreadDemo::, which does nothing except wait on its thread of execution before sending back one value – the amount of time it waited – via a link::Classes/Buffer::.
 
 This code will wait for 1000ms, and then print 1000 to the console:
 
@@ -79,9 +79,9 @@ c.cancel;
 
 section:: .kr and .*kr Usage
 
-The FluidBuf* classes all have both instance scope and class scope code::kr:: and code::*kr:: methods, which do slightly different things.
+The FluidBuf* classes all have both instance-scope and class-scope code::kr:: and code::*kr:: methods, which do slightly different things.
 
-The instance method can be used to instantiate a UGen on the server that will monitor a job in progress; however, the UGen plays no role in the lifetime of the job. It is intended as a convinient way to look at the progress of a threaded job using code::scope:: or code::poll:: Importantly, note that killing the synth has no effect on the job that's running.
+The instance method can be used to instantiate a UGen on the server that will monitor a job in progress; however, the UGen plays no role in the lifetime of the job. It is intended as a convinient way to look at the progress of a threaded job using code::scope:: or code::poll::. Importantly, note that killing the synth has no effect on the job that's running.
 
 code::
 (
@@ -158,8 +158,8 @@ OSCFunc({ "Job Done".postln;},"/threadDone").oneShot;
 
 subsection:: Retriggering
 
-FluidBuf* code::*kr:: methods all have a trigger argument, which defaults to code::1:: (meaning that by default, the job will start immediately). This can be useful for either deferring execution, or for repeatedly triggering a job for batch processing.
-
+FluidBuf* code::*kr:: methods all have a trigger argument, which defaults to code::1:: (meaning that, by default, the job will start immediately). This can be useful for either deferring execution, or for repeatedly triggering a job for batch processing.
+code::
 (
 {
     var trig = Impulse.kr(1);
@@ -167,7 +167,7 @@ FluidBuf* code::*kr:: methods all have a trigger argument, which defaults to cod
     FluidBufThreadDemo.kr(b,500,trig).poll;
 }.play;
 )
-
+::
 
 section:: Opting Out of Worker Threads
 
