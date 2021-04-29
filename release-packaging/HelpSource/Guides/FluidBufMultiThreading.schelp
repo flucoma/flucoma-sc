@@ -4,17 +4,29 @@ CATEGORIES:: Libraries>FluidDecomposition, Guides>FluCoMa
 RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
 
 DESCRIPTION::
-The Fluid Decomposition toolbox footnote::This toolbox was made possible thanks to the FluCoMa project ( http://www.flucoma.org/ ) funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).:: provides an open-ended, loosely coupled set of objects to break up and analyse sound in terms of slices (segments in time), layers (superpositions in time and frequency) and objects (configurable or discoverable patterns in sound). Almost all objects have audio-rate and buffer-based versions.
+The Fluid Decomposition toolbox footnote::This toolbox was made possible thanks to the FluCoMa project,  https://www.flucoma.org, funded by the European Research Council ( https://erc.europa.eu ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899):: provides an open-ended, loosely coupled set of objects to break up and analyse sound in terms of slices (segments in time), layers (superpositions in time and frequency) and objects (configurable or discoverable patterns in sound). Many objects have audio-rate and buffer-based versions.
 
-    These latter buffer-based processes can be very CPU intensive, and so require a some consideration of SuperCollider's underlying architecture. The FluidBuf* objects have different entry points, from transparent usage to more advanced control, to allow the creative coder to care as much as they need to. The overarching principle is to send the CPU intensive tasks to their own background thread, to avoid blocking the Server and its Non-Real Time thread, whilst providing ways to cancel the tasks and monitor their progress.
+Some buffer-based processes can be very CPU intensive, and so require a some consideration of SuperCollider's underlying architecture. The FluidBuf* objects have different entry points, from transparent usage to more advanced control, to allow the creative coder to care as much as they need to. The overarching principle is to send the CPU intensive tasks to their own background thread to avoid blocking the Server and its Non-Real Time thread, whilst providing ways to cancel the tasks and monitor their progress.
 
-    In SuperCollider, the server will delegate tasks to a non-real-time thread that are potentially too long for the real-time server. For instance, loading a soundfile to a buffer. This process is explained in LINK::Classes/Buffer:: and LINK::Guides/ClientVsServer::. For comprehensive detail see Ross Bencina's 'SuperCollider Internals' in Chapter XX of the SuperCollider book.
+In SuperCollider, the server can delegate tasks to a non-real-time thread that are unsuitable for the real-time context (too long, too intensive). For instance, loading a soundfile to a buffer. This process is explained in LINK::Classes/Buffer:: and LINK::Guides/ClientVsServer::. For comprehensive detail see Ross Bencina's 'SuperCollider Internals' in Chapter XX of the SuperCollider book.
 
-    section:: Basic Usage
+section:: Basic Usage
 
-    Some FluidBuf* tasks are much longer than these native tasks, so we run them in their own worker thread to avoid clogging the server's command queue, which would interfere with you being able to fill buffers whilst these processes are running.
+Some FluidBuf* tasks can be much longer than these native tasks, so we can run them in their own worker thread to avoid clogging the server's command queue, which would interfere with you being able to fill buffers whilst these processes are running.
 
-    There are two basic approaches to interacting with these objects. The first is simply to use the 'process' method. This method will block if run in a LINK::Classes/Routine::, but not otherwise. The alternative interaction is to use a FluidBuf* object as a UGen, as part of a synth. This latter approach enables you to get progress feedback for long running jobs.
+There are two basic approaches to interacting with these objects.
+
+The first is simply to use the code::process:: and code::processBlocking:: methods. code::process:: will use a worker thread (for those objects that allow it), whereas code::processBlocking:: will run the job in the Server command queue.
+
+note::
+Note that 'blocking' in this context refers to the server command queue, emphasis::not:: to the language. Both these functions will return immediately in the language.
+
+It is important to understand that there are multiple asyncrhonous things at work here, which can make reasoning about all this a bit tricky. First, and most familiar, the language and the server are asynchronous, and we are used to the role that things like code::action:: functions play in managing this asynchrony. When non-real-time jobs, like allocating buffers, or running our Buf* objects in code::processBlocking:: mode, then they are processed in order by the server's command queue thread, and so will complete in the order in which they were invoked. However, when we launch jobs in their own worker threads, then they can complete in any order, so we have a further layer of asynchronous behaviour to think about.
+::
+
+If we wish to block sclang on a Buf* job, then this can be done in a link::Classes/Routine:: by calling code::wait:: on the instance object that code::process:: and code::processBlocking:: return.
+
+It is also possible to invoke these Buf* objects directly on the server through a code::*kr:: method, which makes a special UGen to dispatch the job from a synth. This is primarily useful for running a lot of jobs as a batch process, without needing to communicate too muchwith the language. Meanwhile, the object instances returned by code::process:: expose a instance code::kr:: method, which can be useful for monitoring the progress of a job running in a worker thread via a scope.
 
 For this tutorial, we will use a demonstrative class, LINK::Classes/FluidBufThreadDemo::, which does nothing but  wait on its thread of execution before sending back one value – the amount of time it waited – via a Buffer.
 
@@ -28,20 +40,30 @@ b=Buffer.alloc(s,1);
 FluidBufThreadDemo.process(s, b, 1000, action: {|x|x.get(0,{|y|y.postln});});
 ::
 
+As an alternative to using a callback function, we could use a link::Classes/Routine:: and code::wait::
+
+code::
+(
+Routine{
+ var threadedJob = FluidBufThreadDemo.process(s, b, 1000);
+ threadedJob.wait;
+ b.get(0,{|y|y.postln});
+}.play;
+)
+::
+
 What is happening:
 NUMBEREDLIST::
 
-	## The class will check the arguments' validity
-	## The job runs on a new thread (in this case, doing nothing but waiting for 1000 ms, then writing that number to index [0] of a destination buffer)
-	## It receives an acknowledgment of the job being done
-	## It calls the user-defined function with the destination buffer as its argument. In this case, we send it to a function get which prints the value of index 0.
+## The class will check the arguments' validity
+## The job runs on a new thread (in this case, doing nothing but waiting for 1000 ms, then writing that number to index [0] of a destination buffer)
+## It receives an acknowledgment of the job being done
+## It calls the user-defined function with the destination buffer as its argument. In this case, we send it to a function get which prints the value of index 0.
 ::
-
-There are more details, but this should be enough for common use cases.
 
 subsection:: Cancelling
 
-The 'process' method returns an instance of LINK::Classes/FluidNRTProcess::, which wraps a LINK::Classes/Synth:: running on the server. This gives us a simple interface to cancel a job:
+The 'process' method returns an instance of LINK::Classes/FluidBufProcessor::, which manages communication with a job on the server. This gives us a simple interface to cancel a job:
 
 CODE::
 
@@ -55,9 +77,20 @@ c = FluidBufThreadDemo.process(s, b, 100000, action: {|x|x.get(0,{|y|y.postln});
 c.cancel;
 ::
 
-section:: .kr Usage
+section:: .kr and .*kr Usage
 
-    The 'process' method actually wraps a temporary LINK::Classes/Synth::, which enqueues our job on the server's command FIFO, which in turn launches a worker thread to do the actual work. We can instead interact with the class as a LINK::Classes/UGen::, running in our own custom synth. This allows us to poll the object for progress reports:
+The FluidBuf* classes all have both instance scope and class scope code::kr:: and code::*kr:: methods, which do slightly different things.
+
+The instance method can be used to instantiate a UGen on the server that will monitor a job in progress; however, the UGen plays no role in the lifetime of the job. It is intended as a convinient way to look at the progress of a threaded job using code::scope:: or code::poll:: Importantly, note that killing the synth has no effect on the job that's running.
+
+code::
+(
+c = FluidBufThreadDemo.process(s, b, 1000);
+{FreeSelfWhenDone.kr(c.kr).poll}.scope
+)
+::
+
+The class method, code::*kr:: – more common with UGens – works differently. The UGen that this creates actually spawns a non-real-time job from the synth (so is like calling code::process:: from the server), and there is no further interaction with the language. In this context, killing the synth cancels the job.
 
 CODE::
 // if a simple call to the UGen is used, the progress can be monitored
@@ -70,7 +103,7 @@ a.free
 {SinOsc.ar(Poll.kr(Impulse.kr(2),FluidBufThreadDemo.kr(b,3000)).exprange(110,220),0,0.1)}.play;
 ::
 
-To cancel the job in this setup way, we just free the synth and the background thread will be killed.
+To cancel a job setup in this way, we just free the synth and the background thread will be killed.
 
 CODE::
 // load a buffer, declare a destination, and make a control bus to monitor the work
@@ -101,39 +134,48 @@ f.free
 //to appreciate the multithreading, use your favourite CPU monitoring application. scsynth will be very, very high, despite the peakCPU and avgCPU being very low.
 ::
 
-subsection:: Monitoring Task Completion
+subsection:: Monitoring .*kr Task Completion
 
-    There are a couple of options for dealing with the end of a job. First, the FluidBuf* objects support done actions, so you can use things like LINK::Classes/FreeSelfWhenDone:: or LINK::Classes/Done::, or set a doneAction in the call to .kr (see LINK::Classes/Done:: for details). Note that the UGen's done status only becomes true in the event of successful completion, so it will not catch cancellation. However, the doneAction will run whatever, so you can rely on the synth freeing itself.
+When running a job wholly on the server with code::*kr::, you may still want to know in the language when it has finished. The UGens spawned with the code::*kr:: use the code::done:: flag so can be used with UGens like link::Classes/Done:: and link::Classes/FreeSelfWhenDone:: to manage things when a job finishes.
 
-    Alternatively, the synth will send a /done reply to the node, which also carries information about whether it completed normally or was cancelled. You can use LINK::Classes/OSCFunc:: to listen for this message, targetted to your nodeID.
+For instance, using link::Classes/Done:: and link::Classes/SendReply::, we can send a message back to the language upon completion:
 
 CODE::
 // define a destination buffer
 b=Buffer.alloc(s,1);
 
-//start a long job
-a = {FluidBufThreadDemo.kr(b,10000).poll}.play;
-
 // set a OSC receiver function
 (
-OSCFunc({|msg| //args are message symbol (/done), nodeID and replyID (which gives status)
-        if(msg[2]==0){"Completed Normally".postln}{"Cancelled".postln};
-    },"/done",argTemplate:[a.nodeID]).oneShot; //only listen to things sent for this node
+OSCFunc({ "Job Done".postln;},"/threadDone").oneShot;
+//start a long job
+{
+    var a = FluidBufThreadDemo.kr(b,1000).poll;
+    SendReply.kr(Done.kr(a),'/threadDone');
+    FreeSelfWhenDone.kr(a);
+}.play;
 )
-
-a.free; //optionally cancel - run the job twice to see both behaviour monitored by the OSCFunc above
 ::
 
+subsection:: Retriggering
 
-section:: Opting Out
+FluidBuf* code::*kr:: methods all have a trigger argument, which defaults to code::1:: (meaning that by default, the job will start immediately). This can be useful for either deferring execution, or for repeatedly triggering a job for batch processing.
 
-    Whilst using a worker thread makes sense for long running jobs, the overhead of creating the thread may outweigh any advantages for very small tasks. This is because a certain amount of pre- and post-task work needs to be done before doing a job, particularly copying the buffers involved to temporary memory to avoid working on scsynth's memory outside of scsynth's official threads.
+(
+{
+    var trig = Impulse.kr(1);
+    Poll.kr(trig,trig,"trigger!");
+    FluidBufThreadDemo.kr(b,500,trig).poll;
+}.play;
+)
 
-    For these small jobs, you can opt out of using a worker thread by calling 'processBlocking' on a Fluid Decomposition Buf* object, instead of 'process'. This will run a job directly in the server's command FIFO. If your SCIDE status bar turns yellow, then be aware that this means you are clogging the queue and should consider using a thread instead.
 
-    It is worth mentioning that there is one exception to the behaviour of the FluidBuf* objects: LINK::Classes/FluidBufCompose:: will always run directly in the command FIFO, because the overhead of setting up a job will always be greater than the amount of work this object would have to do.
+section:: Opting Out of Worker Threads
 
-    We don't offer an interface to run tasks directly in the command FIFO via .kr, because under these circumstances you would get no progress updates whilst the task runs, obviating the usefulness of using a custom synth in the first place. Similarly, jobs run with processBlocking can not be cancelled.
+Whilst using a worker thread makes sense for long running jobs, the overhead of creating the thread may outweigh any advantages for very small tasks. This is because a certain amount of pre- and post-task work needs to be done before doing a job, particularly copying the buffers involved to temporary memory to avoid working on scsynth's memory outside of scsynth's official threads.
+
+For these small jobs, you can opt out of using a worker thread by calling 'processBlocking' on a Fluid Decomposition Buf* object, instead of 'process'. This will run a job directly in the server's command FIFO. If your SCIDE status bar turns yellow, then be aware that this means you are clogging the queue and should consider using a thread instead.
+
+It is worth mentioning that there is one exception to the behaviour of the FluidBuf* objects: LINK::Classes/FluidBufCompose:: will always run directly in the command FIFO, because the overhead of setting up a job will always be greater than the amount of work this object would have to do.
 
 You can compare these behaviours here. The blocking will run slightly faster than the default non-blocking,
 
@@ -143,6 +185,7 @@ You can compare these behaviours here. The blocking will run slightly faster tha
 Routine{
     var startTime = Main.elapsedTime;
     100.do{|x,i|
+        0.02.wait;
         FluidBufThreadDemo.process(s,b,10).wait;
     };
     "Threaded Processes 100 iterations in % seconds.\n".postf((Main.elapsedTime - startTime).round(0.01));
@@ -154,6 +197,7 @@ Routine{
 Routine{
     var startTime = Main.elapsedTime;
     100.do{|x,i|
+        0.02.wait;
         FluidBufThreadDemo.processBlocking(s,b,10).wait;
     };
     "Blocking Processes 100 iterations in % seconds.\n".postf((Main.elapsedTime - startTime).round(0.01));
