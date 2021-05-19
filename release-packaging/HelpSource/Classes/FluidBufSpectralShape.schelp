@@ -55,6 +55,21 @@ ARGUMENT:: numChans
 ARGUMENT:: features
 	The destination buffer for the 7 spectral features describing the spectral shape.
 
+ARGUMENT:: minFreq
+	The minimum frequency that the algorithm will consider for computing the spectral shape. Frequencies below will be ignored. The default of 0 goes down to DC when possible.
+
+ARGUMENT:: maxFreq
+	The maximum frequency that the algorithm will consider for computing the spectral shape. Frequencies above will be ignored. The default of -1 goes up to Nyquist.
+
+ARGUMENT:: rolloffPercent
+	This sets the percentage of the frame's energy that will be reported as the rolloff frequency. The default is 95%.
+
+ARGUMENT:: unit
+	The frequency unit for the spectral shapes to be computed upon, and outputted at. The default (0) is in Hertz and computes the moments on a linear spectrum. The alternative is in MIDI note numbers(1), which compute the momontes on an exponential spectrum.
+
+ARGUMENT:: power
+	This flag sets the scaling of the magnitudes in the moment calculation. It uses either its amplitude (0, by default) or its power (1).
+
 ARGUMENT:: windowSize
 	The window size. As spectral shape estimation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 

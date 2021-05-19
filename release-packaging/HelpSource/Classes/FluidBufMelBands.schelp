@@ -51,6 +51,9 @@ ARGUMENT:: maxFreq
 ARGUMENT:: normalize
 	This flag enables the scaling of the output to preserve the energy of the window. It is on (1) by default.
 
+ARGUMENT:: scale
+	This flag sets the scaling of the output value. It is either linear (0, by default) or in dB (1).
+
 ARGUMENT:: windowSize
 	The window size. As spectral description relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
