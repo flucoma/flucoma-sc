@@ -1,10 +1,10 @@
 TITLE:: FluidBufChroma
-SUMMARY:: An histogram of chroma classes on a Buffer
+SUMMARY:: An histogram of pitch classes on a Buffer
 CATEGORIES:: Libraries>FluidDecomposition
 RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreading, Classes/FluidChroma
 
 DESCRIPTION::
-This class computes the histogram of the energy contained within each chroma class. Also known as chromagram, this typically allows to get a contour of how much each semitone is represented in the spectrum. Tuning the central frequency reference, and how many bands are computed, allow for a flexible imprint of octaviated pitch classes.
+This class computes a histogram of the energy contained for each pitch class across the analysis frequency range. Also known as a chromagram, this typically allows you to get a contour of how much each semitone is represented in the spectrum over time. The number of bands (and, thus, pitch classes) and the central reference frequency can be adjusted.
 
 The process will return a single multichannel buffer of STRONG::numChroma:: per input channel. Each frame represents a value, which is every hopSize.
 
@@ -39,25 +39,25 @@ ARGUMENT:: features
 	The destination buffer for the STRONG::numChroma:: to be written to.
 
 ARGUMENT:: numChroma
-	The number of chroma bands per octave. It will decide how many channels are produce per channel of the source.
+	The number of chroma bands per octave. It will determine how many channels are output per input channel.
 
 ARGUMENT:: ref
 	The frequency of reference in Hz for the tuning of the middle A (default: 440 Hz)
 
 ARGUMENT:: normalize
-This flag enables the scaling of the output. It is off (0) by default. (1) will normalise to the FFT size. (2) normalises each frame independently.
+This flag enables the scaling of the output. It is off (0) by default. (1) will normalise to the FFT size. (2) normalises each frame independently to sum to 1.
 
 ARGUMENT:: minFreq
-	The lower frequency included in the chromagram, in Hz.
+	The lower frequency included in the analysis, in Hz.
 
 ARGUMENT:: maxFreq
-	The highest frequency included in the chromagram, in Hz.
+	The highest frequency included in the analysis, in Hz.
 
 ARGUMENT:: windowSize
-	The window size. As spectral description relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
+	The window size. As chroma computation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
 ARGUMENT:: hopSize
-	The window hop size. As spectral description relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of windowSize (overlap of 2).
+	The window hop size. As chroma computation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of windowSize (overlap of 2).
 
 ARGUMENT:: fftSize
 	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will use the next power of 2 equal or above the windowSize.
