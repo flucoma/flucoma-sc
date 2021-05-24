@@ -42,7 +42,7 @@ ARGUMENT:: rolloffPercent
 	This sets the percentage of the frame's energy that will be reported as the rolloff frequency. The default is 95%.
 
 ARGUMENT:: unit
-	The frequency unit for the spectral shapes to be computed upon, and outputted at. The default (0) is in Hertz and computes the moments on a linear spectrum. The alternative is in MIDI note numbers(1), which compute the momontes on an exponential spectrum.
+	The frequency unit for the spectral shapes to be computed upon, and outputted at. The default (0) is in Hertz and computes the moments on a linear spectrum. The alternative is in MIDI note numbers(1), which compute the moments on an exponential spectrum.
 
 ARGUMENT:: power
 	This flag sets the scaling of the magnitudes in the moment calculation. It uses either its amplitude (0, by default) or its power (1).
@@ -249,4 +249,77 @@ x = {
 x.set(\freq, 8800)
 
 // we can observe that the linear spread is kept the same, since there is the same linear distance in Hz between our frequencies. Skewness is a good indication here of where we are in the spectrum with the shape.
+::
+
+
+STRONG::A few notes on the impact of the scale options::
+
+CODE::
+// The computation of the centroids and other moments can also be done considering a logarithmic pitch scale, and/or the power of the magnitudes. This yields values that are more in line with the expectation of the users of equalisers for instance, where the shape is often drawn and described in logairhmic terms, i.e. dB per octave.
+
+// For instance, compare the values of the centroid and the spread in both scales:
+(
+{
+	var source = BPF.ar(PinkNoise.ar(0.1),MouseX.kr().exprange(300,3000).poll(1,label: "filter frequency"), 0.5);
+	FluidSpectralShape.kr(source, minFreq: 20, maxFreq: 20000, unit: 0, power: 0)[0].lag.poll(1,"linear centroid");
+	FluidSpectralShape.kr(source, minFreq: 20, maxFreq: 20000, unit: 1, power: 1)[0].lag.midicps.poll(1,"exponential centroid");//convert from midi to Hz
+	source.dup
+}.play
+)
+
+// The lower one gets in frequency, the more the linear spectral bias shows. The same applies to the spread:
+
+(
+{
+	var source = BPF.ar(PinkNoise.ar(0.1),440, MouseX.kr().exprange(0.1,4).poll(1,label: "filter RQ"));
+	FluidSpectralShape.kr(source, minFreq: 20, maxFreq: 20000, unit: 0, power: 0)[1].lag.poll(1,"linear spread");
+	FluidSpectralShape.kr(source, minFreq: 20, maxFreq: 20000, unit: 1, power: 1)[1].lag.poll(1,"exponential spread");
+	source.dup
+}.play
+)
+
+// The logarythmic unit is in semitones. To convert, either divide by 12 to get the octave of one standard deviation, or divide by 6 to get the width of the filter in octaves. One clear observation is that the width is now in a range that scales with what we hear, growing fourfold as the filter goes from resonating to more broadband.
+
+// An example of productive mapping between filters parameters and logarithmic centroid values allows to make a simple automatic subtractive noise resynthesis
+
+// load a beat
+b = Buffer.read(s,File.realpath(FluidSpectralShape.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
+
+//logcentroid version
+(
+{
+	var source = PlayBuf.ar(1,b,loop: 1);
+	var loudness, centroid, spread;
+
+	#centroid,spread = Lag.kr(FluidSpectralShape.kr(source, minFreq: 20, maxFreq: 20000, unit: 1, power: 1, hopSize: 128),128/SampleRate.ir);
+	loudness =  Lag.kr(FluidLoudness.kr(source,hopSize: 128),128/SampleRate.ir);
+	[
+		DelayN.ar(source,delaytime: 1024/SampleRate.ir),
+		BBandPass.ar(WhiteNoise.ar(),
+			centroid.midicps,
+			(spread/6),
+			loudness[0].dbamp * 2
+		)
+		]
+}.scope;
+)
+
+//lincentroid version for comparison
+(
+{
+	var source = PlayBuf.ar(1,b,loop: 1);
+	var loudness, centroid, spread;
+
+	#centroid,spread = Lag.kr(FluidSpectralShape.kr(source, minFreq: 20, maxFreq: 20000, unit: 0, power: 0, hopSize: 128),128/SampleRate.ir);
+	loudness =  Lag.kr(FluidLoudness.kr(source,hopSize: 128),128/SampleRate.ir);
+	[
+		DelayN.ar(source,delaytime: 1024/SampleRate.ir),
+		Sanitize.ar(BBandPass.ar(WhiteNoise.ar(),
+			centroid,
+			(spread * 2/centroid).max(0.001),
+			loudness[0].dbamp * 2
+	))
+		]
+}.scope;
+)
 ::
