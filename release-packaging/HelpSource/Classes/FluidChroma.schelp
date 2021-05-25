@@ -25,7 +25,7 @@ ARGUMENT:: ref
 	The reference frequency in Hz for the tuning to middle A (default: 440 Hz)
 
 ARGUMENT:: normalize
-This flag enables the scaling of the output. It is off (0) by default. (1) will normalise to the FFT size. (2) normalises each frame to sum to 1.
+This flag enables the scaling of the output. It is off (0) by default. (1) will normalise each frame to sum to 1. (2) normalises each frame relative to the loudest chroma being 1.
 
 ARGUMENT:: minFreq
 	The lower frequency included in the analysis, in Hz.
@@ -101,18 +101,21 @@ c = Buffer.read(s,File.realpath(FluidChroma.class.filenameSymbol).dirname.withTr
 
 // analyse with parameters to be changed
 (
-x = 	{arg chroma = 24, low = 20, high = 20000, norm=1;
-	var source = PlayBuf.ar(1,c,loop:1);
+x = 	{arg chroma = 24, low = 20, high = 20000, norm=1, t_cue, sel=0;
+	var source = Select.ar(sel, [
+		PlayBuf.ar(1,c,loop:1),
+		Saw.ar(TIRand.kr(60.dup(3),96,t_cue).poll(t_cue).midicps,0.05).sum;
+	]);
 	Out.kr(b,FluidChroma.kr(source ,numChroma: chroma, minFreq: low, maxFreq: high, normalize: norm, maxNumChroma: 24, windowSize: 4096) / 10);
 	source.dup;
 }.play;
 )
 
 //set the winRange to a more informative value
-~winRange = 0.04;
+~winRange = 0.03;
 
 //instead, let's normalise each frame independently
-~winRange = 0.2;
+~winRange = 0.12;
 x.set(\norm, 2);
 
 // observe the number of chroma. The unused ones at the top are not updated
@@ -121,8 +124,17 @@ x.set(\chroma,12)
 // back to the full range
 x.set(\chroma,24)
 
-// focus all the bands on a mid range
+// change the source to random three-note chords
+x.set(\sel, 1)
+
+// trigger new chords and observe the chroma contour
+x.set(\t_cue, 1)
+
+// focus all the bands on a low mid range (there might be nothing!)
 x.set(\low,320, \high, 800)
+
+// or on a specific octave
+x.set(\low, 60.midicps, \high, 72.midicps)
 
 // back to full range
 x.set(\low,20, \high, 20000)

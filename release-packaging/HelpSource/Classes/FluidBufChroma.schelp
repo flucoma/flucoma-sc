@@ -45,7 +45,7 @@ ARGUMENT:: ref
 	The frequency of reference in Hz for the tuning of the middle A (default: 440 Hz)
 
 ARGUMENT:: normalize
-This flag enables the scaling of the output. It is off (0) by default. (1) will normalise to the FFT size. (2) normalises each frame independently to sum to 1.
+This flag enables the scaling of the output. It is off (0) by default. (1) will normalise each frame to sum to 1. (2) normalises each frame relative to the loudest chroma being 1.
 
 ARGUMENT:: minFreq
 	The lower frequency included in the analysis, in Hz.
