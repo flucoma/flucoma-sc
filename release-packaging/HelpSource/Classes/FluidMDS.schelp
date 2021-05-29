@@ -1,6 +1,6 @@
 TITLE:: FluidMDS
 summary:: Dimensionality Reduction with Multidimensional Scaling
-categories:: Dimensionality Reduction, Data Processing
+categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidPCA, Classes/FluidDataSet
 
 DESCRIPTION::

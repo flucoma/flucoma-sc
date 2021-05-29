@@ -1,6 +1,6 @@
 TITLE:: FluidGain
 SUMMARY:: Real-Time Buffered Gain Changer
-CATEGORIES:: UGens>Algebraic, Libraries>FluidCorpusManipulation, UGens>Buffer
+CATEGORIES:: Libraries>FluidCorpusManipulation, UGens>Algebraic,UGens>Buffer
 RELATED::  Guides/FluidCorpusManipulation,Classes/UnaryOpFunction
 
 

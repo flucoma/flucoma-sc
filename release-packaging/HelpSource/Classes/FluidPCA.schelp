@@ -1,6 +1,6 @@
 TITLE:: FluidPCA
 summary:: Dimensionality Reduction with Principal Component Analysis
-categories:: Dimensionality Reduction, Data Processing
+categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidMDS, Classes/FluidDataSet
 
 DESCRIPTION::

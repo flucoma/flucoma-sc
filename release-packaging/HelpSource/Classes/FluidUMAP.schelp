@@ -1,6 +1,6 @@
 TITLE:: FluidUMAP
 summary:: Dimensionality Reduction with Uniform Manifold Approximation and Projection
-categories:: Dimensionality Reduction, Data Processing
+categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidMDS, Classes/FluidPCA, Classes/FluidDataSet
 
 DESCRIPTION::

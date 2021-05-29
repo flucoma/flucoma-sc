@@ -1,6 +1,6 @@
 TITLE:: FluidMLPRegressor
 summary:: Regression with a multi-layer perceptron
-categories:: Machine learning
+categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidMLPClassifier, Classes/FluidDataSet
 
 DESCRIPTION::

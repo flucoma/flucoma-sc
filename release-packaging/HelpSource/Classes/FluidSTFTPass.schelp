@@ -1,6 +1,6 @@
 TITLE:: FluidSTFTPass
 SUMMARY:: Real-Time FFT/IFFT return trip.
-CATEGORIES:: UGens>Algebraic, Libraries>FluidCorpusManipulation, UGens>Buffer
+CATEGORIES:: Libraries>FluidCorpusManipulation
 RELATED::  Guides/FluidCorpusManipulation,Classes/UnaryOpFunction
 
 

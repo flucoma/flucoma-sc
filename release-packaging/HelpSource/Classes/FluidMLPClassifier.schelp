@@ -1,6 +1,6 @@
 TITLE:: FluidMLPClassifier
 summary:: Classification with a multi-layer perceptron
-categories:: Machine learning
+categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidMLPRegressor, Classes/FluidDataSet
 
 Perform classification between a link::Classes/FluidDataSet:: and a link::Classes/FluidLabelSet:: using a Multi-Layer Perception neural network.

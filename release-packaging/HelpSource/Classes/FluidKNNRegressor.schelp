@@ -1,6 +1,6 @@
 TITLE:: FluidKNNRegressor
 summary:: Regression with K Nearest Neighbours
-categories:: Regression
+categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidKNNClassifier, Classes/FluidDataSet
 
 DESCRIPTION::

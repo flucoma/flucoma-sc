@@ -1,6 +1,6 @@
 TITLE:: FluidKNNClassifier
 summary:: Classify data with K Nearest Neighbours
-categories:: Classification, KNN
+categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidKNNRegressor, Classes/FluidDataSet, Classes/FluidLabelSet
 
 DESCRIPTION::
