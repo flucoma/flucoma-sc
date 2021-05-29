@@ -1,0 +1,118 @@
+TITLE:: Fluid Corpus Manipulation Toolkit
+SUMMARY:: An overview of the FluCoMa toolkit to analyse, transform and learn from sounds
+CATEGORIES:: Libraries>FluidDecomposition, Guides>FluCoMa
+
+DESCRIPTION::
+The Fluid Corpus Manipulation toolkit provides an open-ended, loosely coupled set of objects for exploring and music making with collections of sound. It includes tools for slicing, analysing, decomposition and transforming audio, as well as a suite of objects for exploring and organisng using machine learning.
+
+Almost all objects for audio analysis or transformation have audio-rate and buffer-based versions, and there are custom server-side containers for data analysis. footnote::
+This toolbox was made possible thanks to the link::http://www.flucoma.org/##FluCoMa project:: funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
+
+section::Contents
+list::
+##link::#Slice Audio::
+##link::#Analyse Audio::
+##link::#Decompose Audio::
+##link::#Transform Audio::
+##link::#Analyse Data::
+##link::#Helpers::
+::
+section::Slice Audio
+
+table::
+## strong::on signals:: || strong:: on buffers:: || strong::digest::
+## Link::Classes/FluidAmpGate:: || LINK:: Classes/FluidBufAmpGate:: || Events from amplitude enevelope
+## LINK:: Classes/FluidAmpSlice:: || Link::Classes/FluidBufAmpSlice:: || Onsets from amplitude envelope
+## link::Classes/FluidOnsetSlice::||link::Classes/FluidBufOnsetSlice::||Spectral onset detecor
+## link::Classes/FluidTransientSlice::||link::Classes/FluidBufTransientSlice::||Transient model onset detector
+## LINK:: Classes/FluidNoveltySlice::||LINK:: Classes/FluidBufNoveltySlice::|| Novelty based onset detection on a choice of descriptors
+::
+
+section:: Analyse Audio
+
+table::
+## strong::on signals:: || strong:: on buffers:: || strong::digest::
+##link::Classes/FluidPitch:: || link::Classes/FluidBufPitch:: || Choice of pitch descriptors
+##link::Classes/FluidLoudness:: || link::Classes/FluidBufLoudness:: || Loudness Descriptor
+##link::Classes/FluidMelBands:: || link::Classes/FluidBufMelBands:: || Energy in Mel Bands
+##link::Classes/FluidMFCC:: || link::Classes/FluidBufMFCC:: || Timbral Descriptor with Mel Frequency Cepstral Coefficients
+##link::Classes/FluidSpectralShape:: || link::Classes/FluidBufSpectralShape:: || Seven Spectral Shape Descriptors
+##link::Classes/FluidChroma:: || link::Classes/FluidBufChroma:: || Pitch Classes Descriptor
+##link::Classes/FluidNMFMatch:: ||  || Real-time activation of link::Classes/FluidBufNMF##NMF:: bases
+## || link::Classes/FluidBufNNDSVD::|| Quick starting estimates for link::Classes/FluidBufNMF##NMF:: components using Singular Value Decomposition
+::
+
+section:: Decompose Audio
+table::
+## strong::on signals:: || strong:: on buffers:: || strong::digest::
+##link::Classes/FluidSines:: || link::Classes/FluidBufSines:: || Decompose into sines + residual
+##link::Classes/FluidTransients:: || link::Classes/FluidBufTransients:: ||Decompose into transients + residual
+##link::Classes/FluidHPSS:: || link::Classes/FluidBufHPSS:: ||Decompose into 'harmonic' and 'percussive' layers
+##  || link::Classes/FluidBufNMF:: ||Use Nonnegative Matrix Factorisation to explore and decompose sounds
+## || link::Classes/FluidBufSTFT:: || Perform STFT / ISTFT on link::Classes/Buffer::s
+::
+
+section::Transform Audio
+
+table::
+## strong::on signals:: || strong:: on buffers:: || strong::digest::
+##link::Classes/FluidAudioTransport:: || link::Classes/FluidBufAudioTransport:: || Interpolate between sounds using Optimal Transport
+##link::Classes/FluidNMFFilter:: ||  ||Filter sound using  link::Classes/FluidBufNMF##NMF:: bases
+##link::Classes/FluidNMFMorph:: ||  ||Morph between sounds using link::Classes/FluidBufNMF##NMF:: components
+## || link::Classes/FluidBufNMFCross::||Cross synthesise buffers using link::Classes/FluidBufNMF##NMF:: components
+::
+
+section:: Analyse Data
+
+subsection::Containers
+table::
+##link::Classes/FluidDataSet:: || Container for labelled, multidimensional data
+##link::Classes/FluidLabelSet:: || Container of labels associated with IDs
+::
+subsection:: Buffer Analysis
+table::
+##link::Classes/FluidBufStats:: ||  Compute statistics on link::Classes/Buffer::s
+::
+subsection:: Preprocessing
+table::
+##link::Classes/FluidNormalize:: || Normalize link::Classes/FluidDataSet::s and link::Classes/Buffer::s
+##link::Classes/FluidStandardize:: ||  Standardize link::Classes/FluidDataSet::s and link::Classes/Buffer::s
+##link::Classes/FluidRobustScale:: ||   Scale link::Classes/FluidDataSet::s and link::Classes/Buffer::s using order statistics
+::
+subsection:: Searching and Querying
+table::
+##link::Classes/FluidKDTree:: || Nearest Neighbour queries on link::Classes/FluidDataSet::
+##link::Classes/FluidDataSetQuery:: || Construct custom queries on  link::Classes/FluidDataSet::
+::
+subsection::Supervised Machine Learning
+table::
+##link::Classes/FluidKNNRegressor:: || Regression by Nearest Neighbour modelling
+##link::Classes/FluidKNNClassifier:: ||  Classification by Nearest Neighbour modelling
+##link::Classes/FluidMLPRegressor:: ||  Regression using Multilayer Perceptron model
+##link::Classes/FluidMLPClassifier:: || Classification by Nearest Neighbour modelling
+::
+subsection::Unsupervised Machine Learning
+table::
+##link::Classes/FluidPCA:: || Principal Component Analysis for preprocessing and dimension reduction
+##link::Classes/FluidMDS:: ||  Multidimensional Scaling for dimension reduction
+##link::Classes/FluidKMeans:: ||  K-Means clustering
+##link::Classes/FluidUMAP:: ||  Dimension reduction with UMAP algorithm
+::
+
+section:: Helpers
+
+subsection:: Buffer Utilities
+table::
+##link::Classes/FluidBufCompose:: || Copy, slice, stack, mix concatenate. All the things you've wanted to do with buffers...
+##link::Classes/FluidBufScale:: ||  Remap range of values (like linlin etc.)
+##link::Classes/FluidBufThresh:: || Zero elements below threshold
+##link::Classes/FluidBufSelect:: || Select range (frame-wise or channel wise)
+##link::Classes/FluidBufSelectEvery:: || Select every N elements (frame-wise or channel wise)
+##link::Classes/FluidBufFlatten:: || Flatten multichannel data into single channel 'point'
+::
+subsection:: Corpus Building
+table::
+##link::Classes/FluidLoadFolder:: || Load a folder of sounds into a link::Classes/Buffer::
+##link::Classes/FluidSliceCorpus:: || Batch-slice a corpus
+##link::Classes/FluidProcessSlices:: || Batch-analyse slices
+::
