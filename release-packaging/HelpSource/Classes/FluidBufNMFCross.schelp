@@ -1,6 +1,6 @@
 TITLE:: FluidBufNMFCross
 summary:: Reconstructs the sound in the target buffer using components learned from the source buffer using an NMF decomposition
-categories:: FluidManipulation
+categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidBufNMF, Classes/FluidNMFMatch, Classes/FluidNMFFilter
 
 DESCRIPTION::

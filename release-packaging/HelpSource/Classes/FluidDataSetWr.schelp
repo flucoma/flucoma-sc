@@ -1,6 +1,6 @@
 TITLE:: FluidDataSetWr
 summary:: Write to FluidDataSet on the server
-categories:: FluidManipulation
+categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FLuidDataSet
 
 DESCRIPTION::

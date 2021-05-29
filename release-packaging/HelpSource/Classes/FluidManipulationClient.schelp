@@ -1,9 +1,9 @@
-TITLE:: FluidManipulationClient
-summary:: A base case for FluidManipulation classes
-categories:: FluidManipulation
+TITLE:: Libraries>FluidCorpusManipulationClient
+summary:: A base case for Libraries>FluidCorpusManipulation classes
+categories:: Libraries>FluidCorpusManipulation
 
 DESCRIPTION::
-A utility base class for FluidManipulation classes, that deals with common functionality (wrapping a link::Classes/Synth:: in the instance, etc.)
+A utility base class for Libraries>FluidCorpusManipulation classes, that deals with common functionality (wrapping a link::Classes/Synth:: in the instance, etc.)
 
 Not intended to be used directly.
 

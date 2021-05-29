@@ -1,7 +1,7 @@
 TITLE:: FluidProcessSlices
 summary:: Utility for batch processing slices
-categories:: FluidManipulation
-related:: Classes/FluidLoadFolder, Classes/FluidSliceCorpus,Guides/FluidDecomposition
+categories:: Libraries>FluidCorpusManipulation
+related:: Classes/FluidLoadFolder, Classes/FluidSliceCorpus,Guides/FluidCorpusManipulation
 
 DESCRIPTION::
 This class abstracts some of the boilerplate involved in batch processing a sequence of segments in a link::Classes/Buffer:: on the server. It does this by iteratively running a user supplied function and using slice point information passed as an link::Classes/IdentityDictionary:: (see link::Classes/FluidLoadFolder#-index:: for details on the format of this).

@@ -1,6 +1,6 @@
 TITLE:: FluidBufAudioTransport
 summary:: Interpolate between buffers
-categories:: FluidManipulation
+categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidAudioTransport
 
 DESCRIPTION::

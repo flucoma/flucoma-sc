@@ -1,7 +1,7 @@
 TITLE:: FluidHPSS
 SUMMARY:: Harmonic-Percussive Source Separation Using Median Filtering
-CATEGORIES:: Libraries>FluidDecomposition
-RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
+CATEGORIES:: Libraries>FluidCorpusManipulation
+RELATED::  Guides/FluidCorpusManipulation
 
 A FluidHPSS object performs Harmonic-Percussive Source Separation (HPSS) on the an audio input. The class performs HPSS as described in its original form footnote::
 Fitzgerald, Derry. 2010. ‘Harmonic/Percussive Separation Using Median Filtering’. In Proceedings DaFx 10. https://arrow.dit.ie/argcon/67.
@@ -14,7 +14,7 @@ The algorithm takes an audio in, and divides it into two or three outputs, depen
 	## a percussive component;
 	## a residual of the previous two if the flag is set to inter-dependant thresholds. See the maskingMode below.::
 
-It is part of the LINK:: Guides/FluidDecomposition:: of LINK:: Guides/FluCoMa::. For more explanations, learning material, and discussions on its musicianly uses, visit http://www.flucoma.org/
+It is part of the LINK:: Guides/FluidCorpusManipulation##Fluid Corpus Manipulation Toolkit::. For more explanations, learning material, and discussions on its musicianly uses, visit http://www.flucoma.org/
 
 CLASSMETHODS::
 

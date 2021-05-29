@@ -1,10 +1,10 @@
 TITLE:: FluidDataSet
 summary:: Container for labelled,  multidimensional data
-categories:: UGens>FluidManipulation
+categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidLabelSet, Classes/FluidKDTree, Classes/FluidKMeans
 ​
 DESCRIPTION::
-A server-side container associating labels with multi-dimensional data. FluidDataSet is identified by its name.
+A server-side container associating labels with multi-dimensional data.
 
 CLASSMETHODS::
 ​

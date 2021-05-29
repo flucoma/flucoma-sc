@@ -1,6 +1,6 @@
 TITLE:: Fluid Corpus Manipulation Toolkit
-SUMMARY:: An overview of the FluCoMa toolkit to analyse, transform and learn from sounds
-CATEGORIES:: Libraries>FluidDecomposition, Guides>FluCoMa
+SUMMARY:: The FluCoMa toolkit to analyse, transform and learn from sounds
+CATEGORIES:: Libraries>FluidCorpusManipulation
 
 DESCRIPTION::
 The Fluid Corpus Manipulation toolkit provides an open-ended, loosely coupled set of objects for exploring and music making with collections of sound. It includes tools for slicing, analysing, decomposition and transforming audio, as well as a suite of objects for exploring and organisng using machine learning.

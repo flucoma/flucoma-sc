@@ -1,10 +1,10 @@
 TITLE:: FluidBufMFCC
 SUMMARY:: Mel-Frequency Cepstral Coefficients as Spectral Descriptors on a Buffer
-CATEGORIES:: Libraries>FluidDecomposition
-RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreading, Classes/FluidBufMelBands
+CATEGORIES:: Libraries>FluidCorpusManipulation
+RELATED::  Guides/FluidCorpusManipulation, Guides/FluidBufMultiThreading, Classes/FluidBufMelBands
 
 DESCRIPTION::
-This class implements a classic spectral descriptor, the Mel-Frequency Cepstral Coefficients (https://en.wikipedia.org/wiki/Mel-frequency_cepstrum). The input is first filtered in to STRONG::numBands:: perceptually-spaced bands, as in LINK::Classes/FluidMelBands::. It is then analysed into STRONG::numCoeffs:: number of cepstral coefficients. It has the advantage of being amplitude invariant, except for the first coefficient. It is part of the LINK:: Guides/FluidDecomposition:: of LINK:: Guides/FluCoMa::. For more explanations, learning material, and discussions on its musicianly uses, visit http://www.flucoma.org/
+This class implements a classic spectral descriptor, the Mel-Frequency Cepstral Coefficients (https://en.wikipedia.org/wiki/Mel-frequency_cepstrum). The input is first filtered in to STRONG::numBands:: perceptually-spaced bands, as in LINK::Classes/FluidMelBands::. It is then analysed into STRONG::numCoeffs:: number of cepstral coefficients. It has the advantage of being amplitude invariant, except for the first coefficient. It is part of the LINK:: Guides/FluidCorpusManipulation##Fluid Corpus Manipulation Toolkit::. For more explanations, learning material, and discussions on its musicianly uses, visit http://www.flucoma.org/
 
 The process will return a single multichannel buffer of STRONG::numCoeffs:: per input channel. Each frame represents a value, which is every hopSize.
 

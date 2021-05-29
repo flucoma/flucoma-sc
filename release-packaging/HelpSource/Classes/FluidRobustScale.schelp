@@ -1,6 +1,6 @@
 TITLE:: FluidRobustScale
 summary:: Apply Robust Scaling to FluidDataSet
-categories:: FluidManipulation
+categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidStandardize, Classes/FluidNormalize, Classes/FluidDataSet
 
 DESCRIPTION::

@@ -1,6 +1,6 @@
 TITLE:: FluidDataSetQuery
 summary:: Query a FluidDataSet
-categories:: UGens>FluidManipulation
+categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidDataSet
 
 DESCRIPTION::

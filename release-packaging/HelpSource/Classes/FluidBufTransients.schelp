@@ -1,10 +1,10 @@
 TITLE:: FluidBufTransients
 SUMMARY:: Buffer-Based Transient Extractor
-CATEGORIES:: Libraries>FluidDecomposition, UGens>Buffer
-RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreading
+CATEGORIES:: Libraries>FluidCorpusManipulation, UGens>Buffer
+RELATED::  Guides/FluidCorpusManipulation, Guides/FluidBufMultiThreading
 
 DESCRIPTION::
-This class triggers a transient extractor on buffers on the non-real-time thread of the server. It implements declicking algorithm from chapter 5 of the classic Digital Audio Restoration by Godsill, Simon J., Rayner, Peter J.W. with some bespoke improvements on the detection function tracking. It is part of the LINK:: Guides/FluidDecomposition:: of LINK:: Guides/FluCoMa::. For more explanations, learning material, and discussions on its musicianly uses, visit http://www.flucoma.org/
+This class triggers a transient extractor on buffers on the non-real-time thread of the server. It implements declicking algorithm from chapter 5 of the classic Digital Audio Restoration by Godsill, Simon J., Rayner, Peter J.W. with some bespoke improvements on the detection function tracking. It is part of the LINK:: Guides/FluidCorpusManipulation##Fluid Corpus Manipulation Toolkit::. For more explanations, learning material, and discussions on its musicianly uses, visit http://www.flucoma.org/
 
 		The algorithm will take a buffer in, and will divide it in two outputs: LIST::
 	## the transients, estimated from the signal and extracted from it;

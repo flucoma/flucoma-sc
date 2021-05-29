@@ -1,6 +1,6 @@
 TITLE:: FluidLabelSet
 summary:: A set of labels associated with IDs
-categories:: FluidManipulation
+categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidDataSet, Classes/FluidKMeans
 
 DESCRIPTION::

@@ -1,6 +1,6 @@
 TITLE:: FluidSliceCorpus
 summary:: A utility for batch slicing of a corpus
-categories:: FluidManipulation
+categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidLoadFolder, Classes/FluidProcessSlices, Classes/FluidBufOnsetSlice, Classes/FluidBufNoveltySlice, Classes/FluidBufTransientSlice
 
 DESCRIPTION::
@@ -29,7 +29,7 @@ definitionlist::
 || The destination link::Classes/Buffer:: into which to write slice indices
 ::
 
-This configuration assumes that you are using one of the link::Guides/FluidDecomposition:: buffer-based slicing objects, or at least following their conventions, notably:
+This configuration assumes that you are using one of the link::Guides/FluidCorpusManipulation:: buffer-based slicing objects, or at least following their conventions, notably:
 list::
 ## slice points are written into a buffer as sample positions.
 ## If no slices are found, then a single value of -1 is written instead

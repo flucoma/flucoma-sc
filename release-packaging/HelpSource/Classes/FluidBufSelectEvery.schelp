@@ -1,6 +1,6 @@
 TITLE:: FluidBufSelectEvery
 summary:: Extract every N samples / channels from a buffer
-categories:: FluidCorpusManipulation
+categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidBufSelect
 
 DESCRIPTION::

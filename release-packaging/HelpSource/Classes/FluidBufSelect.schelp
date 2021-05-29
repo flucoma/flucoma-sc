@@ -1,6 +1,6 @@
 TITLE:: FluidBufSelect
 summary:: Cherry pick values from a buffer
-categories:: FluidCorpusManipulation
+categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidBufSelectEvery
 
 DESCRIPTION::

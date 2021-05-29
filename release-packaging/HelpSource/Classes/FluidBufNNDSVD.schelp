@@ -1,6 +1,6 @@
 TITLE:: FluidBufNNDSVD
 summary:: Non-Negative Double Singular Value Decomposition on a Buffer
-categories:: FluidManipulation
+categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidBufNMF
 
 DESCRIPTION::

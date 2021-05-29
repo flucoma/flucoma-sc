@@ -1,7 +1,7 @@
 TITLE:: FluidBufChroma
 SUMMARY:: An histogram of pitch classes on a Buffer
-CATEGORIES:: Libraries>FluidDecomposition
-RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreading, Classes/FluidChroma
+CATEGORIES:: Libraries>FluidCorpusManipulation
+RELATED::  Guides/FluidCorpusManipulation, Guides/FluidBufMultiThreading, Classes/FluidChroma
 
 DESCRIPTION::
 This class computes a histogram of the energy contained for each pitch class across the analysis frequency range. Also known as a chromagram, this typically allows you to get a contour of how much each semitone is represented in the spectrum over time. The number of bands (and, thus, pitch classes) and the central reference frequency can be adjusted.

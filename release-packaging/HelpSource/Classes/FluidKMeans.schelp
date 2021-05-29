@@ -1,6 +1,6 @@
 TITLE:: FluidKMeans
 summary:: Cluster data points with K-Means
-categories:: FluidManipulation
+categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidDataSet, Classes/FluidLabelSet, Classes/FluidKNNClassifier, Classes/FluidKNNRegressor
 
 DESCRIPTION::

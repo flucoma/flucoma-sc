@@ -1,6 +1,6 @@
 TITLE:: FluidBufSTFT
 summary:: Perform a Short-Time Fourier Transform on one channel of a buffer
-categories:: FluidCorpusManipulation
+categories:: Libraries>FluidCorpusManipulation
 related:: Classes/Buffer
 
 DESCRIPTION::

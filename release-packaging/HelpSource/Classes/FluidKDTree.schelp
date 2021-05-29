@@ -1,6 +1,6 @@
 TITLE:: FluidKDTree
 summary:: KD Tree on the server
-categories:: FluidManipulation
+categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidDataSet
 
 DESCRIPTION::

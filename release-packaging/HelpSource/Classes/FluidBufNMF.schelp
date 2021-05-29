@@ -1,7 +1,7 @@
 TITLE:: FluidBufNMF
 SUMMARY:: Buffer-Based Non-Negative Matrix Factorisation on Spectral Frames
-CATEGORIES:: Libraries>FluidDecomposition, UGens>Buffer
-RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreading, Classes/FluidNMFMatch, Classes/FluidNMFFilter
+CATEGORIES:: Libraries>FluidCorpusManipulation, UGens>Buffer
+RELATED::  Guides/FluidCorpusManipulation, Guides/FluidBufMultiThreading, Classes/FluidNMFMatch, Classes/FluidNMFFilter
 
 DESCRIPTION::
 The FluidBufNMF object decomposes the spectrum of a sound into a number of components using Non-Negative Matrix Factorisation (NMF) footnote:: Lee, Daniel D., and H. Sebastian Seung. 1999. ‘Learning the Parts of Objects by Non-Negative Matrix Factorization’. Nature 401 (6755): 788–91. https://doi.org/10.1038/44565.
@@ -27,7 +27,7 @@ In this implementation, the components are reconstructed by masking the original
 
 The whole process can be related to a channel vocoder where, instead of fixed bandpass filters, we get more complex filter shapes that are learned from the data, and the activations correspond to channel envelopes.
 
-FluidBufNMF is part of the LINK:: Guides/FluidDecomposition:: of LINK:: Guides/FluCoMa::. For more explanations, learning material, and discussions on its musicianly uses, visit http://www.flucoma.org/
+FluidBufNMF is part of the LINK::Guides/FluidCorpusManipulation::. For more explanations, learning material, and discussions on its musicianly uses, visit http://www.flucoma.org/
 
 STRONG::Threading::
 

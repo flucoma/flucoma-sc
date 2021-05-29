@@ -1,10 +1,10 @@
 TITLE:: FluidBufCompose
 SUMMARY:: Buffer Compositing Utility
-CATEGORIES:: Libraries>FluidDecomposition, UGens>Buffer
-RELATED:: Guides/FluCoMa, Guides/FluidDecomposition, Guides/FluidBufMultiThreading, Classes/Buffer
+CATEGORIES:: Libraries>FluidCorpusManipulation, UGens>Buffer
+RELATED::  Guides/FluidCorpusManipulation, Guides/FluidBufMultiThreading, Classes/Buffer
 
 DESCRIPTION::
-A FluidBufCompose object provides a flexible utility for combining the contents of buffers on the server. It can be used for thing like mixing down multichannel buffers, or converting from left-right stereo to mid-side. It is used extensively in all the example code of LINK::Guides/FluidDecomposition:: as part of the FluCoMa project. For more explanations, learning material, and discussions on its musicianly uses, visit http://www.flucoma.org/
+A FluidBufCompose object provides a flexible utility for combining the contents of buffers on the server. It can be used for thing like mixing down multichannel buffers, or converting from left-right stereo to mid-side. It is used extensively in all the example code of LINK::Guides/FluidCorpusManipulation:: as part of the FluCoMa project. For more explanations, learning material, and discussions on its musicianly uses, visit http://www.flucoma.org/
 
 At its most simple, the object copies the content of a source buffer into a destination buffer. The flexibility comes from the various flags controlling which portions and channels of the source to use, and by applying gains (which can be positive or negative) to the source data and the portion of the destination that would be overwritten.
 

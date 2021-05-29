@@ -1,6 +1,6 @@
 TITLE:: FluidLoadFolder
 summary:: Load a folder of audio into a single buffer
-categories:: FluidCorpusManipulation
+categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidSliceCorpus, Classes/FluidProcessSlices
 
 DESCRIPTION::

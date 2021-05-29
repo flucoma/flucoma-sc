@@ -1,6 +1,6 @@
 TITLE:: FluidNMFMorph
 summary:: Morph between sounds
-categories:: FluidCorpusManipulation
+categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidAudioTransport,Classes/FluidBufNMFCross
 
 

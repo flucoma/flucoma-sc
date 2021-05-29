@@ -1,7 +1,7 @@
 TITLE:: FluidBuf* Multithreading Behaviour
 SUMMARY:: A tutorial on the multithreading behaviour of offline processes of the Fluid Decomposition toolbox for signal decomposition
-CATEGORIES:: Libraries>FluidDecomposition, Guides>FluCoMa
-RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
+CATEGORIES:: Libraries>FluidCorpusManipulation
+RELATED::  Guides/FluidCorpusManipulation
 
 DESCRIPTION::
 The Fluid Decomposition toolbox footnote::This toolbox was made possible thanks to the FluCoMa project,  https://www.flucoma.org, funded by the European Research Council ( https://erc.europa.eu ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899):: provides an open-ended, loosely coupled set of objects to break up and analyse sound in terms of slices (segments in time), layers (superpositions in time and frequency) and objects (configurable or discoverable patterns in sound). Many objects have audio-rate and buffer-based versions.

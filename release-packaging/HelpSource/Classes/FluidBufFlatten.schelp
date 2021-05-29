@@ -1,6 +1,6 @@
 TITLE:: FluidBufFlatten
 summary:: Flatten a multichannel buffer on the server
-categories:: FluidCorpusManipulation
+categories:: Libraries>FluidCorpusManipulation
 related:: Classes/Buffer, Classes/FluidBufCompose, Classes/FluidBufSelect, Classes/FluidBufSelectEvery
 
 DESCRIPTION::

@@ -1,6 +1,6 @@
 TITLE:: FluidNormalize
 summary:: Normalize a FluidDataSet
-categories:: FluidManipulation
+categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidStandardize, Classes/FluidRobustScale, Classes/FluidDataSet
 
 DESCRIPTION::

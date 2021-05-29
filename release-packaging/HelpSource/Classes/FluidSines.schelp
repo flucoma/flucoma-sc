@@ -1,10 +1,10 @@
 TITLE:: FluidSines
 SUMMARY:: Sinusoidal Modelling and Resynthesis
-CATEGORIES:: Libraries>FluidDecomposition
-RELATED:: Guides/FluCoMa, Guides/FluidDecomposition
+CATEGORIES:: Libraries>FluidCorpusManipulation
+RELATED::  Guides/FluidCorpusManipulation
 
 DESCRIPTION::
-This class applies a Sinusoidal Modelling process on its audio input. It implements a mix of algorithms taken from classic papers. It is part of the LINK:: Guides/FluidDecomposition:: of LINK:: Guides/FluCoMa::. For more explanations, learning material, and discussions on its musicianly uses, visit http://www.flucoma.org/
+This class applies a Sinusoidal Modelling process on its audio input. It implements a mix of algorithms taken from classic papers. It is part of the LINK:: Guides/FluidCorpusManipulation##Fluid Corpus Manipulation Toolkit::. For more explanations, learning material, and discussions on its musicianly uses, visit http://www.flucoma.org/
 
 	The algorithm will take an audio in, and will divide it in two parts: LIST::
 	## a reconstruction of what it detects as sinusoidal;
