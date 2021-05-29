@@ -4,7 +4,7 @@ CATEGORIES:: Libraries>FluidCorpusManipulation
 RELATED::  Guides/FluidCorpusManipulation, Guides/FluidBufMultiThreading, Classes/FluidChroma
 
 DESCRIPTION::
-This class computes a histogram of the energy contained for each pitch class across the analysis frequency range. Also known as a chromagram, this typically allows you to get a contour of how much each semitone is represented in the spectrum over time. The number of bands (and, thus, pitch classes) and the central reference frequency can be adjusted.
+This class computes a histogram of the energy contained for each pitch class across the analysis frequency range. Also known as a chromagram, this typically allows you to get a contour of how much each semitone is represented in the spectrum over time. The number of chroma bins (and, thus, pitch classes) and the central reference frequency can be adjusted.
 
 The process will return a single multichannel buffer of STRONG::numChroma:: per input channel. Each frame represents a value, which is every hopSize.
 
@@ -39,13 +39,13 @@ ARGUMENT:: features
 	The destination buffer for the STRONG::numChroma:: to be written to.
 
 ARGUMENT:: numChroma
-	The number of chroma bands per octave. It will determine how many channels are output per input channel.
+	The number of chroma bins per octave. It will determine how many channels are output per input channel.
 
 ARGUMENT:: ref
 	The frequency of reference in Hz for the tuning of the middle A (default: 440 Hz)
 
 ARGUMENT:: normalize
-This flag enables the scaling of the output. It is off (0) by default. (1) will normalise each frame to sum to 1. (2) normalises each frame relative to the loudest chroma being 1.
+This flag enables the scaling of the output. It is off (0) by default. (1) will normalise each frame to sum to 1. (2) normalises each frame relative to the loudest chroma bin being 1.
 
 ARGUMENT:: minFreq
 	The lower frequency included in the analysis, in Hz.
@@ -121,6 +121,6 @@ Routine{
 }.play
 )
 
-// look at the buffer: 10 bands for left, then 10 bands for right
+// look at the buffer: 12 chroma bins for left, then 12 chroma bins for right
 c.plot(separately:true)
 ::

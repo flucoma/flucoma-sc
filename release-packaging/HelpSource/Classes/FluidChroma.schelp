@@ -4,7 +4,7 @@ CATEGORIES:: Libraries>FluidCorpusManipulation
 RELATED::  Guides/FluidCorpusManipulation, Classes/FluidBufChroma
 
 DESCRIPTION::
-This class computes a histogram of the energy contained for each pitch class across the analysis frequency range. Also known as a chromagram, this typically allows you to get a contour of how much each semitone is represented in the spectrum over time. The number of bands (and, thus, pitch classes) and the central reference frequency can be adjusted.
+This class computes a histogram of the energy contained for each pitch class across the analysis frequency range. Also known as a chromagram, this typically allows you to get a contour of how much each semitone is represented in the spectrum over time. The number of chroma bins (and, thus, pitch classes) and the central reference frequency can be adjusted.
 
 It is part of the LINK:: Guides/FluidCorpusManipulation##Fluid Corpus Manipulation Toolkit::. For more explanations, learning material, and discussions on its musicianly uses, visit http://www.flucoma.org/
 
@@ -19,13 +19,13 @@ ARGUMENT:: in
 	The audio to be processed.
 
 ARGUMENT:: numChroma
-	The number of chroma bands per octave. It will determine how many channels of the output stream are filled.
+	The number of chroma bins per octave. It will determine how many channels of the output stream are filled.
 
 ARGUMENT:: ref
 	The reference frequency in Hz for the tuning to middle A (default: 440 Hz)
 
 ARGUMENT:: normalize
-This flag enables the scaling of the output. It is off (0) by default. (1) will normalise each frame to sum to 1. (2) normalises each frame relative to the loudest chroma being 1.
+This flag enables the scaling of the output. It is off (0) by default. (1) will normalise each frame to sum to 1. (2) normalises each frame relative to the loudest chroma bin being 1.
 
 ARGUMENT:: minFreq
 	The lower frequency included in the analysis, in Hz.
@@ -34,7 +34,7 @@ ARGUMENT:: maxFreq
 	The highest frequency included in the analysis, in Hz.
 
 ARGUMENT:: maxNumChroma
-	The maximum number of pitch classes. This sets the number of channels of the output stream, and therefore cannot be modulated.
+	The maximum number of chroma bins. This sets the number of channels of the output stream, and therefore cannot be modulated.
 
 ARGUMENT:: windowSize
 	The window size. As chroma computation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
@@ -49,7 +49,7 @@ ARGUMENT:: maxFFTSize
 	How large can the FFT be, by allocating memory at instantiation time. This cannot be modulated.
 
 RETURNS::
-	A  KR signal of STRONG::maxNumChroma:: channels, giving the measure amplitudes for each chroma. The latency is windowSize.
+	A  KR signal of STRONG::maxNumChroma:: channels, giving the measure amplitudes for each chroma bin. The latency is windowSize.
 
 
 EXAMPLES::
@@ -61,7 +61,7 @@ b = Bus.new(\control,0,24);
 //create a monitoring window for the values
 
 (
-w = Window("Chroma Bands Monitor", Rect(10, 10, 620, 320)).front;
+w = Window("Chroma Bins Monitor", Rect(10, 10, 620, 320)).front;
 a = MultiSliderView(w,Rect(10, 10, 600, 300)).elasticMode_(1).isFilled_(1);
 )
 
@@ -130,7 +130,7 @@ x.set(\sel, 1)
 // trigger new chords and observe the chroma contour
 x.set(\t_cue, 1)
 
-// focus all the bands on a low mid range (there might be nothing!)
+// focus all the chroma bin on a low mid range (there might be nothing!)
 x.set(\low,320, \high, 800)
 
 // or on a specific octave
