@@ -1,14 +1,14 @@
 TITLE:: FluidBuf* Multithreading Behaviour
-SUMMARY:: A tutorial on the multithreading behaviour of offline processes of the Fluid Decomposition toolbox for signal decomposition
+SUMMARY:: A tutorial on the multithreading behaviour of offline processes of the Fluid Corpus Manipulation Toolkit
 CATEGORIES:: Libraries>FluidCorpusManipulation
 RELATED::  Guides/FluidCorpusManipulation
 
 DESCRIPTION::
-The Fluid Decomposition toolbox footnote::This toolbox was made possible thanks to the FluCoMa project,  https://www.flucoma.org, funded by the European Research Council ( https://erc.europa.eu ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899):: provides an open-ended, loosely coupled set of objects to break up and analyse sound in terms of slices (segments in time), layers (superpositions in time and frequency) and objects (configurable or discoverable patterns in sound). Many objects have audio-rate and buffer-based versions.
+The Fluid Corpus Manipulation Toolkit footnote::This toolkit was made possible thanks to the FluCoMa project,  https://www.flucoma.org, funded by the European Research Council ( https://erc.europa.eu ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899):: provides an open-ended, loosely coupled set of objects to break up and analyse sound in terms of slices (segments in time), layers (superpositions in time and frequency) and objects (configurable or discoverable patterns in sound). Many objects have audio-rate and buffer-based versions.
 
 Some buffer-based processes can be very CPU intensive, and so require a some consideration of SuperCollider's underlying architecture. The FluidBuf* objects have different entry points, from transparent usage to more advanced control, to allow the creative coder to care as much as they need to. The overarching principle is to send the CPU intensive tasks to their own background thread to avoid blocking the Server and its Non-Real Time thread, whilst providing ways to cancel the tasks and monitor their progress.
 
-In SuperCollider, the server can delegate tasks to a non-real-time thread that are unsuitable for the real-time context (too long, too intensive). For instance, loading a soundfile to a buffer. This process is explained in LINK::Classes/Buffer:: and LINK::Guides/ClientVsServer::. For comprehensive detail see Ross Bencina's 'SuperCollider Internals' in Chapter XX of the SuperCollider book.
+In SuperCollider, the server can delegate tasks to a non-real-time thread that are unsuitable for the real-time context (too long, too intensive). For instance, loading a soundfile to a buffer. This process is explained in LINK::Classes/Buffer:: and LINK::Guides/ClientVsServer::. For comprehensive detail see Ross Bencina's 'Inside scsynth ' in Chapter 26 of the SuperCollider book.
 
 section:: Basic Usage
 
@@ -173,7 +173,7 @@ section:: Opting Out of Worker Threads
 
 Whilst using a worker thread makes sense for long running jobs, the overhead of creating the thread may outweigh any advantages for very small tasks. This is because a certain amount of pre- and post-task work needs to be done before doing a job, particularly copying the buffers involved to temporary memory to avoid working on scsynth's memory outside of scsynth's official threads.
 
-For these small jobs, you can opt out of using a worker thread by calling 'processBlocking' on a Fluid Decomposition Buf* object, instead of 'process'. This will run a job directly in the server's command FIFO. If your SCIDE status bar turns yellow, then be aware that this means you are clogging the queue and should consider using a thread instead.
+For these small jobs, you can opt out of using a worker thread by calling 'processBlocking' on a FluidBuf* object, instead of 'process'. This will run a job directly in the server's command FIFO. If your SCIDE status bar turns yellow, then be aware that this means you are clogging the queue and should consider using a thread instead.
 
 It is worth mentioning that there is one exception to the behaviour of the FluidBuf* objects: LINK::Classes/FluidBufCompose:: will always run directly in the command FIFO, because the overhead of setting up a job will always be greater than the amount of work this object would have to do.
 
