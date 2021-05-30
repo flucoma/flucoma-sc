@@ -172,7 +172,7 @@ t = Main.elapsedTime;
 //export to reaper
 (
 //first create a new file that ends with rpp - it will overwrite if the file exists
-f = File.new("/tmp/clusteredslices-" ++ Date.getDate.stamp ++".rpp","w+");
+f = File.new(Platform.defaultTempDir ++ "clusteredslices-" ++ Date.getDate.stamp ++".rpp","w+");
 
 if (f.isOpen , {
 	var path, prevpath ="", sr, count, dur, realDur;
@@ -227,4 +227,4 @@ if (f.isOpen , {
 )
 
 (then open the time-stamped reaper file clusterdslice in the folder tmp)
-"open /tmp".unixCmd
+Platform.defaultTempDir.openOS

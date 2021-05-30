@@ -63,7 +63,7 @@ t = Main.elapsedTime;
 
 // or write to file a human readable, sorted version of the database after sorting it by index.
 (
-a = File("/tmp/sc-loading.json","w");
+a = File(Platform.defaultTempDir ++ "sc-loading.json","w");
 ~stuffsorted = Array.newFrom(~loader.index.keys).sort{|a,b| ~loader.index[a][\bounds][0]< ~loader.index[b][\bounds][0]}.do{|k|
 	v =  ~loader.index[k];
 	a.write(k.asString ++  "\n");
@@ -99,7 +99,7 @@ t = Main.elapsedTime;
 
 ///// write to file in human readable format, in order.
 (
-a = File("/tmp/sc-spliting.json","w");
+a = File(Platform.defaultTempDir ++ "sc-spliting.json","w");
 ~stuffsorted = Array.newFrom(~slicer.index.keys).sort{|a,b| ~slicer.index[a][\bounds][0]< ~slicer.index[b][\bounds][0]}.do{|k|
 	v =  ~slicer.index[k];
 	a.write(k.asString ++  "\n");
@@ -120,10 +120,10 @@ t = Main.elapsedTime;
 )
 
 // write the dataset to file with the native JSON
-~ds.write("/tmp/sc-dataset.json")
+~ds.write(Platform.defaultTempDir ++ "sc-dataset.json")
 
 // open the file in your default json editor
-"open /tmp/sc-dataset.json".unixCmd
+(Platform.defaultTempDir ++ "sc-dataset.json").openOS
 
 //////////////////////////////////////////////////////////////////////////
 // manipulating and querying the data

@@ -286,7 +286,9 @@ Routine{
 ~query.transformJoin(~loudDSn, ~tempDS, ~globalDS) // appends 4 dims of loud to the 8 dims above
 
 ~globalDS.print//12 dim: 4 timbre, 4 pitch, 4 loud, all normalised between 0 and 1
-~globalDS.write("/tmp/test12dims.json") // write to file to look at the values
+~globalDS.write(Platform.defaultTempDir ++ "test12dims.json") // write to file to look at the values
+// open the file in your default json editor
+(Platform.defaultTempDir ++ "test12dims.json").openOS
 
 // let's assemble the query
 // first let's normalise our target descriptors
