@@ -25,9 +25,6 @@ ARGUMENT:: minFreq
 ARGUMENT:: maxFreq
 	The highest boundary of the highest band of the model, in Hz.
 
-ARGUMENT:: maxNumBands
-		The maximum number of Mel bands that can be modelled. This sets the number of channels of the output, and therefore cannot be modulated.
-
 ARGUMENT:: normalize
 	This flag enables the scaling of the output to preserve the energy of the window. It is on (1) by default.
 
@@ -45,6 +42,9 @@ ARGUMENT:: fftSize
 
 ARGUMENT:: maxFFTSize
 	How large can the FFT be, by allocating memory at instantiation time. This cannot be modulated.
+
+ARGUMENT:: maxNumBands
+		The maximum number of Mel bands that can be modelled. This sets the number of channels of the output, and therefore cannot be modulated.
 
 RETURNS::
 	A  KR signal of STRONG::maxNumBands:: channels, giving the measure amplitudes for each band. The latency is windowSize.
@@ -148,7 +148,6 @@ x = {
 
 // set the dry playback volume
 x.set(\dry, 0.5)
-
 
 // create a cluster of sines tuned on each MelBand center frequency, as a sort of vocoder.
 (

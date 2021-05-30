@@ -28,9 +28,6 @@ ARGUMENT:: minFreq
 ARGUMENT:: maxFreq
 	The highest boundary of the highest band of the model, in Hz.
 
-ARGUMENT:: maxNumCoeffs
-	The maximum number of cepstral coefficients that can be computed. This sets the number of channels of the output, and therefore cannot be modulated.
-
 ARGUMENT:: windowSize
 	The window size. As MFCC computation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
 
@@ -42,6 +39,9 @@ ARGUMENT:: fftSize
 
 ARGUMENT:: maxFFTSize
 	How large can the FFT be, by allocating memory at instantiation time. This cannot be modulated.
+
+ARGUMENT:: maxNumCoeffs
+	The maximum number of cepstral coefficients that can be computed. This sets the number of channels of the output, and therefore cannot be modulated.
 
 RETURNS::
 	A  KR signal of STRONG::maxNumCoeffs:: channels. The latency is windowSize.
@@ -102,7 +102,7 @@ c = Buffer.read(s,File.realpath(FluidMFCC.class.filenameSymbol).dirname.withTrai
 (
 x = {arg bands = 40, low = 20, high = 20000;
 	var source = PlayBuf.ar(1,c,loop:1);
-	Out.kr(b,FluidMFCC.kr(source, 13, bands, low, high, 13) / 10);
+	Out.kr(b,FluidMFCC.kr(source, 13, bands, low, high, maxNumCoeffs:13) / 10);
 	source.dup;
 }.play;
 )
