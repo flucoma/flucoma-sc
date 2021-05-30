@@ -62,7 +62,7 @@ code::
 
 //Preliminaries: we want some audio, a couple of FluidDataSets, some Buffers, a FluidStandardize and a FluidMDS
 (
-~audiofile = File.realpath(FluidBufPitch.class.filenameSymbol).dirname +/+ "../AudioFiles/Tremblay-ASWINE-ScratchySynth-M.wav";
+~audiofile = File.realpath(FluidMDS.class.filenameSymbol).dirname +/+ "../AudioFiles/Tremblay-ASWINE-ScratchySynth-M.wav";
 ~raw = FluidDataSet(s);
 ~standardized = FluidDataSet(s);
 ~reduced = FluidDataSet(s);
@@ -152,7 +152,6 @@ w.front;
 (
 d = ~reducedarray.flop.deepCollect(1, { |x| x.normalize});
 e = ~reducedarray2.flop.deepCollect(1, { |x| x.normalize});
-w = Window("scatter", Rect(128, 64, 200, 200));
 w.drawFunc = {
     Pen.use {
 		d[0].size.do{|i|

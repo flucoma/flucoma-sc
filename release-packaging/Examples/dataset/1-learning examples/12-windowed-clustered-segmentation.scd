@@ -1,5 +1,5 @@
 // load a source folder
-~loader = FluidLoadFolder(File.realpath(FluidBufPitch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/");
+~loader = FluidLoadFolder(File.realpath(FluidBufMFCC.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/");
 ~loader.play;
 
 //slightly oversegment with novelty

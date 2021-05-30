@@ -62,7 +62,7 @@ code::
 s.reboot;
 //Preliminaries: we want some audio, a couple of FluidDataSets, some Buffers, a FluidStandardize and a FluidPCA
 (
-~audiofile = File.realpath(FluidBufPitch.class.filenameSymbol).dirname +/+ "../AudioFiles/Tremblay-ASWINE-ScratchySynth-M.wav";
+~audiofile = File.realpath(FluidBufMFCC.class.filenameSymbol).dirname +/+ "../AudioFiles/Tremblay-ASWINE-ScratchySynth-M.wav";
 ~raw = FluidDataSet(s);
 ~standardized = FluidDataSet(s);
 ~reduced = FluidDataSet(s);
