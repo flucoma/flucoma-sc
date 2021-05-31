@@ -6,7 +6,7 @@ RELATED::  Guides/FluidCorpusManipulation, Classes/Pitch
 DESCRIPTION::
 This class implements three popular pitch descriptors, computed as frequency and the confidence in its value. It is part of the LINK:: Guides/FluidCorpusManipulation##Fluid Corpus Manipulation Toolkit::. For more explanations, learning material, and discussions on its musicianly uses, visit http://www.flucoma.org/
 
-The process will return a multichannel control steam with [pitch, confidence] values, which will be repeated if no change happens within the algorithm, i.e. when the hopSize is larger than the server's kr period. A pitch of 0 is yield when the algorithm cannot find a fundamental at all.
+The process will return a multichannel control steam with [pitch, confidence] values, which will be repeated if no change happens within the algorithm, i.e. when the hopSize is larger than the server's kr period. A pitch of 0 Hz (or -999.0 when the unit is in MIDI note) is yield when the algorithm cannot find a fundamental at all.
 
 CLASSMETHODS::
 
