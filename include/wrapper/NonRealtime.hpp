@@ -950,17 +950,22 @@ namespace impl {
       
       void next(int)
       {
-                    
+        Wrapper::getInterfaceTable()->fClearUnitOutputs(this, mNumOutputs);
         index id = static_cast<index>(in0(1));
         if(mID != id) init();
         if(!mInit) return;
-        if(auto ptr = mInst.lock())
+        if(mSpinlock.tryLock())
         {
-          auto& client = ptr->mClient;
-          auto& params = ptr->mParams;
-          mControls.reset(mInBuf + ControlOffset());
-          mDelegate.next(*this,client,params,mControls);
-        }else printNotFound(id);
+          if(auto ptr = mInst.lock())
+          {
+            auto& client = ptr->mClient;
+            auto& params = ptr->mParams;
+            mControls.reset(mInBuf + ControlOffset());
+            mDelegate.next(*this,client,params,mControls, ptr.use_count() == 2);
+          }else printNotFound(id);
+          mSpinlock.unlock(); 
+        }
+        
       }
       
     private:

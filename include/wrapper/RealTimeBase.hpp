@@ -122,14 +122,17 @@ namespace impl{
       }
    }
     
-   void next(SCUnit& unit, Client& client,Params& params,FloatControlsIter& controls)
+   void next(SCUnit& unit, Client& client,Params& params,FloatControlsIter& controls,bool updateParams = true)
    {   
      bool trig =  IsModel_t<Client>::value ? !mPrevTrig  && unit.in0(0) > 0 : false;
 
      mPrevTrig = trig;
      
-     Wrapper::setParams(&unit, params, controls);
-     params.constrainParameterValuesRT(nullptr);
+     if(updateParams)
+     {
+      Wrapper::setParams(&unit, params, controls);
+      params.constrainParameterValuesRT(nullptr);
+     }
      
      for (index i = 0; i < client.audioChannelsIn(); ++i)
      {
