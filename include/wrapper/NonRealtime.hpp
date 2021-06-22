@@ -6,6 +6,7 @@
 #include "Meta.hpp"
 #include "RealTimeBase.hpp"
 #include "SCBufferAdaptor.hpp"
+#include "SCWorldAllocator.hpp"
 #include <clients/common/FluidBaseClient.hpp>
 #include <data/FluidMeta.hpp>
 #include <SC_PlugIn.hpp>
@@ -47,10 +48,16 @@ class NonRealTime : public SCUnit
 
 public:
   using Cache = std::unordered_map<index, CacheEntryPointer>;
-  using RTCacheMirror = std::unordered_map<index, WeakCacheEntryPointer>;
+  using RTCacheAllocator =
+      SCWorldAllocator<std::pair<const index, WeakCacheEntryPointer>>;
+  using RTCacheMirror =
+      std::unordered_map<index, WeakCacheEntryPointer, std::hash<index>,
+                         std::equal_to<index>, RTCacheAllocator>;
+  using RTCachePointer =
+      std::unique_ptr<RTCacheMirror, std::function<void(RTCacheMirror*)>>;
 
-  static Cache         mCache;
-  static RTCacheMirror mRTCache;
+  static Cache          mCache;
+  static RTCachePointer mRTCache;
 
 private:
   static bool isNull(WeakCacheEntryPointer const& weak)
@@ -70,8 +77,9 @@ private:
 
   static WeakCacheEntryPointer rtget(index id)
   {
-    auto lookup = mRTCache.find(id);
-    return lookup == mRTCache.end() ? WeakCacheEntryPointer() : lookup->second;
+    if (!mRTCache) return {};
+    auto lookup = mRTCache->find(id);
+    return lookup == mRTCache->end() ? WeakCacheEntryPointer() : lookup->second;
   }
 
   using RawCacheEntry = typename Cache::value_type;
@@ -82,8 +90,18 @@ private:
     {
       FifoMsg msg;
       auto    add = [](FifoMsg* m) {
+        if (!mRTCache)
+        {
+          RTCacheMirror* tmp = rtalloc<RTCacheMirror>(
+              m->mWorld, RTCacheAllocator{m->mWorld, getInterfaceTable()});
+          World* w = m->mWorld;
+          mRTCache = RTCachePointer(tmp, [w](RTCacheMirror* x) {
+            if (w->mRunning) getInterfaceTable()->fRTFree(w, x);
+          });
+        }
+
         RawCacheEntry* r = static_cast<RawCacheEntry*>(m->mData);
-        auto           res = mRTCache.emplace(r->first, r->second);
+        auto           res = mRTCache->emplace(r->first, r->second);
         if (!res.second) { std::cout << "ERROR: Could not add to RT cache"; }
       };
       msg.Set(w, add, nullptr, &r);
@@ -105,8 +123,9 @@ private:
       FifoMsg msg;
 
       auto remove = [](FifoMsg* m) {
+        if (!mRTCache) return;
         int* id = static_cast<int*>(m->mData);
-        mRTCache.erase(*id);
+        mRTCache->erase(*id);
       };
 
       auto cleanup = [](FifoMsg* m) { delete static_cast<index*>(m->mData); };
@@ -366,7 +385,7 @@ private:
           size_t completionMsgSize = mCompletionMsgSize;
           char*  completionMessage = mCompletionMessage;
           void*  replyAddress = copyReplyAddress(NRTCommand::mReplyAddress);
-          auto callback = [world, id, completionMsgSize, completionMessage,
+          auto   callback = [world, id, completionMsgSize, completionMessage,
                            replyAddress]() {
             doProcessCallback(world, id, completionMsgSize, completionMessage,
                               replyAddress);
@@ -384,9 +403,7 @@ private:
 
             bool error = mResult.status() == Result::Status::kError;
 
-            if (error)
-              ptr->mDone.store(true,
-                               std::memory_order_relaxed); 
+            if (error) ptr->mDone.store(true, std::memory_order_relaxed);
             bool toStage3 = mSynchronous && !error;
             return toStage3;
           }
@@ -436,7 +453,7 @@ private:
       mCompletionMessage = message;
     }
 
-         // private:
+    // private:
     Result                mResult;
     bool                  mSynchronous;
     size_t                mCompletionMsgSize{0};
@@ -845,6 +862,7 @@ private:
     void next(int)
     {
 
+      if (!mRTCache) return;
       if (isNull(mRecord)) { mRecord = rtget(mID); };
 
       if (0 == mCounter++)
@@ -950,8 +968,8 @@ private:
 
         bool blocking = mInBuf[mNumInputs - 1][0] > 0;
 
-        CommandProcess* cmd = rtalloc<CommandProcess>(mWorld, mID, blocking,
-                                                      &mParams); 
+        CommandProcess* cmd =
+            rtalloc<CommandProcess>(mWorld, mID, blocking, &mParams);
         if (runAsyncCommand(mWorld, cmd, nullptr, 0, nullptr) != 0)
         {
           std::cout << "ERROR: Async command failed in NRTTriggerUnit::next()"
@@ -1015,7 +1033,8 @@ private:
 
     void init()
     {
-      mInit = false;      
+      mInit = false;
+      if (!mRTCache) return;
       mInst = rtget(mID);
       if (auto ptr = mInst.lock())
       {
@@ -1027,8 +1046,8 @@ private:
 
     void next(int)
     {
-      Wrapper::getInterfaceTable()->fClearUnitOutputs(this,
-                                                      asSigned(mNumOutputs));
+      Wrapper::getInterfaceTable()->fClearUnitOutputs(
+          this, static_cast<int>(mNumOutputs));
       index id = static_cast<index>(in0(1));
       if (mID != id) init();
       if (!mInit) return;
@@ -1070,10 +1089,7 @@ private:
   template <typename CommandType>
   struct DefineCommandIf<true, CommandType>
   {
-    void operator()()
-    {
-      defineNRTCommand<CommandType>();
-    }
+    void operator()() { defineNRTCommand<CommandType>(); }
   };
 
   template <bool, typename UnitType>
@@ -1170,8 +1186,8 @@ typename NonRealTime<Client, Wrapper>::Cache
     NonRealTime<Client, Wrapper>::mCache{};
 
 template <typename Client, typename Wrapper>
-typename NonRealTime<Client, Wrapper>::RTCacheMirror
-    NonRealTime<Client, Wrapper>::mRTCache;
+typename NonRealTime<Client, Wrapper>::RTCachePointer
+    NonRealTime<Client, Wrapper>::mRTCache{};
 
 } // namespace impl
 } // namespace client
