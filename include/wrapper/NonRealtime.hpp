@@ -102,7 +102,6 @@ private:
 
         RawCacheEntry* r = static_cast<RawCacheEntry*>(m->mData);
         auto           res = mRTCache->emplace(r->first, r->second);
-        if (!res.second) { std::cout << "ERROR: Could not add to RT cache"; }
       };
       msg.Set(w, add, nullptr, &r);
       auto ft = Wrapper::getInterfaceTable();
@@ -507,7 +506,6 @@ private:
           return true;
         }
       }
-      std::cout << "Error: Entered callback but thread not done!?\n";
       return false;
     }
 
@@ -608,7 +606,7 @@ private:
         if (runAsyncCommand(world, cmd, c->mReplyAddress, c->mCompletionMsgSize,
                             c->mCompletionMessage) != 0)
         {
-          std::cout << "ERROR: Async cmf failed in callback" << std::endl;
+          std::cout << "ERROR: Async cmd failed in callback" << std::endl;
         }
         if (c->mCompletionMsgSize) ft->fRTFree(world, c->mCompletionMessage);
       };
@@ -635,14 +633,8 @@ private:
     {
       ft->fNRTLock(world);
       msg.Perform();
-      //      if(!ft->fSendMsgFromRT(world, msg))
-      //      {
-      //        std::cout << "ERROR: Failed to queue -> NRT\n";
-      //      }
       ft->fNRTUnlock(world);
     }
-    else
-      std::cout << "ERROR: World not running??";
   }
 
 
