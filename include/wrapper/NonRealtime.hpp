@@ -49,16 +49,20 @@ class NonRealTime : public SCUnit
 public:
   using Cache = std::unordered_map<index, CacheEntryPointer>;
   using RTCacheAllocator =
-      SCWorldAllocator<std::pair<const index, WeakCacheEntryPointer>>;
-  using RTCacheMirror =
-      std::unordered_map<index, WeakCacheEntryPointer, std::hash<index>,
-                         std::equal_to<index>, RTCacheAllocator>;
-  using RTCachePointer =
-      std::unique_ptr<RTCacheMirror, std::function<void(RTCacheMirror*)>>;
-
+      SCWorldAllocator<std::pair<const index, WeakCacheEntryPointer>,Wrapper>;
+  struct RTCacheMirror: public std::unordered_map<index, WeakCacheEntryPointer, std::hash<index>,
+                         std::equal_to<index>, RTCacheAllocator>
+  {
+  
+    ~RTCacheMirror()
+    {
+      if(mWorld) mWorld = nullptr; //if we get as far as destroying this, then the world is gone and we should accept that and move on
+    }
+  
+  };
+  
   static Cache          mCache;
-  static RTCachePointer mRTCache;
-
+  static RTCacheMirror mRTCache;
 private:
   static bool isNull(WeakCacheEntryPointer const& weak)
   {
@@ -66,20 +70,10 @@ private:
            !WeakCacheEntryPointer{}.owner_before(weak);
   }
 
-  // shouldn't be called without at least *thinking* about getting spin lock
-  // first
-  static WeakCacheEntryPointer unsafeGet(index id)
-  {
-    auto lookup = mCache.find(id);
-    return lookup == mCache.end() ? WeakCacheEntryPointer() : lookup->second;
-  }
-
-
   static WeakCacheEntryPointer rtget(index id)
   {
-    if (!mRTCache) return {};
-    auto lookup = mRTCache->find(id);
-    return lookup == mRTCache->end() ? WeakCacheEntryPointer() : lookup->second;
+    auto lookup = mRTCache.find(id);
+    return lookup == mRTCache.end() ? WeakCacheEntryPointer() : lookup->second;
   }
 
   using RawCacheEntry = typename Cache::value_type;
@@ -90,18 +84,17 @@ private:
     {
       FifoMsg msg;
       auto    add = [](FifoMsg* m) {
-        if (!mRTCache)
+        
+        if(!mWorld) mWorld = m->mWorld;
+        else if (mWorld != m->mWorld) //internal server has restarted
         {
-          RTCacheMirror* tmp = rtalloc<RTCacheMirror>(
-              m->mWorld, RTCacheAllocator{m->mWorld, getInterfaceTable()});
-          World* w = m->mWorld;
-          mRTCache = RTCachePointer(tmp, [w](RTCacheMirror* x) {
-            if (w->mRunning) getInterfaceTable()->fRTFree(w, x);
-          });
+          mWorld = nullptr;
+          mRTCache.clear();
+          mWorld = m->mWorld;
         }
-
+        
         RawCacheEntry* r = static_cast<RawCacheEntry*>(m->mData);
-        auto           res = mRTCache->emplace(r->first, r->second);
+        mRTCache.emplace(r->first, r->second);
       };
       msg.Set(w, add, nullptr, &r);
       auto ft = Wrapper::getInterfaceTable();
@@ -122,20 +115,38 @@ private:
       FifoMsg msg;
 
       auto remove = [](FifoMsg* m) {
-        if (!mRTCache) return;
+
+        if(!mWorld)
+        {
+          mRTCache.clear();
+          mWorld = m->mWorld; //
+        }
+        else if (mWorld != m->mWorld) //internal server has restarted
+        {
+          mWorld = nullptr;
+          mRTCache.clear();
+          mWorld = m->mWorld;
+        }
+        
         int* id = static_cast<int*>(m->mData);
-        mRTCache->erase(*id);
+        mRTCache.erase(*id);
       };
 
       auto cleanup = [](FifoMsg* m) { delete static_cast<index*>(m->mData); };
 
       msg.Set(world, remove, cleanup, data);
+      auto ft = Wrapper::getInterfaceTable();
+      ft->fSendMsgToRT(world,msg);
     }
   };
 
 
 public:
-  static WeakCacheEntryPointer get(index id) { return unsafeGet(id); }
+  static WeakCacheEntryPointer get(index id)
+  {
+    auto lookup = mCache.find(id);
+    return lookup == mCache.end() ? WeakCacheEntryPointer() : lookup->second;
+  }
 
   static WeakCacheEntryPointer add(World* world, index id, const Params& params)
   {
@@ -325,13 +336,6 @@ private:
     }
   };
 
-
-//  struct UnitInfo
-//  {
-//    int mSynthIndex;
-//    int mNodeID{0};
-//  };
-
   struct CommandProcess : public NRTCommand
   {
     CommandProcess(World* world, sc_msg_iter* args, void* replyAddr)
@@ -429,7 +433,7 @@ private:
     }
 
     // Only for blocking execution
-    bool stage4(World* w) // nrt
+    bool stage4(World*) // nrt
     {
       if (auto ptr = get(NRTCommand::mID).lock())
       {
@@ -519,7 +523,7 @@ private:
       return true;
     }
 
-    bool stage4(World* w) // nrt
+    bool stage4(World*) // nrt
     {
       if (auto ptr = get(NRTCommand::mID).lock())
       {
@@ -536,39 +540,6 @@ private:
       std::cout << "ERROR: Failed to lock\n";
       return false;
     }
-
-
-    //    void notifyUnit(World* w)
-    //    {
-    //      if(mUnitInfo.mNodeID > 0)
-    //      {
-    //        auto ft = Wrapper::getInterfaceTable();
-    //
-    //        NRTDoneCount++;
-    //        FifoMsg msg;
-    //
-    //        auto updateUnitDone = [](FifoMsg* m)
-    //        {
-    //          UnitInfo* info = static_cast<UnitInfo*>(m->mData);
-    //
-    //          auto ft = Wrapper::getInterfaceTable();
-    //          Graph* g = ft->fGetGraph(m->mWorld,info->mNodeID);
-    //          if(g)
-    //          {
-    //            Unit* u = g->mUnits[info->mSynthIndex];
-    //            if(u)
-    //            {
-    //              RTDoneCount++;
-    //              u->mDone = true;
-    //            }
-    //          }
-    //        };
-    //
-    //        msg.Set(w, updateUnitDone, nullptr, &mUnitInfo);
-    //        ft->fSendMsgToRT(w,msg);
-    //      }
-    //    }
-
 
     bool                  mSuccess;
     WeakCacheEntryPointer mRecord;
@@ -854,7 +825,6 @@ private:
     void next(int)
     {
 
-      if (!mRTCache) return;
       if (isNull(mRecord)) { mRecord = rtget(mID); };
 
       if (0 == mCounter++)
@@ -1026,7 +996,6 @@ private:
     void init()
     {
       mInit = false;
-      if (!mRTCache) return;
       mInst = rtget(mID);
       if (auto ptr = mInst.lock())
       {
@@ -1132,8 +1101,17 @@ public:
 
 
   void init(){};
+  
+  static World* getWorld()
+  {
+    return mWorld;
+  }
 
 private:
+
+
+  static World* mWorld;
+
   static Result validateParameters(ParamSetType& p)
   {
     auto results = p.constrainParameterValues();
@@ -1174,11 +1152,14 @@ private:
 };
 
 template <typename Client, typename Wrapper>
+World* NonRealTime<Client,Wrapper>::mWorld{nullptr};
+
+template <typename Client, typename Wrapper>
 typename NonRealTime<Client, Wrapper>::Cache
     NonRealTime<Client, Wrapper>::mCache{};
 
 template <typename Client, typename Wrapper>
-typename NonRealTime<Client, Wrapper>::RTCachePointer
+typename NonRealTime<Client, Wrapper>::RTCacheMirror
     NonRealTime<Client, Wrapper>::mRTCache{};
 
 } // namespace impl
