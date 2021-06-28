@@ -19,6 +19,9 @@ namespace fluid {
 template <typename T, typename Wrapper>
 class SCWorldAllocator
 {
+  World*          mWorld;
+  InterfaceTable* mInterface;
+
 public:
   using propagate_on_container_move_assignment = std::true_type;
   using value_type = T;
@@ -26,22 +29,24 @@ public:
   template <typename U, typename W>
   friend class SCWorldAllocator;
 
-  SCWorldAllocator() = default; 
-
-  template <typename U,typename W>
-  SCWorldAllocator(const SCWorldAllocator<U,W>&) noexcept
+  SCWorldAllocator(World* w, InterfaceTable* interface)
+      : mWorld{w}, mInterface{interface}
   {}
+
+  template <typename U, typename W>
+  SCWorldAllocator(const SCWorldAllocator<U, W>& other) noexcept
+  {
+    mWorld = other.mWorld;
+    mInterface = other.mInterface;
+  }
 
   T* allocate(std::size_t n)
   {
     if (n > std::numeric_limits<std::size_t>::max() / sizeof(T))
       throw std::bad_array_new_length();
 
-    World* world = Wrapper::getWorld();
-    InterfaceTable* interface = Wrapper::getInterfaceTable();
-  
-    if (world && interface)
-      if (auto p = static_cast<T*>(interface->fRTAlloc(world, n * sizeof(T))))
+    if (mWorld && mInterface)
+      if (auto p = static_cast<T*>(mInterface->fRTAlloc(mWorld, n * sizeof(T))))
         return p;
 
     throw std::bad_alloc();
@@ -49,9 +54,7 @@ public:
 
   void deallocate(T* p, std::size_t /*n*/) noexcept
   {
-    World* world = Wrapper::getWorld();
-    InterfaceTable* interface = Wrapper::getInterfaceTable();
-    if(world && interface) interface->fRTFree(world, p);
+    if (mWorld && mInterface) mInterface->fRTFree(mWorld, p);
   }
 };
 } // namespace fluid
