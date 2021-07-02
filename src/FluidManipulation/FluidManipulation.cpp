@@ -17,6 +17,7 @@
 #include <clients/nrt/MLPRegressorClient.hpp>
 #include <clients/nrt/MLPClassifierClient.hpp>
 #include <clients/rt/FluidDataSetWr.hpp>
+#include <clients/nrt/GridClient.hpp>
 #include <FluidSCWrapper.hpp>
 
 static InterfaceTable *ft;
@@ -41,4 +42,5 @@ PluginLoad(FluidSTFTUGen)
   makeSCWrapper<NRTThreadedDataSetWriter>("FluidDataSetWr", ft);
   makeSCWrapper<RTMLPRegressorClient>("FluidMLPRegressor",ft);
   makeSCWrapper<RTMLPClassifierClient>("FluidMLPClassifier",ft);
+  makeSCWrapper<NRTThreadedGridClient>("FluidGrid",ft);
 }
