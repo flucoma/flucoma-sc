@@ -1,12 +1,12 @@
 FluidGrid : FluidModelObject {
-	var <>oversample, <>rows, <>cols;
-	*new {|server, oversample = 1, rows = 0, cols = 0|
-		^super.new(server,[oversample, rows, cols])
-        .oversample_(oversample).rows_(rows).cols_(cols);
+	var <>oversample, <>extent, <>axis;
+	*new {|server, oversample = 1, extent = 0, axis = 0|
+		^super.new(server,[oversample, extent, axis])
+        .oversample_(oversample).extent_(extent).axis_(axis);
 	}
 
     prGetParams{
-        ^[this.oversample, this.rows, this.cols];
+        ^[this.oversample, this.extent, this.axis];
     }
 
 	fitTransformMsg{|sourceDataSet, destDataSet|
