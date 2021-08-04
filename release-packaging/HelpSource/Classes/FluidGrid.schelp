@@ -1,13 +1,12 @@
 TITLE:: FluidGrid
 summary:: Constrain a 2D DataSet into a Grid.
 categories:: Libraries>FluidCorpusManipulation
-related:: Classes/FluidMDS, Classes/FluidPCA, Classes/FluidDataSet
+related:: Classes/FluidMDS, Classes/FluidPCA, Classes/FluidUMAP, Classes/FluidDataSet
 
 DESCRIPTION::
 
-Hello. I put stuff in a 2-dimension link::Classes/FluidDataSet:: in the most even grid possible by minimising the distance I need to move each item around, using some clever algorithms. The grid space can be oversampled to allow for a sparser representation. The resulting grid shape can be constraint in one axis.
+Maps a set of 2D points in a link::Classes/FluidDataSet:: to a rectangular grid using a variant of the link::https://www.gwern.net/docs/statistics/decision/1987-jonker.pdf##jonker-volgenant algorithm::. It can be useful to obtain compact grid layouts from the output of dimensionality reduction algorithms such as link::Classes/FluidUMAP::, link::Classes/FluidPCA:: or link::Classes/FluidMDS::. This is similar to projects like CloudToGrid (https://github.com/kylemcdonald/CloudToGrid/), RasterFairy (https://github.com/Quasimondo/RasterFairy) or IsoMatch (https://github.com/ohadf/isomatch).
 
-Please refer to a webpage and an article for more information on the algorithm.
 
 CLASSMETHODS::
 
@@ -18,13 +17,13 @@ ARGUMENT:: server
 The server on which to run this model
 
 ARGUMENT:: oversample
-A factor to oversample the destination grid. The default is 1, so the most compact grid possible will be yield. Factors of 2 or more will allow a larger destination grid, which will respect the original shape a little more, but will therefore be sparser.
+A factor to oversample the destination grid. The default is 1, so the grid has the same number of points as the input. Factors of 2 or more will allow a larger destination grid, which will respect the original shape a little more, but will also be sparser.
 
 ARGUMENT:: extent
-The size to which the selected axis will be constraint to. The default is 0, which turns the constraints off.
+The size to which the selected link::#axis:: will be constrained. The default is code::0::, which turns the constraints off.
 
 ARGUMENT:: axis
-The axis on which the constraint size is applied to. The default (0) is horizontal, and (1) is vertical.
+The axis to which the link::#extent:: constraint is applied. The default (code::0::) is horizontal, and (code::1::) is vertical.
 
 INSTANCEMETHODS::
 
@@ -33,9 +32,9 @@ PRIVATE:: init
 METHOD:: fitTransform
 Fit the model to a link::Classes/FluidDataSet:: and write the new projected data to a destination FluidDataSet.
 ARGUMENT:: sourceDataSet
-Source data, or the DataSet name
+Source FluidDataSet instance
 ARGUMENT:: destDataSet
-Destination data, or the DataSet name
+Destination FluidDataSet instance
 ARGUMENT:: action
 Run when done
 
@@ -70,7 +69,7 @@ w.front;
 // make a grid out of it
 ~grid = FluidGrid(s);
 ~gridified = FluidDataSet(s);
-~grid.fitTransform(~raw, ~gridified, action:{~gridified.dump{|x|~gridifiedDict = x["data"];\gridded.postln;}})
+~grid.fitTransform(~raw, ~gridified, action:{~gridified.dump{|x| ~gridifiedDict = x["data"]; \gridded.postln;}})
 
 // watch the grid
 (
@@ -104,14 +103,6 @@ w.front;
 }})
 )
 
-//oversampling yields the shape...ish!
-(
-~grid.oversample_(2).extent_(0).fitTransform(~raw, ~gridified, action:{
-	~gridified.dump{|x|
-		~gridifiedDict = x["data"];\gridded.postln;
-		{w.refresh;}.defer;
-}})
-)
 ::
 
 STRONG::A more colourful example::
