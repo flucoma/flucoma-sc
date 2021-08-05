@@ -5,7 +5,9 @@ related:: Classes/FluidMDS, Classes/FluidPCA, Classes/FluidUMAP, Classes/FluidDa
 
 DESCRIPTION::
 
-Maps a set of 2D points in a link::Classes/FluidDataSet:: to a rectangular grid using a variant of the link::https://www.gwern.net/docs/statistics/decision/1987-jonker.pdf##jonker-volgenant algorithm::. It can be useful to obtain compact grid layouts from the output of dimensionality reduction algorithms such as link::Classes/FluidUMAP::, link::Classes/FluidPCA:: or link::Classes/FluidMDS::. This is similar to projects like CloudToGrid (https://github.com/kylemcdonald/CloudToGrid/), RasterFairy (https://github.com/Quasimondo/RasterFairy) or IsoMatch (https://github.com/ohadf/isomatch).
+Maps a set of 2D points in a link::Classes/FluidDataSet:: to a rectangular grid using a variant of the link::https://www.gwern.net/docs/statistics/decision/1987-jonker.pdf##Jonker-Volgenant algorithm::. It can be useful to obtain compact grid layouts from the output of dimensionality reduction algorithms such as link::Classes/FluidUMAP::, link::Classes/FluidPCA:: or link::Classes/FluidMDS::.
+
+This is similar to projects like CloudToGrid (https://github.com/kylemcdonald/CloudToGrid/), RasterFairy (https://github.com/Quasimondo/RasterFairy) or IsoMatch (https://github.com/ohadf/isomatch).
 
 
 CLASSMETHODS::
