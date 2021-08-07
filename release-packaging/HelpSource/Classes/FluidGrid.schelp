@@ -107,7 +107,7 @@ w.front;
 
 ::
 
-STRONG::A more colourful example::
+STRONG::A more colourful example exploring oversampling::
 
 code::
 
@@ -178,6 +178,9 @@ w.front;
 });
 )
 
+// We can check the dimensions of the yielded grid by dumping the normalisation.The grid coordinates are zero-counting
+~normalizer.dump{|x|x["data_max"].postln}
+
 // This looks ok, but let's improve it with oversampling
 (
 ~grid.oversample_(3).fitTransform(~reduced,~gridified,action:{"Gridded Output".postln;
@@ -191,4 +194,8 @@ w.front;
 	});
 });
 )
+
+// Again, checking the normalisation dump to check the maxima of each dimension
+~normalizer.dump{|x|x["data_max"].postln}
+
 ::
