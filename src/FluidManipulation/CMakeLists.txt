@@ -17,8 +17,8 @@ target_link_libraries(
   ${PLUGIN} PRIVATE FLUID_DECOMPOSITION
 )
 
-include(${CMAKE_CURRENT_LIST_DIR}/../../scripts/target_post.cmake)
-
-if(MSVC)
-  target_compile_options(${PLUGIN} PRIVATE /bigobj)
+if(WIN32)
+  target_compile_options(${PLUGIN} PUBLIC /bigobj)   
 endif()
+
+include(${CMAKE_CURRENT_LIST_DIR}/../../scripts/target_post.cmake)
