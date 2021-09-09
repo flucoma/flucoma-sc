@@ -82,14 +82,19 @@ public:
   bool acquire() const override { return true; }
   void release() const override {}
 
-  // Validity is based on whether this buffer is within the range the server
-  // knows about
+  // Validity is reports whether underlying SndBuf is null / 0-size
   bool valid() const override
   {
-    return (mLocal ? true : mBufnum >= 0 && mBufnum < asSigned(mWorld->mNumSndBufs));
+    return mBuffer && mBuffer->data && mBuffer->channels && mBuffer->frames;
   }
 
-  bool exists() const override { return true; }
+  // Existence is based on whether this buffer is within the range the server
+  // knows about
+  bool exists() const override
+  {
+    return (mLocal ? true
+                   : mBufnum >= 0 && mBufnum < asSigned(mWorld->mNumSndBufs));
+  }
 
   FluidTensorView<float, 2> allFrames() override
   {
@@ -153,7 +158,7 @@ public:
 
   double sampleRate() const override
   {
-    return valid() ? mBuffer->samplerate : 0;
+    return mBuffer ? mBuffer->samplerate : 0;
   }
 
   std::string asString() const override { return std::to_string(bufnum()); }
