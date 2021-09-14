@@ -20,37 +20,37 @@
 
 // here we instantiate a process of description and dataset writing, as per example 0
 ~extractor = FluidProcessSlices({|src,start,num,data|
-	var label, voice, mfcc, stats, flatten;
-	label = data.key;
+	var identifier, voice, mfcc, stats, flatten;
+	identifier = data.key;
     voice = data.value[\voice];
 	mfcc = FluidBufMFCC.kr(src, startFrame:start, numFrames:num, numChans:1, features:~mfccbuf[voice], padding: 2, trig:1, blocking: 1);
 	stats = FluidBufStats.kr(~mfccbuf[voice], stats:~statsbuf[voice], numDerivs: 1, trig:Done.kr(mfcc), blocking: 1);
 	flatten = FluidBufFlatten.kr(~statsbuf[voice], destination:~flatbuf[voice], trig:Done.kr(stats), blocking: 1);
-	FluidDataSetWr.kr(~ds, label, nil, ~flatbuf[voice], Done.kr(flatten), blocking: 1);
+	FluidDataSetWr.kr(~ds, identifier, nil, ~flatbuf[voice], Done.kr(flatten), blocking: 1);
 });
 
 // here we make another processor, this time with doing an amplitude weighing
 ~extractorW = FluidProcessSlices({|src,start,num,data|
-	var label, voice, loud, weights, mfcc, stats, flatten;
-	label = data.key;
+	var identifier, voice, loud, weights, mfcc, stats, flatten;
+	identifier = data.key;
     voice = data.value[\voice];
 	mfcc = FluidBufMFCC.kr(src, startFrame:start, numFrames:num, numChans:1, features:~mfccbuf[voice], padding: 2, trig:1, blocking: 1);
 	loud = FluidBufLoudness.kr(src, startFrame:start, numFrames:num, numChans:1, features:~loudbuf[voice], padding: 2, trig:Done.kr(mfcc), blocking: 1);
 	weights = FluidBufScale.kr(~loudbuf[voice], numChans: 1, destination: ~weightbuf[voice], inputLow: -70, inputHigh: 0, trig: Done.kr(loud), blocking: 1);
 	stats = FluidBufStats.kr(~mfccbuf[voice], stats:~statsbuf[voice], numDerivs: 1, weights: ~weightbuf[voice], trig:Done.kr(weights), blocking: 1);
 	flatten = FluidBufFlatten.kr(~statsbuf[voice], destination:~flatbuf[voice], trig:Done.kr(stats), blocking: 1);
-	FluidDataSetWr.kr(~dsW, label, nil, ~flatbuf[voice], Done.kr(flatten), blocking: 1);
+	FluidDataSetWr.kr(~dsW, identifier, nil, ~flatbuf[voice], Done.kr(flatten), blocking: 1);
 });
 
 // and here we make a little processor for loudness if we want to poke at it
 ~extractorL = FluidProcessSlices({|src,start,num,data|
-	var label, voice, loud, stats, flatten;
-	label = data.key;
+	var identifier, voice, loud, stats, flatten;
+	identifier = data.key;
     voice = data.value[\voice];
 	loud = FluidBufLoudness.kr(src, startFrame:start, numFrames:num, numChans:1, features:~mfccbuf[voice], trig:1, padding: 2, blocking: 1);
 	stats = FluidBufStats.kr(~mfccbuf[voice], stats:~statsbuf[voice], numDerivs: 1, trig:Done.kr(loud), blocking: 1);
 	flatten = FluidBufFlatten.kr(~statsbuf[voice], destination:~flatbuf[voice], trig:Done.kr(stats), blocking: 1);
-	FluidDataSetWr.kr(~dsL, label, nil, ~flatbuf[voice], Done.kr(flatten), blocking: 1);
+	FluidDataSetWr.kr(~dsL, identifier, nil, ~flatbuf[voice], Done.kr(flatten), blocking: 1);
 });
 )
 
@@ -225,7 +225,7 @@ Routine{
 }.play;
 )
 
-//explore dynamic range (changing the weigting's value of 0 in lines 44 and 168 will change the various weights given to quieter parts of the signal
+//explore dynamic range (changing the weigting's value of 0 in lines 39 and 157 will change the various weights given to quieter parts of the signal
 (
 t = Main.elapsedTime;
 ~extractorL.play(s,~loader.buffer,~slicer.index,action:{(Main.elapsedTime - t).postln;"Features done".postln});

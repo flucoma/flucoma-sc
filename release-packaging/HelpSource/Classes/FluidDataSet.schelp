@@ -4,7 +4,7 @@ categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidLabelSet, Classes/FluidKDTree, Classes/FluidKMeans
 ​
 DESCRIPTION::
-A server-side container associating labels with multi-dimensional data.
+A server-side container associating string identifiers with multi-dimensional data.
 
 CLASSMETHODS::
 ​
@@ -25,25 +25,25 @@ PRIVATE:: init,id,cache
 
 METHOD:: addPoint
 Add a new point to the data set. The dimensionality of the DataSet is governed by the size of the first point added.
-Will report an error if the label already exists, or if the size of the data does not match the dimensionality of the DataSet.
-ARGUMENT:: label
-A symbol or string with the label for the new point.
+Will report an error if the identifier already exists, or if the size of the data does not match the dimensionality of the DataSet.
+ARGUMENT:: identifier
+A symbol or string with the identifier for the new point.
 ARGUMENT:: buffer
 A link::Classes/Buffer:: with the new data point.
 ARGUMENT:: action
 A function to run when the point has been added.
 ​​
 METHOD:: updatePoint
-Update an existing label's data. Will report an error if the label doesn't exist, or if the size of the data does not match the given dimensionality of the DataSet.
+Update an existing identifier's data. Will report an error if the identifier doesn't exist, or if the size of the data does not match the given dimensionality of the DataSet.
 
 METHOD:: getPoint
-Retrieve a point from the data set into a link::Classes/Buffer::. Will report an error if the label or buffer doesn't exist​.
+Retrieve a point from the data set into a link::Classes/Buffer::. Will report an error if the identifier or buffer doesn't exist​.
 
 METHOD:: deletePoint
-Remove a point from the data set. Will report an error if the label doesn't exist.
+Remove a point from the data set. Will report an error if the identifier doesn't exist.
 
 METHOD:: setPoint
-Set the point: if the label exists, this method behaves like updatePoint; if the label doesn't exist, behaves like addPoint.
+Set the point: if the identifier exists, this method behaves like updatePoint; if the identifier doesn't exist, behaves like addPoint.
 ​​
 METHOD:: clear
 Empty the data set.
@@ -88,7 +88,7 @@ ARGUMENT:: action
 A function to run when the export is done.
 
 METHOD:: merge
-Merge sourceDataSet in the current DataSet. It will update the value of points with the same label if overwrite is set to 1. To add columns instead, see the 'transformJoin' method of link::Classes/FluidDataSetQuery::
+Merge sourceDataSet in the current DataSet. It will update the value of points with the same identifier if overwrite is set to 1. To add columns instead, see the 'transformJoin' method of link::Classes/FluidDataSetQuery::
 
 METHOD:: free
 Destroy the object on the server.
@@ -108,7 +108,7 @@ EXAMPLES::
 CODE::
 // Create a simple a one-dimensional data set, three ways
 // Using routine
-s.boot;
+s.reboot;
 (
 fork{
 	~ds = FluidDataSet.new(s);
@@ -204,7 +204,7 @@ code::
 ~dsB = FluidDataSet.new(s);
 )
 
-//feed them items with same dimensions but different labels
+//feed them items with same dimensions but different identifiers
 ~dsA.load(Dictionary.newFrom([\cols, 1, \data, Dictionary.newFrom([\one,1,\two,2])]));
 ~dsB.load(Dictionary.newFrom([\cols, 1, \data, Dictionary.newFrom([\three,3,\four,4])]));
 ~dsA.print;
@@ -214,7 +214,7 @@ code::
 ~dsB.merge(~dsA)
 ~dsB.print;
 
-//change the content of the dataset to shared labels
+//change the content of the dataset to shared identifiers
 ~dsA.load(Dictionary.newFrom([\cols, 1, \data, Dictionary.newFrom([\three,333,\four,444])]));
 ~dsB.load(Dictionary.newFrom([\cols, 1, \data, Dictionary.newFrom([\three,3,\four,4])]));
 ~dsA.print;

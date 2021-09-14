@@ -1,5 +1,6 @@
 
 FluidDataSetQuery : FluidDataObject {
+    *new{|server| ^super.new(server) }
 
     addColumnMsg { |column|
         ^this.prMakeMsg(\addColumn,id,column);

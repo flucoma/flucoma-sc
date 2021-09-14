@@ -17,13 +17,13 @@
 
 // here we instantiate a process of description and dataset writing, which will run each slice of the previous slice and write the entry. Note the chain of Done.kr triggers.
 ~extractor = FluidProcessSlices({|src,start,num,data|
-	var mfcc, stats, writer, flatten,mfccBuf, statsBuf, flatBuf, label, voice;
-	label = data.key;
+	var mfcc, stats, writer, flatten,mfccBuf, statsBuf, flatBuf, identifier, voice;
+	identifier = data.key;
     voice = data.value[\voice];
 	mfcc = FluidBufMFCC.kr(src, startFrame:start, numFrames:num, numChans:1, features:~mfccbuf[voice], trig:1, blocking: 1);
 	stats = FluidBufStats.kr(~mfccbuf[voice], stats:~statsbuf[voice], trig:Done.kr(mfcc), blocking: 1);
 	flatten = FluidBufFlatten.kr(~statsbuf[voice], destination:~flatbuf[voice], trig:Done.kr(stats), blocking: 1);
-	writer = FluidDataSetWr.kr(~ds, label, nil, ~flatbuf[voice], trig: Done.kr(flatten), blocking: 1)
+	writer = FluidDataSetWr.kr(~ds, identifier, nil, ~flatbuf[voice], trig: Done.kr(flatten), blocking: 1)
 });
 )
 

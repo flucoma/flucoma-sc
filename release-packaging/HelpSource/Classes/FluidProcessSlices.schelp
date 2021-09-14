@@ -26,7 +26,7 @@ definitionlist::
 ##num
 || The number of frames to process, in samples
 ##data
-|| anchor::datadict:: An link::Classes/Association:: of the label for this segment, with an link::Classes/IdentityDictionary:: of useful extra data:
+|| anchor::datadict:: An link::Classes/Association:: of the identifier for this segment, with an link::Classes/IdentityDictionary:: of useful extra data:
 definitionlist::
 ## sr
 || The original sample rate of the segment
@@ -46,13 +46,13 @@ code::
 ~featureBuffers = 4.do{Buffer.new};
 
 ~avgPitch = { |src,start,num,data|
-	var pitch, stats,statsbuf,label,voice;
-	label = data.key;
+	var pitch, stats,statsbuf,identifier,voice;
+	identifier = data.key;
 	voice = data.value[\voice];
 	statsbuf = LocalBuf(7);
 	pitch = FluidBufPitch.kr(src,start,num,numChans:1,features:~featurebuffers[voice]);
 	stats = FluidBufStats.kr(~featurebuffers[voice],numChans:1, stats:statsbuf,trig:Done.kr(pitch));
-	FluidDataSetWr.kr(~mydataset, label, nil, statsbuf,Done.kr(stats))
+	FluidDataSetWr.kr(~mydataset, identifier, nil, statsbuf,Done.kr(stats))
 };
 ::
 
@@ -68,7 +68,7 @@ ARGUMENT:: sourceBuffer
  The source link::Classes/Buffer:: containing the audio to process
 
 ARGUMENT:: bufIdx
-An link::Classes/IdentityDictionary:: specifying labels, boundaries, sample rate and channel count for the segment. See link::Classes/FluidLoadFolder#-index:: for details.
+An link::Classes/IdentityDictionary:: specifying identifiers, boundaries, sample rate and channel count for the segment. See link::Classes/FluidLoadFolder#-index:: for details.
 
 ARGUMENT:: action
 A function to run when processing is complete. This gets passed the same link::Classes/Association:: as link::#datadict#the processing function::
@@ -105,17 +105,19 @@ s.reboot;
 ~subset = IdentityDictionary.newFrom(~slicer.index.asSortedArray[0..7].flatten(1));
 
 //write pitch statistics into a dataset
+//definte the extraction function...
 (
 ~extractor = FluidProcessSlices({|src,start,num,data|
-    var pitch, stats, label,i;
+    var pitch, stats, identifier,i;
     i = data.value[\voice];
-    label = data.key;
+    identifier = data.key;
     pitch = FluidBufPitch.kr(src,start,num,features:~pitchbufs[i]);
     stats = FluidBufStats.kr(~pitchbufs[i],stats:~statsbufs[i],trig:Done.kr(pitch));
-    FluidDataSetWr.kr(~pitchdata,label,nil,buf:~statsbufs[i],trig:Done.kr(stats))
+    FluidDataSetWr.kr(~pitchdata,identifier,nil,buf:~statsbufs[i],trig:Done.kr(stats))
 });
 )
 
+//... and run it
 ~extractor.play(s,~loader.buffer,~subset,{"Feature extraction done".postln});
 
 //view the data

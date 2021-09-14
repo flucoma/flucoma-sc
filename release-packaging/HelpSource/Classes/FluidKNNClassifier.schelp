@@ -52,7 +52,7 @@ code::
 
 // Make:
 // - A KNN Classifier
-// - A DataSet of example points, and a label set of corresponding labels
+// - A DataSet of example points, and a LabelSet of corresponding labels
 // - A DataSet of test data and a LabelSet for predicted labels
 
 (
@@ -87,7 +87,7 @@ d = Dictionary.with(
 )
 
 
-//Fit the classifier to the example DataSet and labels, and then run prediction on the test data into our mapping label set
+//Fit the classifier to the example DataSet and LabelSet, and then run prediction on the test data into our mapping LabelSet
 (
 ~classifier.fit(~source,~labels);
 ~classifier.predict(~test, ~mapping, 1);

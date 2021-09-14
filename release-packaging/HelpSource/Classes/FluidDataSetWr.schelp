@@ -6,7 +6,7 @@ related:: Classes/FLuidDataSet
 DESCRIPTION::
 A UGen that adds labelled points to a link::Classes/FluidDataSet:: Internally, this calls code::setPoint::, so IDs that already exist will be overwritten, and new IDs will be added. The actual work is done on the server's command queue, rather than the real-thread.
 
-By default the object takes a control input (code::idNumber::) as a numerical index that gets used for the point labels. This index is used to write each time the Ugen is re-triggered with a zero to non-zero transition. The label is then concatenated with the code::idPrefix:: symbol, which is fixed at instantiation. In this way, one can make custom, incrementing labels, e.g.
+By default the object takes a control input (code::idNumber::) as a numerical index that gets used for the point identifiers. This index is used to write each time the Ugen is re-triggered with a zero to non-zero transition. The identifier is then concatenated with the code::idPrefix:: symbol, which is fixed at instantiation. In this way, one can make custom, incrementing identifiers, e.g.
 
 code::
 FluidDataSetWr.kr(~somedataset,"my_data",PulseCount.kr(trig),~somebuffer,trig)
@@ -27,11 +27,11 @@ ARGUMENT:: dataset
 An instance of link::Classes/FluidDataSet:: or an instance's name.
 
 ARGUMENT:: idPrefix
-A string or symbol with a prefix for generated labels.
+A string or symbol with a prefix for generated identifiers.
 
 ARGUMENT:: idNumber
 ANCHOR::offset::
-An integer with the offset to start labeling from. If the UGen is run in a server-side loop (i.e. repeatedly re-triggered), the generated labels will count upwards from this offset. If nil, then no numerical index will be applied to the generated label (i.e. only the labelPrefix is used).
+An integer with the offset to start labeling from. If the UGen is run in a server-side loop (i.e. repeatedly re-triggered), the generated identifiers will count upwards from this offset. If nil, then no numerical index will be applied to the generated identifier (i.e. only the idPrefix is used).
 
 ARGUMENT:: buf
 The link::Classes/Buffer:: containing the data point.
@@ -48,6 +48,8 @@ EXAMPLES::
 
 code::
 s.reboot;
+
+//make a dataset
 ~ds = FluidDataSet(s);
 
 // write a single point, no counting
@@ -58,9 +60,8 @@ s.reboot;
 }.play(s);
 )
 
-
+//look
 ~ds.print;
-~ds.clear
 
 //Write a 100 points quite fast with server-side triggering
 (
@@ -81,8 +82,7 @@ OSCFunc({
 }.play(s,args:[n:100]);
 )
 
-~ds.print;
-~ds.clear
+//it printed with the return function
 
 //Again, but as fast as possible using a feedback of the trigger we are given when the writing is done
 (
@@ -104,10 +104,9 @@ OSCFunc({
 }.play(s,args:[n:100]);
 )
 
-~ds.print;
+// incremental buffer writing - sky is the limit
 ~ds.clear
 
-// incremental buffer writing - sky is the limit
 // start the entry maker, trigging twice a second
 (
 {
@@ -125,9 +124,13 @@ OSCFunc({
 //print a few times
 ~ds.print;
 
-//clear before flushing the writing synth
+//clear before flushing the writing synth and the process keeps on going
 ~ds.clear
 ~ds.print;
+
+//command-period to stop it
+~ds.print;
+~ds.clear
 
 // circular writing
 (
@@ -143,6 +146,7 @@ OSCFunc({
 }.play(s);
 )
 
+//print regularly to see a specific identifier being overwritten
 ~ds.print;
 ~ds.clear
 

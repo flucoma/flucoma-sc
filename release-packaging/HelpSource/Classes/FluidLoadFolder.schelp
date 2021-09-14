@@ -15,7 +15,7 @@ Construct a new instance
 ARGUMENT:: path
 A string pointing to a folder on disk
 
-ARGUMENT:: labelFunc
+ARGUMENT:: idFunc
 A function that determines how the chunks in the index are labelled; default is file name without path.
 
 ARGUMENT:: channelFunc
@@ -26,7 +26,7 @@ INSTANCEMETHODS::
 METHOD:: index
 A link::Classes/IdentityDictionary:: containing the metadata on the loaded files
 
-The keys of this dictionary are the labels produced by the code::labelFunc:: passed to link::Classes/FluidLoadFolder#*new:: (or the default of the filename if nil). The value for each key is a further dictionary consisting of:
+The keys of this dictionary are the identifiers produced by the code::idFunc:: passed to link::Classes/FluidLoadFolder#*new:: (or the default of the filename if nil). The value for each key is a further dictionary consisting of:
 
 definitionlist::
 ## bounds
@@ -67,9 +67,9 @@ s.reboot;
 ~loader.play(s,action:{ |dataDictionary|
 	("Done loading into" + ~loader.buffer).postln;
 	//we get passed an IdentityDictionary of slice data, let's look at it
-	dataDictionary.pairsDo{|label,data|
+	dataDictionary.pairsDo{|identifier,data|
 		//data is also a dictionary
-		(label ++ '(').post;
+		(identifier ++ '(').post;
 		data.pairsDo{|k,v| (k ++ ':' + v + ' ').post };
 		')'.postln;
 	}

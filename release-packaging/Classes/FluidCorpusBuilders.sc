@@ -1,11 +1,11 @@
 FluidLoadFolder {
-	var  path, labelFunc,channelFunc;
+	var  path, idFunc,channelFunc;
 	var < files;
 	var < index;
 	var < buffer;
 
-	*new{ |path, labelFunc, channelFunc |
-		^super.newCopyArgs(path, labelFunc,channelFunc);
+	*new{ |path, idFunc, channelFunc |
+		^super.newCopyArgs(path, idFunc,channelFunc);
 	}
 
 	play { |server, action|
@@ -25,17 +25,17 @@ FluidLoadFolder {
 			buffer.query;
 			server.sync;
 			this.files.do{|f,i|
-				var channelMap,label,entry;
+				var channelMap,identifier,entry;
 				OSCFunc({
-					if(labelFunc.notNil)
-					{ label = labelFunc.value(path,i) }
-					{ label = (f.path.basename).asSymbol };
+					if(idFunc.notNil)
+					{ identifier = idFunc.value(path,i) }
+					{ identifier = (f.path.basename).asSymbol };
 					entry = IdentityDictionary();
 					entry.add(\bounds->startEnd[i]);
 					entry.add(\numchans->f.numChannels);
 					entry.add(\sr->f.sampleRate);
 					entry.add(\path->f.path);
-					index.add(label->entry);
+					index.add(identifier->entry);
 					counter = counter + 1;
 					if(counter == (files.size)) {action !? action.value(index)};
 				},"/done",server.addr,argTemplate:["/b_readChannel"]).oneShot;
@@ -50,11 +50,11 @@ FluidLoadFolder {
 
 
 FluidSliceCorpus {
-	var < sliceFunc, labelFunc;
+	var < sliceFunc, idFunc;
 	var < index;
 
-	*new { |sliceFunc, labelFunc|
-		^super.newCopyArgs(sliceFunc,labelFunc);
+	*new { |sliceFunc, idFunc|
+		^super.newCopyArgs(sliceFunc,idFunc);
 	}
 
 	play{ |server,sourceBuffer,bufIdx, action, tasks = 4|
