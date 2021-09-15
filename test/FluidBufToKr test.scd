@@ -111,6 +111,24 @@ s.waitForBoot{
 )
 
 (
+// FluidBufToKr
+// 100 is fine
+/// 1000 is fine
+s.waitForBoot{
+	Routine{
+		var buf = Buffer.read(s,"/Users/macprocomputer/Desktop/_flucoma/code/flucoma-core-src/AudioFiles/Harker-DS-TenOboeMultiphonics-M.wav");
+
+		s.sync;
+
+		{
+			var sig = FluidBufToKr.kr(buf);
+			sig.poll;
+		}.play;
+}.play;
+}
+)
+
+(
 // FluidKrToBuf test with super long buffer
 // 100 is fine
 // 1000 is fine
@@ -131,3 +149,4 @@ s.waitForBoot{
 	}.play;
 }
 )
+
