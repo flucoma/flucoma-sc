@@ -4,7 +4,7 @@ categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidLabelSet, Classes/FluidKDTree, Classes/FluidKMeans
 ​
 DESCRIPTION::
-A server-side container associating string identifiers with multi-dimensional data.
+FluidDataSet is a container associating identifiers with data.
 
 CLASSMETHODS::
 ​
