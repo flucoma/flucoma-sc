@@ -1,7 +1,8 @@
 FluidKrToBuf {
 	*kr {
 		arg krStream, buffer;
-		^buffer.numFrames.do{
+		if(buffer.numFrames == 0) {"FluidKRToBuf: UGen will have 0 outputs!".warn}
+                ^buffer.numFrames.do{
 			arg i;
 			BufWr.kr(krStream[i], buffer, i);
 		}
