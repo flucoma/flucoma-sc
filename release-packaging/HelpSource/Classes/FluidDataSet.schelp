@@ -1,5 +1,5 @@
 TITLE:: FluidDataSet
-summary:: Container for labelled,  multidimensional data
+summary:: Container that associates data points with identifiers
 categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidLabelSet, Classes/FluidKDTree, Classes/FluidKMeans
 ​

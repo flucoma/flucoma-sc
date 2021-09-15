@@ -16,7 +16,7 @@ ARGUMENT:: path
 A string pointing to a folder on disk
 
 ARGUMENT:: idFunc
-A function that determines how the chunks in the index are labelled; default is file name without path.
+A function that determines how the identifiers for the chunks are created; default is file name without path.
 
 ARGUMENT:: channelFunc
 A funciton that controls what to do with differently wide files. Default behaviour is for loaded buffer to have as many channels as the widest file in the path, and for narrower files to repeat their channels across this buffer. The funciton is passed the channels for the current file, the maximum channel count, and the current index.

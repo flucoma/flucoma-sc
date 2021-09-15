@@ -4,7 +4,7 @@ categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FLuidDataSet
 
 DESCRIPTION::
-A UGen that adds labelled points to a link::Classes/FluidDataSet:: Internally, this calls code::setPoint::, so IDs that already exist will be overwritten, and new IDs will be added. The actual work is done on the server's command queue, rather than the real-thread.
+A UGen that adds data points with associated identifiers to a link::Classes/FluidDataSet:: Internally, this calls code::setPoint::, so IDs that already exist will be overwritten, and new IDs will be added. The actual work is done on the server's command queue, rather than the real-thread.
 
 By default the object takes a control input (code::idNumber::) as a numerical index that gets used for the point identifiers. This index is used to write each time the Ugen is re-triggered with a zero to non-zero transition. The identifier is then concatenated with the code::idPrefix:: symbol, which is fixed at instantiation. In this way, one can make custom, incrementing identifiers, e.g.
 
@@ -31,7 +31,7 @@ A string or symbol with a prefix for generated identifiers.
 
 ARGUMENT:: idNumber
 ANCHOR::offset::
-An integer with the offset to start labeling from. If the UGen is run in a server-side loop (i.e. repeatedly re-triggered), the generated identifiers will count upwards from this offset. If nil, then no numerical index will be applied to the generated identifier (i.e. only the idPrefix is used).
+An integer with the offset to start creating identifiers from. If the UGen is run in a server-side loop (i.e. repeatedly re-triggered), the generated identifiers will count upwards from this offset. If nil, then no numerical index will be applied to the generated identifier (i.e. only the idPrefix is used).
 
 ARGUMENT:: buf
 The link::Classes/Buffer:: containing the data point.
