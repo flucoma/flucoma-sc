@@ -4,8 +4,7 @@ categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidDataSet, Classes/FluidKMeans
 
 DESCRIPTION::
-FluidLabelSet is a server-side container of associations between labels (from a link::Classes/FluidDataSet::) and IDs, for instance from some clustering or classification of the points in a data set.
-
+FluidLabelSet is a container associating identifiers with labels.
 
 CLASSMETHODS::
 
