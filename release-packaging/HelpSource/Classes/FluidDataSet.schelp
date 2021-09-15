@@ -11,7 +11,7 @@ CLASSMETHODS::
 PRIVATE:: asUGenInput
 
 METHOD:: new
-Create a new instance of the DataSet, with the given name. If a DataSet with this name already exists, an exception will be thrown (see link::Classes/FluidDataSet#at:: to access an existant DataSet).
+Create a new instance of the DataSet, with the given name. If a DataSet with this name already exists, an exception will be thrown (see link::Classes/FluidDataSet#at:: to access an existing DataSet).
 
 ARGUMENT:: server
 The link::Classes/Server:: on which to create the data set.
