@@ -4,7 +4,7 @@ categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidLabelSet, Classes/FluidKDTree, Classes/FluidKMeans
 ​
 DESCRIPTION::
-FluidDataSet is a container associating identifiers with data.
+FluidDataSet is a container that associates data points with identifiers
 
 CLASSMETHODS::
 ​
