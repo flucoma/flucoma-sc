@@ -24,7 +24,7 @@ INSTANCEMETHODS::
 PRIVATE:: init,id,cache
 
 METHOD:: addPoint
-Add a new point to the data set. The dimensionality of the DataSet is governed by the size of the first point added.
+Add a new point to the FluidDataSet. The dimensionality of the FluidDataSet is governed by the size of the first point added. If the identifier already exists, or if the size of the data does not match the dimensionality of the FluidDataSet an error will be reported.
 Will report an error if the identifier already exists, or if the size of the data does not match the dimensionality of the DataSet.
 ARGUMENT:: identifier
 A symbol or string with the identifier for the new point.
