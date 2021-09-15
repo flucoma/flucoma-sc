@@ -34,16 +34,29 @@ ARGUMENT:: action
 A function to run when the point has been added.
 ​​
 METHOD:: updatePoint
-Update an existing identifier's data. Will report an error if the identifier doesn't exist, or if the size of the data does not match the given dimensionality of the DataSet.
+Update an existing identifier's data. If the identifier does not exist, or if the size of the data does not match the dimensionality of the FluidDataSet an error will be reported.
+ARGUMENT:: identifier
+The identifier for the point.
+ARGUMENT:: buffer
+A link::Classes/Buffer:: containing the data for the point.
 
 METHOD:: getPoint
-Retrieve a point from the data set into a link::Classes/Buffer::. Will report an error if the identifier or buffer doesn't exist​.
+Retrieve a point from the data set into a link::Classes/Buffer::. If the identifier does not exist an error will be reported.
+ARGUMENT:: identifier
+The identifier for the point.
+ARGUMENT:: buffer
+A link::Classes/Buffer:: where the retrieved data will be stored.
 
 METHOD:: deletePoint
-Remove a point from the data set. Will report an error if the identifier doesn't exist.
+Remove a point from the data set. If the identifier doesn't exist an error will be reported. ​​ARGUMENT:: identifier
+The identifier to be deleted.
 
 METHOD:: setPoint
-Set the point: if the identifier exists, this method behaves like updatePoint; if the identifier doesn't exist, behaves like addPoint.
+Set the point. If the identifier exists, this method behaves like updatePoint. If the identifier doesn't exist, it behaves like addPoint.
+ARGUMENT:: identifier
+The identifier for the point.
+ARGUMENT:: buffer
+A link::Classes/Buffer:: containing the data for the point.
 ​​
 METHOD:: clear
 Empty the data set.
