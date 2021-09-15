@@ -27,9 +27,9 @@ METHOD:: addPoint
 Add a new point to the FluidDataSet. The dimensionality of the FluidDataSet is governed by the size of the first point added. If the identifier already exists, or if the size of the data does not match the dimensionality of the FluidDataSet an error will be reported.
 Will report an error if the identifier already exists, or if the size of the data does not match the dimensionality of the DataSet.
 ARGUMENT:: identifier
-A symbol or string with the identifier for the new point.
+The identifier for the point.
 ARGUMENT:: buffer
-A link::Classes/Buffer:: with the new data point.
+A link::Classes/Buffer:: containing the data for the point.
 ARGUMENT:: action
 A function to run when the point has been added.
 ​​
