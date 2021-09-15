@@ -21,20 +21,28 @@ PRIVATE:: init, id
 METHOD:: addLabel
 Add a label to the label set.
 ARGUMENT:: identifier
-symbol or string with the ID for this label.
+The identifier for this label.
 ARGUMENT:: label
-symbol or string with the label to add.
+The label to add.
 ARGUMENT:: action
-function to run when the operation completes.
+A function to run when the operation completes.
 
 METHOD:: updateLabel
 Change a label in the label set.
+ARGUMENT:: identifier
+The identifier for this label.
+ARGUMENT:: label
+The label to update.
 
 METHOD:: getLabel
-Retrieve the label associated with an ID. Will report an error if the ID isn't present in the set.
+Retrieve the label associated with an identifier. Will report an error if the identifier is not present in the set.
+ARGUMENT:: identifier
+The identifier for the label to be retrieved.
 
 METHOD:: deleteLabel
-Remove a id-label pair from the label set.
+Delete a label given a certain identifier.
+ARGUMENT:: identifier
+The identifier to be deleted.
 
 METHOD:: clear
 Empty the label set.
