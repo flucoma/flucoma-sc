@@ -1,4 +1,4 @@
-FluidKNNClassifier : FluidRealTimeModel {
+FluidKNNClassifier : FluidModelObject {
 
     var <>numNeighbours, <>weight;
 
@@ -8,7 +8,7 @@ FluidKNNClassifier : FluidRealTimeModel {
         .weight_(weight);
 	}
 
-    prGetParams{^[this.numNeighbours,this.weight,-1,-1];}
+    prGetParams{^[this.id,this.numNeighbours,this.weight];}
 
     fitMsg{|dataSet, labelSet|
         ^this.prMakeMsg(\fit, id, dataSet.id, labelSet.id)
@@ -38,7 +38,7 @@ FluidKNNClassifier : FluidRealTimeModel {
 	}
 
     kr{|trig, inputBuffer,outputBuffer|
-        ^FluidKNNClassifierQuery.kr(K2A.ar(trig),
+        ^FluidKNNClassifierQuery.kr(trig,
                 this, this.numNeighbours, this.weight,
                 this.prEncodeBuffer(inputBuffer),
                 this.prEncodeBuffer(outputBuffer));
@@ -46,4 +46,17 @@ FluidKNNClassifier : FluidRealTimeModel {
 
 }
 
-FluidKNNClassifierQuery : FluidRTQuery {}
+FluidKNNClassifierQuery : FluidRTMultiOutUGen {
+
+    *kr{ |trig, model,numNeighbours = 3, weight = 1,inputBuffer, outputBuffer |
+        ^this.multiNew('control',trig, model.asUGenInput,
+            numNeighbours,weight,
+            inputBuffer.asUGenInput, outputBuffer.asUGenInput)
+    }
+
+    init { arg ... theInputs;
+		inputs = theInputs;
+		^this.initOutputs(1, rate);
+	}
+}
+
