@@ -69,16 +69,16 @@ b = Buffer.read(s,File.realpath(FluidOnsetSlice.class.filenameSymbol).dirname.wi
 {var sig = PlayBuf.ar(1,b,loop:1); [FluidOnsetSlice.ar(sig) * 0.5, DelayN.ar(sig, 1, 1024/ s.sampleRate)]}.play
 
 // other parameters
-{var sig = PlayBuf.ar(1,b,loop:1); [FluidOnsetSlice.ar(sig, 2, 0.06, 55, 7, 0, 128, 64) * 0.5, DelayN.ar(sig, 1, (128)/ s.sampleRate)]}.play
+{var sig = PlayBuf.ar(1,b,loop:1); [FluidOnsetSlice.ar(sig, 9, 0.15, 45, 9, 0, 128, 64) * 0.5, DelayN.ar(sig, 1, (128)/ s.sampleRate)]}.play
 
 // More musical, onset-trigged autopan
 (
 {
     var sig, trig, syncd, pan;
     sig = PlayBuf.ar(1,b,loop:1);
-    trig = FluidOnsetSlice.ar(sig, 1, 1.8, 100, 8, 0, 128);
-    syncd = DelayN.ar(sig, 1, ( 128 / s.sampleRate));
-    pan = TRand.ar(-1,1,trig);
+    trig = FluidOnsetSlice.ar(sig, 7, 0.2, 100, 9, 0, 128);
+	syncd = DelayN.ar(sig, 1, (128 / s.sampleRate)); //one could add a bit more delay here to make sure to catch the attack
+	pan = Stepper.ar(trig,-1,-1,1,1);
     Pan2.ar(syncd,pan);
 }.play
 )
