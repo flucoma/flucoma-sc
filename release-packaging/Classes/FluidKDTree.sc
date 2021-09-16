@@ -1,13 +1,12 @@
-FluidKDTree : FluidRealTimeModel
+FluidKDTree : FluidModelObject
  {
 
-    var neighbours,radius,lookup;
+    var neighbours,radius;
 
-    *new{ |server, numNeighbours = 1, radius = 0, lookupDataSet|
-        ^super.new(server,[numNeighbours,radius,lookupDataSet ? -1])
+    *new{ |server, numNeighbours = 1, radius = 0|
+        ^super.new(server,[numNeighbours,radius ? -1])
         .numNeighbours_(numNeighbours)
-        .radius_(radius)
-        .lookupDataSet_(lookupDataSet);
+        .radius_(radius);
     }
 
     numNeighbours_{|k|neighbours = k.asInteger; }
@@ -16,10 +15,7 @@ FluidKDTree : FluidRealTimeModel
     radius_{|r| radius = r.asUGenInput;}
     radius{ ^radius; }
 
-    lookupDataSet_{|ds| lookup = ds ? -1; }
-    lookupDataSet{|ds|  ^ (lookup ? -1) }
-
-    prGetParams{^[this.numNeighbours,this.radius,this.lookupDataSet,-1,-1];}
+    prGetParams{^[this.id, this.numNeighbours,this.radius];}
 
     fitMsg{ |dataSet| ^this.prMakeMsg(\fit,this.id,dataSet.id);}
 
@@ -47,16 +43,26 @@ FluidKDTree : FluidRealTimeModel
 	}
 
     kr{|trig, inputBuffer,outputBuffer, numNeighbours = 1, lookupDataSet|
-        this.numNeighbours_(numNeighbours);
+/*        this.numNeighbours_(numNeighbours);
         lookupDataSet = lookupDataSet ? -1;
-        this.lookupDataSet_(lookupDataSet);
+        this.lookupDataSet_(lookupDataSet);*/
 
-        ^FluidKDTreeQuery.kr(K2A.ar(trig),
-                this, this.numNeighbours, this.radius, this.lookupDataSet.asUGenInput,
-                this.prEncodeBuffer(inputBuffer),
-                this.prEncodeBuffer(outputBuffer));
+        ^FluidKDTreeQuery.kr(trig,
+            this, numNeighbours, this.radius,lookupDataSet.asUGenInput,
+            inputBuffer,outputBuffer);
     }
 
 }
 
-FluidKDTreeQuery : FluidRTQuery {}
+FluidKDTreeQuery : FluidRTMultiOutUGen
+{
+    *kr{ |trig, tree, numNeighbours, radius,lookupDataSet, inputBuffer, outputBuffer |
+        ^this.multiNew('control',trig, tree.asUGenInput, numNeighbours, radius,lookupDataSet!?(_.asUGenInput)??{-1}, inputBuffer.asUGenInput, outputBuffer.asUGenInput)
+    }
+
+    init { arg ... theInputs;
+		inputs = theInputs;
+		^this.initOutputs(1, rate);
+	}
+
+}

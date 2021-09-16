@@ -29,7 +29,10 @@ PluginLoad(FluidSTFTUGen)
   makeSCWrapper<NRTThreadedDataSetClient>("FluidDataSet",ft);
   makeSCWrapper<NRTThreadedDataSetQueryClient>("FluidDataSetQuery",ft);
   makeSCWrapper<NRTThreadedLabelSetClient>("FluidLabelSet",ft);
-  makeSCWrapper<RTKDTreeClient>("FluidKDTree",ft);
+  
+  makeSCWrapper<NRTThreadedKDTreeClient>("FluidKDTree",ft);
+  makeSCWrapper<RTKDTreeQueryClient>("FluidKDTreeQuery",ft);
+  
   makeSCWrapper<RTKMeansClient>("FluidKMeans",ft);
   makeSCWrapper<RTKNNClassifierClient>("FluidKNNClassifier",ft);
   makeSCWrapper<RTKNNRegressorClient>("FluidKNNRegressor",ft);
