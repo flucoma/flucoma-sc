@@ -33,7 +33,10 @@ PluginLoad(FluidSTFTUGen)
   makeSCWrapper<NRTThreadedKDTreeClient>("FluidKDTree",ft);
   makeSCWrapper<RTKDTreeQueryClient>("FluidKDTreeQuery",ft);
   
-  makeSCWrapper<RTKMeansClient>("FluidKMeans",ft);
+  makeSCWrapper<NRTThreadedKMeansClient>("FluidKMeans",ft);
+  makeSCWrapper<RTKMeansQueryClient>("FluidKMeansQuery",ft);
+  
+  
   makeSCWrapper<RTKNNClassifierClient>("FluidKNNClassifier",ft);
   makeSCWrapper<RTKNNRegressorClient>("FluidKNNRegressor",ft);
   makeSCWrapper<RTNormalizeClient>("FluidNormalize",ft);
