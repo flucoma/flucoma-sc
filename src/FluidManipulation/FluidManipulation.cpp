@@ -42,7 +42,9 @@ PluginLoad(FluidSTFTUGen)
   makeSCWrapper<NRTThreadedKNNRegressorClient>("FluidKNNRegressor",ft);
   makeSCWrapper<RTKNNRegressorQueryClient>("FluidKNNRegressorQuery",ft);
   
-  makeSCWrapper<RTNormalizeClient>("FluidNormalize",ft);
+  makeSCWrapper<NRTThreadedNormalizeClient>("FluidNormalize",ft);
+  makeSCWrapper<RTNormalizeQueryClient>("FluidNormalizeQuery",ft);
+  
   makeSCWrapper<RTRobustScaleClient>("FluidRobustScale",ft);
   makeSCWrapper<RTStandardizeClient>("FluidStandardize",ft);
   makeSCWrapper<RTPCAClient>("FluidPCA",ft);
