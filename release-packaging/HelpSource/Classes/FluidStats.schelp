@@ -1,0 +1,47 @@
+TITLE:: FluidStats
+summary:: Rolling mean and standard devication on kr inputs
+categories:: Libraries>FluidCorpusManipulation
+related:: Classes/FluidBufStats, Classes/FluidStandardize
+
+DESCRIPTION::
+Computes the rolling mean and sample standard deviation over a given window for multichannel kr inputs.
+
+This UGen does not perform multichannel expansion because (like link::Classes/BufWr::) it takes an array as input.
+
+CLASSMETHODS::
+
+METHOD:: kr
+Run the UGen
+
+ARGUMENT:: inputsArray
+An array (or just one) kr input stream.
+
+ARGUMENT:: size
+The size of the history window to use
+
+returns:: A 2D array of kr outputs code::[[means][standard deviations]]::
+
+INSTANCEMETHODS::
+
+PRIVATE:: numOutputs, initOutputs, init, channels,checkInputs
+
+EXAMPLES::
+
+code::
+(
+~gaussianNoise = { |a,b|
+    var mag = (-2 * a.abs.log).sqrt;
+    var f = 2 * pi * b.abs;
+    [mag * f.cos, mag * f.sin]
+}
+
+
+
+{
+    var src = ~gaussianNoise.value(WhiteNoise.kr,WhiteNoise.kr);
+    var stats = FluidStats.kr(src,20);
+    stats[0].poll(label:'means');
+    stats[1].poll(label:'standard deviations');
+}.play
+)
+::
