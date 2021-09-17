@@ -45,4 +45,16 @@ FluidKNNRegressor : FluidRealTimeModel {
     }
 }
 
-FluidKNNRegressorQuery : FluidRTQuery {}
+FluidKNNRegressorQuery : FluidRTMultiOutUGen {
+
+    *kr{ |trig, model,numNeighbours = 3, weight = 1,inputBuffer, outputBuffer |
+        ^this.multiNew('control',trig, model.asUGenInput,
+            numNeighbours,weight,
+            inputBuffer.asUGenInput, outputBuffer.asUGenInput)
+    }
+
+    init { arg ... theInputs;
+		inputs = theInputs;
+		^this.initOutputs(1, rate);
+	}
+}
