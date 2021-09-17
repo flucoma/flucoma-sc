@@ -46,7 +46,10 @@ PluginLoad(FluidSTFTUGen)
   makeSCWrapper<RTNormalizeQueryClient>("FluidNormalizeQuery",ft);
   
   makeSCWrapper<RTRobustScaleClient>("FluidRobustScale",ft);
-  makeSCWrapper<RTStandardizeClient>("FluidStandardize",ft);
+  
+  makeSCWrapper<NRTThreadedStandardizeClient>("FluidStandardize",ft);
+  makeSCWrapper<RTStandardizeQueryClient>("FluidStandardizeQuery",ft);
+  
   makeSCWrapper<RTPCAClient>("FluidPCA",ft);
   makeSCWrapper<NRTThreadedMDSClient>("FluidMDS",ft);
   makeSCWrapper<RTUMAPClient>("FluidUMAP",ft);

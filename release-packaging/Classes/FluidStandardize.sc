@@ -1,4 +1,4 @@
-FluidStandardize : FluidRealTimeModel {
+FluidStandardize : FluidModelObject {
 
     var <>invert;
 
@@ -7,7 +7,7 @@ FluidStandardize : FluidRealTimeModel {
 	}
 
     prGetParams{
-        ^[this.invert, -1, 1];
+        ^[this.id, this.invert];
     }
 
 	fitMsg{|dataSet|
@@ -52,8 +52,19 @@ FluidStandardize : FluidRealTimeModel {
         invert = invert ? this.invert;
         this.invert_(invert);
 
-        ^FluidStandardizeQuery.kr(K2A.ar(trig),this, this.invert, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer));
+        ^FluidStandardizeQuery.kr(trig,this, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer), this.invert);
     }
 }
 
-FluidStandardizeQuery : FluidRTQuery {}
+FluidStandardizeQuery : FluidRTMultiOutUGen {
+   *kr{ |trig, model,inputBuffer,outputBuffer,invert = 0|
+        ^this.multiNew('control',trig, model.asUGenInput,
+            invert,
+            inputBuffer.asUGenInput, outputBuffer.asUGenInput)
+    }
+
+    init { arg ... theInputs;
+		inputs = theInputs;
+		^this.initOutputs(1, rate);
+	}
+}
