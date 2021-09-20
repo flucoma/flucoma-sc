@@ -30,7 +30,7 @@ s.waitForBoot{
 			var sig = FluidBufToKr.kr(buf);
 			sig.poll;
 		}.play;
-}.play;
+	}.play;
 }
 )
 
@@ -106,7 +106,7 @@ s.waitForBoot{
 			var sig = FluidBufToKr.kr(buf);
 			sig.poll;
 		}.play;
-}.play;
+	}.play;
 }
 )
 
@@ -124,7 +124,7 @@ s.waitForBoot{
 			var sig = FluidBufToKr.kr(buf);
 			sig.poll;
 		}.play;
-}.play;
+	}.play;
 }
 )
 
@@ -134,7 +134,8 @@ s.waitForBoot{
 // 1000 is fine
 s.waitForBoot{
 	Routine{
-		var buf = Buffer.alloc(s,1000);
+		// var buf = Buffer.alloc(s,1000);
+		var buf = Buffer.read(s,"/Users/macprocomputer/Desktop/_flucoma/code/flucoma-core-src/AudioFiles/Harker-DS-TenOboeMultiphonics-M.wav");
 
 		s.sync;
 

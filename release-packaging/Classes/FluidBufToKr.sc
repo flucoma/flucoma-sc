@@ -13,6 +13,7 @@ FluidKrToBuf {
 FluidBufToKr {
 	*kr {
 		arg buffer;
+		if(buffer.numFrames == 0) {"FluidKrToBuf: Buffer has 0 frames!".warn};
 		if(buffer.numFrames > 1000) {"FluidKrToBuf: Buffer is % frames. This is probably not the buffer you intended.".format(buffer.numFrames).error};
 		^buffer.numFrames.collect{
 			arg i;
