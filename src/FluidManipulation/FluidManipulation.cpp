@@ -47,14 +47,25 @@ PluginLoad(FluidSTFTUGen)
   
   makeSCWrapper<NRTThreadedRobustScaleClient>("FluidRobustScale",ft);
   makeSCWrapper<RTRobustScaleQueryClient>("FluidRobustScaleQuery",ft);
+  
   makeSCWrapper<NRTThreadedStandardizeClient>("FluidStandardize",ft);
   makeSCWrapper<RTStandardizeQueryClient>("FluidStandardizeQuery",ft);
   
-  makeSCWrapper<RTPCAClient>("FluidPCA",ft);
+  makeSCWrapper<NRTThreadedPCAClient>("FluidPCA",ft);  
+  makeSCWrapper<RTPCAQueryClient>("FluidPCAQuery",ft);
+  
   makeSCWrapper<NRTThreadedMDSClient>("FluidMDS",ft);
-  makeSCWrapper<RTUMAPClient>("FluidUMAP",ft);
+  
+  makeSCWrapper<NRTThreadedUMAPClient>("FluidUMAP",ft);
+  makeSCWrapper<RTUMAPQueryClient>("FluidUMAPQuery",ft);
+  
   makeSCWrapper<NRTThreadedDataSetWriter>("FluidDataSetWr", ft);
-  makeSCWrapper<RTMLPRegressorClient>("FluidMLPRegressor",ft);
-  makeSCWrapper<RTMLPClassifierClient>("FluidMLPClassifier",ft);
+  
+  makeSCWrapper<NRTThreadedMLPRegressorClient>("FluidMLPRegressor",ft);
+  makeSCWrapper<RTMLPRegressorQueryClient>("FluidMLPRegressorQuery",ft);
+  
+  makeSCWrapper<NRTThreadedMLPClassifierClient>("FluidMLPClassifier",ft);
+  makeSCWrapper<RTMLPClassifierQueryClient>("FluidMLPClassifierQuery",ft);
+  
   makeSCWrapper<NRTThreadedGridClient>("FluidGrid",ft);
 }

@@ -1,4 +1,4 @@
-FluidMLPRegressor : FluidRealTimeModel {
+FluidMLPRegressor : FluidModelObject {
 
 	const <identity = 0;
 	const <sigmoid  =  1;
@@ -23,7 +23,7 @@ FluidMLPRegressor : FluidRealTimeModel {
 	}
 
     prGetParams{
-        ^[this.hidden.size] ++ this.hidden ++ [this.activation, this.outputActivation, this.tapIn, this.tapOut, this.maxIter, this.learnRate, this.momentum, this.batchSize, this.validation, -1, -1]
+        ^[this.id, this.hidden.size] ++ this.hidden ++ [this.activation, this.outputActivation, this.tapIn, this.tapOut, this.maxIter, this.learnRate, this.momentum, this.batchSize, this.validation]
     }
 
     clearMsg{ ^this.prMakeMsg(\clear, id) }
@@ -72,17 +72,28 @@ FluidMLPRegressor : FluidRealTimeModel {
 
         this.tapIn_(tapIn).tapOut_(tapOut);
 
-        params = this.prGetParams.drop(-2) ++ [this.prEncodeBuffer(inputBuffer),
-        this.prEncodeBuffer(outputBuffer)];
+        params = [this.prEncodeBuffer(inputBuffer),
+        this.prEncodeBuffer(outputBuffer),this.tapIn,this.tapOut];
 
-        ^FluidMLPRegressorQuery.kr(K2A.ar(trig),this, *params);
+        ^FluidMLPRegressorQuery.kr(trig,this, *params);
     }
 
 }
 
-FluidMLPRegressorQuery : FluidRTQuery {}
+FluidMLPRegressorQuery : FluidRTMultiOutUGen {
+    *kr{ |trig, model, inputBuffer,outputBuffer, tapIn = 0, tapOut = -1|
+        ^this.multiNew('control',trig, model.asUGenInput,
+            tapIn, tapOut,
+            inputBuffer.asUGenInput, outputBuffer.asUGenInput)
+    }
 
-FluidMLPClassifier : FluidRealTimeModel {
+    init { arg ... theInputs;
+		inputs = theInputs;
+		^this.initOutputs(1, rate);
+	}
+}
+
+FluidMLPClassifier : FluidModelObject {
 
 	const <identity = 0;
 	const <sigmoid  =  1;
@@ -103,7 +114,7 @@ FluidMLPClassifier : FluidRealTimeModel {
 	}
 
     prGetParams{
-        ^[ this.hidden.size] ++ this.hidden ++ [this.activation,  this.maxIter, this.learnRate,  this.momentum, this.batchSize, this.validation, -1, -1];
+        ^[this.id, this.hidden.size] ++ this.hidden ++ [this.activation,  this.maxIter, this.learnRate,  this.momentum, this.batchSize, this.validation];
     }
 
     clearMsg{ ^this.prMakeMsg(\clear,id) }
@@ -142,11 +153,21 @@ FluidMLPClassifier : FluidRealTimeModel {
 
     kr{|trig, inputBuffer,outputBuffer|
 
-        var params = this.prGetParams.drop(-2) ++  [this.prEncodeBuffer(inputBuffer),
+        var params = [this.prEncodeBuffer(inputBuffer),
         this.prEncodeBuffer(outputBuffer)];
 
-        ^FluidMLPClassifierQuery.kr(K2A.ar(trig),this, *params);
+        ^FluidMLPClassifierQuery.kr(trig,this, *params);
     }
 }
 
-FluidMLPClassifierQuery : FluidRTQuery {}
+FluidMLPClassifierQuery : FluidRTMultiOutUGen {
+    *kr{ |trig, model, inputBuffer,outputBuffer|
+        ^this.multiNew('control',trig, model.asUGenInput,
+            inputBuffer.asUGenInput, outputBuffer.asUGenInput)
+    }
+
+    init { arg ... theInputs;
+		inputs = theInputs;
+		^this.initOutputs(1, rate);
+	}
+}

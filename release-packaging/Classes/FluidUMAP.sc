@@ -1,4 +1,4 @@
-FluidUMAP : FluidRealTimeModel {
+FluidUMAP : FluidModelObject {
 
     var <>numDimensions, <>numNeighbours, <>minDist, <>iterations, <>learnRate;
 
@@ -13,12 +13,12 @@ FluidUMAP : FluidRealTimeModel {
 
     prGetParams{
         ^[
+            this.id,
             this.numDimensions,
             this.numNeighbours,
             this.minDist,
             this.iterations,
             this.learnRate,
-			-1,-1
         ]
     }
 
@@ -68,13 +68,8 @@ FluidUMAP : FluidRealTimeModel {
         numDimensions = numDimensions ? this.numDimensions;
         this.numDimensions_(numDimensions);
 
-        ^FluidUMAPQuery.kr(K2A.ar(trig),
+        ^FluidUMAPQuery.kr(trig,
             this,
-			this.numDimensions,
-			this.numNeighbours,
-            this.minDist,
-            this.iterations,
-            this.learnRate,
 			this.prEncodeBuffer(inputBuffer),
 			this.prEncodeBuffer(outputBuffer));
     }
@@ -84,4 +79,14 @@ FluidUMAP : FluidRealTimeModel {
 	size { |action|}
 }
 
-FluidUMAPQuery : FluidRTQuery {}
+FluidUMAPQuery : FluidRTMultiOutUGen {
+    *kr{ |trig, model, inputBuffer,outputBuffer|
+        ^this.multiNew('control',trig, model.asUGenInput,
+            inputBuffer.asUGenInput, outputBuffer.asUGenInput)
+    }
+
+    init { arg ... theInputs;
+		inputs = theInputs;
+		^this.initOutputs(1, rate);
+	}
+}
