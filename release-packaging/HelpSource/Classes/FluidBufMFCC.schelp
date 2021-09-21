@@ -44,6 +44,9 @@ ARGUMENT:: numCoeffs
 ARGUMENT:: numBands
 	The number of bands that will be perceptually equally distributed between STRONG::minFreq:: and STRONG::maxFreq::.
 
+ARGUMENT:: startCoeff
+	The lowest index of the output cepstral coefficient, zero-counting.
+
 ARGUMENT:: minFreq
 	The lower boundary of the lowest band of the model, in Hz.
 

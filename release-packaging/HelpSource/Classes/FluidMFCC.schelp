@@ -22,6 +22,9 @@ ARGUMENT:: numCoeffs
 ARGUMENT:: numBands
 	The number of bands that will be perceptually equally distributed between minFreq and maxFreq to describe the spectral shape before it is converted to cepstral coefficients.
 
+ARGUMENT:: startCoeff
+	The lowest index of the output cepstral coefficient, zero-counting.
+
 ARGUMENT:: minFreq
 	The lower boundary of the lowest band of the model, in Hz.
 
@@ -102,7 +105,7 @@ c = Buffer.read(s,File.realpath(FluidMFCC.class.filenameSymbol).dirname.withTrai
 (
 x = {arg bands = 40, low = 20, high = 20000;
 	var source = PlayBuf.ar(1,c,loop:1);
-	Out.kr(b,FluidMFCC.kr(source, 13, bands, low, high, maxNumCoeffs:13) / 10);
+	Out.kr(b,FluidMFCC.kr(source, numCoeffs: 13, numBands: bands, minFreq: low, maxFreq: high, maxNumCoeffs: 13) / 10);
 	source.dup;
 }.play;
 )
