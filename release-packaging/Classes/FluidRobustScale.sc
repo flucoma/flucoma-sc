@@ -1,4 +1,4 @@
-FluidRobustScale : FluidRealTimeModel {
+FluidRobustScale : FluidModelObject {
 
     var <>low, <>high, <>invert;
 
@@ -8,7 +8,7 @@ FluidRobustScale : FluidRealTimeModel {
 	}
 
     prGetParams{
-        ^[this.low,this.high,this.invert,-1,-1];
+        ^[this.id,this.low,this.high,this.invert];
     }
 
 
@@ -52,18 +52,27 @@ FluidRobustScale : FluidRealTimeModel {
         this.prSendMsg(this.transformPointMsg(sourceBuffer, destBuffer));
 	}
 
-    kr{|trig, inputBuffer,outputBuffer,low,high,invert|
+    kr{|trig, inputBuffer,outputBuffer,invert|
 
-        low = low ? this.low;
-        high = high ? this.high;
 		invert = invert ? this.invert;
 
-        this.low_(low).high_(high).invert_(invert);
+        // this.invert_(invert);
 
-        ^FluidRobustScaleQuery.kr(K2A.ar(trig),this, this.low, this.high, this.invert, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer));
+        ^FluidRobustScaleQuery.kr(trig,this, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer), invert,);
     }
 
 
 }
 
-FluidRobustScaleQuery : FluidRTQuery {}
+FluidRobustScaleQuery : FluidRTMultiOutUGen {
+       *kr{ |trig, model, inputBuffer,outputBuffer,invert|
+        ^this.multiNew('control',trig, model.asUGenInput,
+            invert,
+            inputBuffer.asUGenInput, outputBuffer.asUGenInput)
+    }
+
+    init { arg ... theInputs;
+		inputs = theInputs;
+		^this.initOutputs(1, rate);
+	}
+}

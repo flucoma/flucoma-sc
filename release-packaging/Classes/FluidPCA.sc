@@ -1,4 +1,4 @@
-FluidPCA : FluidRealTimeModel{
+FluidPCA : FluidModelObject{
 
     var <>numDimensions;
 
@@ -7,7 +7,7 @@ FluidPCA : FluidRealTimeModel{
     }
 
     prGetParams{
-        ^[numDimensions,-1,-1];
+        ^[this.id, numDimensions];
     }
 
     fitMsg{|dataSet|
@@ -55,9 +55,20 @@ FluidPCA : FluidRealTimeModel{
         numDimensions = numDimensions ? this.numDimensions;
         this.numDimensions_(numDimensions);
 
-        ^FluidPCAQuery.kr(K2A.ar(trig),this, this.numDimensions, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer));
+        ^FluidPCAQuery.kr(trig ,this, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer), this.numDimensions);
     }
 
 }
 
-FluidPCAQuery : FluidRTQuery {}
+FluidPCAQuery :  FluidRTMultiOutUGen {
+       *kr{ |trig, model, inputBuffer,outputBuffer,numDimensions|
+        ^this.multiNew('control',trig, model.asUGenInput,
+            numDimensions,
+            inputBuffer.asUGenInput, outputBuffer.asUGenInput)
+    }
+
+    init { arg ... theInputs;
+		inputs = theInputs;
+		^this.initOutputs(1, rate);
+	}
+}

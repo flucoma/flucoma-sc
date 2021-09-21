@@ -1,4 +1,4 @@
-FluidKMeans : FluidRealTimeModel {
+FluidKMeans : FluidModelObject {
 
 	var clusters, maxiter;
 
@@ -14,7 +14,7 @@ FluidKMeans : FluidRealTimeModel {
 	maxIter_{|i| maxiter = i.asInteger}
 	maxIter{ ^maxiter }
 
-	prGetParams{^[this.numClusters,this.maxIter,-1,-1];}
+	prGetParams{^[this.id,this.numClusters,this.maxIter];}
 
 	fitMsg{ |dataSet| ^this.prMakeMsg(\fit,id,dataSet.id);}
 
@@ -111,11 +111,21 @@ FluidKMeans : FluidRealTimeModel {
 	}
 
 	kr{|trig, inputBuffer,outputBuffer|
-		^FluidKMeansQuery.kr(K2A.ar(trig),
-			this, clusters, maxiter,
-			this.prEncodeBuffer(inputBuffer),
-			this.prEncodeBuffer(outputBuffer));
+        ^FluidKMeansQuery.kr(trig,
+            this,
+            this.prEncodeBuffer(inputBuffer),
+            this.prEncodeBuffer(outputBuffer));
 	}
 }
 
-FluidKMeansQuery : FluidRTQuery {}
+FluidKMeansQuery : FluidRTMultiOutUGen {
+
+    *kr{ |trig, model,inputBuffer, outputBuffer |
+        ^this.multiNew('control',trig, model.asUGenInput,inputBuffer.asUGenInput, outputBuffer.asUGenInput)
+    }
+
+    init { arg ... theInputs;
+		inputs = theInputs;
+		^this.initOutputs(1, rate);
+	}
+}

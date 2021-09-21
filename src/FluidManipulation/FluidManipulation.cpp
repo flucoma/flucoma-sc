@@ -29,18 +29,43 @@ PluginLoad(FluidSTFTUGen)
   makeSCWrapper<NRTThreadedDataSetClient>("FluidDataSet",ft);
   makeSCWrapper<NRTThreadedDataSetQueryClient>("FluidDataSetQuery",ft);
   makeSCWrapper<NRTThreadedLabelSetClient>("FluidLabelSet",ft);
-  makeSCWrapper<RTKDTreeClient>("FluidKDTree",ft);
-  makeSCWrapper<RTKMeansClient>("FluidKMeans",ft);
-  makeSCWrapper<RTKNNClassifierClient>("FluidKNNClassifier",ft);
-  makeSCWrapper<RTKNNRegressorClient>("FluidKNNRegressor",ft);
-  makeSCWrapper<RTNormalizeClient>("FluidNormalize",ft);
-  makeSCWrapper<RTRobustScaleClient>("FluidRobustScale",ft);
-  makeSCWrapper<RTStandardizeClient>("FluidStandardize",ft);
-  makeSCWrapper<RTPCAClient>("FluidPCA",ft);
+  
+  makeSCWrapper<NRTThreadedKDTreeClient>("FluidKDTree",ft);
+  makeSCWrapper<RTKDTreeQueryClient>("FluidKDTreeQuery",ft);
+  
+  makeSCWrapper<NRTThreadedKMeansClient>("FluidKMeans",ft);
+  makeSCWrapper<RTKMeansQueryClient>("FluidKMeansQuery",ft);
+  
+  makeSCWrapper<NRTThreadedKNNClassifierClient>("FluidKNNClassifier",ft);
+  makeSCWrapper<RTKNNClassifierQueryClient>("FluidKNNClassifierQuery",ft);
+  
+  makeSCWrapper<NRTThreadedKNNRegressorClient>("FluidKNNRegressor",ft);
+  makeSCWrapper<RTKNNRegressorQueryClient>("FluidKNNRegressorQuery",ft);
+  
+  makeSCWrapper<NRTThreadedNormalizeClient>("FluidNormalize",ft);
+  makeSCWrapper<RTNormalizeQueryClient>("FluidNormalizeQuery",ft);
+  
+  makeSCWrapper<NRTThreadedRobustScaleClient>("FluidRobustScale",ft);
+  makeSCWrapper<RTRobustScaleQueryClient>("FluidRobustScaleQuery",ft);
+  
+  makeSCWrapper<NRTThreadedStandardizeClient>("FluidStandardize",ft);
+  makeSCWrapper<RTStandardizeQueryClient>("FluidStandardizeQuery",ft);
+  
+  makeSCWrapper<NRTThreadedPCAClient>("FluidPCA",ft);  
+  makeSCWrapper<RTPCAQueryClient>("FluidPCAQuery",ft);
+  
   makeSCWrapper<NRTThreadedMDSClient>("FluidMDS",ft);
-  makeSCWrapper<RTUMAPClient>("FluidUMAP",ft);
+  
+  makeSCWrapper<NRTThreadedUMAPClient>("FluidUMAP",ft);
+  makeSCWrapper<RTUMAPQueryClient>("FluidUMAPQuery",ft);
+  
   makeSCWrapper<NRTThreadedDataSetWriter>("FluidDataSetWr", ft);
-  makeSCWrapper<RTMLPRegressorClient>("FluidMLPRegressor",ft);
-  makeSCWrapper<RTMLPClassifierClient>("FluidMLPClassifier",ft);
+  
+  makeSCWrapper<NRTThreadedMLPRegressorClient>("FluidMLPRegressor",ft);
+  makeSCWrapper<RTMLPRegressorQueryClient>("FluidMLPRegressorQuery",ft);
+  
+  makeSCWrapper<NRTThreadedMLPClassifierClient>("FluidMLPClassifier",ft);
+  makeSCWrapper<RTMLPClassifierQueryClient>("FluidMLPClassifierQuery",ft);
+  
   makeSCWrapper<NRTThreadedGridClient>("FluidGrid",ft);
 }

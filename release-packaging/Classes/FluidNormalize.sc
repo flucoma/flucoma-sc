@@ -1,4 +1,4 @@
-FluidNormalize : FluidRealTimeModel {
+FluidNormalize : FluidModelObject {
 
     var <>min, <>max, <>invert;
 
@@ -8,7 +8,7 @@ FluidNormalize : FluidRealTimeModel {
 	}
 
     prGetParams{
-        ^[this.min,this.max,this.invert,-1,-1];
+        ^[this.id, this.min,this.max,this.invert,-1,-1];
     }
 
 
@@ -52,7 +52,7 @@ FluidNormalize : FluidRealTimeModel {
         this.prSendMsg(this.transformPointMsg(sourceBuffer, destBuffer));
 	}
 
-    kr{|trig, inputBuffer,outputBuffer,min,max,invert|
+    kr{|trig, inputBuffer,outputBuffer,min = 0 ,max = 1,invert = 0|
 
         min = min ? this.min;
         max = max ? this.max;
@@ -60,11 +60,24 @@ FluidNormalize : FluidRealTimeModel {
 
         this.min_(min).max_(max).invert_(invert);
 
-        ^FluidNormalizeQuery.kr( K2A.ar(trig),
-                this, this.min, this.max, this.invert, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer)); 
+        ^FluidNormalizeQuery.kr(trig,
+                this, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer), this.min, this.max, this.invert);
     }
 
 
 }
 
-FluidNormalizeQuery : FluidRTQuery {}
+FluidNormalizeQuery : FluidRTMultiOutUGen {
+
+    *kr{ |trig, model,inputBuffer,outputBuffer,min = 0 ,max = 1,invert = 0|
+        inputBuffer.asUGenInput.postln;
+        ^this.multiNew('control',trig, model.asUGenInput,
+            min,max,invert,
+            inputBuffer.asUGenInput, outputBuffer.asUGenInput)
+    }
+
+    init { arg ... theInputs;
+		inputs = theInputs;
+		^this.initOutputs(1, rate);
+	}
+}

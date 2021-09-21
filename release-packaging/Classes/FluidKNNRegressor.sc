@@ -1,4 +1,4 @@
-FluidKNNRegressor : FluidRealTimeModel {
+FluidKNNRegressor : FluidModelObject {
 
     var <>numNeighbours, <>weight;
 
@@ -8,7 +8,7 @@ FluidKNNRegressor : FluidRealTimeModel {
         .weight_(weight);
 	}
 
-    prGetParams{^[this.numNeighbours,this.weight,-1,-1];}
+    prGetParams{^[this.id,this.numNeighbours,this.weight,-1,-1];}
 
     fitMsg{|sourceDataSet, targetDataSet|
         ^this.prMakeMsg(\fit,this.id,sourceDataSet.id,targetDataSet.id)
@@ -45,4 +45,16 @@ FluidKNNRegressor : FluidRealTimeModel {
     }
 }
 
-FluidKNNRegressorQuery : FluidRTQuery {}
+FluidKNNRegressorQuery : FluidRTMultiOutUGen {
+
+    *kr{ |trig, model,numNeighbours = 3, weight = 1,inputBuffer, outputBuffer |
+        ^this.multiNew('control',trig, model.asUGenInput,
+            numNeighbours,weight,
+            inputBuffer.asUGenInput, outputBuffer.asUGenInput)
+    }
+
+    init { arg ... theInputs;
+		inputs = theInputs;
+		^this.initOutputs(1, rate);
+	}
+}
