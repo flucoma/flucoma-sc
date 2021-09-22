@@ -14,6 +14,8 @@ struct FluidSCMessaging{
   static auto getInterfaceTable(){ return FluidSCWrapper::getInterfaceTable(); }
   static auto getName(){ return FluidSCWrapper::getName(); }
 
+  using Params = typename Client::ParamSetType;
+  using ParamValues = typename Params::ValueTuple;
 
   template <size_t N>
   struct MessageDispatchCmd
@@ -117,6 +119,13 @@ struct FluidSCMessaging{
    return willContinue;
   }
 
+  static void refreshParams(Params& p, MessageResult<ParamValues>& r)
+  {
+    p.fromTuple(ParamValues(r));
+  }
+  
+  template<typename T>
+  static void refreshParams(Params&,MessageResult<T>&){}
 
   template<size_t N>
   static void doMessage(World* inWorld, void* inUserData, struct sc_msg_iter* args, void* replyAddr)
@@ -168,6 +177,8 @@ struct FluidSCMessaging{
 
             if (!m->result.ok())
               FluidSCWrapper::printResult(world, m->result);
+            else
+              refreshParams(ptr->mParams, m->result);
           } else FluidSCWrapper::printNotFound(m->id);
 
           return true;

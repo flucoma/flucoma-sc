@@ -23,8 +23,9 @@ namespace impl {
 template <typename Client, typename Wrapper>
 class NonRealTime : public SCUnit
 {
+public:
   using Params = typename Client::ParamSetType;
-
+private:
   template <typename T, typename... Args>
   static T* rtalloc(World* world, Args&&... args)
   {

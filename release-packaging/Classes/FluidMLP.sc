@@ -65,6 +65,15 @@ FluidMLPRegressor : FluidModelObject {
 		this.prSendMsg(this.predictPointMsg(sourceBuffer, targetBuffer));
 	}
 
+    read { |filename, action|
+        actions[\read] = [numbers(FluidMessageResponse,_,nil,_), {
+            |data|
+            this.prUpdateParams(data);
+            action.value;
+        }];
+      this.prSendMsg(this.readMsg(filename));
+    }
+
     kr{|trig, inputBuffer,outputBuffer, tapIn = 0, tapOut = -1|
         var params;
         tapIn = tapIn ? this.tapIn;
@@ -78,6 +87,17 @@ FluidMLPRegressor : FluidModelObject {
         ^FluidMLPRegressorQuery.kr(trig,this, *params);
     }
 
+    prUpdateParams{|data|
+        var rest = data.keep(-9);
+        this.hidden_(data.drop(1).drop(-9).copy);
+        [\activation_, \outputActivation_,
+            \tapIn_, \tapOut_, \maxIter_,
+            \learnRate_, \momentum_,
+            \batchSize_, \validation_]
+        .do{|prop,i|
+            this.performList(prop,rest[i]);
+        };
+    }
 }
 
 FluidMLPRegressorQuery : FluidRTMultiOutUGen {
@@ -150,6 +170,27 @@ FluidMLPClassifier : FluidModelObject {
         actions[\predictPoint] = [string(FluidMessageResponse,_,_),action];
 		this.prSendMsg(this.predictPointMsg(sourceBuffer));
 	}
+
+
+    read { |filename, action|
+        actions[\read] = [numbers(FluidMessageResponse,_,nil,_), {
+            |data|
+            this.prUpdateParams(data);
+            action.value;
+        }];
+      this.prSendMsg(this.readMsg(filename));
+    }
+
+    prUpdateParams{|data|
+        var rest = data.keep(-6);
+        this.hidden_(data.drop(1).drop(-6).copy);
+        [\activation_, \maxIter_,
+            \learnRate_, \momentum_,
+            \batchSize_, \validation_]
+        .do{|prop,i|
+            this.performList(prop,rest[i]);
+        };
+    }
 
     kr{|trig, inputBuffer,outputBuffer|
 
