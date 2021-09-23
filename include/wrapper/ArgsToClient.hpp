@@ -126,9 +126,11 @@ namespace client {
     }
 
     template <typename... Ts>
-    static index numTags(std::tuple<Ts...>&&)
+    static index numTags(std::tuple<Ts...>&& t)
     {
-      return std::tuple_size<std::tuple<Ts...>>::value;
+      index count = 0;
+      ForEach(t,[&count](auto& x){ count += numTags(x);});
+      return count; 
     }
   
     static void getTag(Packet& p, typename BufferT::type) { p.addtag('i'); }

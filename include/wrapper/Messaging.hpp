@@ -267,7 +267,7 @@ struct FluidSCMessaging{
     
     small_scpacket packet;
     packet.adds(s.c_str());
-    packet.maketags(static_cast<int>(numTags + 3));
+    packet.maketags(static_cast<int>(numTags + 2));
     packet.addtag(',');
     packet.addtag('i');
     ToOSCTypes<small_scpacket>::getTag(packet,static_cast<T>(result));
