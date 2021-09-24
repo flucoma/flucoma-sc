@@ -114,6 +114,7 @@ struct RealTimeBase
       mAudioInputs.emplace_back(mControlInputBuffer);
       mInputMapper = &RealTimeBase::mapControlInputs;
     }
+    else mInputMapper = &RealTimeBase::mapNoOp; 
 
     index outputSize = client.controlChannelsOut().size > 0
                            ? std::max(client.audioChannelsOut(),
