@@ -35,10 +35,10 @@ ARGUMENT:: destination
 The link::Classes/Buffer:: to write the selected data to
 
 ARGUMENT:: frameHop
-Take every `framehop` frames. Default = 1 = all frames (where 2 would be every other frame, etc.)
+Take every `frameHop` frames. Default = 1 = all frames (where 2 would be every other frame, etc.)
 
-ARGUMENT:: channelHop
-Take every `channelhop` channels. Default = 1 = all channels (where 2 would be every other channel, etc.)
+ARGUMENT:: chanHop
+Take every `chanHop` channels. Default = 1 = all channels (where 2 would be every other channel, etc.)
 
 ARGUMENT:: freeWhenDone
 Free the server instance when processing complete. Default true
@@ -46,9 +46,6 @@ Free the server instance when processing complete. Default true
 ARGUMENT:: action
 Runs when processing is complete
 
-EXAMPLES::
-
-code::
 EXAMPLES::
 Didactic
 code::
@@ -68,10 +65,10 @@ FluidBufSelectEvery.process(s,b, destination: c, action: {c.query});
 c.getToFloatArray(action: {|x|x.round(0.1).postln;});
 
 //more powerful copying, resizing the destination accordingly
-FluidBufSelectEvery.process(s,b, destination: c, frameHop: 2, channelHop: 3, action: {c.query});
+FluidBufSelectEvery.process(s,b, destination: c, frameHop: 2, chanHop: 3, action: {c.query});
 c.getToFloatArray(action: {|x|x.round(0.1).postln;});
 
 //source buffer boundaries still apply before the hopping selection
-FluidBufSelectEvery.process(s,b, startFrame: 1, numFrames: 3, startChan: 2, numChans: 3, destination: c, frameHop: 1, channelHop: 2, action: {c.query});
+FluidBufSelectEvery.process(s,b, startFrame: 1, numFrames: 3, startChan: 2, numChans: 3, destination: c, frameHop: 1, chanHop: 2, action: {c.query});
 c.getToFloatArray(action: {|x|x.round(0.1).postln;});
-::::
+::
