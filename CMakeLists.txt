@@ -28,6 +28,8 @@ if (APPLE)
   string(APPEND CMAKE_CXX_FLAGS " -stdlib=libc++")
 endif()
 
+option(SYSTEM_BOOST  "Use boost libraries from system. If your SC was built with this enabled, so should FluCoMa-sc" OFF)
+
 ################################################################################
 # Main project
 project (flucoma-sc LANGUAGES CXX)
@@ -107,18 +109,41 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 endif()
 
 #sandbox regrettable dependency on SC internals for SendReply()
+
+if(SYSTEM_BOOST)
+  find_package(Threads REQUIRED) 
+  set(Boost_NO_BOOST_CMAKE ON)
+  set(Boost_USE_MULTITHREADED ON)
+  find_package(Boost 1.50.0 COMPONENTS thread system REQUIRED) 
+  add_library(boost_thread_lib SHARED IMPORTED)
+  set_property(TARGET boost_thread_lib PROPERTY IMPORTED_LOCATION ${Boost_THREAD_LIBRARY})
+  add_library(boost_system_lib SHARED IMPORTED)
+  set_property(TARGET boost_system_lib PROPERTY IMPORTED_LOCATION ${Boost_SYSTEM_LIBRARY})
+endif()
+
 add_library(FLUID_SC_COPYREPLYADDR STATIC
   "${CMAKE_SOURCE_DIR}/include/wrapper/CopyReplyAddress.cpp"
   "${SC_PATH}/common/SC_Reply.cpp"
-  "${SC_PATH}/external_libraries/boost/libs/system/src/error_code.cpp"
 )
 
 target_include_directories(FLUID_SC_COPYREPLYADDR SYSTEM PRIVATE 
   "${SC_PATH}/include/plugin_interface"
   "${SC_PATH}/include/common"
   "${SC_PATH}/common"
-  "${SC_PATH}/external_libraries/boost"
 )
+
+if(SYSTEM_BOOST)
+  target_link_libraries(FLUID_SC_COPYREPLYADDR ${boost_system_lib})
+else()
+  target_sources(FLUID_SC_COPYREPLYADDR PRIVATE 
+    "${SC_PATH}/external_libraries/boost/libs/system/src/error_code.cpp"
+  )
+  target_include_directories(FLUID_SC_COPYREPLYADDR SYSTEM PRIVATE 
+    "${SC_PATH}/external_libraries/boost"
+  )    
+endif()
+
+
 set_target_properties(FLUID_SC_COPYREPLYADDR PROPERTIES
     CXX_STANDARD 14
     CXX_STANDARD_REQUIRED YES
