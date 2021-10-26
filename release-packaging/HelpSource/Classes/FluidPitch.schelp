@@ -4,14 +4,16 @@ CATEGORIES:: Libraries>FluidCorpusManipulation
 RELATED::  Guides/FluidCorpusManipulation, Classes/Pitch
 
 DESCRIPTION::
-This class implements three popular pitch descriptors, computed as frequency and the confidence in its value. It is part of the LINK:: Guides/FluidCorpusManipulation##Fluid Corpus Manipulation Toolkit::. For more explanations, learning material, and discussions on its musicianly uses, visit http://www.flucoma.org/
+FluidPitch implements three popular pitch descriptors. It outputs two values: the computed frequency and the confidence in the accuracy of that frequency. It is part of the LINK:: Guides/FluidCorpusManipulation##Fluid Corpus Manipulation Toolkit::. For more explanations, learning materials, and discussions on its musicianly uses, visit https://www.flucoma.org/reference/pitch
 
-The process will return a multichannel control steam with [pitch, confidence] values, which will be repeated if no change happens within the algorithm, i.e. when the hopSize is larger than the server's kr period. A pitch of 0 Hz is yield (or -999.0 when the unit is in MIDI note) when the algorithm cannot find a fundamental at all.
+FluidPitch outputs a multichannel control steam of [pitch, confidence] values. The 'unit' argument changes the unit of the pitch output. 'unit' set to 0 will return a frequency in Hz, 'unit' set to 1 will return the MIDI note (with a decimal for microtonal values). If the algorithm cannot determine a fundamental pitch at all, a frequency of 0 Hz is returned (or -999.0 when the unit is in MIDI note).
+
+When the hopSize is larger than the server's kr period, the returned values will be repeated until the next window is computed.
 
 CLASSMETHODS::
 
 METHOD:: kr
-	The audio rate in, control rate out version of the object.
+	The audio rate in, control rate out
 
 ARGUMENT:: in
 	The audio to be processed.
@@ -21,7 +23,7 @@ ARGUMENT:: algorithm
 	TABLE::
 	## 0 || Cepstrum: Returns a pitch estimate as the location of the second highest peak in the Cepstrum of the signal (after DC).
 	## 1 || Harmonic Product Spectrum: Implements the Harmonic Product Spectrum algorithm for pitch detection . See e.g. FOOTNOTE:: A. Lerch, "An Introduction to Audio Content Analysis: Applications in Signal Processing and Music Informatics." John Wiley & Sons, 2012.https://onlinelibrary.wiley.com/doi/book/10.1002/9781118393550 ::
-	## 2 || YinFFT: Implements the frequency domain version of the YIN algorithm, as described in FOOTNOTE::P. M. Brossier, "Automatic Annotation of Musical Audio for Interactive Applications.” QMUL, London, UK, 2007. :: See also https://essentia.upf.edu/documentation/reference/streaming_PitchYinFFT.html
+	## 2 || YinFFT: Implements the frequency domain version of the YIN algorithm, as described in FOOTNOTE::P. M. Brossier, "Automatic Annotation of Musical Audio for Interactive Applications.” QMUL, London, UK, 2007. :: See also FOOTNOTE::https://essentia.upf.edu/documentation/reference/streaming_PitchYinFFT.html::
 	::
 
 ARGUMENT:: minFreq
@@ -40,7 +42,7 @@ ARGUMENT:: hopSize
 	The window hop size. As sinusoidal estimation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of windowSize (overlap of 2).
 
 ARGUMENT:: fftSize
-	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will use the next power of 2 equal or above the windowSize.
+	The inner FFT/IFFT size. It must be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will use the next power of 2 equal to or above the windowSize.
 
 ARGUMENT:: maxFFTSize
 	How large can the FFT be, by allocating memory at instantiation time. This cannot be modulated.
