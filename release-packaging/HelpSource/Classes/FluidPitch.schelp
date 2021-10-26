@@ -6,7 +6,7 @@ RELATED::  Guides/FluidCorpusManipulation, Classes/Pitch
 DESCRIPTION::
 FluidPitch implements three popular pitch descriptors. It outputs two values: the computed frequency and the confidence in the accuracy of that frequency. It is part of the LINK:: Guides/FluidCorpusManipulation##Fluid Corpus Manipulation Toolkit::. For more explanations, learning materials, and discussions on its musicianly uses, visit https://www.flucoma.org/reference/pitch
 
-FluidPitch outputs a multichannel control steam of [pitch, confidence] values. The 'unit' argument changes the unit of the pitch output. 'unit' set to 0 will return a frequency in Hz, 'unit' set to 1 will return the MIDI note (with a decimal for microtonal values). If the algorithm cannot determine a fundamental pitch at all, a frequency of 0 Hz is returned (or -999.0 when the unit is in MIDI note).
+FluidPitch outputs a multichannel control steam of [pitch, confidence] values. The 'unit' argument changes the unit of the pitch output. 'unit' set to 0 will return a frequency in Hz, 'unit' set to 1 will return the MIDI note (with a decimal for microtonal values). If the chosen algorithm cannot determine a fundamental pitch at all, a frequency of 0 Hz is returned (or -999.0 when the unit is in MIDI note).
 
 When the hopSize is larger than the server's kr period, the returned values will be repeated until the next window is computed.
 
@@ -27,16 +27,16 @@ ARGUMENT:: algorithm
 	::
 
 ARGUMENT:: minFreq
-The minimum frequency that the algorithm will search for an estimated fundamental. This sets the lowest value that will be generated.
+The minimum frequency that the algorithm will search for an estimated fundamental. This sets the lowest value that will be generated. The default is 20.
 
 ARGUMENT:: maxFreq
-The maximum frequency that the algorithm will search for an estimated fundamental. This sets the highest value that will be generated.
+The maximum frequency that the algorithm will search for an estimated fundamental. This sets the highest value that will be generated. The default is 10000.
 
 ARGUMENT:: unit
-The unit of the estimated value. The default of 0 is in Hz. A value of 1 will convert to MIDI note values.
+The unit of the estimated frequency. The default of 0 is in Hz. A value of 1 will convert to MIDI note values.
 
 ARGUMENT:: windowSize
-	The window size. As sinusoidal estimation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
+	The window size. The number of samples used to calculate the FFT.
 
 ARGUMENT:: hopSize
 	The window hop size. As sinusoidal estimation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of windowSize (overlap of 2).
