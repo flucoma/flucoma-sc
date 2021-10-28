@@ -1,5 +1,6 @@
 (
 ~dummy_data = {
+	arg xmin = 20, xmax = 20000, ymin = -130, ymax = 0;
 	Dictionary.newFrom([
 		"cols",2,
 		"data",Dictionary.newFrom(Array.fill(200,{
@@ -8,7 +9,7 @@
 			if((i % 2) == 0,{
 				return = "example-%".format((i/2).asInteger);
 			},{
-				return = [exprand(20,20000),rrand(-130,0)];
+				return = [rrand(xmin,xmax),rrand(ymin,ymax)];
 			});
 			// return.postln;
 			return;
@@ -54,6 +55,7 @@ d = ~dummy_data.value;
 
 ~fp.setColor_("example-7",Color.red);
 
+~fp.background_(Color.white)
 ~fp.background_(Color.red)
 
 ~fp.close;
@@ -67,7 +69,7 @@ s.waitForBoot{
 
 		s.sync;
 
-		ds.load(~fp.dict,{
+		ds.load(~dummy_data.(),{
 			kmeans.fitPredict(ds,labelset,{
 				labelset.dump({
 					arg lsdict;
@@ -104,3 +106,10 @@ w = Window("test",Rect(50,50,800,600)).front;
 	"".postln;
 },xmin:20,xmax:20000,ymin:-130,ymax:0);
 )
+
+(
+Window.closeAll;
+~fp = FluidPlotter(bounds:Rect(100,100,500,500))
+)
+
+~fp.dict_(~dummy_data.(0.01,1,0.0,1.0).postln);
