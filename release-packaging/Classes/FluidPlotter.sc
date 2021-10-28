@@ -1,5 +1,23 @@
+FluidPlotterPoint {
+	var id, <x, <y, <>color, <>sizeMultiplier = 1;
+
+	*new {
+		arg id, x, y, color, sizeMultiplier = 1;
+		^super.new.init(id,x,y,color,sizeMultiplier);
+	}
+
+	init {
+		arg id_, x_, y_, color_, sizeMultiplier_ = 1;
+		id = id_;
+		x = x_;
+		y = y_;
+		color = color_ ? Color.black;
+		sizeMultiplier = sizeMultiplier_;
+	}
+}
+
 FluidPlotter {
-	var <parent, <userView, <xmin, <xmax, <ymin, <ymax, <pointSize = 4, colors, dict, shape = \circle, catColors;
+	var <parent, <userView, <xmin, <xmax, <ymin, <ymax, <pointSize = 6, dict_internal, <dict, shape = \circle, catColors, highlightIdentifier;
 
 	*new {
 		arg parent, bounds, dict, mouseMoveAction,xmin = 0,xmax = 1,ymin = 0,ymax = 1;
@@ -22,12 +40,13 @@ FluidPlotter {
 		if(dict_.at("cols") != 2,{this.dictNotProperlyFormatted});
 
 		this.createCatColors;
-
+		this.dict_(dict_);
 		this.createPlotWindow(bounds,parent_,mouseMoveAction,dict_);
+		this.background_(Color.white);
 	}
 
 	createCatColors {
-		catColors = "1f77b4ff7f0e2ca02cd627289467bd8c564be377c27f7f7fbcbd2217becf".clump(6).do({
+		catColors = "1f77b4ff7f0e2ca02cd627289467bd8c564be377c27f7f7fbcbd2217becf".clump(6).collect({
 			arg hex;
 			Color.newHex(hex);
 		});
@@ -35,13 +54,36 @@ FluidPlotter {
 
 	setCategories_ {
 		arg labelSetDict;
-		labelSetDict.postln;
+		dict_internal.keysValuesDo({
+			arg id, pt;
+			var col, cat = labelSetDict.at("data").at(id)[0].interpret;
+			if(cat > (catColors.size-1),{"FluidPlotter:setCategories_ FluidPlotter doesn't have that many category colors. You can use the method 'setColor_' to set colors for individual points.".warn});
+			col = catColors[cat];
+			pt.color_(col);
+		});
+		this.refresh;
+	}
+
+	setSizeMultiplier_ {
+		arg identifier, sizeMultiplier;
+		if(dict_internal.at(identifier).notNil,{
+			dict_internal.at(identifier).sizeMultiplier_(sizeMultiplier);
+			this.refresh;
+		},{
+			"FluidPlotter::setSizeMultiplier_ identifier not found".warn;
+		});
+	}
+
+	setPoint_ {
+		arg identifier, x, y, sizeMultiplier = 1, color;
+		dict_internal.put(identifier,FluidPlotterPoint(identifier,x,y,color ? Color.black,sizeMultiplier));
+		this.refresh;
 	}
 
 	setColor_ {
 		arg identifier, color;
-		if(dict.at("data").at(identifier).notNil,{
-			colors.put(identifier,color);
+		if(dict_internal.at(identifier).notNil,{
+			dict_internal.at(identifier).color_(color);
 			this.refresh;
 		},{
 			"FluidPlotter::setColor_ identifier not found".warn;
@@ -56,7 +98,7 @@ FluidPlotter {
 
 	background_ {
 		arg bg;
-
+		userView.background_(bg);
 	}
 
 	refresh {
@@ -72,11 +114,16 @@ FluidPlotter {
 	dict_ {
 		arg d;
 		dict = d;
-		colors = Dictionary.newFrom(dict.at("data").keys.collect({
-			arg key;
-			[key,Color.black];
-		}).asArray.flatten);
-		this.refresh;
+		dict_internal = Dictionary.new;
+		dict.at("data").keysValuesDo({
+			arg k, v;
+/*			k.postln;
+			v.postln;*/
+			dict_internal.put(k,FluidPlotterPoint(k,v[0],v[1],Color.black,1));
+		});
+		if(userView.notNil,{
+			this.refresh;
+		});
 	}
 
 	xmin_ {
@@ -104,22 +151,9 @@ FluidPlotter {
 	}
 
 	highlight_ {
-		arg identifier, color;
-		var found = false;
-		colors.keys.do{
-			arg key;
-			if(key == identifier,{
-				colors.put(key,color);
-				found = true;
-			},{
-				colors.put(key,Color.black);
-			});
-		};
-		if(found,{
-			this.refresh;
-		},{
-			"FluidPlotter::highlight_ identifier not found".warn;
-		});
+		arg identifier;
+		highlightIdentifier = identifier;
+		this.refresh;
 	}
 
 	dictNotProperlyFormatted {
@@ -136,18 +170,30 @@ FluidPlotter {
 		userView = UserView(parent,Rect(xpos,ypos,bounds.width,bounds.height));
 
 		userView.drawFunc_({
-			dict.at("data").keysValuesDo({
+			dict_internal.keysValuesDo({
 				arg key, pt;
-				var scaledx = pt[0].linlin(xmin,xmax,0,userView.bounds.width) - (pointSize/2);
-				var scaledy = pt[1].linlin(ymin,ymax,0,userView.bounds.height) - (pointSize/2);
-				var color = colors.at(key);
+				var pointSize_, scaledx, scaledy, color;
+
+/*				key.postln;
+				pt.postln;
+				pt.x.postln;
+				pt.y.postln;*/
+
+				if(key == highlightIdentifier,{
+					pointSize_ = pointSize * 2.3 * pt.sizeMultiplier
+				},{
+					pointSize_ = pointSize * pt.sizeMultiplier
+				});
+
+				scaledx = pt.x.linlin(xmin,xmax,0,userView.bounds.width,nil) - (pointSize_/2);
+				scaledy = pt.y.linlin(ymax,ymin,0,userView.bounds.height,nil) - (pointSize_/2);
 
 				shape.switch(
-					\square,{Pen.addRect(Rect(scaledx,scaledy,pointSize,pointSize))},
-					\circle,{Pen.addOval(Rect(scaledx,scaledy,pointSize,pointSize))}
+					\square,{Pen.addRect(Rect(scaledx,scaledy,pointSize_,pointSize_))},
+					\circle,{Pen.addOval(Rect(scaledx,scaledy,pointSize_,pointSize_))}
 				);
 
-				Pen.color_(color);
+				Pen.color_(pt.color);
 				Pen.draw;
 			});
 		});
@@ -160,8 +206,6 @@ FluidPlotter {
 		});
 
 		if(parent_.isNil,{parent.front;});
-
-		this.dict_(dict_);
 	}
 
 	close {

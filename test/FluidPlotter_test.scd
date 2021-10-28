@@ -15,9 +15,7 @@
 		}))
 	]);
 };
-)
 
-(
 Window.closeAll;
 // self window
 d = ~dummy_data.value;
@@ -29,7 +27,7 @@ d = ~dummy_data.value;
 },xmin:20,xmax:20000,ymin:-130,ymax:0);
 )
 
-~fp.pointSize_(6)
+~fp.pointSize_(10);
 
 (
 10.do({
@@ -37,13 +35,50 @@ d = ~dummy_data.value;
 });
 )
 
-~fp.highlight_("example-90",Color.red);
+~fp.highlight_("example-95");
+~fp.highlight_(nil);
 
 ~fp.dict_(~dummy_data.value);
 
-~fp.ymin_(-50)
+(
+~fp.ymin_(-140);
+~fp.ymax_(10);
+~fp.xmin_(-200);
+~fp.xmax_(21000);
+)
 
-~fp.shape_(\square)
+~fp.shape_(\square);
+
+~fp.setSizeMultiplier_("example-0",10);
+~fp.setSizeMultiplier_("example-0",1);
+
+~fp.setColor_("example-7",Color.red);
+
+~fp.background_(Color.red)
+
+~fp.close;
+
+(
+s.waitForBoot{
+	Routine{
+		var labelset = FluidLabelSet(s);
+		var kmeans = FluidKMeans(s);
+		var ds = FluidDataSet(s);
+
+		s.sync;
+
+		ds.load(~fp.dict,{
+			kmeans.fitPredict(ds,labelset,{
+				labelset.dump({
+					arg lsdict;
+					defer{~fp.setCategories_(lsdict)};
+					"done".postln;
+				});
+			});
+		});
+	}.play;
+}
+)
 
 
 // with parent
@@ -55,7 +90,7 @@ d = Dictionary.newFrom([
 		arg i;
 		var return;
 		if((i%2) == 0,{
-			return = "exmaple-%".format((i/2).asInteger);
+			return = "example-%".format((i/2).asInteger);
 		},{
 			return = [exprand(20,20000),rrand(-130,0)];
 		});
@@ -69,5 +104,3 @@ w = Window("test",Rect(50,50,800,600)).front;
 	"".postln;
 },xmin:20,xmax:20000,ymin:-130,ymax:0);
 )
-
-~fp.setColor_("example-7",Color.red);
