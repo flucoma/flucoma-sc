@@ -342,7 +342,7 @@ private:
       auto& ar = *args;
       if (auto ptr = get(NRTCommand::mID).lock())
       {
-        ptr->mDone.store(false, std::memory_order_relaxed);
+        ptr->mDone.store(false, std::memory_order_release);
         mParams.template setParameterValuesRT<ParamsFromOSC>(nullptr, world,
                                                              ar);
         mSynchronous = static_cast<bool>(ar.geti());
@@ -397,13 +397,13 @@ private:
 
           if (result.status() != Result::Status::kError)
           {
-            ptr->mDone.store(false, std::memory_order_relaxed);
+            ptr->mDone.store(false, std::memory_order_release);
             mResult = client.process();
             Wrapper::printResult(world, mResult);
 
             bool error = mResult.status() == Result::Status::kError;
 
-            if (error) ptr->mDone.store(true, std::memory_order_relaxed);
+            if (error) ptr->mDone.store(true, std::memory_order_release);
             bool toStage3 = mSynchronous && !error;
             return toStage3;
           }
@@ -439,7 +439,7 @@ private:
         if (NRTCommand::mID >= 0 && mSynchronous)
           NRTCommand::sendReply(name(),
                                 mResult.status() != Result::Status::kError);
-        ptr->mDone.store(true, std::memory_order_relaxed);
+        ptr->mDone.store(true, std::memory_order_release);
         return true;
       }
       return false;
@@ -489,7 +489,7 @@ private:
           {
             std::cout << Wrapper::getName() << ": Processing cancelled"
                       << std::endl;
-            ptr->mDone.store(true, std::memory_order_relaxed);
+            ptr->mDone.store(true, std::memory_order_release);
             return false;
           }
 
@@ -498,7 +498,7 @@ private:
           Wrapper::printResult(world, r);
           if (!mSuccess)
           {
-            ptr->mDone.store(true, std::memory_order_relaxed);
+            ptr->mDone.store(true, std::memory_order_release);
             return false;
           }
           // if we're progressing to stage3, don't unlock the lock just yet
@@ -530,7 +530,7 @@ private:
           NRTCommand::sendReply(name(), mSuccess);
         }
 
-        ptr->mDone.store(true, std::memory_order_relaxed); // = true;
+        ptr->mDone.store(true, std::memory_order_release); // = true;
         return true;
       }
       std::cout << "ERROR: Failed to lock\n";
@@ -826,7 +826,7 @@ private:
         if (auto ptr = mRecord.lock())
         {
           mInit = true;
-          mDone = ptr->mDone.load(std::memory_order_relaxed);
+          mDone = ptr->mDone.load(std::memory_order_acquire);
           out0(0) = static_cast<float>(ptr->mClient.progress());
         }
         else
@@ -940,7 +940,7 @@ private:
         {
           mInit = true;
           auto& client = ptr->mClient;
-          mDone = ptr->mDone.load(std::memory_order_relaxed);
+          mDone = ptr->mDone.load(std::memory_order_acquire);
           out0(0) = mDone ? 1 : static_cast<float>(client.progress());
         }
         else
