@@ -9,7 +9,7 @@ FluidStats : MultiOutUGen {
 	init {arg ...theInputs;
 		inputs = theInputs;
         this.specialIndex = (inputs.size - 2).max(0);
-        this.specialIndex.postln;
+		// this.specialIndex.postln;
 		^this.initOutputs(inputs.size - 1,rate);
 	}
 
