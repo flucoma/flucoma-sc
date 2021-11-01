@@ -36,7 +36,6 @@ FluidPlotter {
 		this.createCatColors;
 		if(dict_.notNil,{this.dict_(dict_)});
 		this.createPlotWindow(bounds,parent_,mouseMoveAction,dict_);
-		this.background_(Color.white);
 	}
 
 	createCatColors {
@@ -100,7 +99,7 @@ FluidPlotter {
 	}
 
 	refresh {
-		userView.refresh;
+		{userView.refresh}.defer;
 	}
 
 	pointSize_ {
@@ -122,8 +121,6 @@ FluidPlotter {
 		dict_internal = Dictionary.new;
 		dict.at("data").keysValuesDo({
 			arg k, v;
-			/*			k.postln;
-			v.postln;*/
 			dict_internal.put(k,FluidPlotterPoint(k,v[0],v[1],Color.black,1));
 		});
 		if(userView.notNil,{
@@ -168,51 +165,56 @@ FluidPlotter {
 	createPlotWindow {
 		arg bounds,parent_, mouseMoveAction,dict_;
 		var xpos, ypos;
+		var mouseAction = {
+			arg view, x, y, modifiers, buttonNumber, clickCount;
+			x = x.linlin(pointSize/2,userView.bounds.width-(pointSize/2),xmin,xmax);
+			y = y.linlin(pointSize/2,userView.bounds.height-(pointSize/2),ymax,ymin);
+			mouseMoveAction.(this,x,y,modifiers,buttonNumber, clickCount);
+		};
 
 		if(parent_.isNil,{xpos = 0; ypos = 0},{xpos = bounds.left; ypos = bounds.top});
+		{
+			parent = parent_ ? Window("FluidPlotter",bounds);
+			userView = UserView(parent,Rect(xpos,ypos,bounds.width,bounds.height));
 
-		parent = parent_ ? Window("FluidPlotter",bounds);
-		userView = UserView(parent,Rect(xpos,ypos,bounds.width,bounds.height));
+			userView.drawFunc_({
+				if(dict_internal.notNil,{
+					dict_internal.keysValuesDo({
+						arg key, pt;
+						var pointSize_, scaledx, scaledy, color;
 
-		userView.drawFunc_({
-			if(dict_internal.notNil,{
-				dict_internal.keysValuesDo({
-					arg key, pt;
-					var pointSize_, scaledx, scaledy, color;
+						/*				key.postln;
+						pt.postln;
+						pt.x.postln;
+						pt.y.postln;*/
 
-					/*				key.postln;
-					pt.postln;
-					pt.x.postln;
-					pt.y.postln;*/
+						if(key == highlightIdentifier,{
+							pointSize_ = pointSize * 2.3 * pt.sizeMultiplier
+						},{
+							pointSize_ = pointSize * pt.sizeMultiplier
+						});
 
-					if(key == highlightIdentifier,{
-						pointSize_ = pointSize * 2.3 * pt.sizeMultiplier
-					},{
-						pointSize_ = pointSize * pt.sizeMultiplier
+						scaledx = pt.x.linlin(xmin,xmax,0,userView.bounds.width,nil) - (pointSize_/2);
+						scaledy = pt.y.linlin(ymax,ymin,0,userView.bounds.height,nil) - (pointSize_/2);
+
+						shape.switch(
+							\square,{Pen.addRect(Rect(scaledx,scaledy,pointSize_,pointSize_))},
+							\circle,{Pen.addOval(Rect(scaledx,scaledy,pointSize_,pointSize_))}
+						);
+
+						Pen.color_(pt.color);
+						Pen.draw;
 					});
-
-					scaledx = pt.x.linlin(xmin,xmax,0,userView.bounds.width,nil) - (pointSize_/2);
-					scaledy = pt.y.linlin(ymax,ymin,0,userView.bounds.height,nil) - (pointSize_/2);
-
-					shape.switch(
-						\square,{Pen.addRect(Rect(scaledx,scaledy,pointSize_,pointSize_))},
-						\circle,{Pen.addOval(Rect(scaledx,scaledy,pointSize_,pointSize_))}
-					);
-
-					Pen.color_(pt.color);
-					Pen.draw;
 				});
 			});
-		});
 
-		userView.mouseMoveAction_({
-			arg view, x, y, modifiers;
-			x = x.linlin(pointSize/2,userView.bounds.width-(pointSize/2),xmin,xmax);
-			y = y.linlin(pointSize/2,userView.bounds.height-(pointSize/2),ymin,ymax);
-			mouseMoveAction.(this,x,y,modifiers);
-		});
+			userView.mouseMoveAction_(mouseAction);
+			userView.mouseDownAction_(mouseAction);
 
-		if(parent_.isNil,{parent.front;});
+			this.background_(Color.white);
+
+			if(parent_.isNil,{parent.front;});
+		}.defer;
 	}
 
 	close {
