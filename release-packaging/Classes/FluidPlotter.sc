@@ -1,23 +1,23 @@
 FluidPlotterPoint {
-	var id, <x, <y, <>color, <>sizeMultiplier = 1;
+	var id, <x, <y, <>color, <>size = 1;
 
 	*new {
-		arg id, x, y, color, sizeMultiplier = 1;
-		^super.new.init(id,x,y,color,sizeMultiplier);
+		arg id, x, y, color, size = 1;
+		^super.new.init(id,x,y,color,size);
 	}
 
 	init {
-		arg id_, x_, y_, color_, sizeMultiplier_ = 1;
+		arg id_, x_, y_, color_, size_ = 1;
 		id = id_;
 		x = x_;
 		y = y_;
 		color = color_ ? Color.black;
-		sizeMultiplier = sizeMultiplier_;
+		size = size_;
 	}
 }
 
 FluidPlotter {
-	var <parent, <userView, <xmin, <xmax, <ymin, <ymax, <pointSize = 6, dict_internal, <dict, shape = \circle, catColors, highlightIdentifier;
+	var <parent, <userView, <xmin, <xmax, <ymin, <ymax, <pointSize = 6, pointSizeScale = 1, dict_internal, <dict, shape = \circle, catColors, highlightIdentifier;
 
 	*new {
 		arg parent, bounds, dict, mouseMoveAction,xmin = 0,xmax = 1,ymin = 0,ymax = 1;
@@ -45,7 +45,7 @@ FluidPlotter {
 		});
 	}
 
-	setCategories_ {
+	categories_ {
 		arg labelSetDict;
 		if(dict_internal.notNil,{
 			dict_internal.keysValuesDo({
@@ -61,23 +61,33 @@ FluidPlotter {
 		});
 	}
 
-	setSizeMultiplier_ {
-		arg identifier, sizeMultiplier;
+	pointSize_ {
+		arg identifier, size;
 		if(dict_internal.at(identifier).notNil,{
-			dict_internal.at(identifier).sizeMultiplier_(sizeMultiplier);
+			dict_internal.at(identifier).size_(size);
 			this.refresh;
 		},{
-			"FluidPlotter::setSizeMultiplier_ identifier not found".warn;
+			"FluidPlotter::pointSize_ identifier not found".warn;
+		});
+	}
+
+	// TODO: addPoint_ that checks if the key already exists and throws an error if it does
+	addPoint_ {
+		arg identifier, x, y, color, size = 1;
+		if(dict_internal.at(identifier).notNil,{
+			"FluidPlotter::addPoint_ There already exists a point with identifier %. Point not added. Use setPoint_ to overwrite existing points.".format(identifier).warn;
+		},{
+			this.setPoint_(identifier,x,y,size,color);
 		});
 	}
 
 	setPoint_ {
-		arg identifier, x, y, sizeMultiplier = 1, color;
-		dict_internal.put(identifier,FluidPlotterPoint(identifier,x,y,color ? Color.black,sizeMultiplier));
+		arg identifier, x, y, color, size = 1;
+		dict_internal.put(identifier,FluidPlotterPoint(identifier,x,y,color ? Color.black,size));
 		this.refresh;
 	}
 
-	setColor_ {
+	pointColor_ {
 		arg identifier, color;
 		if(dict_internal.at(identifier).notNil,{
 			dict_internal.at(identifier).color_(color);
@@ -102,9 +112,9 @@ FluidPlotter {
 		{userView.refresh}.defer;
 	}
 
-	pointSize_ {
+	pointSizeScale_ {
 		arg ps;
-		pointSize = ps;
+		pointSizeScale = ps;
 		this.refresh;
 	}
 
@@ -189,10 +199,12 @@ FluidPlotter {
 						pt.y.postln;*/
 
 						if(key == highlightIdentifier,{
-							pointSize_ = pointSize * 2.3 * pt.sizeMultiplier
+							pointSize_ = pointSize * 2.3 * pt.size
 						},{
-							pointSize_ = pointSize * pt.sizeMultiplier
+							pointSize_ = pointSize * pt.size
 						});
+
+						pointSize_ = pointSize_ * pointSizeScale;
 
 						scaledx = pt.x.linlin(xmin,xmax,0,userView.bounds.width,nil) - (pointSize_/2);
 						scaledy = pt.y.linlin(ymax,ymin,0,userView.bounds.height,nil) - (pointSize_/2);

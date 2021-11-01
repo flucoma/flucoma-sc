@@ -28,11 +28,13 @@ d = ~dummy_data.value;
 },xmin:20,xmax:20000,ymin:-130,ymax:0);
 )
 
-~fp.pointSize_(10);
+~fp.pointSize_("example-5",10);
+~fp.pointSize_("example-5",1);
+~fp.pointSizeScale_(1);
 
 (
 10.do({
-	~fp.setColor_("example-%".format(rrand(0,99)),Color.yellow);
+	~fp.pointColor_("example-%".format(rrand(0,99)),Color.yellow);
 });
 )
 
@@ -50,13 +52,10 @@ d = ~dummy_data.value;
 
 ~fp.shape_(\square);
 
-~fp.setSizeMultiplier_("example-0",10);
-~fp.setSizeMultiplier_("example-0",1);
+~fp.pointColor_("example-7",Color.red);
 
-~fp.setColor_("example-7",Color.red);
-
-~fp.background_(Color.white)
 ~fp.background_(Color.red)
+~fp.background_(Color.white)
 
 ~fp.close;
 
@@ -73,7 +72,7 @@ s.waitForBoot{
 			kmeans.fitPredict(ds,labelset,{
 				labelset.dump({
 					arg lsdict;
-					defer{~fp.setCategories_(lsdict)};
+					defer{~fp.categories_(lsdict)};
 					"done".postln;
 				});
 			});

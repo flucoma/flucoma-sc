@@ -1,0 +1,267 @@
+TITLE:: FluidPlotter
+summary:: A view for plotting data
+categories:: Libraries>FluidCorpusManipulation
+related:: Classes/FluidDataSet, Classes/FluidLabelSet, Classes/FluidKDTree, Classes/FluidKMeans
+
+DESCRIPTION::
+FluidPlotter is a viewer for plotting data.
+
+
+CLASSMETHODS::
+
+METHOD:: new
+Creates a new instance of FluidPlotter
+
+ARGUMENT:: parent
+A parent view to embed the FluidPlotter in. If no parent is passed, FluidPlotter will create a window for itself at the given bounds.
+
+ARGUMENT:: bounds
+Where to show the FluidPlotter, either within the parent or on the screen (if no parent is passed).
+
+ARGUMENT:: dict
+A link::Classes/Dictionary::
+
+ARGUMENT:: mouseMoveAction
+(describe argument here)
+
+ARGUMENT:: xmin
+(describe argument here)
+
+ARGUMENT:: xmax
+(describe argument here)
+
+ARGUMENT:: ymin
+(describe argument here)
+
+ARGUMENT:: ymax
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+
+INSTANCEMETHODS::
+
+METHOD:: background
+(describe method here)
+
+ARGUMENT:: bg
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: xmin
+(describe method here)
+
+ARGUMENT:: val
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: pointSize
+(describe method here)
+
+ARGUMENT:: identifier
+(describe argument here)
+
+ARGUMENT:: size
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: refresh
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: ymin
+(describe method here)
+
+ARGUMENT:: val
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: userView
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: setPoint
+(describe method here)
+
+ARGUMENT:: identifier
+(describe argument here)
+
+ARGUMENT:: x
+(describe argument here)
+
+ARGUMENT:: y
+(describe argument here)
+
+ARGUMENT:: color
+(describe argument here)
+
+ARGUMENT:: size
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: ymax
+(describe method here)
+
+ARGUMENT:: val
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: xmax
+(describe method here)
+
+ARGUMENT:: val
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: highlight
+(describe method here)
+
+ARGUMENT:: identifier
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: dict
+(describe method here)
+
+ARGUMENT:: d
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: createPlotWindow
+(describe method here)
+
+ARGUMENT:: bounds
+(describe argument here)
+
+ARGUMENT:: parent_
+(describe argument here)
+
+ARGUMENT:: mouseMoveAction
+(describe argument here)
+
+ARGUMENT:: dict_
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: addPoint
+(describe method here)
+
+ARGUMENT:: identifier
+(describe argument here)
+
+ARGUMENT:: x
+(describe argument here)
+
+ARGUMENT:: y
+(describe argument here)
+
+ARGUMENT:: color
+(describe argument here)
+
+ARGUMENT:: size
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: shape
+(describe method here)
+
+ARGUMENT:: sh
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: globalPointSize
+(describe method here)
+
+ARGUMENT:: ps
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: close
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: createCatColors
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: pointColor
+(describe method here)
+
+ARGUMENT:: identifier
+(describe argument here)
+
+ARGUMENT:: color
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: dictNotProperlyFormatted
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: parent
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: categories
+(describe method here)
+
+ARGUMENT:: labelSetDict
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: init
+(describe method here)
+
+ARGUMENT:: parent_
+(describe argument here)
+
+ARGUMENT:: bounds
+(describe argument here)
+
+ARGUMENT:: dict_
+(describe argument here)
+
+ARGUMENT:: mouseMoveAction
+(describe argument here)
+
+ARGUMENT:: xmin_
+(describe argument here)
+
+ARGUMENT:: xmax_
+(describe argument here)
+
+ARGUMENT:: ymin_
+(describe argument here)
+
+ARGUMENT:: ymax_
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+
+EXAMPLES::
+
+code::
+(some example code)
+::
