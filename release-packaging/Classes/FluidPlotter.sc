@@ -48,12 +48,27 @@ FluidPlotter {
 	categories_ {
 		arg labelSetDict;
 		if(dict_internal.notNil,{
+			var label_to_int = Dictionary.new;
+			var counter = 0;
 			dict_internal.keysValuesDo({
-				arg id, pt;
-				var col, cat = labelSetDict.at("data").at(id)[0].interpret;
-				if(cat > (catColors.size-1),{"FluidPlotter:setCategories_ FluidPlotter doesn't have that many category colors. You can use the method 'setColor_' to set colors for individual points.".warn});
-				col = catColors[cat];
-				pt.color_(col);
+				arg id, fp_pt;
+				var category_string = labelSetDict.at("data").at(id)[0];
+				var category_int;
+				var color;
+
+				if(label_to_int.at(category_string).isNil,{
+					label_to_int.put(category_string,counter);
+					counter = counter + 1;
+				});
+
+				category_int = label_to_int.at(category_string);
+
+				if(category_int > (catColors.size-1),{
+					"FluidPlotter:setCategories_ FluidPlotter doesn't have that many category colors. You can use the method 'setColor_' to set colors for individual points.".warn
+				});
+
+				color = catColors[category_int];
+				fp_pt.color_(color);
 			});
 			this.refresh;
 		},{
