@@ -1,4 +1,5 @@
 (
+// make some dummy data and plot it
 ~dummy_data = {
 	arg xmin = 20, xmax = 20000, ymin = -130, ymax = 0;
 	Dictionary.newFrom([
@@ -28,21 +29,42 @@ d = ~dummy_data.value;
 },xmin:20,xmax:20000,ymin:-130,ymax:0);
 )
 
+// click and drag on the plotter to report stuff in the mouseMoveAction callback function
+
+// change point size of just one point
 ~fp.pointSize_("example-5",10);
+
+// change it back
 ~fp.pointSize_("example-5",1);
+
+// change all points size bigger...
+~fp.pointSizeScale_(2);
+
+// ...smaller...
+~fp.pointSizeScale_(0.5);
+
+// ...back to normal
 ~fp.pointSizeScale_(1);
 
 (
+// change 10 random points red
 10.do({
-	~fp.pointColor_("example-%".format(rrand(0,99)),Color.yellow);
+	~fp.pointColor_("example-%".format(rrand(0,99)),Color.red);
 });
 )
-
+// "highlight" a point (makes it a little bigger)
 ~fp.highlight_("example-95");
+
+// a different one
+~fp.highlight_("example-94");
+
+// none
 ~fp.highlight_(nil);
 
+// put some different data in
 ~fp.dict_(~dummy_data.value);
 
+// change the ranges
 (
 ~fp.ymin_(-140);
 ~fp.ymax_(10);
@@ -50,15 +72,20 @@ d = ~dummy_data.value;
 ~fp.xmax_(21000);
 )
 
+// change the point shapes
 ~fp.shape_(\square);
 
+// change back to circles
+~fp.shape_(\circle);
+
+// change the color of just one point
 ~fp.pointColor_("example-7",Color.red);
 
+// change the background color
 ~fp.background_(Color.red)
 ~fp.background_(Color.white)
 
-~fp.close;
-
+// ==== perform KMeans on the data and colorize the categories ======
 (
 s.waitForBoot{
 	Routine{
@@ -68,7 +95,7 @@ s.waitForBoot{
 
 		s.sync;
 
-		ds.load(~dummy_data.(),{
+		ds.load(~fp.dict,{
 			kmeans.fitPredict(ds,labelset,{
 				labelset.dump({
 					arg lsdict;
@@ -81,8 +108,11 @@ s.waitForBoot{
 }
 )
 
+// close it or it's parent
+~fp.close;
 
-// with parent
+
+// a FluidPlotter inside a parent with parent
 (
 Window.closeAll;
 d = Dictionary.newFrom([
@@ -106,9 +136,11 @@ w = Window("test",Rect(50,50,800,600)).front;
 },xmin:20,xmax:20000,ymin:-130,ymax:0);
 )
 
+// you can make an empty one and then set the dict later
 (
 Window.closeAll;
 ~fp = FluidPlotter(bounds:Rect(100,100,500,500))
 )
 
+// now set data
 ~fp.dict_(~dummy_data.(0.01,1,0.0,1.0).postln);

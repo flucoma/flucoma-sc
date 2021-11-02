@@ -19,249 +19,286 @@ ARGUMENT:: bounds
 Where to show the FluidPlotter, either within the parent or on the screen (if no parent is passed).
 
 ARGUMENT:: dict
-A link::Classes/Dictionary::
+A link::Classes/Dictionary:: from a FluidDataSet dump method (or a similarly formatted Dictionary) that contains the data to be plotted.
 
 ARGUMENT:: mouseMoveAction
-(describe argument here)
+A function to execute on mouse down or mouse drag. This funtion is passed the strong::view:: (itself), strong::x position:: (scaled according to the xmin and xmax arguments of FluidPlotter), strong::y position:: (scaled according to the ymin and ymax arguments of FluidPlotter), strong::modifiers::, strong::button number::, and strong::click count::. The last two arguments are only useful on mouse down, not on mouse drag.
 
 ARGUMENT:: xmin
-(describe argument here)
+Minimum of the X range to display. Default is 0.
 
 ARGUMENT:: xmax
-(describe argument here)
+Maximum of the X range to display. Default is 1.
 
 ARGUMENT:: ymin
-(describe argument here)
+Minimum of the Y range to display. Default is 0.
 
 ARGUMENT:: ymax
-(describe argument here)
+Maximum of the Y range to display. Default is 1.
 
-returns:: (describe returnvalue here)
-
+returns::
+An instance of FluidPlotter
 
 INSTANCEMETHODS::
 
 METHOD:: background
-(describe method here)
-
-ARGUMENT:: bg
-(describe argument here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: xmin
-(describe method here)
-
-ARGUMENT:: val
-(describe argument here)
-
-returns:: (describe returnvalue here)
+Set the background link::Classes/Color::.
 
 METHOD:: pointSize
-(describe method here)
+Set the size of a specific point.
 
 ARGUMENT:: identifier
-(describe argument here)
+Which point to set the size of.
 
 ARGUMENT:: size
-(describe argument here)
-
-returns:: (describe returnvalue here)
+What size the point should be. This is a multiplier applied to the default point size which is 6 pixels. A point size of "2" will render a point with a diameter of 12 pixels. A point size of "0.5" will render a point with a diameter of 3 pixels.
 
 METHOD:: refresh
-(describe method here)
+Refresh the link::Classes/UserView:: inside the FluidPlotter.
 
-returns:: (describe returnvalue here)
+METHOD:: xmin
+Set xmin property and refresh the plotter.
 
-METHOD:: ymin
-(describe method here)
-
-ARGUMENT:: val
-(describe argument here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: userView
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: setPoint
-(describe method here)
-
-ARGUMENT:: identifier
-(describe argument here)
-
-ARGUMENT:: x
-(describe argument here)
-
-ARGUMENT:: y
-(describe argument here)
-
-ARGUMENT:: color
-(describe argument here)
-
-ARGUMENT:: size
-(describe argument here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: ymax
-(describe method here)
-
-ARGUMENT:: val
-(describe argument here)
-
-returns:: (describe returnvalue here)
+returns::
+xmin property.
 
 METHOD:: xmax
-(describe method here)
+Set xmax property and refresh the plotter.
 
-ARGUMENT:: val
-(describe argument here)
+METHOD:: ymin
+Set ymin property and refresh the plotter.
 
-returns:: (describe returnvalue here)
-
-METHOD:: highlight
-(describe method here)
-
-ARGUMENT:: identifier
-(describe argument here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: dict
-(describe method here)
-
-ARGUMENT:: d
-(describe argument here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: createPlotWindow
-(describe method here)
-
-ARGUMENT:: bounds
-(describe argument here)
-
-ARGUMENT:: parent_
-(describe argument here)
-
-ARGUMENT:: mouseMoveAction
-(describe argument here)
-
-ARGUMENT:: dict_
-(describe argument here)
-
-returns:: (describe returnvalue here)
+METHOD:: ymax
+Set ymax property and refresh the plotter.
 
 METHOD:: addPoint
-(describe method here)
+Manually add a single point to the FluidPlotter. Similar to the strong::addPoint:: method of link::Classes/FluidDataSet::, addPoint_ will not overwrite a point that already exists at the given identifier. Instead, a warning will be thrown.
 
 ARGUMENT:: identifier
-(describe argument here)
+The identifier associated with this point.
 
 ARGUMENT:: x
-(describe argument here)
+X position of the point.
 
 ARGUMENT:: y
-(describe argument here)
+Y position of the point.
 
 ARGUMENT:: color
-(describe argument here)
+What link::Classes/Color:: to make the point. If nothing is provided the point will default to link::Classes/Color::.black.
 
 ARGUMENT:: size
-(describe argument here)
+What size to make the point. This is a multiplier that modifies the default point size of 6 pixels. The default is 1. See strong::pointSize:: method above.
 
-returns:: (describe returnvalue here)
+METHOD:: setPoint
+Similar to the strong::setPoint:: method of link::Classes/FluidDataSet::, setPoint_ will add a new point to the FluidPlotter. If a point already exists at the given identifier, it will be overwritten.
+
+ARGUMENT:: identifier
+The identifier associated with this point.
+
+ARGUMENT:: x
+X position of the point.
+
+ARGUMENT:: y
+Y position of the point.
+
+ARGUMENT:: color
+What link::Classes/Color:: to make the point. If nothing is provided the point will default to link::Classes/Color::.black.
+
+ARGUMENT:: size
+What size to make the point. This is a multiplier that modifies the default point size of 6 pixels. The default is 1. See strong::pointSize:: method above.
+
+METHOD:: highlight
+Increase the size of a point to make it more salient. Only one point can be "highlighted" at a time. To increase the size of multiple points, use method strong::pointSize::.
+
+ARGUMENT:: identifier
+The identifier of the point to make salient. If nil is passes, not points' sizes will be changed.
+
+METHOD:: dict
+Set a new link::Classes/Dictionary:: of points. Overwrites all previous points and Dictionaries.
+
+ARGUMENT:: d
 
 METHOD:: shape
-(describe method here)
+Change the shape of the points, the options are \circle or \square. The default is \circle.
 
 ARGUMENT:: sh
 (describe argument here)
 
-returns:: (describe returnvalue here)
-
-METHOD:: globalPointSize
-(describe method here)
+METHOD:: pointSizeScale
+Scale all the points by a multiplier. See strong::pointSize_:: method above. The default is 1.
 
 ARGUMENT:: ps
 (describe argument here)
 
-returns:: (describe returnvalue here)
-
 METHOD:: close
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: createCatColors
-(describe method here)
-
-returns:: (describe returnvalue here)
+Close the plotter and/or its parent.
 
 METHOD:: pointColor
-(describe method here)
+Change the link::Classes/Color:: of a point.
 
 ARGUMENT:: identifier
-(describe argument here)
+Identifier of the point to change the color of.
 
 ARGUMENT:: color
-(describe argument here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: dictNotProperlyFormatted
-(describe method here)
-
-returns:: (describe returnvalue here)
+The link::Classes/Color:: to change the point to.
 
 METHOD:: parent
-(describe method here)
 
-returns:: (describe returnvalue here)
+returns:: The parent link::Classes/View:: of the FluidPlotter
 
 METHOD:: categories
-(describe method here)
+Set categories to display as colors.
 
 ARGUMENT:: labelSetDict
-(describe argument here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: init
-(describe method here)
-
-ARGUMENT:: parent_
-(describe argument here)
-
-ARGUMENT:: bounds
-(describe argument here)
-
-ARGUMENT:: dict_
-(describe argument here)
-
-ARGUMENT:: mouseMoveAction
-(describe argument here)
-
-ARGUMENT:: xmin_
-(describe argument here)
-
-ARGUMENT:: xmax_
-(describe argument here)
-
-ARGUMENT:: ymin_
-(describe argument here)
-
-ARGUMENT:: ymax_
-(describe argument here)
-
-returns:: (describe returnvalue here)
-
+This must be a link::Classes/Dictionary:: from a link::Classes/FluidLabelSet:: dump method, or a similarly formatted Dictionary.
 
 EXAMPLES::
 
 code::
-(some example code)
+(
+// make some dummy data and plot it
+~dummy_data = {
+	arg xmin = 20, xmax = 20000, ymin = -130, ymax = 0;
+	Dictionary.newFrom([
+		"cols",2,
+		"data",Dictionary.newFrom(Array.fill(200,{
+			arg i;
+			var return;
+			if((i % 2) == 0,{
+				return = "example-%".format((i/2).asInteger);
+			},{
+				return = [rrand(xmin,xmax),rrand(ymin,ymax)];
+			});
+			// return.postln;
+			return;
+		}))
+	]);
+};
+
+Window.closeAll;
+// self window
+d = ~dummy_data.value;
+// d.postln;
+~fp = FluidPlotter(bounds:Rect(200,200,600,600),dict:d,mouseMoveAction:{
+	arg view, x, y, modifiers;
+	[view, x, y, modifiers].dopostln;
+	"".postln;
+},xmin:20,xmax:20000,ymin:-130,ymax:0);
+)
+
+// click and drag on the plotter to report stuff in the mouseMoveAction callback function
+
+// change point size of just one point
+~fp.pointSize_("example-5",10);
+
+// change it back
+~fp.pointSize_("example-5",1);
+
+// change all points size bigger...
+~fp.pointSizeScale_(2);
+
+// ...smaller...
+~fp.pointSizeScale_(0.5);
+
+// ...back to normal
+~fp.pointSizeScale_(1);
+
+(
+// change 10 random points red
+10.do({
+	~fp.pointColor_("example-%".format(rrand(0,99)),Color.red);
+});
+)
+// "highlight" a point (makes it a little bigger)
+~fp.highlight_("example-95");
+
+// a different one
+~fp.highlight_("example-94");
+
+// none
+~fp.highlight_(nil);
+
+// put some different data in
+~fp.dict_(~dummy_data.value);
+
+// change the ranges
+(
+~fp.ymin_(-140);
+~fp.ymax_(10);
+~fp.xmin_(-200);
+~fp.xmax_(21000);
+)
+
+// change the point shapes
+~fp.shape_(\square);
+
+// change back to circles
+~fp.shape_(\circle);
+
+// change the color of just one point
+~fp.pointColor_("example-7",Color.red);
+
+// change the background color
+~fp.background_(Color.red)
+~fp.background_(Color.white)
+
+// ==== perform KMeans on the data and colorize the categories ======
+(
+s.waitForBoot{
+	Routine{
+		var labelset = FluidLabelSet(s);
+		var kmeans = FluidKMeans(s);
+		var ds = FluidDataSet(s);
+
+		s.sync;
+
+		ds.load(~fp.dict,{
+			kmeans.fitPredict(ds,labelset,{
+				labelset.dump({
+					arg lsdict;
+					defer{~fp.categories_(lsdict)};
+					"done".postln;
+				});
+			});
+		});
+	}.play;
+}
+)
+
+// close it or it's parent
+~fp.close;
+
+
+// a FluidPlotter inside a parent with parent
+(
+Window.closeAll;
+d = Dictionary.newFrom([
+	"cols",2,
+	"data",Dictionary.newFrom(Array.fill(200,{
+		arg i;
+		var return;
+		if((i%2) == 0,{
+			return = "example-%".format((i/2).asInteger);
+		},{
+			return = [exprand(20,20000),rrand(-130,0)];
+		});
+		return;
+	}))
+]);
+w = Window("test",Rect(50,50,800,600)).front;
+~fp = FluidPlotter(w,Rect(50,50,400,400),dict:d,mouseMoveAction:{
+	arg view, x, y, modifiers;
+	[view, x, y, modifiers].dopostln;
+	"".postln;
+},xmin:20,xmax:20000,ymin:-130,ymax:0);
+)
+
+// you can make an empty one and then set the dict later
+(
+Window.closeAll;
+~fp = FluidPlotter(bounds:Rect(100,100,500,500))
+)
+
+// now set data
+~fp.dict_(~dummy_data.(0.01,1,0.0,1.0).postln);
 ::
