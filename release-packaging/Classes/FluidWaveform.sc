@@ -21,26 +21,26 @@ FluidWaveform {
 			sfv.readFile(SoundFile(path));
 			sfv.gridOn_(false);
 
-			win.onClose_({
-				File.delete(path)
-			});
+			File.delete(path);
 
-			slices_buf.loadToFloatArray(action:{
-				arg slices_fa;
+			if(slices_buf.notNil,{
+				slices_buf.loadToFloatArray(action:{
+					arg slices_fa;
 
-				userView = UserView(win,Rect(0,0,bounds.width,bounds.height))
-				.drawFunc_({
-					slices_fa.do{
-						arg start_samp;
-						var x = start_samp.linlin(0,audio_buf.numFrames,0,bounds.width);
-						Pen.line(Point(x,0),Point(x,bounds.height));
-						Pen.color_(Color.red);
-						Pen.stroke;
-					};
+					userView = UserView(win,Rect(0,0,bounds.width,bounds.height))
+					.drawFunc_({
+						slices_fa.do{
+							arg start_samp;
+							var x = start_samp.linlin(0,audio_buf.numFrames,0,bounds.width);
+							Pen.line(Point(x,0),Point(x,bounds.height));
+							Pen.color_(Color.red);
+							Pen.stroke;
+						};
+					});
 				});
-
-				win.front;
 			});
+
+			win.front;
 		}.play(AppClock);
 	}
 }
