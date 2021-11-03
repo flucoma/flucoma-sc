@@ -33,20 +33,32 @@ ARGUMENT:: identifier
 The identifier for this label.
 ARGUMENT:: label
 The label to update.
+ARGUMENT:: action
+A function to run when the operation completes.
 
 METHOD:: getLabel
 Retrieve the label associated with an identifier. Will report an error if the identifier is not present in the set.
 ARGUMENT:: identifier
 The identifier for the label to be retrieved.
+ARGUMENT:: action
+A function to run when the operation completes.
 
 METHOD:: deleteLabel
 Delete a label given a certain identifier.
 ARGUMENT:: identifier
 The identifier to be deleted.
+ARGUMENT:: action
+A function to run when the operation completes.
 
 METHOD:: clear
 Empty the label set.
 
+METHOD:: getIds
+Export to the labelset IDs to a link::Classes/FluidLabelSet::.
+ARGUMENT:: labelSet
+The link::Classes/FluidLabelSet:: to export to. Its content will be replaced.
+ARGUMENT:: action
+A function to run when the export is done.
 
 METHOD:: print
 Post an abbreviated content of the label set in the window by default, but you can supply a custom action instead.

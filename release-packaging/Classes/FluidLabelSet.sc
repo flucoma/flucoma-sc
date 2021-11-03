@@ -51,4 +51,13 @@ FluidLabelSet : FluidDataObject {
 		actions[\print] = [string(FluidMessageResponse,_,_),action];
 		this.prSendMsg(this.printMsg);
 	}
+
+	getIdsMsg{|labelSet|
+        ^this.prMakeMsg(\getIds, id, labelSet.asUGenInput);
+    }
+
+	getIds{|labelSet, action|
+      actions[\getIds] = [nil,action];
+	  this.prSendMsg(this.getIdsMsg(labelSet));
+	}
 }
