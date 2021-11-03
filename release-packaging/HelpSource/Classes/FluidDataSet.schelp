@@ -39,6 +39,8 @@ ARGUMENT:: identifier
 The identifier for the point.
 ARGUMENT:: buffer
 A link::Classes/Buffer:: containing the data for the point.
+ARGUMENT:: action
+A function to run when the operation completes.
 
 METHOD:: getPoint
 Retrieve a point from the data set into a link::Classes/Buffer::. If the identifier does not exist an error will be reported.
@@ -46,10 +48,15 @@ ARGUMENT:: identifier
 The identifier for the point.
 ARGUMENT:: buffer
 A link::Classes/Buffer:: where the retrieved data will be stored.
+ARGUMENT:: action
+A function to run when the operation completes.
 
 METHOD:: deletePoint
-Remove a point from the data set. If the identifier doesn't exist an error will be reported. ​​ARGUMENT:: identifier
+Remove a point from the data set. If the identifier doesn't exist an error will be reported. ​
+​ARGUMENT:: identifier
 The identifier to be deleted.
+ARGUMENT:: action
+A function to run when the operation completes.
 
 METHOD:: setPoint
 Set the point. If the identifier exists, this method behaves like updatePoint. If the identifier doesn't exist, it behaves like addPoint.
@@ -57,46 +64,38 @@ ARGUMENT:: identifier
 The identifier for the point.
 ARGUMENT:: buffer
 A link::Classes/Buffer:: containing the data for the point.
-​​
+​​ARGUMENT:: action
+A function to run when the operation completes.
+
 METHOD:: clear
 Empty the data set.
 
 METHOD:: toBuffer
 Dump the content of the dataset to a link::Classes/Buffer::, with optional transposition, and a map of frames/channels to the original IDs as a link::Classes/FluidLabelSet::.
-
 ARGUMENT:: buffer
 The buffer to write to. It will be resized.
-
 ARGUMENT:: transpose
 If 0, each dataset point becomes a buffer frame, and each dataset dimension becomes a buffer channel. If 1, points become channels, and dimensions become frames.
-
 ARGUMENT:: labelSet
 The link::Classes/FluidLabelSet:: in which to dump the point's IDs associated with their reference frame number (or channel number if transposed).
-
 ARGUMENT:: action
 A function to run when the dump is done.
 
 METHOD:: fromBuffer
 Import to the dataset the content of a link::Classes/Buffer::, with optional transposition, and a map of frames/channels to the original IDs as a link::Classes/FluidLabelSet::.
-
 ARGUMENT:: buffer
 The buffer to read from. The dataset will be resized.
-
 ARGUMENT:: transpose
 If 0, each buffer frame becomes a dataset point, and each buffer channel becomes a dataset dimension. If 1, channels become points, and frames become dimensions.
-
 ARGUMENT:: labelSet
 The link::Classes/FluidLabelSet:: from which to retrieve the point's IDs associated with their reference frame number (or channel number if transposed).
-
 ARGUMENT:: action
 A function to run when the import is done.
 
 METHOD:: getIds
 Export to the dataset IDs to a link::Classes/FluidLabelSet::.
-
 ARGUMENT:: labelSet
 The link::Classes/FluidLabelSet:: to export to. Its content will be replaced.
-​
 ARGUMENT:: action
 A function to run when the export is done.
 

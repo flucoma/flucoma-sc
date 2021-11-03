@@ -35,7 +35,7 @@ FluidDataSet : FluidDataObject
 
     deletePointMsg{|identifier| ^this.prMakeMsg(\deletePoint,id,identifier.asSymbol);}
 
-    deletePoint{|identifier, buffer, action|
+    deletePoint{|identifier, action|
       actions[\deletePoint] = [nil,action];
       this.prSendMsg(this.deletePointMsg(identifier));
     }
