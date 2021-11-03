@@ -110,6 +110,13 @@ table::
 ##link::Classes/FluidBufSelectEvery:: || Select every N elements (frame-wise or channel wise)
 ##link::Classes/FluidBufFlatten:: || Flatten multichannel data into single channel 'point'
 ::
+
+subsection::Viewers
+table::
+##link::Classes/FluidPlotter:: || View a FluidDataSet in a plotter window
+##link::Classes/FluidWaveform:: || View an audio buffer with overlays, such as slices from a FluCoMa slicer
+::
+
 subsection:: Corpus Building
 table::
 ##link::Classes/FluidLoadFolder:: || Load a folder of sounds into a link::Classes/Buffer::
