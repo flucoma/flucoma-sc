@@ -1,0 +1,43 @@
+TITLE:: FluidWaveform
+summary:: Buffer waveform display with optional overlays
+categories:: Libraries>FluidCorpusManipulation
+related:: Classes/FluidPlotter, Classes/FluidBufNoveltySlide, Classes/FluidBufOnsetSlice, Classes/FluidBufAmpSlice
+
+DESCRIPTION::
+FluidWaveform plots a buffer with optional overlays such as slices derived from a FluCoMa Slicer.
+
+CLASSMETHODS::
+
+METHOD:: new
+Create a new instance of FluidWaveform.
+
+ARGUMENT:: audio_buf
+The audio buffer to plot.
+
+ARGUMENT:: slices_buf
+A buffer of slice indices. This will very likely be in the form of a buffer output from a FluCoMa slicer object. Currently this buffer must be only one channel, therefore it will not work with the output of link::Classes/FluidBufAmpGate::.
+
+ARGUMENT:: bounds
+A link::Classes/Rect:: of where to place the FluidWaveform.
+
+returns:: A new instance of FluidWaveform.
+
+
+INSTANCEMETHODS::
+
+EXAMPLES::
+
+code::
+
+// load a sound to slice
+~drums = Buffer.read(s,File.realpath(FluidBufAmpSlice.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
+
+// create a buffer to put indices into
+~indices = Buffer(s);
+
+// do a slice analysis
+FluidBufAmpSlice.process(s,~drums,indices:~indices,fastRampUp: 10,fastRampDown: 2205,slowRampUp: 4410,slowRampDown: 4410,onThreshold: 10,offThreshold: 5,floor: -40,minSliceLength: 4410,highPassFreq: 20);
+
+// plot the buffer with the indices overlayed
+FluidWaveform(~drums,~indices,Rect(0,0,800,200));
+::
