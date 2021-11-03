@@ -70,7 +70,7 @@ FluidNormalize : FluidModelObject {
 FluidNormalizeQuery : FluidRTMultiOutUGen {
 
     *kr{ |trig, model,inputBuffer,outputBuffer,min = 0 ,max = 1,invert = 0|
-        inputBuffer.asUGenInput.postln;
+		// inputBuffer.asUGenInput.postln;
         ^this.multiNew('control',trig, model.asUGenInput,
             min,max,invert,
             inputBuffer.asUGenInput, outputBuffer.asUGenInput)
