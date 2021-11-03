@@ -34,6 +34,7 @@ FluidPlotter {
 		ymax = ymax_;
 
 		this.createCatColors;
+		dict_internal = Dictionary.new;
 		if(dict_.notNil,{this.dict_(dict_)});
 		this.createPlotWindow(bounds,parent_,mouseMoveAction,dict_);
 	}
@@ -47,7 +48,7 @@ FluidPlotter {
 
 	categories_ {
 		arg labelSetDict;
-		if(dict_internal.notNil,{
+		if(dict_internal.size == 0,{
 			var label_to_int = Dictionary.new;
 			var counter = 0;
 			dict_internal.keysValuesDo({
@@ -98,7 +99,9 @@ FluidPlotter {
 
 	setPoint_ {
 		arg identifier, x, y, color, size = 1;
+
 		dict_internal.put(identifier,FluidPlotterPoint(identifier,x,y,color ? Color.black,size));
+
 		this.refresh;
 	}
 
