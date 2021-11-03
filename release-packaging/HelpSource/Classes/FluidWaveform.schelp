@@ -1,7 +1,7 @@
 TITLE:: FluidWaveform
 summary:: Buffer waveform display with optional overlays
 categories:: Libraries>FluidCorpusManipulation
-related:: Classes/FluidPlotter, Classes/FluidBufNoveltySlide, Classes/FluidBufOnsetSlice, Classes/FluidBufAmpSlice
+related:: Classes/FluidPlotter, Classes/FluidBufNoveltySlice, Classes/FluidBufOnsetSlice, Classes/FluidBufAmpSlice
 
 DESCRIPTION::
 FluidWaveform plots a buffer with optional overlays such as slices derived from a FluCoMa Slicer.
