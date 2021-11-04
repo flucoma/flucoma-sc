@@ -110,6 +110,8 @@ table::
 ##link::Classes/FluidBufSelect:: || Select range (frame-wise or channel wise)
 ##link::Classes/FluidBufSelectEvery:: || Select every N elements (frame-wise or channel wise)
 ##link::Classes/FluidBufFlatten:: || Flatten multichannel data into single channel 'point'
+##link::Classes/FluidBufToKr:: || Read data from a buffer into a Kr stream
+##link::Classes/FluidKrToBuf:: || Write data into a buffer from a Kr Stream
 ::
 
 subsection::Viewers
