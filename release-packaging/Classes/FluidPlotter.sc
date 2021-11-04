@@ -16,8 +16,8 @@ FluidPlotterPoint {
 	}
 }
 
-FluidPlotter {
-	var <parent, <userView, <xmin, <xmax, <ymin, <ymax, <pointSize = 6, pointSizeScale = 1, dict_internal, <dict, shape = \circle, catColors, highlightIdentifier;
+FluidPlotter : FluidViewer {
+	var <parent, <userView, <xmin, <xmax, <ymin, <ymax, <pointSize = 6, pointSizeScale = 1, dict_internal, <dict, shape = \circle, highlightIdentifier;
 
 	*new {
 		arg parent, bounds, dict, mouseMoveAction,xmin = 0,xmax = 1,ymin = 0,ymax = 1;
@@ -33,20 +33,10 @@ FluidPlotter {
 		ymin = ymin_;
 		ymax = ymax_;
 
-		this.createCatColors;
+		this.createcategoryColors;
 		dict_internal = Dictionary.new;
 		if(dict_.notNil,{this.dict_(dict_)});
 		this.createPlotWindow(bounds,parent_,mouseMoveAction,dict_);
-	}
-
-	createCatColors {
-		catColors = "1f77b4ff7f0e2ca02cd627289467bd8c564be377c27f7f7fbcbd2217becf".clump(6).collect{
-			arg six;
-			Color(*six.clump(2).collect{
-				arg two;
-				"0x%".format(two).interpret / 255;
-			});
-		};
 	}
 
 	categories_ {
@@ -67,11 +57,11 @@ FluidPlotter {
 
 				category_int = label_to_int.at(category_string);
 
-				if(category_int > (catColors.size-1),{
+				if(category_int > (categoryColors.size-1),{
 					"FluidPlotter:setCategories_ FluidPlotter doesn't have that many category colors. You can use the method 'setColor_' to set colors for individual points.".warn
 				});
 
-				color = catColors[category_int];
+				color = categoryColors[category_int];
 				fp_pt.color_(color);
 			});
 			this.refresh;
