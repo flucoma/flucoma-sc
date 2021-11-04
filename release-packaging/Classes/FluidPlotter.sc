@@ -40,15 +40,18 @@ FluidPlotter {
 	}
 
 	createCatColors {
-		catColors = "1f77b4ff7f0e2ca02cd627289467bd8c564be377c27f7f7fbcbd2217becf".clump(6).collect({
-			arg hex;
-			Color.newHex(hex);
-		});
+		catColors = "1f77b4ff7f0e2ca02cd627289467bd8c564be377c27f7f7fbcbd2217becf".clump(6).collect{
+			arg six;
+			Color(*six.clump(2).collect{
+				arg two;
+				"0x%".format(two).interpret / 255;
+			});
+		};
 	}
 
 	categories_ {
 		arg labelSetDict;
-		if(dict_internal.size == 0,{
+		if(dict_internal.size != 0,{
 			var label_to_int = Dictionary.new;
 			var counter = 0;
 			dict_internal.keysValuesDo({
