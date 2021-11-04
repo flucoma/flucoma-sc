@@ -1,0 +1,39 @@
+TITLE:: FluidBufToKr
+summary:: Helper pseudo UGen for reading data out of a buffer to a Kr stream
+categories:: Libraries>FluidCorpusManipulation
+related:: Classes/FluidKrToBuf
+
+DESCRIPTION::
+Helper pseudo UGen for reading data out of a buffer to a Kr stream. It only reads one-channel buffers, converting them to a Kr stream with as many channels as the number of frames that the buffer is long.
+
+CLASSMETHODS::
+
+METHOD:: kr
+Initialize an instance of this pseudo UGen
+
+ARGUMENT:: buffer
+The link::Classes/Buffer:: that this pseudo UGen will read out of. Must be a one-channel buffer.
+
+returns:: a Kr stream that has the same number of channels as frames in the link::Classes/Buffer::.
+
+INSTANCEMETHODS::
+
+EXAMPLES::
+
+code::
+(
+// FluidBufToKr
+s.waitForBoot{
+	Routine{
+		var buf = Buffer.loadCollection(s,[0,1,2,3,4,7]);
+
+		s.sync;
+
+		{
+			var sig = FluidBufToKr.kr(buf);
+			sig.poll;
+		}.play;
+	}.play;
+}
+)
+::

@@ -1,0 +1,48 @@
+TITLE:: FluidKrToBuf
+summary:: Helper pseudo UGen for writing data into a buffer from a Kr stream
+categories:: Libraries>FluidCorpusManipulation
+related:: Classes/FluidBufToKr
+
+DESCRIPTION::
+Helper pseudo UGen for writing data into a buffer from a Kr stream. It only works with one-channel buffers. The number of frames in the link::Classes/Buffer:: must be the same as the number of channels in the Kr stream.
+
+CLASSMETHODS::
+
+METHOD:: kr
+Create a new instance of this pseudo UGen.
+
+ARGUMENT:: krStream
+The Kr stream to write into the buffer.
+
+ARGUMENT:: buffer
+The link::Classes/Buffer:: to write the Kr stream into.
+
+returns:: Nothing.
+
+
+INSTANCEMETHODS::
+
+
+EXAMPLES::
+
+code::
+(
+// FluidKrToBuf test
+s.waitForBoot{
+	Routine{
+		var buf = Buffer.alloc(s,5);
+
+		s.sync;
+
+		{
+			var sig = SinOsc.kr(rrand(1.0.dup(buf.numFrames),4.0));
+			FluidKrToBuf.kr(sig,buf);
+		}.play;
+
+		1.wait;
+
+		defer{buf.plot};
+	}.play;
+}
+)
+::

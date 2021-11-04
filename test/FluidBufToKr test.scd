@@ -11,7 +11,7 @@ s.waitForBoot{
 			FluidKrToBuf.kr(sig,buf);
 		}.play;
 
-		3.wait;
+		1.wait;
 
 		defer{buf.plot};
 	}.play;
@@ -98,7 +98,7 @@ s.waitForBoot{
 /// 1000 is fine
 s.waitForBoot{
 	Routine{
-		var buf = Buffer.loadCollection(s,Array.fill(1000,{arg i; i}));
+		var buf = Buffer.loadCollection(s,Array.fill(1001,{arg i; i}));
 
 		s.sync;
 
