@@ -40,6 +40,7 @@ table::
 ##link::Classes/FluidChroma:: || link::Classes/FluidBufChroma:: || Pitch Classes Descriptor
 ##link::Classes/FluidNMFMatch:: ||  || Real-time activation of link::Classes/FluidBufNMF##NMF:: bases
 ## || link::Classes/FluidBufNNDSVD::|| Quick starting estimates for link::Classes/FluidBufNMF##NMF:: components using Singular Value Decomposition
+## || link::Classes/FluidBufSTFT:: || Perform STFT / ISTFT on link::Classes/Buffer::s
 ::
 
 section:: Decompose Audio
@@ -49,7 +50,6 @@ table::
 ##link::Classes/FluidTransients:: || link::Classes/FluidBufTransients:: ||Decompose into transients + residual
 ##link::Classes/FluidHPSS:: || link::Classes/FluidBufHPSS:: ||Decompose into 'harmonic' and 'percussive' layers
 ##  || link::Classes/FluidBufNMF:: ||Use Nonnegative Matrix Factorisation to explore and decompose sounds
-## || link::Classes/FluidBufSTFT:: || Perform STFT / ISTFT on link::Classes/Buffer::s
 ::
 
 section::Transform Audio
@@ -69,9 +69,9 @@ table::
 ##link::Classes/FluidDataSet:: || Container that associates data points with identifiers
 ##link::Classes/FluidLabelSet:: || Container of labels associated with IDs
 ::
-subsection:: Buffer Analysis
+subsection:: Analyse Data
 table::
-##link::Classes/FluidBufStats:: ||  Compute statistics on link::Classes/Buffer::s
+##link::Classes/FluidStats:: || link::Classes/FluidBufStats:: ||  Compute statistics
 ::
 subsection:: Preprocessing
 table::
