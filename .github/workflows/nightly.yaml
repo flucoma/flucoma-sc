@@ -57,8 +57,7 @@ jobs:
         working-directory: build
 
       - name: remove pdb files
-        run: del /S *.pdb
-        working-directory: release-packaging
+        run: Remove-Item release-packaging -Recurse -Include *.pdb
 
       - uses: actions/upload-artifact@v2                                                                                                                                                 
         with:                                                                                                                                                                            
