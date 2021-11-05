@@ -31,45 +31,45 @@ jobs:
         run: ninja FluidAmpSlice
         working-directory: build
 
-    winbuild:
-      runs-on: windows-latest
+  winbuild:
+    runs-on: windows-latest
 
-      steps:
-        - uses: actions/checkout@v2
+    steps:
+      - uses: actions/checkout@v2
 
-        - name: get supercollider source
-          run: git clone --recursive https://github.com/supercollider/supercollider.git sdk
-          
-        - name: make build directory
-          run: mkdir build
-          
-        - name: cmake
-          run: cmake -GNinja -DSC_PATH="../sdk" ..
-          working-directory: build
-          
-        - name: install
-          run: cmake --build . --target FluidAmpSlice
-          working-directory: build
-  
-      linuxbuild:
-        runs-on: ubuntu-latest
+      - name: get supercollider source
+        run: git clone --recursive https://github.com/supercollider/supercollider.git sdk
+        
+      - name: make build directory
+        run: mkdir build
+        
+      - name: cmake
+        run: cmake -GNinja -DSC_PATH="../sdk" ..
+        working-directory: build
+        
+      - name: install
+        run: cmake --build . --target FluidAmpSlice
+        working-directory: build
 
-        steps:
-          - uses: actions/checkout@v2
+  linuxbuild:
+    runs-on: ubuntu-latest
 
-          - name: get supercollider source
-            run: git clone --recursive https://github.com/supercollider/supercollider.git sdk
-            
-          - name: make build directory
-            run: mkdir build
-            
-          - name: cmake
-            run: cmake -GNinja -DSC_PATH=../sdk ..
-            working-directory: build
-            
-          - name: install
-            run: make FluidAmpSlice
-            working-directory: build
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: get supercollider source
+        run: git clone --recursive https://github.com/supercollider/supercollider.git sdk
+        
+      - name: make build directory
+        run: mkdir build
+        
+      - name: cmake
+        run: cmake -GNinja -DSC_PATH=../sdk ..
+        working-directory: build
+        
+      - name: install
+        run: make FluidAmpSlice
+        working-directory: build
       
       
     # - name: zip release
