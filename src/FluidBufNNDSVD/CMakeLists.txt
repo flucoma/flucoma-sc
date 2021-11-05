@@ -12,10 +12,6 @@ get_filename_component(PLUGIN ${CMAKE_CURRENT_LIST_DIR} NAME_WE)
 message("Configuring ${PLUGIN}")
 set(FILENAME ${PLUGIN}.cpp)
 
-if(WIN32)
-  target_compile_options(${PLUGIN} PUBLIC /bigobj)   
-endif()
-
 add_library(
   ${PLUGIN}
   MODULE
@@ -23,3 +19,7 @@ add_library(
 )
 
 include(${CMAKE_CURRENT_LIST_DIR}/../../scripts/target_post.cmake)
+
+if(WIN32)
+  target_compile_options(${PLUGIN} PUBLIC /bigobj)   
+endif()
