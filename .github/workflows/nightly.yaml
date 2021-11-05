@@ -44,7 +44,7 @@ jobs:
         run: mkdir build
         
       - name: cmake
-        run: cmake -GNinja -DSC_PATH="../sdk" ..
+        run: cmake -DSC_PATH="../sdk" ..
         working-directory: build
         
       - name: install
@@ -64,7 +64,7 @@ jobs:
         run: mkdir build
         
       - name: cmake
-        run: cmake -GNinja -DSC_PATH=../sdk ..
+        run: cmake -DSC_PATH=../sdk ..
         working-directory: build
         
       - name: install
