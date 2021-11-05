@@ -106,21 +106,23 @@ jobs:
           name: linuxbuild
           path: FluCoMa-SC-Linux-nightly
       
-      - name: see
-        run: ls -R
+      - name: zip mac
+        run: zip -r FluCoMa-SC-Mac-nightly.zip FluCoMa-SC-Mac-nightly
       
-    # - name: zip release
-    #   run: zip -r release.zip externals
-      
-    # - name: package and upload
-    #   uses: svenstaro/upload-release-action@v2
-    #   with:
-    #     release_name: FluCoMa Max Nightly Build
-    #     prerelease: true
-    #     body: "This is a nightly build of the FluCoMa Max package. As such, be warned there may be bugs or other unexpected behaviour. The build hash is ${{ github.sha }}"
-    #     repo_token: ${{ secrets.GITHUB_TOKEN }}
-    #     file: release.zip
-    #     asset_name: FluCoMa-Max-nightly.zip
-    #     tag: nightly
-    #     overwrite: true
+      - name: zip win
+        run: zip -r FluCoMa-SC-Windows-nightly.zip FluCoMa-SC-Windows-nightly
+
+      - name: zip linux
+        run: zip -r FluCoMa-SC-Linux-nightly.zip FluCoMa-SC-Linux-nightly
         
+      - name: package and upload
+        uses: svenstaro/upload-release-action@v2
+        with:
+          release_name: FluCoMa Max Nightly Build
+          prerelease: true
+          body: "This is a nightly build of the FluCoMa Max package. As such, be warned there may be bugs or other unexpected behaviour. The build hash is ${{ github.sha }}"
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: FluCoMa-SC-*.zip
+          file_glob: true
+          tag: nightly
+          overwrite: true
