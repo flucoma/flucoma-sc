@@ -56,6 +56,10 @@ jobs:
         run: cmake --build . --target install
         working-directory: build
 
+      - name: remove pdb files
+        run: del /S *.pdb
+        working-directory: release-packaging
+
       - uses: actions/upload-artifact@v2                                                                                                                                                 
         with:                                                                                                                                                                            
           name: winbuild                                                                                                                                                              
