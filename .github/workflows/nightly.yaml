@@ -2,7 +2,7 @@ name: Nightly Releases
 
 on:
   push:
-    branches: [ main, ci/automatic-building ]
+    branches: [ main, ci/nightlies ]
   pull_request:
     branches: [ main ]
 
