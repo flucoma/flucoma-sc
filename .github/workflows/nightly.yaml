@@ -28,7 +28,7 @@ jobs:
         working-directory: build
         
       - name: install
-        run: ninja FluidAmpSlice
+        run: ninja install
         working-directory: build
 
       - uses: actions/upload-artifact@v2                                                                                                                                                 
@@ -53,7 +53,7 @@ jobs:
         working-directory: build
         
       - name: install
-        run: cmake --build . --target FluidAmpSlice
+        run: cmake --build . --target install
         working-directory: build
 
       - uses: actions/upload-artifact@v2                                                                                                                                                 
@@ -78,7 +78,7 @@ jobs:
         working-directory: build
         
       - name: install
-        run: make FluidAmpSlice
+        run: make install
         working-directory: build
       
       - uses: actions/upload-artifact@v2                                                                                                                                                 
