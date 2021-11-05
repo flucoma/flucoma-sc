@@ -31,6 +31,11 @@ jobs:
         run: ninja FluidAmpSlice
         working-directory: build
 
+     - uses: actions/upload-artifact@v2                                                                                                                                                 
+       with:                                                                                                                                                                            
+         name: macbuild                                                                                                                                                                 
+         path: release-packaging/
+
   winbuild:
     runs-on: windows-latest
 
@@ -50,6 +55,11 @@ jobs:
       - name: install
         run: cmake --build . --target FluidAmpSlice
         working-directory: build
+
+      - uses: actions/upload-artifact@v2                                                                                                                                                 
+        with:                                                                                                                                                                            
+          name: winbuild                                                                                                                                                              
+          path: release-packaging/
 
   linuxbuild:
     runs-on: ubuntu-latest
@@ -71,6 +81,32 @@ jobs:
         run: make FluidAmpSlice
         working-directory: build
       
+      - uses: actions/upload-artifact@v2                                                                                                                                                 
+        with:                                                                                                                                                                            
+          name: linuxbuild                                                                                                                                                            
+          path: release-packaging/
+  
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: macbuild
+          path: FluCoMa-SC-Mac-nightly
+      
+      - uses: actions/download-artifact@v2
+        with:
+          name: winbuild
+          path: FluCoMa-SC-Windows-nightly
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: linuxbuild
+          path: FluCoMa-SC-Linux-nightly
+      
+      - name: see
+        run: ls -R
       
     # - name: zip release
     #   run: zip -r release.zip externals
