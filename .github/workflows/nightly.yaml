@@ -1,0 +1,64 @@
+name: Nightly Releases
+
+on:
+  push:
+    branches: [ main, ci/automatic-building ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  
+  macbuild:
+    runs-on: macos-11
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: install ninja
+        run: brew install ninja
+
+      - name: get supercollider source
+        run: git clone --recursive https://github.com/supercollider/supercollider.git sdk
+        
+      - name: make build directory
+        run: mkdir -p build
+        
+      - name: cmake
+        run: cmake -GNinja -DSC_PATH=../sdk ..
+        working-directory: build
+        
+      - name: install
+        run: ninja FluidAmpSlice
+        working-directory: build
+      
+        
+    #   - name: zip release
+    #     run: zip -r release.zip externals
+        
+    #   - name: package and upload
+    #     uses: svenstaro/upload-release-action@v2
+    #     with:
+    #       release_name: FluCoMa Max Nightly Build
+    #       prerelease: true
+    #       body: "This is a nightly build of the FluCoMa Max package. As such, be warned there may be bugs or other unexpected behaviour. The build hash is ${{ github.sha }}"
+    #       repo_token: ${{ secrets.GITHUB_TOKEN }}
+    #       file: release.zip
+    #       asset_name: FluCoMa-Max-nightly.zip
+    #       tag: nightly
+    #       overwrite: true
+      
+    # - name: zip release
+    #   run: zip -r release.zip externals
+      
+    # - name: package and upload
+    #   uses: svenstaro/upload-release-action@v2
+    #   with:
+    #     release_name: FluCoMa Max Nightly Build
+    #     prerelease: true
+    #     body: "This is a nightly build of the FluCoMa Max package. As such, be warned there may be bugs or other unexpected behaviour. The build hash is ${{ github.sha }}"
+    #     repo_token: ${{ secrets.GITHUB_TOKEN }}
+    #     file: release.zip
+    #     asset_name: FluCoMa-Max-nightly.zip
+    #     tag: nightly
+    #     overwrite: true
+        
