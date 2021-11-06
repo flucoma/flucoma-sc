@@ -58,7 +58,7 @@ jobs:
         run: Remove-Item install -Recurse -Include *.pdb
 
       - name: zip release
-        run: zip -r FluCoMa-SC-Windows-nightly.zip install/FluidCorpusManipulation
+        run: Compress-Archive install/FluidCorpusManipulation FluCoMa-SC-Windows-nightly.zip
 
       - uses: actions/upload-artifact@v2                                                                                                                                                 
         with:                                                                                                                                                                            
