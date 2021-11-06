@@ -23,7 +23,7 @@ jobs:
         working-directory: build
         
       - name: install
-        run: make install -j8
+        run: make install -j$(sysctl -n hw.ncpu)
         working-directory: build
 
       - name: zip release
