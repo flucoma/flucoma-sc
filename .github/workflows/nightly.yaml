@@ -103,17 +103,17 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: macbuild
-          path: FluCoMa-SC-Mac-nightly.zip
+          path: .
       
       - uses: actions/download-artifact@v2
         with:
           name: winbuild
-          path: FluCoMa-SC-Windows-nightly.zip
+          path: .
 
       - uses: actions/download-artifact@v2
         with:
           name: linuxbuild
-          path: FluCoMa-SC-Linux-nightly.zip
+          path: .
       
       - name: see
         run: ls -R
