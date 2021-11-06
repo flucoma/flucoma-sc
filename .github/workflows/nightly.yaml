@@ -121,9 +121,9 @@ jobs:
       - name: package and upload
         uses: svenstaro/upload-release-action@v2
         with:
-          release_name: FluCoMa Max Nightly Build
+          release_name: FluCoMa SuperCollider Nightly Build
           prerelease: true
-          body: "This is a nightly build of the FluCoMa Max package. As such, be warned there may be bugs or other unexpected behaviour. The build hash is ${{ github.sha }}"
+          body: "This is a nightly build of the FluCoMa SuperCollider package. As such, be warned there may be bugs or other unexpected behaviour. The build hash is ${{ github.sha }}"
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: FluCoMa-SC-*.zip
           file_glob: true
