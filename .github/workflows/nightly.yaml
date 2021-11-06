@@ -12,9 +12,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: install ninja
-        run: brew install ninja
-
       - name: get supercollider source
         run: git clone --recursive https://github.com/supercollider/supercollider.git sdk
         
@@ -22,17 +19,20 @@ jobs:
         run: mkdir -p build
         
       - name: cmake
-        run: cmake -GNinja -DSC_PATH=../sdk ..
+        run: cmake -DSC_PATH=../sdk ..
         working-directory: build
         
       - name: install
-        run: ninja install
+        run: make install -j8
         working-directory: build
+
+      - name: zip release
+        run: zip -r FluCoMa-SC-Mac-nightly.zip install/FluidCorpusManipulation
 
       - uses: actions/upload-artifact@v2                                                                                                                                                 
         with:                                                                                                                                                                            
           name: macbuild                                                                                                                                                                 
-          path: release-packaging/
+          path: FluCoMa-SC-Mac-nightly.zip
 
   winbuild:
     runs-on: windows-latest
@@ -55,12 +55,15 @@ jobs:
         working-directory: build
 
       - name: remove pdb files
-        run: Remove-Item release-packaging -Recurse -Include *.pdb
+        run: Remove-Item install -Recurse -Include *.pdb
+
+      - name: zip release
+        run: zip -r FluCoMa-SC-Windows-nightly.zip install/FluidCorpusManipulation
 
       - uses: actions/upload-artifact@v2                                                                                                                                                 
         with:                                                                                                                                                                            
-          name: winbuild                                                                                                                                                              
-          path: release-packaging/
+          name: winbuild                                                                                                                                                                
+          path: FluCoMa-SC-Windows-nightly.zip
 
   linuxbuild:
     runs-on: ubuntu-18.04
@@ -79,13 +82,16 @@ jobs:
         working-directory: build
         
       - name: install
-        run: make install
+        run: make install -j$(nproc)
         working-directory: build
-      
+
+      - name: zip release
+        run: zip -r FluCoMa-SC-Linux-nightly.zip install/FluidCorpusManipulation
+
       - uses: actions/upload-artifact@v2                                                                                                                                                 
         with:                                                                                                                                                                            
-          name: linuxbuild                                                                                                                                                            
-          path: release-packaging/
+          name: linuxbuild                                                                                                                                                                
+          path: FluCoMa-SC-Linux-nightly.zip
   
   release:
     runs-on: ubuntu-latest
@@ -95,26 +101,17 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: macbuild
-          path: FluCoMa-SC-Mac-nightly
+          path: FluCoMa-SC-Mac-nightly.zip
       
       - uses: actions/download-artifact@v2
         with:
           name: winbuild
-          path: FluCoMa-SC-Windows-nightly
+          path: FluCoMa-SC-Windows-nightly.zip
 
       - uses: actions/download-artifact@v2
         with:
           name: linuxbuild
-          path: FluCoMa-SC-Linux-nightly
-      
-      - name: zip mac
-        run: zip -r FluCoMa-SC-Mac-nightly.zip FluCoMa-SC-Mac-nightly
-      
-      - name: zip win
-        run: zip -r FluCoMa-SC-Windows-nightly.zip FluCoMa-SC-Windows-nightly
-
-      - name: zip linux
-        run: zip -r FluCoMa-SC-Linux-nightly.zip FluCoMa-SC-Linux-nightly
+          path: FluCoMa-SC-Linux-nightly.zip
         
       - name: package and upload
         uses: svenstaro/upload-release-action@v2
