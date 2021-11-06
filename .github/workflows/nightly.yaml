@@ -27,7 +27,8 @@ jobs:
         working-directory: build
 
       - name: zip release
-        run: zip -r FluCoMa-SC-Mac-nightly.zip install/FluidCorpusManipulation
+        run: zip -r ../FluCoMa-SC-Mac-nightly.zip FluidCorpusManipulation
+        working-directory: install
 
       - uses: actions/upload-artifact@v2                                                                                                                                                 
         with:                                                                                                                                                                            
@@ -86,7 +87,8 @@ jobs:
         working-directory: build
 
       - name: zip release
-        run: zip -r FluCoMa-SC-Linux-nightly.zip install/FluidCorpusManipulation
+        run: zip -r ../FluCoMa-SC-Linux-nightly.zip FluidCorpusManipulation
+        working-directory: install
 
       - uses: actions/upload-artifact@v2                                                                                                                                                 
         with:                                                                                                                                                                            
@@ -112,6 +114,9 @@ jobs:
         with:
           name: linuxbuild
           path: FluCoMa-SC-Linux-nightly.zip
+      
+      - name: see
+        run: ls -R
         
       - name: package and upload
         uses: svenstaro/upload-release-action@v2
@@ -122,5 +127,5 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: FluCoMa-SC-*.zip
           file_glob: true
-          tag: nightly
+          tag: 1.0.0-nightly
           overwrite: true
