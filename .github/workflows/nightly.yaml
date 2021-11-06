@@ -2,9 +2,7 @@ name: Nightly Releases
 
 on:
   push:
-    branches: [ main, ci/nightlies ]
-  pull_request:
-    branches: [ main ]
+    branches: [ dev, ci/nightlies ]
 
 jobs:
   # Eventually this https://github.community/t/create-matrix-with-multiple-os-and-env-for-each-one/16895/5
