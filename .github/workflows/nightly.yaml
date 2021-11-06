@@ -12,6 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: install ninja
+        run: brew install ninja
+
       - name: get supercollider source
         run: git clone --recursive https://github.com/supercollider/supercollider.git sdk
         
@@ -19,11 +22,11 @@ jobs:
         run: mkdir -p build
         
       - name: cmake
-        run: cmake -DSC_PATH=../sdk ..
+        run: cmake -GNinja -DSC_PATH=../sdk ..
         working-directory: build
         
       - name: install
-        run: make install -j$(sysctl -n hw.ncpu)
+        run: ninja install
         working-directory: build
 
       - name: zip release
@@ -52,7 +55,7 @@ jobs:
         working-directory: build
         
       - name: install
-        run: cmake --build . --target install
+        run: cmake --build . --target install --config Release
         working-directory: build
 
       - name: remove pdb files
@@ -71,6 +74,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
+      - name: install ninja
+        run: apt-get install ninja-build
 
       - name: get supercollider source
         run: git clone --recursive https://github.com/supercollider/supercollider.git sdk
