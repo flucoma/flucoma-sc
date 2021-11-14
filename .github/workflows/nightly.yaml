@@ -22,9 +22,12 @@ jobs:
         
       - name: make build directory
         run: mkdir -p build
+
+      - name: clone latest flucoma-core
+        run: git clone --branch dev git@github.com:flucoma/flucoma-core.git core     
         
       - name: cmake
-        run: cmake -GNinja -DSC_PATH=../sdk ..
+        run: cmake -GNinja -DSC_PATH=../sdk -DFLUID_CORE=../core ..
         working-directory: build
         
       - name: install
@@ -51,9 +54,12 @@ jobs:
         
       - name: make build directory
         run: mkdir build
+
+      - name: clone latest flucoma-core
+        run: git clone --branch dev git@github.com:flucoma/flucoma-core.git core   
         
       - name: cmake
-        run: cmake -DSC_PATH="../sdk" ..
+        run: cmake -DSC_PATH="../sdk" -DFLUID_CORE="../core" ..
         working-directory: build
         
       - name: install
@@ -86,8 +92,11 @@ jobs:
       - name: make build directory
         run: mkdir build
         
+      - name: clone latest flucoma-core
+        run: git clone --branch dev git@github.com:flucoma/flucoma-core.git core    
+
       - name: cmake
-        run: cmake -DSC_PATH=../sdk ..
+        run: cmake -DSC_PATH=../sdk -DFLUID_CORE=../core ..
         working-directory: build
         
       - name: install
