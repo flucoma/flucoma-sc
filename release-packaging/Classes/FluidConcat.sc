@@ -1,6 +1,6 @@
 FluidConcat : FluidRTUGen {
-	*ar { arg in, segmentTrig, featureTrig, featureBuffer, maxHistoryLength=5000, historyWindowLength=3000, historyWindowOffset=0, fadeTime=100, speed=1;
-		^this.multiNew('audio', in.asAudioRateInput(this), segmentTrig.asAudioRateInput(this), featureTrig.asAudioRateInput(this),featureBuffer.asUGenInput,	maxHistoryLength, historyWindowLength, historyWindowOffset, fadeTime, speed)
+	*ar { arg in, segmentTrig, featureTrig, featureBuffer, maxHistoryLength=5000, historyWindowLength=3000, historyWindowOffset=0, fadeTime=100, speed=1, algo=0;
+		^this.multiNew('audio', in.asAudioRateInput(this), segmentTrig.asAudioRateInput(this), featureTrig.asAudioRateInput(this),featureBuffer.asUGenInput,	maxHistoryLength, historyWindowLength, historyWindowOffset, fadeTime, speed, algo)
 	}
 	
 //	*ar { arg in, segmentTrig, test;
