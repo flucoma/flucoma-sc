@@ -7,7 +7,6 @@ on:
     branches: [ dev ]
 
 jobs:
-  # Eventually this https://github.community/t/create-matrix-with-multiple-os-and-env-for-each-one/16895/5
   macbuild:
     runs-on: macos-11
 
