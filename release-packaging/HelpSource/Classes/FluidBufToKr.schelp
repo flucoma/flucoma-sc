@@ -14,6 +14,9 @@ Initialize an instance of this pseudo UGen
 ARGUMENT:: buffer
 The link::Classes/Buffer:: that this pseudo UGen will read out of. Must be a one-channel buffer.
 
+ARGUMENT:: numFrames
+How many frames the buffer is that will evenutally passed. If providing a buffer directly (instead of as an argument to a SynthDef), the default of -1 will get the number of frames from the buffer passed.
+
 returns:: a Kr stream that has the same number of channels as frames in the link::Classes/Buffer::.
 
 INSTANCEMETHODS::
@@ -21,19 +24,37 @@ INSTANCEMETHODS::
 EXAMPLES::
 
 code::
+// make a buffer with some data in it
+~buf = Buffer.loadCollection(s,[0,1,2,3,4,7]);
+
+// play it on the server and read out of this buffer!
 (
-// FluidBufToKr
-s.waitForBoot{
-	Routine{
-		var buf = Buffer.loadCollection(s,[0,1,2,3,4,7]);
-
-		s.sync;
-
-		{
-			var sig = FluidBufToKr.kr(buf);
-			sig.poll;
-		}.play;
-	}.play;
-}
+{
+	var sig = FluidBufToKr.kr(~buf);
+	sig.poll;
+}.play;
 )
+
+// =============== passing a buffer as an argument ======================
+
+// create a synth that both writes into a buffer (with FluidKrToBuf) and reads
+// out of the same buffer (with FluidBufToKr)
+(
+~synth = {
+	arg buf = 999;
+	FluidKrToBuf.kr(SinOsc.kr(Array.fill(5,{rrand(0.0,1.0)})),buf);
+
+	// you need to specify the 5 so the synth here will know how many channels to make
+	// the output proxy
+	FluidBufToKr.kr(buf,5).poll;
+}.play;
+// you should see all zeros! (unless your buffer #999 has something in it already!)
+)
+
+// ...then after it is running, instantiate the buffer
+~buffer = Buffer.alloc(s,5);
+
+// ...then send it to the buffer
+~synth.set(\buf,~buffer);
+// you should be able to see the sine oscillators now!
 ::
