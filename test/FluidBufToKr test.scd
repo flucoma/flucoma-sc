@@ -64,7 +64,7 @@ s.waitForBoot{
 			FluidKrToBuf.kr(sig,buf);
 		}.play;
 
-		3.wait;
+		1.wait;
 
 		defer{buf.plot};
 	}.play;
@@ -85,7 +85,7 @@ s.waitForBoot{
 			FluidKrToBuf.kr(sig,buf);
 		}.play;
 
-		3.wait;
+		1.wait;
 
 		defer{buf.plot};
 	}.play;
@@ -137,7 +137,7 @@ s.waitForBoot{
 		s.sync;
 
 		{
-			var sig = SinOsc.kr(rrand(1.0.dup(buf.numFrames),4.0));
+			var sig = SinOsc.kr(rrand(1.0.dup(10),4.0));
 			FluidKrToBuf.kr(sig,buf);
 		}.play;
 
@@ -177,7 +177,7 @@ s.waitForBoot{
 			arg buf;
 			FluidKrToBuf.kr(SinOsc.kr(Array.fill(5,{rrand(0.0,1.0)})),buf);
 
-			FluidBufToKr.kr(buf).poll;
+			FluidBufToKr.kr(buf).poll; ///////// this will now throw an error asking for a numFrames
 		}.play;
 
 		2.wait;
@@ -194,10 +194,10 @@ s.waitForBoot{
 s.waitForBoot{
 	Routine{
 		~synth = {
-			arg buf;
+			arg buf = 999;
 			FluidKrToBuf.kr(SinOsc.kr(Array.fill(5,{rrand(0.0,1.0)})),buf);
 
-			FluidBufToKr.kr(buf,5).poll;
+			FluidBufToKr.kr(buf,5).poll; ////////// this will work becaues it knows how many frames the buffer will be
 		}.play;
 
 		2.wait;
