@@ -33,7 +33,7 @@ FluidPlotter : FluidViewer {
 		ymin = ymin_;
 		ymax = ymax_;
 
-		this.createcategoryColors;
+		this.createCatColors;
 		dict_internal = Dictionary.new;
 		if(dict_.notNil,{this.dict_(dict_)});
 		this.createPlotWindow(bounds,parent_,mouseMoveAction,dict_);
