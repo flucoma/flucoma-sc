@@ -1,7 +1,6 @@
 (
 // should all return the same path:
 (FluidFilesPath()++"Nicol-LoopE-M.wav").postln;
-(FluidFilesPath()+/+"Nicol-LoopE-M.wav").postln;
 FluidFilesPath("Nicol-LoopE-M.wav").postln;
 FluidFilesPath("/Nicol-LoopE-M.wav").postln;
 )
