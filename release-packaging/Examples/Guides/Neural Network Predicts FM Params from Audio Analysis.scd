@@ -27,8 +27,8 @@ s.waitForBoot{
 		var statsWinSl, hidden_tf, batchSize_nb, momentum_nb, learnRate_nb, maxIter_nb, outAct_pum, act_pum;
 		var add_point = {
 			var id = "point-%".format(id_counter);
-			mfcc_ds.addPoint(id,mfccbuf,{mfcc_ds.print});
-			param_ds.addPoint(id,parambuf,{param_ds.print});
+			mfcc_ds.addPoint(id,mfccbuf);
+			param_ds.addPoint(id,parambuf);
 			id_counter = id_counter + 1;
 		};
 		var train = {
@@ -80,6 +80,8 @@ s.waitForBoot{
 			});
 		};
 
+		~in_bus = Bus.audio(s);
+
 		s.sync;
 
 		synth = {
@@ -87,7 +89,8 @@ s.waitForBoot{
 			var params = FluidStats.kr(FluidBufToKr.kr(parambuf),ControlRate.ir * smooth_params * isPredicting)[0];
 			var msig = SinOsc.ar(params[1],0,params[2] * params[1]);
 			var csig = SinOsc.ar(params[0] + msig);
-			var sound_in = SoundIn.ar(0);
+			// var sound_in = SoundIn.ar(0);
+			var sound_in = In.ar(~in_bus);
 			var analysis_sig, mfccs, trig, mfccbuf_norm, parambuf_norm;
 
 			csig = BLowPass4.ar(csig,16000);
@@ -109,7 +112,7 @@ s.waitForBoot{
 			SendReply.kr(trig,"/mfccs",mfccs);
 
 			csig = csig.dup;
-			csig * Select.kr(isPredicting,[vol.dbamp,Amplitude.kr(sound_in)]);
+			csig * Select.kr(isPredicting,[vol.dbamp,FluidLoudness.kr(sound_in)[0].dbamp]);
 		}.play;
 
 		s.sync;
@@ -294,28 +297,48 @@ s.waitForBoot{
 
 		s.sync;
 
-/*		statsWinSl.valueAction_(0.1);
-
-		100.do{
-			var cfreq = exprand(20,20000);
-			var mfreq = exprand(20,20000);
-			var index = rrand(0.0,20);
-			parambuf.setn(0,[cfreq,mfreq,index]);
-			0.2.wait;
-			add_point.value;
-			0.05.wait;
-		};*/
+		statsWinSl.valueAction_(0.0);
 
 		/*		100.do{
-		var cfreq = exprand(60,4000);
-		var mfreq = exprand(60,1000).clip(0,cfreq);
+		var cfreq = exprand(20,20000);
+		var mfreq = exprand(20,20000);
 		var index = rrand(0.0,20);
 		parambuf.setn(0,[cfreq,mfreq,index]);
 		0.2.wait;
 		add_point.value;
 		0.05.wait;
 		};*/
+		40.do{
+			var cfreq = exprand(100.0,1000.0);
+			var mfreq = exprand(100.0,min(cfreq,500.0));
+			var index = rrand(0.0,8.0);
+			var arr = [cfreq,mfreq,index];
+			parambuf.setn(0,arr);
+			0.1.wait;
+			add_point.value;
+			0.1.wait;
+			arr.postln;
+			param_ds.print;
+			"\n\n".postln;
+		};
 
 	}.play(AppClock);
 };
 )
+
+(
+Routine{
+	//~path = FluidFilesPath("Tremblay-AaS-VoiceQC-B2K.wav");
+	~path = FluidFilesPath("Tremblay-CEL-GlitchyMusicBoxMelo.wav");
+	~test_buf = Buffer.readChannel(s,~path,channels:[0]);
+	s.sync;
+	{
+		var sig = PlayBuf.ar(1,~test_buf,BufRateScale.ir(~test_buf),doneAction:2);
+		Out.ar(0,sig);
+		sig;
+	}.play(outbus:~in_bus);
+}.play;
+)
+
+s.record;
+s.stopRecording
