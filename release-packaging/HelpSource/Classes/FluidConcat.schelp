@@ -1,0 +1,66 @@
+TITLE:: FluidConcat
+summary:: Concatenative synthesis with a live database
+categories:: Libraries>FluidCorpusManipulation
+related:: Concat, Concat2
+
+DESCRIPTION::
+
+FluidConcat is a concatenative synthesiser, that runs from a live signal, using a the recent history of of the audio input as a database.
+
+
+Inspired by Nick Collin's Concat UGens.
+
+CLASSMETHODS::
+
+METHOD:: ar
+(describe method here)
+
+ARGUMENT:: in
+audio input
+
+ARGUMENT:: segmentTrig
+trigger to indicate a new segment
+
+ARGUMENT:: featureTrig
+(describe argument here)
+
+ARGUMENT:: featureBuffer
+(describe argument here)
+
+ARGUMENT:: maxHistoryLength
+(describe argument here)
+
+ARGUMENT:: historyWindowLength
+(describe argument here)
+
+ARGUMENT:: historyWindowOffset
+(describe argument here)
+
+ARGUMENT:: fadeTime
+(describe argument here)
+
+ARGUMENT:: speed
+(describe argument here)
+
+ARGUMENT:: algo
+(describe argument here)
+
+ARGUMENT:: randomness
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+
+INSTANCEMETHODS::
+
+METHOD:: checkInputs
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+
+EXAMPLES::
+
+code::
+(some example code)
+::
