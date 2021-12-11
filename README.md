@@ -43,7 +43,7 @@ Also, with CMake you have a choice of which build system you use.
 In some cases you may want to use your own copies of the required libraries. Unless specified, the build system will download these automatically. To bypass this behaviour, use the following cache variables:
 
 - `FLUID_PATH`: location of the Fluid Corpus Manipulation Library
-- `FLUID_PARAMDUMP_PATH`: location of `flucoma_paramdump` repository (e.g. for debugging documentation generation)
+- `FLUID_DOCS_PATH`: location of `fluid-docs` repository (e.g. for debugging documentation generation)
 - `EIGEN_PATH` location of the Eigen library
 - `HISS_PATH` location of the HISSTools library
 
