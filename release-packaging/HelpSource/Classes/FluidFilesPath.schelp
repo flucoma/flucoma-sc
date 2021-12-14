@@ -1,0 +1,55 @@
+TITLE:: FluidFilesPath
+summary:: A convenience class for accessing the audio files provided with the FluCoMa Extension
+categories:: Libraries>FluidCorpusManipulation
+related:: Classes/FluidLoadFolder
+
+DESCRIPTION::
+
+
+CLASSMETHODS::
+
+METHOD:: new
+Get the path to the "AudioFiles" folder inside the FluCoMa extensions folder. Following this with a ++ "name_Of_The_File-You-Want.wav" will create the path to file you want.
+
+ARGUMENT:: fileName
+Optionally, you may pass in the name of the file you want to use and the *new class method will return the path to that file.
+
+returns:: The path to the "AudioFiles" folder inside the FluCoMa extensions folder (optionally with provided file name).
+
+EXAMPLES::
+
+code::
+(
+// these will return the same path
+(FluidFilesPath()++"Nicol-LoopE-M.wav").postln;
+FluidFilesPath("Nicol-LoopE-M.wav").postln;
+)
+
+(
+// test it one way
+s.waitForBoot{
+	Routine{
+		var path = FluidFilesPath()++"Nicol-LoopE-M.wav";
+		var buf = Buffer.read(s,path);
+
+		s.sync;
+
+		buf.play;
+	}.play;
+}
+)
+
+(
+// test it another way
+s.waitForBoot{
+	Routine{
+		var path = FluidFilesPath("Nicol-LoopE-M.wav");
+		var buf = Buffer.read(s,path);
+
+		s.sync;
+
+		buf.play;
+	}.play;
+}
+)
+::

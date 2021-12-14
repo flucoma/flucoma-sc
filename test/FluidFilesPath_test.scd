@@ -1,11 +1,11 @@
 (
-// should all return the same path:
+// these will return the same path
 (FluidFilesPath()++"Nicol-LoopE-M.wav").postln;
 FluidFilesPath("Nicol-LoopE-M.wav").postln;
-FluidFilesPath("/Nicol-LoopE-M.wav").postln;
 )
 
 (
+// test it one way
 s.waitForBoot{
 	Routine{
 		var path = FluidFilesPath()++"Nicol-LoopE-M.wav";
@@ -19,6 +19,7 @@ s.waitForBoot{
 )
 
 (
+// test it another way
 s.waitForBoot{
 	Routine{
 		var path = FluidFilesPath("Nicol-LoopE-M.wav");
