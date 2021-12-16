@@ -1,5 +1,5 @@
 (
-Window.closeAll;
+// Window.closeAll;
 s.waitForBoot{
 
 	Task{
@@ -14,11 +14,13 @@ s.waitForBoot{
 
 		s.sync;
 
-		FluidBufAmpSlice.process(s,buf,indices:slicepoints,fastRampUp:10,fastRampDown:2205,slowRampUp:4410,slowRampDown:4410,onThreshold:10,offThreshold:5,floor:-40,minSliceLength:4410,highPassFreq:20).wait;
+		FluidBufAmpSlice.processBlocking(s,buf,indices:slicepoints,fastRampUp:10,fastRampDown:2205,slowRampUp:4410,slowRampDown:4410,onThreshold:10,offThreshold:5,floor:-40,minSliceLength:4410,highPassFreq:20);
 		// slice the drums buffer based on amplitude
 		// the samples at which slices are detected will be written into the "slicepoints" buffer
 
-		FluidWaveform(buf,slicepoints,Rect(0,0,1600,400));
+		s.sync;
+
+		FluidWaveform(buf,slicepoints,bounds:Rect(0,0,1600,400));
 		// plot the drums buffer with the slicepoints overlayed
 
 		slicepoints.loadToFloatArray(action:{ // bring the values in the slicepoints buffer from the server to the language as a float array
