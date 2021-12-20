@@ -1,7 +1,27 @@
+### James has already done in Max:
 
+KDTree
+AmpSlice
+BufAmpSlice
+BufSelect
+Chroma
+BufChroma
+Sines
+BufSines
 
-NMFBuf Filter Morph Match Cross
-HPSS *Buf
+### TODO:
+
+NMFBuf
+NMFFilter
+NMFMorph
+NMFMatch
+NMFCross
+HPSS
+BufHPSS
 MDS
-SpectralShape *Buf
-Transients & Buf* & Slice*
+SpectralShape
+BufSpectralShape
+Transients
+BufTransients
+TransientSlice
+BufTransientSlice
