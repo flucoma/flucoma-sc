@@ -15,15 +15,17 @@ FluidViewer {
 FluidWaveform : FluidViewer {
 
 	*new {
-		arg audio_buf, slices_buf, feature_buf, bounds, lineWidth = 1;
-		^super.new.init(audio_buf,slices_buf, feature_buf, bounds, lineWidth);
+		arg audio_buf, slices_buf, feature_buf, bounds, lineWidth = 1, waveformColor;
+		^super.new.init(audio_buf,slices_buf, feature_buf, bounds, lineWidth, waveformColor);
 	}
 
 	init {
-		arg audio_buf, slices_buf, feature_buf, bounds, lineWidth;
+		arg audio_buf, slices_buf, feature_buf, bounds, lineWidth, waveformColor;
 		Task{
 			var path = "%%_%_FluidWaveform.wav".format(PathName.tmp,Date.localtime.stamp,UniqueID.next);
 			var sfv, win, categoryCounter = 0;
+
+			waveformColor = waveformColor ? Color(*0.5.dup(3));
 
 			this.createCatColors;
 
@@ -34,8 +36,9 @@ FluidWaveform : FluidViewer {
 			audio_buf.server.sync;
 
 			sfv = SoundFileView(win,Rect(0,0,bounds.width,bounds.height));
-			sfv.peakColor_(Color(*0.75.dup(3)));
-			sfv.rmsColor_(Color.black);
+			sfv.peakColor_(waveformColor);
+			// sfv.rmsColor_(Color.black);
+			sfv.rmsColor_(Color.clear);
 			sfv.background_(Color.white);
 			sfv.readFile(SoundFile(path));
 			sfv.gridOn_(false);
