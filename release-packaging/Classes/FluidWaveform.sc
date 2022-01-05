@@ -15,14 +15,13 @@ FluidViewer {
 FluidWaveform : FluidViewer {
 
 	*new {
-		arg audio_buf, slices_buf, feature_buf, bounds, lineWidth = 1, waveformColor;
-		^super.new.init(audio_buf,slices_buf, feature_buf, bounds, lineWidth, waveformColor);
+		arg audioBuffer, slicesBuffer, featureBuffer, bounds, lineWidth = 1, waveformColor;
+		^super.new.init(audioBuffer,slicesBuffer, featureBuffer, bounds, lineWidth, waveformColor);
 	}
 
 	init {
 		arg audio_buf, slices_buf, feature_buf, bounds, lineWidth, waveformColor;
 		Task{
-			var path = "%%_%_FluidWaveform.wav".format(PathName.tmp,Date.localtime.stamp,UniqueID.next);
 			var sfv, win, categoryCounter = 0;
 
 			waveformColor = waveformColor ? Color(*0.5.dup(3));
@@ -31,19 +30,24 @@ FluidWaveform : FluidViewer {
 
 			bounds = bounds ? Rect(0,0,800,200);
 			win = Window("FluidWaveform",bounds);
-			audio_buf.write(path,"wav");
 
-			audio_buf.server.sync;
+			if(audio_buf.notNil,{
+				var path = "%%_%_FluidWaveform.wav".format(PathName.tmp,Date.localtime.stamp,UniqueID.next);
 
-			sfv = SoundFileView(win,Rect(0,0,bounds.width,bounds.height));
-			sfv.peakColor_(waveformColor);
-			// sfv.rmsColor_(Color.black);
-			sfv.rmsColor_(Color.clear);
-			sfv.background_(Color.white);
-			sfv.readFile(SoundFile(path));
-			sfv.gridOn_(false);
+				audio_buf.write(path,"wav");
 
-			File.delete(path);
+				audio_buf.server.sync;
+
+				sfv = SoundFileView(win,Rect(0,0,bounds.width,bounds.height));
+				sfv.peakColor_(waveformColor);
+				// sfv.rmsColor_(Color.black);
+				sfv.rmsColor_(Color.clear);
+				sfv.background_(Color.white);
+				sfv.readFile(SoundFile(path));
+				sfv.gridOn_(false);
+
+				File.delete(path);
+			});
 
 			if(slices_buf.notNil,{
 				slices_buf.numChannels.switch(
