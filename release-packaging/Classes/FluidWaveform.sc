@@ -13,16 +13,17 @@ FluidViewer {
 }
 
 FluidWaveform : FluidViewer {
+	var <win;
 
 	*new {
-		arg audioBuffer, slicesBuffer, featureBuffer, bounds, lineWidth = 1, waveformColor;
-		^super.new.init(audioBuffer,slicesBuffer, featureBuffer, bounds, lineWidth, waveformColor);
+		arg audioBuffer, slicesBuffer, featureBuffer, bounds, lineWidth = 1, waveformColor, stackFeatures = false;
+		^super.new.init(audioBuffer,slicesBuffer, featureBuffer, bounds, lineWidth, waveformColor,stackFeatures);
 	}
 
 	init {
-		arg audio_buf, slices_buf, feature_buf, bounds, lineWidth, waveformColor;
+		arg audio_buf, slices_buf, feature_buf, bounds, lineWidth, waveformColor,stackFeatures = false;
 		Task{
-			var sfv, win, categoryCounter = 0;
+			var sfv, categoryCounter = 0;
 
 			waveformColor = waveformColor ? Color(*0.5.dup(3));
 
@@ -30,6 +31,7 @@ FluidWaveform : FluidViewer {
 
 			bounds = bounds ? Rect(0,0,800,200);
 			win = Window("FluidWaveform",bounds);
+			win.background_(Color.white);
 
 			if(audio_buf.notNil,{
 				var path = "%%_%_FluidWaveform.wav".format(PathName.tmp,Date.localtime.stamp,UniqueID.next);
@@ -93,12 +95,24 @@ FluidWaveform : FluidViewer {
 			});
 
 			if(feature_buf.notNil,{
+				var stacked_height = bounds.height / feature_buf.numChannels;
 				feature_buf.loadToFloatArray(action:{
 					arg fa;
 					fa = fa.clump(feature_buf.numChannels).flop;
 					fa.do({
-						arg channel;
-						channel = channel.resamp1(bounds.width).linlin(channel.minItem,channel.maxItem,bounds.height,0);
+						arg channel, channel_i;
+						var maxy;// a lower value;
+						var miny; // a higher value;
+
+						if(stackFeatures,{
+							miny = stacked_height * (channel_i + 1);
+							maxy = stacked_height * channel_i;
+						},{
+							miny = bounds.height;
+							maxy = 0;
+						});
+
+						channel = channel.resamp1(bounds.width).linlin(channel.minItem,channel.maxItem,miny,maxy);
 						UserView(win,Rect(0,0,bounds.width,bounds.height))
 						.drawFunc_({
 							Pen.moveTo(Point(0,channel[0]));
