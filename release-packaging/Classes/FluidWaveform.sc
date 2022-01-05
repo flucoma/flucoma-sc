@@ -16,12 +16,12 @@ FluidWaveform : FluidViewer {
 	var <win;
 
 	*new {
-		arg audioBuffer, slicesBuffer, featureBuffer, bounds, lineWidth = 1, waveformColor, stackFeatures = false;
-		^super.new.init(audioBuffer,slicesBuffer, featureBuffer, bounds, lineWidth, waveformColor,stackFeatures);
+		arg audioBuffer, slicesBuffer, featureBuffer, bounds, lineWidth = 1, waveformColor, stackFeatures = false, spectrogram = false;
+		^super.new.init(audioBuffer,slicesBuffer, featureBuffer, bounds, lineWidth, waveformColor,stackFeatures,spectrogram);
 	}
 
 	init {
-		arg audio_buf, slices_buf, feature_buf, bounds, lineWidth, waveformColor,stackFeatures = false;
+		arg audio_buf, slices_buf, feature_buf, bounds, lineWidth, waveformColor,stackFeatures = false, spectrogram = false;
 		Task{
 			var sfv, categoryCounter = 0;
 
@@ -34,21 +34,59 @@ FluidWaveform : FluidViewer {
 			win.background_(Color.white);
 
 			if(audio_buf.notNil,{
-				var path = "%%_%_FluidWaveform.wav".format(PathName.tmp,Date.localtime.stamp,UniqueID.next);
+				if(spectrogram,{
+					var magsbuf = Buffer(audio_buf.server);
+					var condition = Condition.new;
+					var colors;
 
-				audio_buf.write(path,"wav");
+					if(File.exists("/Users/macprocomputer/Desktop/_flucoma/code/flucoma-sc/test/CETperceptual_csv_0_1/CET-L16.csv").not,{
+						"Sorry, colors file doesn't exist...... where can I put this file so it exists for everyone!!!?!?!?!?!?".warn;
+					});
 
-				audio_buf.server.sync;
+					colors = CSVFileReader.readInterpret("/Users/macprocomputer/Desktop/_flucoma/code/flucoma-sc/test/CETperceptual_csv_0_1/CET-L16.csv").collect{
+						arg row;
+						Color.fromArray(row);
+					};
 
-				sfv = SoundFileView(win,Rect(0,0,bounds.width,bounds.height));
-				sfv.peakColor_(waveformColor);
-				// sfv.rmsColor_(Color.black);
-				sfv.rmsColor_(Color.clear);
-				sfv.background_(Color.white);
-				sfv.readFile(SoundFile(path));
-				sfv.gridOn_(false);
+					FluidBufSTFT.processBlocking(audio_buf.server,audio_buf,magnitude:magsbuf,action:{
+						magsbuf.loadToFloatArray(action:{
+							arg mags;
+							fork({
+								var img = Image(magsbuf.numFrames,magsbuf.numChannels);
+								mags = (mags / mags.maxItem).ampdb.linlin(-120.0,0.0,0,255).asInteger;
 
-				File.delete(path);
+								mags.do{
+									arg mag, index;
+									img.setColor(colors[mag], index.div(magsbuf.numChannels), magsbuf.numChannels - 1 - index.mod(magsbuf.numChannels));
+								};
+
+								UserView(win,Rect(0,0,win.bounds.width,win.bounds.height))
+								.drawFunc_{
+									img.drawInRect(Rect(0,0,win.bounds.width,win.bounds.height));
+								};
+
+								condition.unhang;
+							},AppClock)
+						});
+					});
+					condition.hang;
+				},{
+					var path = "%%_%_FluidWaveform.wav".format(PathName.tmp,Date.localtime.stamp,UniqueID.next);
+
+					audio_buf.write(path,"wav");
+
+					audio_buf.server.sync;
+
+					sfv = SoundFileView(win,Rect(0,0,bounds.width,bounds.height));
+					sfv.peakColor_(waveformColor);
+					// sfv.rmsColor_(Color.black);
+					sfv.rmsColor_(Color.clear);
+					sfv.background_(Color.white);
+					sfv.readFile(SoundFile(path));
+					sfv.gridOn_(false);
+
+					File.delete(path);
+				});
 			});
 
 			if(slices_buf.notNil,{

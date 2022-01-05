@@ -21,14 +21,14 @@ s.waitForBoot{
 	m.loadToFloatArray(action:{
 		arg mags;
 
-		mags.clump(m.numChannels)[105].plot;
+		// mags.clump(m.numChannels)[105].plot;
 
 		mags = (mags / mags.maxItem).ampdb.linlin(-120.0,0.0,0,255).asInteger;
 
-		[0,1,2].do{
-			arg amt;
-			"# of %s in mags: %".format(amt,mags.count({arg val; val == amt})).postln;
-		};
+		// [0,1,2].do{
+		// 	arg amt;
+		// 	"# of %s in mags: %".format(amt,mags.count({arg val; val == amt})).postln;
+		// };
 
 		~img = Image(m.numFrames,m.numChannels);
 
@@ -37,7 +37,16 @@ s.waitForBoot{
 			~img.setColor(~colors[mag], index.div(m.numChannels), m.numChannels - 1 - index.mod(m.numChannels));
 		};
 
-		~img.plot;
+		// ~img.plot;
+
+		w = Window("est",Rect(0,0,1200,300));
+
+		u = UserView(w,w.bounds)
+		.drawFunc_{
+			~img.drawInRect(u.bounds);
+		};
+
+		w.front;
 	});
 };
 )
