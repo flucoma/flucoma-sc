@@ -2,84 +2,42 @@
 
 (
 s.waitForBoot{
-	b = Buffer.read(s,FluidFilesPath("Tremblay-AaS-AcousticStrums-M.wav"));
+	// b = Buffer.read(s,FluidFilesPath("Tremblay-AaS-AcousticStrums-M.wav"));
+	b = Buffer.read(s,FluidFilesPath("Nicol-LoopE-M.wav"));
 	m = Buffer(s);
 
-	~csv_colors = CSVFileReader.readInterpret("/Users/macprocomputer/Desktop/_flucoma/CETperceptual_csv_0_1/CET-L08.csv");
-
-	// ~csv_colors.shape.postln;
-	// ~csv_colors[0].postln;
+	// https://colorcet.com/
+	~csv_colors = CSVFileReader.readInterpret(PathName(thisProcess.nowExecutingPath).pathOnly+/+"CETperceptual_csv_0_1/CET-L16.csv");
 
 	~colors = ~csv_colors.collect{
 		arg row;
 		Color.fromArray(row);
 	};
 
-	// ~colors[0].postln;
-
 	s.sync;
 	FluidBufSTFT.processBlocking(s,b,magnitude:m);
 	s.sync;
-	w = Window("spectrogram test",Rect(0,0,1600,900));
-	w.background_(Color.white);
 
 	m.loadToFloatArray(action:{
 		arg mags;
-		// var maxItem;
-		// var minItem;
 
-		mags = mags / mags.maxItem;
+		mags.clump(m.numChannels)[105].plot;
 
-		mags = mags.log10 * 20;
+		mags = (mags / mags.maxItem).ampdb.linlin(-120.0,0.0,0,255).asInteger;
 
-		"one thing: %".format(mags[100]).postln;
-
-		mags = mags.clump(m.numChannels);
-
-		mags = mags.collect{
-			arg frame;
-			frame.resamp1(w.bounds.height);
+		[0,1,2].do{
+			arg amt;
+			"# of %s in mags: %".format(amt,mags.count({arg val; val == amt})).postln;
 		};
 
-		mags = mags.flop.collect{
-			arg row;
-			row.resamp1(w.bounds.width);
-		}.flop;
+		~img = Image(m.numFrames,m.numChannels);
 
-		mags.shape.postln;
-
-		//maxItem = mags.collect(_.maxItem).maxItem;
-		// minItem = mags.collect(_.minItem).minItem;
-
-		// maxItem.postln;
-
-		mags = mags.collect{
-			arg frame;
-			frame.collect{
-				arg mag;
-				mag.linlin(-120.0,0.0,0.0,255.0).asInteger;
-			};
+		mags.do{
+			arg mag, index;
+			~img.setColor(~colors[mag], index.div(m.numChannels), m.numChannels - 1 - index.mod(m.numChannels));
 		};
 
-		100.do{
-			// mags[rrand(0,mags.size-1)].choose.postln;
-		};
-
-		~uv = UserView(w,w.bounds)
-		.drawFunc_{
-			mags.do{
-				arg frame, x;
-				frame.do{
-					arg mag, y;
-					// mag.postln;
-					Pen.addRect(Rect(x,w.bounds.height - y,1,1));
-					Pen.fillColor_(~colors[mag]);
-					Pen.fill;
-				}
-			}
-		};
-
-		w.front;
+		~img.plot;
 	});
 };
 )
