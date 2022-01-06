@@ -47,11 +47,7 @@ FluidWaveform : FluidViewer {
 							};
 						},
 						1,{
-							if(File.exists("/Users/macprocomputer/Desktop/_flucoma/code/flucoma-sc/test/CETperceptual_csv_0_1/CET-L16.csv").not,{
-								"Sorry, colors file doesn't exist...... where can I put this file so it exists for everyone!!!?!?!?!?!?".warn;
-							});
-
-							colors = CSVFileReader.readInterpret("/Users/macprocomputer/Desktop/_flucoma/code/flucoma-sc/test/CETperceptual_csv_0_1/CET-L16.csv").collect{
+							colors = CSVFileReader.readInterpret(FluidFilesPath("/color-schemes/CET-L16.csv")).collect{
 								arg row;
 								Color.fromArray(row);
 							};
