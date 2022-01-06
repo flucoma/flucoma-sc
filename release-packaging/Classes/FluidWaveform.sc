@@ -16,16 +16,16 @@ FluidWaveform : FluidViewer {
 	var <win;
 
 	*new {
-		arg audioBuffer, slicesBuffer, featureBuffer, bounds, lineWidth = 1, waveformColor, stackFeatures = false, spectrogram = false;
-		^super.new.init(audioBuffer,slicesBuffer, featureBuffer, bounds, lineWidth, waveformColor,stackFeatures,spectrogram);
+		arg audioBuffer, slicesBuffer, featureBuffer, bounds, lineWidth = 1, waveformColor, stackFeatures = false, showSpectrogram = false, spectrogramColorScheme = 0, spectrogramAlpha = 1, showWaveform = true;
+		^super.new.init(audioBuffer,slicesBuffer, featureBuffer, bounds, lineWidth, waveformColor,stackFeatures,showSpectrogram,spectrogramColorScheme,spectrogramAlpha,showWaveform);
 	}
 
 	init {
-		arg audio_buf, slices_buf, feature_buf, bounds, lineWidth, waveformColor,stackFeatures = false, spectrogram = false;
+		arg audio_buf, slices_buf, feature_buf, bounds, lineWidth, waveformColor,stackFeatures = false, showSpectrogram = false, spectrogramColorScheme = 0, spectrogramAlpha = 1, showWaveform = true;
 		Task{
 			var sfv, categoryCounter = 0;
 
-			waveformColor = waveformColor ? Color(*0.5.dup(3));
+			waveformColor = waveformColor ? Color(*0.dup(3));
 
 			this.createCatColors;
 
@@ -34,19 +34,30 @@ FluidWaveform : FluidViewer {
 			win.background_(Color.white);
 
 			if(audio_buf.notNil,{
-				if(spectrogram,{
+				if(showSpectrogram,{
 					var magsbuf = Buffer(audio_buf.server);
 					var condition = Condition.new;
 					var colors;
 
-					if(File.exists("/Users/macprocomputer/Desktop/_flucoma/code/flucoma-sc/test/CETperceptual_csv_0_1/CET-L16.csv").not,{
-						"Sorry, colors file doesn't exist...... where can I put this file so it exists for everyone!!!?!?!?!?!?".warn;
-					});
+					spectrogramColorScheme.switch(
+						0,{
+							colors = 256.collect{
+								arg i;
+								Color.gray(i / 255.0);
+							};
+						},
+						1,{
+							if(File.exists("/Users/macprocomputer/Desktop/_flucoma/code/flucoma-sc/test/CETperceptual_csv_0_1/CET-L16.csv").not,{
+								"Sorry, colors file doesn't exist...... where can I put this file so it exists for everyone!!!?!?!?!?!?".warn;
+							});
 
-					colors = CSVFileReader.readInterpret("/Users/macprocomputer/Desktop/_flucoma/code/flucoma-sc/test/CETperceptual_csv_0_1/CET-L16.csv").collect{
-						arg row;
-						Color.fromArray(row);
-					};
+							colors = CSVFileReader.readInterpret("/Users/macprocomputer/Desktop/_flucoma/code/flucoma-sc/test/CETperceptual_csv_0_1/CET-L16.csv").collect{
+								arg row;
+								Color.fromArray(row);
+							};
+
+						}
+					);
 
 					FluidBufSTFT.processBlocking(audio_buf.server,audio_buf,magnitude:magsbuf,action:{
 						magsbuf.loadToFloatArray(action:{
@@ -57,20 +68,24 @@ FluidWaveform : FluidViewer {
 
 								mags.do{
 									arg mag, index;
+									// colors[mag].postln;
 									img.setColor(colors[mag], index.div(magsbuf.numChannels), magsbuf.numChannels - 1 - index.mod(magsbuf.numChannels));
 								};
 
 								UserView(win,Rect(0,0,win.bounds.width,win.bounds.height))
 								.drawFunc_{
-									img.drawInRect(Rect(0,0,win.bounds.width,win.bounds.height));
+									img.drawInRect(Rect(0,0,win.bounds.width,win.bounds.height),fraction:spectrogramAlpha);
 								};
 
 								condition.unhang;
+								magsbuf.free;
 							},AppClock)
 						});
 					});
 					condition.hang;
-				},{
+				});
+
+				if(showWaveform,{
 					var path = "%%_%_FluidWaveform.wav".format(PathName.tmp,Date.localtime.stamp,UniqueID.next);
 
 					audio_buf.write(path,"wav");
@@ -80,8 +95,10 @@ FluidWaveform : FluidViewer {
 					sfv = SoundFileView(win,Rect(0,0,bounds.width,bounds.height));
 					sfv.peakColor_(waveformColor);
 					// sfv.rmsColor_(Color.black);
+					sfv.drawsBoundingLines_(false);
 					sfv.rmsColor_(Color.clear);
-					sfv.background_(Color.white);
+					// sfv.background_(Color.white);
+					sfv.background_(Color.clear);
 					sfv.readFile(SoundFile(path));
 					sfv.gridOn_(false);
 
