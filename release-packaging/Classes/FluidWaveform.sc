@@ -2,6 +2,7 @@ FluidViewer {
 	var categoryColors;
 
 	createCatColors {
+		// colors from: https://github.com/d3/d3-scale-chromatic/blob/main/src/categorical/category10.js
 		categoryColors = "1f77b4ff7f0e2ca02cd627289467bd8c564be377c27f7f7fbcbd2217becf".clump(6).collect{
 			arg six;
 			Color(*six.clump(2).collect{
@@ -16,12 +17,16 @@ FluidWaveform : FluidViewer {
 	var <win;
 
 	*new {
-		arg audioBuffer, slicesBuffer, featureBuffer, bounds, lineWidth = 1, waveformColor, stackFeatures = false, showSpectrogram = false, spectrogramColorScheme = 0, spectrogramAlpha = 1, showWaveform = true;
-		^super.new.init(audioBuffer,slicesBuffer, featureBuffer, bounds, lineWidth, waveformColor,stackFeatures,showSpectrogram,spectrogramColorScheme,spectrogramAlpha,showWaveform);
+		arg audioBuffer, slicesBuffer, featureBuffer, bounds, lineWidth = 1, waveformColor, stackFeatures = false, showSpectrogram = false, spectrogramColorScheme = 0, spectrogramAlpha = 1, showWaveform = true, normalizeFeaturesIndependently = true;
+		^super.new.init(audioBuffer,slicesBuffer, featureBuffer, bounds, lineWidth, waveformColor,stackFeatures,showSpectrogram,spectrogramColorScheme,spectrogramAlpha,showWaveform,normalizeFeaturesIndependently);
+	}
+
+	close {
+		win.close;
 	}
 
 	init {
-		arg audio_buf, slices_buf, feature_buf, bounds, lineWidth, waveformColor,stackFeatures = false, showSpectrogram = false, spectrogramColorScheme = 0, spectrogramAlpha = 1, showWaveform = true;
+		arg audio_buf, slices_buf, feature_buf, bounds, lineWidth, waveformColor,stackFeatures = false, showSpectrogram = false, spectrogramColorScheme = 0, spectrogramAlpha = 1, showWaveform = true,normalizeFeaturesIndependently = true;
 		Task{
 			var sfv, categoryCounter = 0;
 
@@ -149,7 +154,15 @@ FluidWaveform : FluidViewer {
 				var stacked_height = bounds.height / feature_buf.numChannels;
 				feature_buf.loadToFloatArray(action:{
 					arg fa;
+					var minVal = 0, maxVal = 0;
+
+					if(normalizeFeaturesIndependently.not,{
+						minVal = fa.minItem;
+						maxVal = fa.maxItem;
+					});
+
 					fa = fa.clump(feature_buf.numChannels).flop;
+
 					fa.do({
 						arg channel, channel_i;
 						var maxy;// a lower value;
@@ -163,7 +176,13 @@ FluidWaveform : FluidViewer {
 							maxy = 0;
 						});
 
-						channel = channel.resamp1(bounds.width).linlin(channel.minItem,channel.maxItem,miny,maxy);
+						if(normalizeFeaturesIndependently,{
+							minVal = channel.minItem;
+							maxVal = channel.maxItem;
+						});
+
+						channel = channel.resamp1(bounds.width).linlin(minVal,maxVal,miny,maxy);
+
 						UserView(win,Rect(0,0,bounds.width,bounds.height))
 						.drawFunc_({
 							Pen.moveTo(Point(0,channel[0]));
