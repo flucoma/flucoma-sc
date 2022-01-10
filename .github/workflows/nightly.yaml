@@ -13,20 +13,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: setup environment
+        uses: flucoma/actions/env@v1 
+
       - name: install ninja
         run: brew install ninja
 
       - name: get supercollider source
         run: git clone --recursive https://github.com/supercollider/supercollider.git sdk
 
-      - name: setup environment
-        uses: flucoma/actions/env@v1        
-      # - name: make build directory
-      #   run: mkdir -p build
-
-      # - name: clone latest flucoma-core
-      #   run: git clone --branch dev https://github.com/flucoma/flucoma-core.git core     
-        
       - name: cmake
         run: cmake -GNinja -DSC_PATH=../sdk -DFLUID_PATH=../core ..
         working-directory: build
@@ -50,25 +45,18 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: setup environment
+        uses: flucoma/actions/env@v1 
+
       - name: install ninja
         run: choco install ninja
 
       - name: get supercollider source
-        run: git clone --recursive https://github.com/supercollider/supercollider.git sdk
-        
-      - name: make build directory
-        run: mkdir build
-
-      - name: clone latest flucoma-core
-        run: git clone --branch dev https://github.com/flucoma/flucoma-core.git core   
+        run: git clone --recursive https://github.com/supercollider/supercollider.git sdk 
         
       - name: cmake
-        run: cmake -DSC_PATH="../sdk" -DFLUID_PATH="../core" ..
+        run: cmake -GNinja -DSC_PATH="../sdk" -DFLUID_PATH="../core" ..
         working-directory: build
-        
-      # - name: install
-      #   run: cmake --build . --target install --config Release
-      #   working-directory: build
 
       - name: install
         run: ninja install
@@ -91,20 +79,17 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: setup environment
+        uses: flucoma/actions/env@v1
+
       - name: install ninja
         run: sudo apt-get install ninja-build
 
       - name: get supercollider source
         run: git clone --recursive https://github.com/supercollider/supercollider.git sdk
-        
-      - name: make build directory
-        run: mkdir build
-        
-      - name: clone latest flucoma-core
-        run: git clone --branch dev https://github.com/flucoma/flucoma-core.git core    
 
       - name: cmake
-        run: cmake -DSC_PATH=../sdk -DFLUID_PATH=../core ..
+        run: cmake -GNinja -DSC_PATH=../sdk -DFLUID_PATH=../core ..
         working-directory: build
         
       - name: install
