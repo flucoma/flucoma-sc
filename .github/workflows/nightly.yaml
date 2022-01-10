@@ -17,7 +17,7 @@ jobs:
         uses: flucoma/actions/env@v2
 
       - name: build toolkit
-        uses: flucoma/actions/scbuild@v2
+        uses: flucoma/actions/sc@v2
 
       - name: zip release
         run: zip -r ../FluCoMa-SC-Mac-nightly.zip FluidCorpusManipulation
@@ -38,7 +38,7 @@ jobs:
         uses: flucoma/actions/env@v2
 
       - name: build toolkit
-        uses: flucoma/actions/scbuild@v2
+        uses: flucoma/actions/sc@v2
 
       - name: remove pdb files
         run: Remove-Item install -Recurse -Include *.pdb
@@ -61,7 +61,7 @@ jobs:
         uses: flucoma/actions/env@v2
 
       - name: build toolkit
-        uses: flucoma/actions/scbuild@v2
+        uses: flucoma/actions/sc@v2
 
       - name: zip release
         run: zip -r ../FluCoMa-SC-Linux-nightly.zip FluidCorpusManipulation
