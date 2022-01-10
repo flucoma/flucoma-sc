@@ -20,7 +20,7 @@ jobs:
         run: git clone --recursive https://github.com/supercollider/supercollider.git sdk
 
       - name: setup environment
-        uses: flucoma/actions/env/action.yaml@v1        
+        uses: flucoma/actions/env@v1        
       # - name: make build directory
       #   run: mkdir -p build
 
