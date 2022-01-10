@@ -48,6 +48,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: install ninja
+        run: choco install ninja
+
       - name: get supercollider source
         run: git clone --recursive https://github.com/supercollider/supercollider.git sdk
         
