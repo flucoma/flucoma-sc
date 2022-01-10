@@ -70,6 +70,7 @@ jobs:
 
       - name: install
         run: ninja install
+        working-directory: build
 
       - name: remove pdb files
         run: Remove-Item install -Recurse -Include *.pdb
