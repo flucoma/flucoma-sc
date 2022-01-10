@@ -23,7 +23,7 @@ jobs:
         run: mkdir -p build
 
       - name: clone latest flucoma-core
-        run: git clone --branch dev https://github.com/flucoma/flucoma-sc.git core     
+        run: git clone --branch dev https://github.com/flucoma/flucoma-core.git core     
         
       - name: cmake
         run: cmake -GNinja -DSC_PATH=../sdk -DFLUID_CORE=../core ..
