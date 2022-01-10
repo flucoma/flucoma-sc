@@ -7,6 +7,8 @@ on:
     branches: [ dev ]
 
 jobs:
+  env: 
+    CMAKE_CMD: cmake -GNinja -DSC_PATH=../sdk -DFLUID_PATH=../core ..
   macbuild:
     runs-on: macos-11
 
@@ -20,7 +22,7 @@ jobs:
         run: git clone --recursive https://github.com/supercollider/supercollider.git sdk
 
       - name: cmake
-        run: cmake -GNinja -DSC_PATH=../sdk -DFLUID_PATH=../core ..
+        run: ${{ env.CMAKE_CMD }}
         working-directory: build
         
       - name: install
