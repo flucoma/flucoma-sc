@@ -58,15 +58,18 @@ jobs:
         run: mkdir build
 
       - name: clone latest flucoma-core
-        run: git clone --branch dev https://github.com/flucoma/flucoma-sc.git core   
+        run: git clone --branch dev https://github.com/flucoma/flucoma-core.git core   
         
       - name: cmake
         run: cmake -DSC_PATH="../sdk" -DFLUID_PATH="../core" ..
         working-directory: build
         
+      # - name: install
+      #   run: cmake --build . --target install --config Release
+      #   working-directory: build
+
       - name: install
-        run: cmake --build . --target install --config Release
-        working-directory: build
+        run: ninja install
 
       - name: remove pdb files
         run: Remove-Item install -Recurse -Include *.pdb
