@@ -21,13 +21,8 @@ jobs:
       - name: get supercollider source
         run: git clone --recursive https://github.com/supercollider/supercollider.git sdk
 
-      - name: cmake
-        run: ${{ env.CMAKE_CMD }}
-        working-directory: build
-        
-      - name: install
-        run: ninja install
-        working-directory: build
+      - name: build toolkit
+        uses: flucoma/actions/scbuild@v2
 
       - name: zip release
         run: zip -r ../FluCoMa-SC-Mac-nightly.zip FluidCorpusManipulation
