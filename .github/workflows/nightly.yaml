@@ -16,9 +16,6 @@ jobs:
       - name: setup environment
         uses: flucoma/actions/env@v2
 
-      - name: get supercollider source
-        run: git clone --recursive https://github.com/supercollider/supercollider.git sdk
-
       - name: build toolkit
         uses: flucoma/actions/scbuild@v2
 
@@ -40,16 +37,8 @@ jobs:
       - name: setup environment
         uses: flucoma/actions/env@v2
 
-      - name: get supercollider source
-        run: git clone --recursive https://github.com/supercollider/supercollider.git sdk 
-        
-      - name: cmake
-        run: cmake -GNinja -DSC_PATH="../sdk" -DFLUID_PATH="../core" ..
-        working-directory: build
-
-      - name: install
-        run: ninja install
-        working-directory: build
+      - name: build toolkit
+        uses: flucoma/actions/scbuild@v2
 
       - name: remove pdb files
         run: Remove-Item install -Recurse -Include *.pdb
@@ -71,16 +60,8 @@ jobs:
       - name: setup environment
         uses: flucoma/actions/env@v2
 
-      - name: get supercollider source
-        run: git clone --recursive https://github.com/supercollider/supercollider.git sdk
-
-      - name: cmake
-        run: cmake -GNinja -DSC_PATH=../sdk -DFLUID_PATH=../core ..
-        working-directory: build
-        
-      - name: install
-        run: ninja install
-        working-directory: build
+      - name: build toolkit
+        uses: flucoma/actions/scbuild@v2
 
       - name: zip release
         run: zip -r ../FluCoMa-SC-Linux-nightly.zip FluidCorpusManipulation
