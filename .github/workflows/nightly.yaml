@@ -18,12 +18,14 @@ jobs:
 
       - name: get supercollider source
         run: git clone --recursive https://github.com/supercollider/supercollider.git sdk
-        
-      - name: make build directory
-        run: mkdir -p build
 
-      - name: clone latest flucoma-core
-        run: git clone --branch dev https://github.com/flucoma/flucoma-core.git core     
+      - name: setup environment
+        uses: flucoma/actions/env/action.yaml@v1        
+      # - name: make build directory
+      #   run: mkdir -p build
+
+      # - name: clone latest flucoma-core
+      #   run: git clone --branch dev https://github.com/flucoma/flucoma-core.git core     
         
       - name: cmake
         run: cmake -GNinja -DSC_PATH=../sdk -DFLUID_PATH=../core ..
