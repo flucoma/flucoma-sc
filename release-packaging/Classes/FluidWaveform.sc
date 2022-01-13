@@ -25,6 +25,14 @@ FluidWaveform : FluidViewer {
 		win.close;
 	}
 
+	loadColorFile {
+		arg filename;
+		^CSVFileReader.readInterpret(FluidFilesPath("../Resources/color-schemes/%.csv".format(filename))).collect{
+			arg row;
+			Color.fromArray(row);
+		}
+	}
+
 	init {
 		arg audio_buf, slices_buf, feature_buf, parent_, bounds, lineWidth, waveformColor,stackFeatures = false, showSpectrogram = false, spectrogramColorScheme = 0, spectrogramAlpha = 1, showWaveform = true,normalizeFeaturesIndependently = true;
 		Task{
@@ -59,19 +67,24 @@ FluidWaveform : FluidViewer {
 					var condition = Condition.new;
 					var colors;
 
+					// TODO: no need for this to be a switch statement.
 					spectrogramColorScheme.switch(
 						0,{
-							colors = 256.collect{
-								arg i;
-								Color.gray(i / 255.0);
-							};
+							colors = this.loadColorFile("CET-L02");
 						},
 						1,{
-							colors = CSVFileReader.readInterpret(FluidFilesPath("../Resources/color-schemes/CET-L16.csv")).collect{
-								arg row;
-								Color.fromArray(row);
-							};
-						},{
+							colors = this.loadColorFile("CET-L16");
+						},
+						2,{
+							colors = this.loadColorFile("CET-L08");
+						},
+						3,{
+							colors = this.loadColorFile("CET-L03");
+						},
+						4,{
+							colors = this.loadColorFile("CET-L04");
+						},
+						{
 							"% spectrogramColorScheme: % is not valid.".format(thisMethod,spectrogramColorScheme).warn;
 						}
 					);
