@@ -17,8 +17,8 @@ FluidWaveform : FluidViewer {
 	var <win;
 
 	*new {
-		arg audioBuffer, slicesBuffer, featureBuffer, bounds, lineWidth = 1, waveformColor, stackFeatures = false, showSpectrogram = false, spectrogramColorScheme = 0, spectrogramAlpha = 1, showWaveform = true, normalizeFeaturesIndependently = true;
-		^super.new.init(audioBuffer,slicesBuffer, featureBuffer, bounds, lineWidth, waveformColor,stackFeatures,showSpectrogram,spectrogramColorScheme,spectrogramAlpha,showWaveform,normalizeFeaturesIndependently);
+		arg audioBuffer, slicesBuffer, featureBuffer, parent, bounds, lineWidth = 1, waveformColor, stackFeatures = false, showSpectrogram = false, spectrogramColorScheme = 0, spectrogramAlpha = 1, showWaveform = true, normalizeFeaturesIndependently = true;
+		^super.new.init(audioBuffer,slicesBuffer, featureBuffer, parent, bounds, lineWidth, waveformColor,stackFeatures,showSpectrogram,spectrogramColorScheme,spectrogramAlpha,showWaveform,normalizeFeaturesIndependently);
 	}
 
 	close {
@@ -26,17 +26,32 @@ FluidWaveform : FluidViewer {
 	}
 
 	init {
-		arg audio_buf, slices_buf, feature_buf, bounds, lineWidth, waveformColor,stackFeatures = false, showSpectrogram = false, spectrogramColorScheme = 0, spectrogramAlpha = 1, showWaveform = true,normalizeFeaturesIndependently = true;
+		arg audio_buf, slices_buf, feature_buf, parent_, bounds, lineWidth, waveformColor,stackFeatures = false, showSpectrogram = false, spectrogramColorScheme = 0, spectrogramAlpha = 1, showWaveform = true,normalizeFeaturesIndependently = true;
 		Task{
-			var sfv, categoryCounter = 0;
+			var sfv, categoryCounter = 0, xpos, ypos;
 
 			waveformColor = waveformColor ? Color(*0.dup(3));
 
 			this.createCatColors;
 
 			bounds = bounds ? Rect(0,0,800,200);
-			win = Window("FluidWaveform",bounds);
-			win.background_(Color.white);
+
+			if(parent_.isNil,{
+				xpos = 0;
+				ypos = 0;
+				win = Window("FluidWaveform",bounds);
+				win.background_(Color.white);
+			},{
+				xpos = bounds.left;
+				ypos = bounds.top;
+				win = parent_;
+				UserView(win,Rect(xpos,ypos,bounds.width,bounds.height))
+				.drawFunc_{
+					Pen.fillColor_(Color.white);
+					Pen.addRect(Rect(0,0,bounds.width,bounds.height));
+					Pen.fill;
+				};
+			});
 
 			if(audio_buf.notNil,{
 				if(showSpectrogram,{
@@ -52,11 +67,12 @@ FluidWaveform : FluidViewer {
 							};
 						},
 						1,{
-							colors = CSVFileReader.readInterpret(FluidFilesPath("/color-schemes/CET-L16.csv")).collect{
+							colors = CSVFileReader.readInterpret(FluidFilesPath("../Resources/color-schemes/CET-L16.csv")).collect{
 								arg row;
 								Color.fromArray(row);
 							};
-
+						},{
+							"% spectrogramColorScheme: % is not valid.".format(thisMethod,spectrogramColorScheme).warn;
 						}
 					);
 
@@ -73,9 +89,9 @@ FluidWaveform : FluidViewer {
 									img.setColor(colors[mag], index.div(magsbuf.numChannels), magsbuf.numChannels - 1 - index.mod(magsbuf.numChannels));
 								};
 
-								UserView(win,Rect(0,0,win.bounds.width,win.bounds.height))
+								UserView(win,Rect(xpos,ypos,bounds.width,bounds.height))
 								.drawFunc_{
-									img.drawInRect(Rect(0,0,win.bounds.width,win.bounds.height),fraction:spectrogramAlpha);
+									img.drawInRect(Rect(0,0,bounds.width,bounds.height),fraction:spectrogramAlpha);
 								};
 
 								condition.unhang;
@@ -93,7 +109,7 @@ FluidWaveform : FluidViewer {
 
 					audio_buf.server.sync;
 
-					sfv = SoundFileView(win,Rect(0,0,bounds.width,bounds.height));
+					sfv = SoundFileView(win,Rect(xpos,ypos,bounds.width,bounds.height));
 					sfv.peakColor_(waveformColor);
 					// sfv.rmsColor_(Color.black);
 					sfv.drawsBoundingLines_(false);
@@ -112,7 +128,7 @@ FluidWaveform : FluidViewer {
 					1,{
 						slices_buf.loadToFloatArray(action:{
 							arg slices_fa;
-							UserView(win,Rect(0,0,bounds.width,bounds.height))
+							UserView(win,Rect(xpos,ypos,bounds.width,bounds.height))
 							.drawFunc_({
 								Pen.width_(lineWidth);
 								slices_fa.do{
@@ -130,7 +146,7 @@ FluidWaveform : FluidViewer {
 						slices_buf.loadToFloatArray(action:{
 							arg slices_fa;
 							slices_fa = slices_fa.clump(2);
-							UserView(win,Rect(0,0,bounds.width,bounds.height))
+							UserView(win,Rect(xpos,ypos,bounds.width,bounds.height))
 							.drawFunc_({
 								Pen.width_(lineWidth);
 								slices_fa.do{
@@ -183,7 +199,7 @@ FluidWaveform : FluidViewer {
 
 						channel = channel.resamp1(bounds.width).linlin(minVal,maxVal,miny,maxy);
 
-						UserView(win,Rect(0,0,bounds.width,bounds.height))
+						UserView(win,Rect(xpos,ypos,bounds.width,bounds.height))
 						.drawFunc_({
 							Pen.moveTo(Point(0,channel[0]));
 							channel[1..].do{
