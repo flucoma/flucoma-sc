@@ -4,60 +4,192 @@ categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidPlotter, Classes/FluidBufNoveltySlice, Classes/FluidBufOnsetSlice, Classes/FluidBufAmpSlice
 
 DESCRIPTION::
-FluidWaveform plots a buffer with optional overlays such as slices derived from a FluCoMa Slicer.
+FluidWaveform plots a buffer with optional overlays such as slices derived from a FluCoMa Slicer, or feature values from a FluCoMa audio descriptor.
 
 CLASSMETHODS::
 
 METHOD:: new
 Create a new instance of FluidWaveform.
 
-ARGUMENT:: audio_buf
+ARGUMENT:: audioBuffer
 The audio buffer to plot.
 
-ARGUMENT:: slices_buf
-A buffer of slice indices. This will very likely be in the form of a buffer output from a FluCoMa slicer object. Currently this buffer must be only one channel, therefore it will not work with the output of link::Classes/FluidBufAmpGate::.
+ARGUMENT:: slicesBuffer
+A link::Classes/Buffer:: of slice indices. This will very likely be in the form of a link::Classes/Buffer:: output from a FluCoMa slicer object. If this link::Classes/Buffer:: is only one channel it will plot lines at these slice points. If the link::Classes/Buffer:: is two channels it will consider the 0th channel to contain onsets and the 1st channel to contain offsets. This matches the output of link::Classes/FluidBufAmpGate::.
+
+ARGUMENT:: featureBuffer
+A link::Classes/Buffer:: containing features to plot over the waveform. If this link::Classes/Buffer:: is multiple channels, it will plot each channel as a separate feature.
+
+ARGUMENT:: parent
+A link::Classes/Window:: to place this FluidWaveform in. If STRONG::nil::, FluidWaveform will make its own window using the STRONG::bounds:: argument.
 
 ARGUMENT:: bounds
-A link::Classes/Rect:: of where to place the FluidWaveform.
+A link::Classes/Rect:: of where to place the FluidWaveform. If parent is STRONG::nil::, these bounds will be used to create a new link::Classes/Window::. If parent is not STRONG::nil::, these bounds will be used to place this FluidWaveform in the parent.
+
+ARGUMENT:: lineWidth
+The width of the line for plotting slice points and features.
+
+ARGUMENT:: waveformColor
+A link::Classes/Color:: to make the waveform.
+
+ARGUMENT:: stackFeatures
+If STRONG::false::, all the features (i.e., channels in the STRONG::featureBuffer::) will be overlayed on each other, as though on the same x and y axis. If STRONG::true::, each feature will occupy its own space covering the width of the plot and an fraction of the height (the number of channels in STRONG::featureBuf:: / the height of the plot). The default is STRONG::false::.
+
+ARGUMENT:: showSpectrogram
+Boolean whether or not to plot a spectrogram. The default is STRONG::false::.
+
+ARGUMENT:: spectrogramColorScheme
+An integer indicating which color scheme footnote::The color schemes used are from https://colorcet.com/ Kovesi, Peter. "Good colour maps: How to design them." arXiv preprint arXiv:1509.03700 (2015). https://arxiv.org/abs/1509.03700 :: to use to distinguish magitudes in the spectrogram. The default is 0.
+	table::
+	## 0 || Grey scale with slightly reduced contrast to avoid display saturation problems
+	## 1 || Black - Blue - Green - Yellow - White
+    ## 2 || Blue - Magenta - Yellow highly saturated
+    ## 3 || Black - Red - Yellow - White
+    ## 4 || Black - Red - Yellow
+	::
+
+ARGUMENT:: spectrogramAlpha
+An transparency value (0-1) for displaying the waveform. 0 is fully transparent, 1 is fully visible. The default is 1.
+
+ARGUMENT:: showWaveform
+Boolean whether or not to show the waveform. The default is true.
+
+ARGUMENT:: normalizeFeaturesIndependently
+Boolean. All the features in STRONG::featureBuf:: need to be normalized for plotting. If STRONG::true::, this normalization will happen per feature, so that each will use the full visual range allowed to them. If STRONG::false::, the normalization will happen over all the values in the STRONG::featureBuf:: (in all the channels), so that the features relative strengths will be preserved. The default is STRONG::true::.
 
 returns:: A new instance of FluidWaveform.
 
 
+
+
 INSTANCEMETHODS::
 
+
+
+
+METHOD:: close
+Close the FluidWaveform window. If parent is not STRONG::nil::, this method will close the parent window.
+
+
+METHOD:: win
+
+returns:: The FluidWaveform window. If parent is not STRONG::nil::, this method will return the parent window.
+
+
+
 EXAMPLES::
-
 code::
-
 s.boot;
+
 // load a sound to slice
-~drums = Buffer.read(s,File.realpath(FluidBufAmpSlice.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
+~drums = Buffer.read(s,FluidFilesPath("Nicol-LoopE-M.wav"));
+
+// display
+FluidWaveform(~drums,bounds:Rect(0,0,1200,300));
+
+// put in another window
+(
+w = Window("FluidWaveform Test",Rect(0,0,1000,600));
+FluidWaveform(~drums,parent:w,bounds:Rect(100,100,800,300));
+w.front;
+)
+
+// show spectrogram
+FluidWaveform(~drums,bounds:Rect(0,0,1200,300),showSpectrogram:true);
+
+// more colors
+FluidWaveform(~drums,bounds:Rect(0,0,1200,300),showSpectrogram:true,spectrogramColorScheme:1);
+
+// more colors
+FluidWaveform(~drums,bounds:Rect(0,0,1200,300),showSpectrogram:true,spectrogramColorScheme:2);
+
+// more colors
+FluidWaveform(~drums,bounds:Rect(0,0,1200,300),showSpectrogram:true,spectrogramColorScheme:3);
+
+// more colors
+FluidWaveform(~drums,bounds:Rect(0,0,1200,300),showSpectrogram:true,spectrogramColorScheme:4);
+
+// put in that another window
+(
+w = Window("FluidWaveform Test",Rect(0,0,1000,600));
+FluidWaveform(~drums,parent:w,bounds:Rect(100,100,800,300),showSpectrogram:true);
+w.front;
+)
+
+// spectrogram with some nice colors and a bit of styling...
+FluidWaveform(~drums,bounds:Rect(0,0,1200,300),showSpectrogram:true,spectrogramColorScheme:1,waveformColor:Color.magenta(1,0.5),showWaveform:true);
 
 // create a buffer to put indices into
 ~indices = Buffer(s);
 
 // do a slice analysis
-FluidBufAmpSlice.process(s,~drums,indices:~indices,fastRampUp: 10,fastRampDown: 2205,slowRampUp: 4410,slowRampDown: 4410,onThreshold: 10,offThreshold: 5,floor: -40,minSliceLength: 4410,highPassFreq: 20);
+FluidBufAmpSlice.processBlocking(s,~drums,indices:~indices,fastRampUp: 10,fastRampDown: 2205,slowRampUp: 4410,slowRampDown: 4410,onThreshold: 10,offThreshold: 5,floor: -40,minSliceLength: 4410,highPassFreq: 20);
 
 // plot the buffer with the indices overlayed
-FluidWaveform(~drums,~indices,nil,Rect(0,0,800,200));
+FluidWaveform(~drums,~indices,bounds:Rect(0,0,800,200));
+
+// put in that another window
+(
+w = Window("FluidWaveform Test",Rect(0,0,1000,600));
+FluidWaveform(~drums,~indices,parent:w,bounds:Rect(100,100,800,300));
+w.front;
+)
 
 // do a descriptor analysis
 ~features = Buffer(s);
-FluidBufLoudness.process(s,~drums,features:~features,action:{"done".postln;});
+FluidBufLoudness.processBlocking(s,~drums,features:~features,action:{"done".postln;});
 
 // copy just the first channel of that buffer to display it
 ~features2 = Buffer(s);
-FluidBufCompose.process(s,~features,numChans:1,destination:~features2);
+FluidBufCompose.processBlocking(s,~features,numChans:1,destination:~features2);
 
 // plot the audio with the slices and the loudness analysis
-FluidWaveform(~drums,~indices,~features2,Rect(0,0,1200,300));
+FluidWaveform(~drums,~indices,~features2,bounds:Rect(0,0,1200,300));
 
 // with gate info
 ~gate_analysis = Buffer(s);
-FluidBufAmpGate.process(s,~drums,indices:~gate_analysis,onThreshold:-35,offThreshold:-35,minSliceLength:4410);
+FluidBufAmpGate.processBlocking(s,~drums,indices:~gate_analysis,onThreshold:-35,offThreshold:-35,minSliceLength:4410);
 
 // it will plot the ons and offs
-FluidWaveform(~drums,~gate_analysis,~features2,Rect(0,0,1200,300));
+FluidWaveform(~drums,~gate_analysis,~features2,bounds:Rect(0,0,1200,300));
+
+// put in that another window
+(
+w = Window("FluidWaveform Test",Rect(0,0,1000,600));
+FluidWaveform(~drums,~gate_analysis,parent:w,bounds:Rect(100,100,800,300));
+w.front;
+)
+
+// do a descriptor analysis and plot both features either stacked or not:
+~noisy = Buffer.read(s,FluidFilesPath("Tremblay-ASWINE-ScratchySynth-M.wav"));
+~pitch_analysis = Buffer(s);
+
+FluidBufPitch.processBlocking(s,~noisy,features:~pitch_analysis,action:{"done".postln;});
+
+// plot not stacked:
+FluidWaveform(~noisy,featureBuffer:~pitch_analysis,bounds:Rect(0,0,1200,300));
+
+// plot stacked:
+FluidWaveform(~noisy,featureBuffer:~pitch_analysis,bounds:Rect(0,0,1200,300),stackFeatures:true,waveformColor:Color(*0.9.dup(3)));
+
+// add spectrogram:
+FluidWaveform(~noisy,featureBuffer:~pitch_analysis,bounds:Rect(0,0,1200,300),stackFeatures:true,waveformColor:Color(0,0,0,0.5),showSpectrogram:true,spectrogramAlpha:0.5);
+
+// plot in another window with all the things!
+
+(
+w = Window("FluidWaveform Test",Rect(0,0,1000,600));
+FluidWaveform(
+	~noisy,
+	featureBuffer:~pitch_analysis,
+	parent:w,
+	bounds:Rect(100,100,800,300),
+	stackFeatures:true,
+	showSpectrogram:true,
+	spectrogramAlpha:0.6,
+	waveformColor:Color(0,1,1,0.5)
+);
+w.front;
+)
 
 ::
