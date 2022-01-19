@@ -1,4 +1,31 @@
 (
+~normalize = {
+	arg vals;
+	var min = vals.minItem;
+	var max = vals.maxItem;
+	var range = max - min;
+
+	"min:   %".format(min).postln;
+	"max:   %".format(max).postln;
+	"range: %".format(range).postln;
+
+	vals = (vals - min) / range;
+	vals = (vals * 255).asInteger;
+	vals;
+};
+
+~dbs_range = {
+	arg vals;
+	vals.postln;
+	vals = vals / vals.maxItem;
+	vals.postln;
+	vals = vals.ampdb;
+	vals.postln;
+	vals = vals.linlin(-120.0,0.0,0.0,255.0).asInteger;
+	vals.postln;
+	vals;
+};
+
 ~raster = {
 	arg rasterBuffer;
 	var colors;
@@ -13,16 +40,8 @@
 		"n vals in raster buffer: %".format(vals.size).postln;
 		fork({
 			var img = Image(rasterBuffer.numFrames,rasterBuffer.numChannels);
-			var min = vals.minItem;
-			var max = vals.maxItem;
-			var range = max - min;
-
-			"min:   %".format(min).postln;
-			"max:   %".format(max).postln;
-			"range: %".format(range).postln;
-
-			vals = (vals - min) / range;
-			vals = (vals * 255).asInteger;
+			// vals = ~normalize.(vals);
+			vals = ~dbs_range.(vals);
 
 			vals.do{
 				arg val, index;
@@ -38,11 +57,17 @@
 // show mels
 ~drums = Buffer.read(s,FluidFilesPath("Nicol-LoopE-M.wav"));
 ~rasterBuffer = Buffer(s);
+(
+fork({
+	Window.closeAll;
+	FluidBufMelBands.processBlocking(s,~drums,features:~rasterBuffer,windowSize:4096,hopSize:256,numBands:400,action:{"done".postln});
+	// FluidBufSTFT.processBlocking(s,~drums,magnitude:~rasterBuffer,windowSize:1024,action:{"done".postln});
+	// FluidBufMFCC.processBlocking(s,~drums,features:~rasterBuffer,windowSize:1024,action:{"done".postln});
+	// FluidBufChroma.processBlocking(s,~drums,features:~rasterBuffer,action:{"done".postln});
 
-FluidBufMelBands.processBlocking(s,~drums,features:~rasterBuffer,numBands:512,windowSize:1024,action:{"done".postln});
-FluidBufSTFT.processBlocking(s,~drums,magnitude:~rasterBuffer,windowSize:1024,action:{"done".postln});
-FluidBufMFCC.processBlocking(s,~drums,features:~rasterBuffer,windowSize:1024,action:{"done".postln});
-FluidBufChroma.processBlocking(s,~drums,features:~rasterBuffer,action:{"done".postln});
-~rasterBuffer.postln;
+	s.sync;
+	~rasterBuffer.postln;
 
-~raster.(~rasterBuffer);
+	~raster.(~rasterBuffer);
+},AppClock);
+)
