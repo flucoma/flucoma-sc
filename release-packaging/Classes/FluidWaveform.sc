@@ -17,8 +17,8 @@ FluidWaveform : FluidViewer {
 	var <win;
 
 	*new {
-		arg audioBuffer, indicesBuffer, featureBuffer, parent, bounds, lineWidth = 1, waveformColor, stackFeatures = false, rasterBuffer, rasterColorScheme = 0, rasterAlpha = 1, showWaveform = true, normalizeFeaturesIndependently = true;
-		^super.new.init(audioBuffer,indicesBuffer, featureBuffer, parent, bounds, lineWidth, waveformColor,stackFeatures,rasterBuffer,rasterColorScheme,rasterAlpha,showWaveform,normalizeFeaturesIndependently);
+		arg audioBuffer, indicesBuffer, featureBuffer, parent, bounds, lineWidth = 1, waveformColor, stackFeatures = false, rasterBuffer, rasterColorScheme = 0, rasterAlpha = 1, normalizeFeaturesIndependently = true;
+		^super.new.init(audioBuffer,indicesBuffer, featureBuffer, parent, bounds, lineWidth, waveformColor,stackFeatures,rasterBuffer,rasterColorScheme,rasterAlpha,normalizeFeaturesIndependently);
 	}
 
 	close {
@@ -34,13 +34,17 @@ FluidWaveform : FluidViewer {
 	}
 
 	init {
-		arg audio_buf, slices_buf, feature_buf, parent_, bounds, lineWidth, waveformColor,stackFeatures = false, rasterBuffer, rasterColorScheme = 0, rasterAlpha = 1, showWaveform = true,normalizeFeaturesIndependently = true;
+		arg audio_buf, slices_buf, feature_buf, parent_, bounds, lineWidth, waveformColor,stackFeatures = false, rasterBuffer, rasterColorScheme = 0, rasterAlpha = 1, normalizeFeaturesIndependently = true;
 		Task{
 			var sfv, categoryCounter = 0, xpos, ypos;
 
 			waveformColor = waveformColor ? Color(*0.6.dup(3));
 
 			this.createCatColors;
+
+			if(bounds.isNil && rasterBuffer.notNil,{
+				bounds = Rect(0,0,rasterBuffer.numFrames,rasterBuffer.numChannels);
+			});
 
 			bounds = bounds ? Rect(0,0,800,200);
 
@@ -91,8 +95,9 @@ FluidWaveform : FluidViewer {
 					arg vals;
 					fork({
 						var img = Image(rasterBuffer.numFrames,rasterBuffer.numChannels);
-						vals = (vals - vals.minItem) / (vals.maxItem - vals.minItem);
-						vals = (vals * 255).asInteger;
+/*						vals = (vals - vals.minItem) / (vals.maxItem - vals.minItem);
+						vals = (vals * 255).asInteger;*/
+						vals = (vals / vals.maxItem).ampdb.linlin(-120.0,0.0,0.0,255.0).asInteger;
 
 						vals.do{
 							arg val, index;
@@ -110,7 +115,7 @@ FluidWaveform : FluidViewer {
 				condition.hang;
 			});
 
-			if(showWaveform,{
+			if(audio_buf.notNil,{
 				var path = "%%_%_FluidWaveform.wav".format(PathName.tmp,Date.localtime.stamp,UniqueID.next);
 
 				audio_buf.write(path,"wav");
