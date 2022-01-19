@@ -60,7 +60,7 @@
 (
 fork({
 	Window.closeAll;
-	FluidBufMelBands.processBlocking(s,~drums,features:~rasterBuffer,windowSize:4096,hopSize:256,numBands:400,action:{"done".postln});
+	FluidBufMelBands.processBlocking(s,~drums,features:~rasterBuffer,windowSize:4096,hopSize:256,numBands:480,action:{"done".postln});
 	// FluidBufSTFT.processBlocking(s,~drums,magnitude:~rasterBuffer,windowSize:1024,action:{"done".postln});
 	// FluidBufMFCC.processBlocking(s,~drums,features:~rasterBuffer,windowSize:1024,action:{"done".postln});
 	// FluidBufChroma.processBlocking(s,~drums,features:~rasterBuffer,action:{"done".postln});
