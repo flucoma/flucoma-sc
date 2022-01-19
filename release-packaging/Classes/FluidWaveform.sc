@@ -17,8 +17,8 @@ FluidWaveform : FluidViewer {
 	var <win;
 
 	*new {
-		arg audioBuffer, slicesBuffer, featureBuffer, parent, bounds, lineWidth = 1, waveformColor, stackFeatures = false, showSpectrogram = false, spectrogramColorScheme = 0, spectrogramAlpha = 1, showWaveform = true, normalizeFeaturesIndependently = true;
-		^super.new.init(audioBuffer,slicesBuffer, featureBuffer, parent, bounds, lineWidth, waveformColor,stackFeatures,showSpectrogram,spectrogramColorScheme,spectrogramAlpha,showWaveform,normalizeFeaturesIndependently);
+		arg audioBuffer, indicesBuffer, featureBuffer, parent, bounds, lineWidth = 1, waveformColor, stackFeatures = false, rasterBuffer, rasterColorScheme = 0, rasterAlpha = 1, showWaveform = true, normalizeFeaturesIndependently = true;
+		^super.new.init(audioBuffer,indicesBuffer, featureBuffer, parent, bounds, lineWidth, waveformColor,stackFeatures,rasterBuffer,rasterColorScheme,rasterAlpha,showWaveform,normalizeFeaturesIndependently);
 	}
 
 	close {
@@ -34,11 +34,11 @@ FluidWaveform : FluidViewer {
 	}
 
 	init {
-		arg audio_buf, slices_buf, feature_buf, parent_, bounds, lineWidth, waveformColor,stackFeatures = false, showSpectrogram = false, spectrogramColorScheme = 0, spectrogramAlpha = 1, showWaveform = true,normalizeFeaturesIndependently = true;
+		arg audio_buf, slices_buf, feature_buf, parent_, bounds, lineWidth, waveformColor,stackFeatures = false, rasterBuffer, rasterColorScheme = 0, rasterAlpha = 1, showWaveform = true,normalizeFeaturesIndependently = true;
 		Task{
 			var sfv, categoryCounter = 0, xpos, ypos;
 
-			waveformColor = waveformColor ? Color(*0.dup(3));
+			waveformColor = waveformColor ? Color(*0.6.dup(3));
 
 			this.createCatColors;
 
@@ -61,79 +61,73 @@ FluidWaveform : FluidViewer {
 				};
 			});
 
-			if(audio_buf.notNil,{
-				if(showSpectrogram,{
-					var magsbuf = Buffer(audio_buf.server);
-					var condition = Condition.new;
-					var colors;
+			if(rasterBuffer.notNil,{
+				var condition = Condition.new;
+				var colors;
 
-					// TODO: no need for this to be a switch statement.
-					spectrogramColorScheme.switch(
-						0,{
-							colors = this.loadColorFile("CET-L02");
-						},
-						1,{
-							colors = this.loadColorFile("CET-L16");
-						},
-						2,{
-							colors = this.loadColorFile("CET-L08");
-						},
-						3,{
-							colors = this.loadColorFile("CET-L03");
-						},
-						4,{
-							colors = this.loadColorFile("CET-L04");
-						},
-						{
-							"% spectrogramColorScheme: % is not valid.".format(thisMethod,spectrogramColorScheme).warn;
-						}
-					);
+				// TODO: no need for this to be a switch statement.
+				rasterColorScheme.switch(
+					0,{
+						colors = this.loadColorFile("CET-L02");
+					},
+					1,{
+						colors = this.loadColorFile("CET-L16");
+					},
+					2,{
+						colors = this.loadColorFile("CET-L08");
+					},
+					3,{
+						colors = this.loadColorFile("CET-L03");
+					},
+					4,{
+						colors = this.loadColorFile("CET-L04");
+					},
+					{
+						"% spectrogramColorScheme: % is not valid.".format(thisMethod,rasterColorScheme).warn;
+					}
+				);
 
-					FluidBufSTFT.processBlocking(audio_buf.server,audio_buf,magnitude:magsbuf,action:{
-						magsbuf.loadToFloatArray(action:{
-							arg mags;
-							fork({
-								var img = Image(magsbuf.numFrames,magsbuf.numChannels);
-								mags = (mags / mags.maxItem).ampdb.linlin(-120.0,0.0,0,255).asInteger;
+				rasterBuffer.loadToFloatArray(action:{
+					arg vals;
+					fork({
+						var img = Image(rasterBuffer.numFrames,rasterBuffer.numChannels);
+						vals = (vals - vals.minItem) / (vals.maxItem - vals.minItem);
+						vals = (vals * 255).asInteger;
 
-								mags.do{
-									arg mag, index;
-									// colors[mag].postln;
-									img.setColor(colors[mag], index.div(magsbuf.numChannels), magsbuf.numChannels - 1 - index.mod(magsbuf.numChannels));
-								};
+						vals.do{
+							arg val, index;
+							img.setColor(colors[val], index.div(rasterBuffer.numChannels), rasterBuffer.numChannels - 1 - index.mod(rasterBuffer.numChannels));
+						};
 
-								UserView(win,Rect(xpos,ypos,bounds.width,bounds.height))
-								.drawFunc_{
-									img.drawInRect(Rect(0,0,bounds.width,bounds.height),fraction:spectrogramAlpha);
-								};
+						UserView(win,Rect(xpos,ypos,bounds.width,bounds.height))
+						.drawFunc_{
+							img.drawInRect(Rect(0,0,bounds.width,bounds.height),fraction:rasterAlpha);
+						};
 
-								condition.unhang;
-								magsbuf.free;
-							},AppClock)
-						});
-					});
-					condition.hang;
+						condition.unhang;
+					},AppClock)
 				});
+				condition.hang;
+			});
 
-				if(showWaveform,{
-					var path = "%%_%_FluidWaveform.wav".format(PathName.tmp,Date.localtime.stamp,UniqueID.next);
+			if(showWaveform,{
+				var path = "%%_%_FluidWaveform.wav".format(PathName.tmp,Date.localtime.stamp,UniqueID.next);
 
-					audio_buf.write(path,"wav");
+				audio_buf.write(path,"wav");
 
-					audio_buf.server.sync;
+				audio_buf.server.sync;
 
-					sfv = SoundFileView(win,Rect(xpos,ypos,bounds.width,bounds.height));
-					sfv.peakColor_(waveformColor);
-					// sfv.rmsColor_(Color.black);
-					sfv.drawsBoundingLines_(false);
-					sfv.rmsColor_(Color.clear);
-					// sfv.background_(Color.white);
-					sfv.background_(Color.clear);
-					sfv.readFile(SoundFile(path));
-					sfv.gridOn_(false);
+				sfv = SoundFileView(win,Rect(xpos,ypos,bounds.width,bounds.height));
+				sfv.peakColor_(waveformColor);
+				// sfv.rmsColor_(Color.black);
+				sfv.drawsBoundingLines_(false);
+				sfv.rmsColor_(Color.clear);
+				// sfv.background_(Color.white);
+				sfv.background_(Color.clear);
+				sfv.readFile(SoundFile(path));
+				sfv.gridOn_(false);
 
-					File.delete(path);
-				});
+				File.delete(path);
 			});
 
 			if(slices_buf.notNil,{
