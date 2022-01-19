@@ -90,7 +90,7 @@ if(NOT flucoma-core_POPULATED)
 endif()
 
 set_if_toplevel(VAR CMAKE_LIBRARY_OUTPUT_DIRECTORY 
-                TOPLEVEL "${CMAKE_CURRENT_SOURCE_DIR}/release-packaging/plugins"
+                TOPLEVEL "${CMAKE_CURRENT_SOURCE_DIR}/release-packaging/Plugins"
                 SUPERBUILD "${CMAKE_SOURCE_DIR}/sc_plugins/${CMAKE_HOST_SYSTEM_NAME}/${CMAKE_HOST_SYSTEM_PROCESSOR}")
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
@@ -190,13 +190,13 @@ set(SC_INSTALL_PREFIX "." CACHE PATH "Prefix for assembling SC packages")
 set(FLUID_PACKAGE_NAME FluidCorpusManipulation CACHE STRING "Name for published package")
 set(SC_PACKAGE_ROOT ${SC_INSTALL_PREFIX}/${FLUID_PACKAGE_NAME})
 
-foreach(PACKAGE_DIRECTORY Classes;HelpSource;Examples)
+foreach(PACKAGE_DIRECTORY Classes;HelpSource;Examples;Resources)
   install(DIRECTORY "release-packaging/${PACKAGE_DIRECTORY}" 
           DESTINATION ${SC_PACKAGE_ROOT})
 endforeach()
 
 install(DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/ 
-        DESTINATION ${SC_PACKAGE_ROOT}/plugins 
+        DESTINATION ${SC_PACKAGE_ROOT}/Plugins
         PATTERN "*.ilk" EXCLUDE 
         PATTERN "*.PDB" EXCLUDE)
 install(DIRECTORY "${flucoma-core_SOURCE_DIR}/AudioFiles" 
