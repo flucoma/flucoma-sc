@@ -104,7 +104,9 @@ FluidWaveform : FluidViewer {
 								vals = (vals * 255).asInteger;
 							},
 							FluidWaveform.log,{
-								vals = (vals / vals.maxItem).ampdb.linlin(-130.0,0.0,0.0,255.0).asInteger;
+								vals = (vals + 1e-6).log;
+								vals = vals.linlin(vals.minItem,vals.maxItem,0.0,255.0).asInteger;
+								vals.postln;
 							},
 							{
 								"% colorScaling argument % is invalid.".format(thisMethod,colorScaling).warn;
