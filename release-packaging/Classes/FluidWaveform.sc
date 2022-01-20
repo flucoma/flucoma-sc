@@ -18,8 +18,8 @@ FluidWaveform : FluidViewer {
 	var <win;
 
 	*new {
-		arg audioBuffer, indicesBuffer, featureBuffer, parent, bounds, lineWidth = 1, waveformColor, stackFeatures = false, rasterBuffer, rasterColorScheme = 0, rasterAlpha = 1, normalizeFeaturesIndependently = true, colorScaling = 1;
-		^super.new.init(audioBuffer,indicesBuffer, featureBuffer, parent, bounds, lineWidth, waveformColor,stackFeatures,rasterBuffer,rasterColorScheme,rasterAlpha,normalizeFeaturesIndependently,colorScaling);
+		arg audioBuffer, indicesBuffer, featureBuffer, parent, bounds, lineWidth = 1, waveformColor, stackFeatures = false, imageBuffer, rasterColorScheme = 0, rasterAlpha = 1, normalizeFeaturesIndependently = true, colorScaling = 1;
+		^super.new.init(audioBuffer,indicesBuffer, featureBuffer, parent, bounds, lineWidth, waveformColor,stackFeatures,imageBuffer,rasterColorScheme,rasterAlpha,normalizeFeaturesIndependently,colorScaling);
 	}
 
 	close {
@@ -35,7 +35,7 @@ FluidWaveform : FluidViewer {
 	}
 
 	init {
-		arg audio_buf, slices_buf, feature_buf, parent_, bounds, lineWidth, waveformColor,stackFeatures = false, rasterBuffer, rasterColorScheme = 0, rasterAlpha = 1, normalizeFeaturesIndependently = true, colorScaling = 1;
+		arg audio_buf, slices_buf, feature_buf, parent_, bounds, lineWidth, waveformColor,stackFeatures = false, imageBuffer, rasterColorScheme = 0, rasterAlpha = 1, normalizeFeaturesIndependently = true, colorScaling = 1;
 		Task{
 			var sfv, categoryCounter = 0, xpos, ypos;
 
@@ -43,8 +43,8 @@ FluidWaveform : FluidViewer {
 
 			this.createCatColors;
 
-			if(bounds.isNil && rasterBuffer.notNil,{
-				bounds = Rect(0,0,rasterBuffer.numFrames,rasterBuffer.numChannels);
+			if(bounds.isNil && imageBuffer.notNil,{
+				bounds = Rect(0,0,imageBuffer.numFrames,imageBuffer.numChannels);
 			});
 
 			bounds = bounds ? Rect(0,0,800,200);
@@ -66,7 +66,7 @@ FluidWaveform : FluidViewer {
 				};
 			});
 
-			if(rasterBuffer.notNil,{
+			if(imageBuffer.notNil,{
 				var condition = Condition.new;
 				var colors;
 
@@ -92,10 +92,10 @@ FluidWaveform : FluidViewer {
 					}
 				);
 
-				rasterBuffer.loadToFloatArray(action:{
+				imageBuffer.loadToFloatArray(action:{
 					arg vals;
 					fork({
-						var img = Image(rasterBuffer.numFrames,rasterBuffer.numChannels);
+						var img = Image(imageBuffer.numFrames,imageBuffer.numChannels);
 
 						colorScaling.switch(
 							FluidWaveform.lin,{
@@ -115,7 +115,7 @@ FluidWaveform : FluidViewer {
 
 						vals.do{
 							arg val, index;
-							img.setColor(colors[val], index.div(rasterBuffer.numChannels), rasterBuffer.numChannels - 1 - index.mod(rasterBuffer.numChannels));
+							img.setColor(colors[val], index.div(imageBuffer.numChannels), imageBuffer.numChannels - 1 - index.mod(imageBuffer.numChannels));
 						};
 
 						UserView(win,Rect(xpos,ypos,bounds.width,bounds.height))
