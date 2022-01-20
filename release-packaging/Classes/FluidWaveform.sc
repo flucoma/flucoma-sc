@@ -18,8 +18,8 @@ FluidWaveform : FluidViewer {
 	var <win;
 
 	*new {
-		arg audioBuffer, indicesBuffer, featureBuffer, parent, bounds, lineWidth = 1, waveformColor, stackFeatures = false, imageBuffer, rasterColorScheme = 0, rasterAlpha = 1, normalizeFeaturesIndependently = true, colorScaling = 1;
-		^super.new.init(audioBuffer,indicesBuffer, featureBuffer, parent, bounds, lineWidth, waveformColor,stackFeatures,imageBuffer,rasterColorScheme,rasterAlpha,normalizeFeaturesIndependently,colorScaling);
+		arg audioBuffer, indicesBuffer, featureBuffer, parent, bounds, lineWidth = 1, waveformColor, stackFeatures = false, imageBuffer, imageColorScheme = 0, imageAlpha = 1, normalizeFeaturesIndependently = true, colorScaling = 1;
+		^super.new.init(audioBuffer,indicesBuffer, featureBuffer, parent, bounds, lineWidth, waveformColor,stackFeatures,imageBuffer,imageColorScheme,imageAlpha,normalizeFeaturesIndependently,colorScaling);
 	}
 
 	close {
@@ -35,7 +35,7 @@ FluidWaveform : FluidViewer {
 	}
 
 	init {
-		arg audio_buf, slices_buf, feature_buf, parent_, bounds, lineWidth, waveformColor,stackFeatures = false, imageBuffer, rasterColorScheme = 0, rasterAlpha = 1, normalizeFeaturesIndependently = true, colorScaling = 1;
+		arg audio_buf, slices_buf, feature_buf, parent_, bounds, lineWidth, waveformColor,stackFeatures = false, imageBuffer, imageColorScheme = 0, imageAlpha = 1, normalizeFeaturesIndependently = true, colorScaling = 1;
 		Task{
 			var sfv, categoryCounter = 0, xpos, ypos;
 
@@ -71,7 +71,7 @@ FluidWaveform : FluidViewer {
 				var colors;
 
 				// TODO: no need for this to be a switch statement.
-				rasterColorScheme.switch(
+				imageColorScheme.switch(
 					0,{
 						colors = this.loadColorFile("CET-L02");
 					},
@@ -88,7 +88,7 @@ FluidWaveform : FluidViewer {
 						colors = this.loadColorFile("CET-L04");
 					},
 					{
-						"% spectrogramColorScheme: % is not valid.".format(thisMethod,rasterColorScheme).warn;
+						"% imageColorScheme: % is not valid.".format(thisMethod,imageColorScheme).warn;
 					}
 				);
 
@@ -120,7 +120,7 @@ FluidWaveform : FluidViewer {
 
 						UserView(win,Rect(xpos,ypos,bounds.width,bounds.height))
 						.drawFunc_{
-							img.drawInRect(Rect(0,0,bounds.width,bounds.height),fraction:rasterAlpha);
+							img.drawInRect(Rect(0,0,bounds.width,bounds.height),fraction:imageAlpha);
 						};
 
 						condition.unhang;
