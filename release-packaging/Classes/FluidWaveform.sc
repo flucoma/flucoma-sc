@@ -14,12 +14,12 @@ FluidViewer {
 }
 
 FluidWaveform : FluidViewer {
-	classvar lin = 0, log = 1;
+	classvar <lin = 0, <log = 1;
 	var <win;
 
 	*new {
-		arg audioBuffer, indicesBuffer, featureBuffer, parent, bounds, lineWidth = 1, waveformColor, stackFeatures = false, rasterBuffer, rasterColorScheme = 0, rasterAlpha = 1, normalizeFeaturesIndependently = true, scaling = 1;
-		^super.new.init(audioBuffer,indicesBuffer, featureBuffer, parent, bounds, lineWidth, waveformColor,stackFeatures,rasterBuffer,rasterColorScheme,rasterAlpha,normalizeFeaturesIndependently,scaling);
+		arg audioBuffer, indicesBuffer, featureBuffer, parent, bounds, lineWidth = 1, waveformColor, stackFeatures = false, rasterBuffer, rasterColorScheme = 0, rasterAlpha = 1, normalizeFeaturesIndependently = true, colorScaling = 1;
+		^super.new.init(audioBuffer,indicesBuffer, featureBuffer, parent, bounds, lineWidth, waveformColor,stackFeatures,rasterBuffer,rasterColorScheme,rasterAlpha,normalizeFeaturesIndependently,colorScaling);
 	}
 
 	close {
@@ -35,7 +35,7 @@ FluidWaveform : FluidViewer {
 	}
 
 	init {
-		arg audio_buf, slices_buf, feature_buf, parent_, bounds, lineWidth, waveformColor,stackFeatures = false, rasterBuffer, rasterColorScheme = 0, rasterAlpha = 1, normalizeFeaturesIndependently = true, scaling = 1;
+		arg audio_buf, slices_buf, feature_buf, parent_, bounds, lineWidth, waveformColor,stackFeatures = false, rasterBuffer, rasterColorScheme = 0, rasterAlpha = 1, normalizeFeaturesIndependently = true, colorScaling = 1;
 		Task{
 			var sfv, categoryCounter = 0, xpos, ypos;
 
@@ -97,18 +97,17 @@ FluidWaveform : FluidViewer {
 					fork({
 						var img = Image(rasterBuffer.numFrames,rasterBuffer.numChannels);
 
-						scaling.switch(
+						colorScaling.switch(
 							FluidWaveform.lin,{
 								var minItem = vals.minItem;
 								vals = (vals - minItem) / (vals.maxItem - minItem);
 								vals = (vals * 255).asInteger;
 							},
 							FluidWaveform.log,{
-								vals = (vals + 1e-6).log;
-								vals = vals.linlin(0.0,vals.maxItem,0.0,255.0).asInteger;
+								vals = (vals / vals.maxItem).ampdb.linlin(-130.0,0.0,0.0,255.0).asInteger;
 							},
 							{
-								"% scaling argument % is invalid.".format(thisMethod,scaling).warn;
+								"% colorScaling argument % is invalid.".format(thisMethod,colorScaling).warn;
 							}
 						);
 
