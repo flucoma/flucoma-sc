@@ -43,8 +43,9 @@ ARGUMENT:: feature
 		table::
 	##0 || Spectrum || The magnitude of the full spectrum.
 	##1 || MFCC || 13 Mel-Frequency Cepstrum Coefficients.
-	##2 || Pitch || The pitch and its confidence.
-	##3 || Loudness || The TruePeak and Loudness.
+	##2 || Chroma || The contour of a 12 band Chromagram.
+	##3 || Pitch || The pitch and its confidence.
+	##4 || Loudness || The TruePeak and Loudness.
 ::
 ARGUMENT:: kernelSize
 	The granularity of the window in which the algorithm looks for change, in samples. A small number will be sensitive to short term changes, and a large number should look for long term changes.
