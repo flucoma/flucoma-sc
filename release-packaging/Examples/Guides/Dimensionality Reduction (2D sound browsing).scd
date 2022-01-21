@@ -1,15 +1,27 @@
-s.boot;
-// 1. Load a folder of sounds
 (
+// 1. define a function to load a folder of sounds
 ~load_folder = {
 	arg folder_path, action;
 	var loader = FluidLoadFolder(folder_path);
 	loader.play(s,{
-		"loaded % soundfiles".format(loader.index.size).postln;
-		action.(loader.buffer);
+		fork{
+			var mono_buffer = Buffer.alloc(s,loader.buffer.numFrames); // convert to mono for ease of use for this example
+			FluidBufCompose.processBlocking(s,loader.buffer,destination:mono_buffer,numChans:1);
+			s.sync;
+			action.(mono_buffer);
+		}
 	});
 };
-// 2. Slice
+
+~load_folder.(File.realpath(FluidBufPitch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/",{
+	arg buffer;
+	"mono buffer: %".format(buffer).postln;
+	~buffer = buffer;
+});
+)
+
+(
+// 2. define a function to slice the sounds, play with the threshold to get different results
 ~slice = {
 	arg buffer, action;
 	Routine{
@@ -22,40 +34,57 @@ s.boot;
 		});
 	}.play;
 };
-// 3. Analyze
+
+~slice.(~buffer,{
+	arg buffer, indices;
+	~indices = indices;
+});
+)
+
+(
+// 3. analyze the slices
 ~analyze = {
 	arg buffer, indices, action;
+	var time = SystemClock.seconds;
 	Routine{
 		var feature_buf = Buffer(s);
 		var stats_buf = Buffer(s);
 		var point_buf = Buffer(s);
-		var cond = Condition.new;
 		var ds = FluidDataSet(s);
-		s.sync;
+
 		indices.loadToFloatArray(action:{
 			arg fa;
 			fa.doAdjacentPairs{
 				arg start, end, i;
 				var num = end - start;
 
-				// === PICK YOUR ANALYSIS (JUST CHOOSE 1) ===
-				FluidBufMFCC.process(s,buffer,start,num,features:feature_buf,numCoeffs:13,startCoeff:1).wait;
-				// FluidBufChroma.process(s,~loader.buffer,start,num,features:feature_buf).wait;
-				// FluidBufSpectralShape.process(s,buffer,start,num,features:feature_buf).wait;
-				//FluidBufPitch.process(s,buffer,start,num,features:feature_buf).wait;
-
-				FluidBufStats.process(s,feature_buf,stats:stats_buf).wait;
-				FluidBufFlatten.process(s,stats_buf,numFrames:1,destination:point_buf).wait;
+				FluidBufMFCC.processBlocking(s,buffer,start,num,features:feature_buf,numCoeffs:13,startCoeff:1);
+				FluidBufStats.processBlocking(s,feature_buf,stats:stats_buf);
+				FluidBufFlatten.processBlocking(s,stats_buf,numFrames:1,destination:point_buf);
 
 				ds.addPoint("slice-%".format(i),point_buf);
-				"% / % done".format(i+1,indices.numFrames-1).postln;
+				"Processing Slice % / %".format(i+1,indices.numFrames-1).postln;
 			};
 
+			s.sync;
+
+			feature_buf.free; stats_buf.free; point_buf.free;
+
 			ds.print;
+
+			"Completed in % seconds".format(SystemClock.seconds - time).postln;
 			action.(buffer,indices,ds);
 		});
 	}.play;
 };
+
+~analyze.(~buffer,~indices,{
+	arg buffer, indices, ds;
+	~ds = ds;
+});
+)
+
+(
 // 4. Reduce to 2 Dimensions
 ~umap = {
 	arg buffer, indices, ds, action, numNeighbours = 15, minDist = 0.1;
@@ -76,6 +105,14 @@ s.boot;
 		});
 	}.play;
 };
+
+~umap.(~buffer,~indices,~ds,{
+	arg buffer, indices, redux_ds;
+	~ds = redux_ds;
+});
+)
+
+(
 // 5. Gridify if Desired
 ~grid = {
 	arg buffer, indices, redux_ds, action;
@@ -95,6 +132,14 @@ s.boot;
 		});
 	}.play;
 };
+
+~grid.(~buffer,~indices,~ds,{
+	arg buffer, indices, grid_ds;
+	~ds = grid_ds;
+});
+)
+
+(
 // 6. Plot
 ~plot = {
 	arg buffer, indices, redux_ds, action;
@@ -131,7 +176,9 @@ s.boot;
 									var dur_samps = Index.kr(indices,index + 1) - startPos;
 									var sig = PlayBuf.ar(1,buffer,BufRateScale.ir(buffer),startPos:startPos);
 									var dur_sec = dur_samps / BufSampleRate.ir(buffer);
-									var env = EnvGen.kr(Env([0,1,1,0],[0.03,dur_sec-0.06,0.03]),doneAction:2);
+									var env;
+									dur_sec = min(dur_sec,1);
+									env = EnvGen.kr(Env([0,1,1,0],[0.03,dur_sec-0.06,0.03]),doneAction:2);
 									sig.dup * env;
 								}.play;
 							});
@@ -143,25 +190,9 @@ s.boot;
 		});
 	}.play;
 };
+
+~plot.(~buffer,~indices,~ds);
 )
-
-~load_folder.("/Users/macprocomputer/Desktop/_flucoma/favs mono fewer/");
-
-~slice.();
-
-~indices.postln;
-
-FluidWaveform(~loader.buffer,~indices);
-
-~analyze.();
-
-~umap.();
-
-~grid.();
-
-~plot.();
-
-FluidLabelSet
 
 // ============== do all of it =======================
 (

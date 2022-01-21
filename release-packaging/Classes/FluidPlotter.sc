@@ -69,7 +69,7 @@ FluidPlotter : FluidViewer {
 			});
 			this.refresh;
 		},{
-			"FluidPlotter::setCategories_ FluidPlotter cannot receive metthod \"categories_\". It has no data. First set a dictionary.".warn;
+			"FluidPlotter::setCategories_ FluidPlotter cannot receive method \"categories_\". It has no data. First set a dictionary.".warn;
 		});
 	}
 
