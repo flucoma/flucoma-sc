@@ -1,7 +1,7 @@
 TITLE:: FluidWaveform
 summary:: Buffer waveform display with optional overlays
 categories:: Libraries>FluidCorpusManipulation
-related:: Classes/FluidPlotter, Classes/FluidBufNoveltySlice, Classes/FluidBufOnsetSlice, Classes/FluidBufAmpSlice
+related:: Classes/FluidPlotter, Classes/FluidBufNoveltySlice, Classes/FluidBufOnsetSlice, Classes/FluidBufAmpSlice, Classes/SoundFileView
 
 DESCRIPTION::
 FluidWaveform plots a buffer with optional overlays such as slices derived from a FluCoMa Slicer, or feature values from a FluCoMa audio descriptor.
@@ -14,7 +14,7 @@ Create a new instance of FluidWaveform.
 ARGUMENT:: audioBuffer
 The audio buffer to plot.
 
-ARGUMENT:: slicesBuffer
+ARGUMENT:: indicesBuffer
 A link::Classes/Buffer:: of slice indices. This will very likely be in the form of a link::Classes/Buffer:: output from a FluCoMa slicer object. If this link::Classes/Buffer:: is only one channel it will plot lines at these slice points. If the link::Classes/Buffer:: is two channels it will consider the 0th channel to contain onsets and the 1st channel to contain offsets. This matches the output of link::Classes/FluidBufAmpGate::.
 
 ARGUMENT:: featureBuffer
@@ -35,11 +35,11 @@ A link::Classes/Color:: to make the waveform.
 ARGUMENT:: stackFeatures
 If STRONG::false::, all the features (i.e., channels in the STRONG::featureBuffer::) will be overlayed on each other, as though on the same x and y axis. If STRONG::true::, each feature will occupy its own space covering the width of the plot and an fraction of the height (the number of channels in STRONG::featureBuf:: / the height of the plot). The default is STRONG::false::.
 
-ARGUMENT:: showSpectrogram
-Boolean whether or not to plot a spectrogram. The default is STRONG::false::.
+ARGUMENT:: imageBuffer
+A link::Classes/Buffer:: that will be turned into a raster image and displayed. The buffer's frames will comprise the y axis, the buffer's channels will comprise the x axis (channel 0 at the bottom). Very likely this will come from the output of a Fluid analysis object, such as link::Classes/FluidBufSTFT:: which can be used to plot a spectrogram. Using FluidBufMelBands can be used to plot a Mel-frequency spectrum.
 
-ARGUMENT:: spectrogramColorScheme
-An integer indicating which color scheme footnote::The color schemes used are from https://colorcet.com/ Kovesi, Peter. "Good colour maps: How to design them." arXiv preprint arXiv:1509.03700 (2015). https://arxiv.org/abs/1509.03700 :: to use to distinguish magitudes in the spectrogram. The default is 0.
+ARGUMENT:: imageColorScheme
+An integer indicating which color scheme footnote::The color schemes used are from https://colorcet.com/ Kovesi, Peter. "Good colour maps: How to design them." arXiv preprint arXiv:1509.03700 (2015). https://arxiv.org/abs/1509.03700 :: to use to distinguish differences in the values in strong::imageBuffer::. The default is 0.
 	table::
 	## 0 || Grey scale with slightly reduced contrast to avoid display saturation problems
 	## 1 || Black - Blue - Green - Yellow - White
@@ -48,18 +48,24 @@ An integer indicating which color scheme footnote::The color schemes used are fr
     ## 4 || Black - Red - Yellow
 	::
 
-ARGUMENT:: spectrogramAlpha
+ARGUMENT:: imageAlpha
 An transparency value (0-1) for displaying the waveform. 0 is fully transparent, 1 is fully visible. The default is 1.
-
-ARGUMENT:: showWaveform
-Boolean whether or not to show the waveform. The default is true.
 
 ARGUMENT:: normalizeFeaturesIndependently
 Boolean. All the features in STRONG::featureBuf:: need to be normalized for plotting. If STRONG::true::, this normalization will happen per feature, so that each will use the full visual range allowed to them. If STRONG::false::, the normalization will happen over all the values in the STRONG::featureBuf:: (in all the channels), so that the features relative strengths will be preserved. The default is STRONG::true::.
 
+ARGUMENT:: colorScaling
+An integer indicating how to scale the values in strong::imageBuffer:: before applying the strong::imageColorScheme::. 0 indicates linear scaling, 1 indicates logarithmic scaling. The default is 1. These integers can also be accessed via FluidWaveform.lin and FluidWaveform.log.
+
 returns:: A new instance of FluidWaveform.
 
+METHOD:: lin
+Can be used as the strong::colorScaling:: argument.
+returns:: 0
 
+METHOD:: log
+Can be used as the strong::colorScaling:: argument.
+returns:: 1
 
 
 INSTANCEMETHODS::
@@ -81,7 +87,7 @@ EXAMPLES::
 code::
 s.boot;
 
-// load a sound to slice
+// load a sound
 ~drums = Buffer.read(s,FluidFilesPath("Nicol-LoopE-M.wav"));
 
 // display
@@ -89,35 +95,23 @@ FluidWaveform(~drums,bounds:Rect(0,0,1200,300));
 
 // put in another window
 (
-w = Window("FluidWaveform Test",Rect(0,0,1000,600));
+w = Window("FluidWaveform Test",Rect(0,0,1000,500));
 FluidWaveform(~drums,parent:w,bounds:Rect(100,100,800,300));
 w.front;
 )
 
 // show spectrogram
-FluidWaveform(~drums,bounds:Rect(0,0,1200,300),showSpectrogram:true);
+~mags = Buffer(s);
+FluidBufSTFT.processBlocking(s,~drums,magnitude:~mags,action:{"stft done".postln;});
+FluidWaveform(bounds:Rect(0,0,1200,300),imageBuffer:~mags,imageColorScheme:1);
 
-// more colors
-FluidWaveform(~drums,bounds:Rect(0,0,1200,300),showSpectrogram:true,spectrogramColorScheme:1);
-
-// more colors
-FluidWaveform(~drums,bounds:Rect(0,0,1200,300),showSpectrogram:true,spectrogramColorScheme:2);
-
-// more colors
-FluidWaveform(~drums,bounds:Rect(0,0,1200,300),showSpectrogram:true,spectrogramColorScheme:3);
-
-// more colors
-FluidWaveform(~drums,bounds:Rect(0,0,1200,300),showSpectrogram:true,spectrogramColorScheme:4);
-
-// put in that another window
-(
-w = Window("FluidWaveform Test",Rect(0,0,1000,600));
-FluidWaveform(~drums,parent:w,bounds:Rect(100,100,800,300),showSpectrogram:true);
-w.front;
-)
+// show mels
+~mels = Buffer(s);
+FluidBufMelBands.processBlocking(s,~drums,features:~mels,numBands:200,windowSize:2048,action:{"done".postln});
+FluidWaveform(bounds:Rect(0,0,1600,400),imageBuffer:~mels,imageColorScheme:1);
 
 // spectrogram with some nice colors and a bit of styling...
-FluidWaveform(~drums,bounds:Rect(0,0,1200,300),showSpectrogram:true,spectrogramColorScheme:1,waveformColor:Color.magenta(1,0.5),showWaveform:true);
+FluidWaveform(~drums,bounds:Rect(0,0,1200,300),imageBuffer:~mags,imageColorScheme:1,waveformColor:Color.magenta(1,0.5));
 
 // create a buffer to put indices into
 ~indices = Buffer(s);
@@ -127,13 +121,6 @@ FluidBufAmpSlice.processBlocking(s,~drums,indices:~indices,fastRampUp: 10,fastRa
 
 // plot the buffer with the indices overlayed
 FluidWaveform(~drums,~indices,bounds:Rect(0,0,800,200));
-
-// put in that another window
-(
-w = Window("FluidWaveform Test",Rect(0,0,1000,600));
-FluidWaveform(~drums,~indices,parent:w,bounds:Rect(100,100,800,300));
-w.front;
-)
 
 // do a descriptor analysis
 ~features = Buffer(s);
@@ -153,13 +140,6 @@ FluidBufAmpGate.processBlocking(s,~drums,indices:~gate_analysis,onThreshold:-35,
 // it will plot the ons and offs
 FluidWaveform(~drums,~gate_analysis,~features2,bounds:Rect(0,0,1200,300));
 
-// put in that another window
-(
-w = Window("FluidWaveform Test",Rect(0,0,1000,600));
-FluidWaveform(~drums,~gate_analysis,parent:w,bounds:Rect(100,100,800,300));
-w.front;
-)
-
 // do a descriptor analysis and plot both features either stacked or not:
 ~noisy = Buffer.read(s,FluidFilesPath("Tremblay-ASWINE-ScratchySynth-M.wav"));
 ~pitch_analysis = Buffer(s);
@@ -172,24 +152,26 @@ FluidWaveform(~noisy,featureBuffer:~pitch_analysis,bounds:Rect(0,0,1200,300));
 // plot stacked:
 FluidWaveform(~noisy,featureBuffer:~pitch_analysis,bounds:Rect(0,0,1200,300),stackFeatures:true,waveformColor:Color(*0.9.dup(3)));
 
+~mags = Buffer(s);
+FluidBufSTFT.processBlocking(s,~noisy,magnitude:~mags,action:{"done".postln;});
+
 // add spectrogram:
-FluidWaveform(~noisy,featureBuffer:~pitch_analysis,bounds:Rect(0,0,1200,300),stackFeatures:true,waveformColor:Color(0,0,0,0.5),showSpectrogram:true,spectrogramAlpha:0.5);
+FluidWaveform(~noisy,featureBuffer:~pitch_analysis,imageBuffer:~mags,bounds:Rect(0,0,1200,300),stackFeatures:true,waveformColor:Color(0,0,0,0.5),imageAlpha:0.5);
 
 // plot in another window with all the things!
 
 (
-w = Window("FluidWaveform Test",Rect(0,0,1000,600));
+w = Window("FluidWaveform Test",Rect(0,0,1000,500));
 FluidWaveform(
 	~noisy,
 	featureBuffer:~pitch_analysis,
 	parent:w,
 	bounds:Rect(100,100,800,300),
 	stackFeatures:true,
-	showSpectrogram:true,
-	spectrogramAlpha:0.6,
+	imageBuffer:~mags,
+	imageAlpha:0.6,
 	waveformColor:Color(0,1,1,0.5)
 );
 w.front;
 )
-
 ::
