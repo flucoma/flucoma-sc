@@ -12,7 +12,15 @@ METHOD:: kr
 Initialize an instance of this pseudo UGen
 
 ARGUMENT:: buffer
-The link::Classes/Buffer:: that this pseudo UGen will read out of. Must be a one-channel buffer.
+Either a link::Classes/Buffer:: object or an index opointing to a buffer that this pseudo UGen will read out of. Must be a one-channel buffer.
+
+
+ARGUMENT:: numFrames
+number of frames to read from the buffer. 
+Needs to be set, if buffer is not a code::Buffer:: object but a buffer index. If code::nil::, read whole buffer starting at code::startFrame::.
+
+ARGUMENT:: startFrame
+offset of reading position in the buffer
 
 ARGUMENT:: numFrames
 How many frames the buffer is that will evenutally passed. If providing a buffer directly (instead of as an argument to a SynthDef), the default of -1 will get the number of frames from the buffer passed.

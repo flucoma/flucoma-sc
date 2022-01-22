@@ -15,10 +15,9 @@ ARGUMENT:: krStream
 The Kr stream to write into the buffer.
 
 ARGUMENT:: buffer
-The link::Classes/Buffer:: to write the Kr stream into.
+The buffer to write the Kr stream into. Can be either a link::Classes/Buffer:: object, or an index poiting to a buffer. 
 
-returns:: Nothing.
-
+returns:: This class.
 
 INSTANCEMETHODS::
 

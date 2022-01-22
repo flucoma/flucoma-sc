@@ -18,28 +18,25 @@ FluidKrToBuf {
 
 FluidBufToKr {
 	*kr {
-		arg buffer, numFrames = -1;
+		arg buffer numFrames, startFrame=0;
 
-		if((buffer.isKindOf(Buffer).or(buffer.isKindOf(LocalBuf))).not.and(numFrames.isNil),{
-			Error("FluidBufToKr:kr needs to be passed either an existing buffer or an OutputProxy and a number of frames for the buffer that will be supplied").throw;
+		if(buffer.isKindOf(Buffer) or: {buffer.isKindOf(LocalBuf)}, {
+			numFrames = numFrames ?? {buffer.numFrames - startFrame};
+		}, {
+			numFrames = numFrames ? 1;
 		});
 
-		if(numFrames == -1,{
-			numFrames = buffer.numFrames;
-		});
-
-		if(numFrames == 0) {"FluidKrToBuf:kr indicated numFrames is zero.".warn};
 		if(numFrames > 1000) {
-			Error("FluidKrToBuf: Buffer is indicated to have % frames. This is probably not the buffer you intended.".format(numFrames)).throw;
+			Error("%: numframes is % frames. This is probably not what you intended.".format(this.class, numFrames)).throw;
 		};
 
 		if(numFrames > 1,{
 			^numFrames.collect{
 				arg i;
-				BufRd.kr(1,buffer,i,0,0);
+				BufRd.kr(1,buffer,i+startFrame,0,0);
 			}
 		},{
-			^BufRd.kr(1,buffer,0,0,0);
+			^BufRd.kr(1,buffer,startFrame,0,0);
 		});
 	}
 }
