@@ -193,6 +193,11 @@ s.waitForBoot{
 		~fw.addAudioLayer(~resynths[i],~colors[i]);
 	};
 
+	// ~n_components.do{
+	// 	arg i;
+	// 	~fw.addImageLayer(~mels[i],~colors[i],1,1);
+	// };
+
 	~fw.front;
 }
 )
