@@ -15,6 +15,24 @@ s.waitForBoot{
 )
 
 (
+(
+// embed it in a different window
+s.waitForBoot{
+
+	var buf = Buffer.read(s,"/Users/macprocomputer/Desktop/_flucoma/code/flucoma-core-src/AudioFiles/Nicol-LoopE-M.wav");
+	var slicepoints = Buffer(s);
+
+	FluidBufAmpSlice.process(s,buf,indices:slicepoints,fastRampUp:10,fastRampDown:2205,slowRampUp:4410,slowRampDown:4410,onThreshold:10,offThreshold:5,floor:-40,minSliceLength:4410,highPassFreq:20,action:{
+		fork({
+			~win = Window("test",Rect(0,0,1600,400));
+			FluidWaveform(buf,slicepoints,bounds:Rect(100,100,1400,200),parent:~win).front;
+		},AppClock);
+	});
+
+}
+)
+
+(
 // lots of defaults
 s.waitForBoot{
 	Window.closeAll;
