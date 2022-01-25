@@ -215,6 +215,9 @@ d = ~dummy_data.value;
 // a different one
 ~fp.highlight_("example-94");
 
+// highlight a few
+~fp.highlight_(["example-1","example-2","example-3"]);
+
 // none
 ~fp.highlight_(nil);
 
@@ -234,9 +237,6 @@ d = ~dummy_data.value;
 
 // change back to circles
 ~fp.shape_(\circle);
-
-// change the color of just one point
-~fp.pointColor_("example-7",Color.red);
 
 // change the background color
 ~fp.background_(Color.red)
