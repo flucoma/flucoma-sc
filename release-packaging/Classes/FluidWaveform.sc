@@ -18,8 +18,8 @@ FluidWaveform : FluidViewer {
 	var <win;
 
 	*new {
-		arg audioBuffer, indicesBuffer, featureBuffer, parent, bounds, lineWidth = 1, waveformColor, stackFeatures = false, imageBuffer, imageColorScheme = 0, imageAlpha = 1, normalizeFeaturesIndependently = true, colorScaling = 1;
-		^super.new.init(audioBuffer,indicesBuffer, featureBuffer, parent, bounds, lineWidth, waveformColor,stackFeatures,imageBuffer,imageColorScheme,imageAlpha,normalizeFeaturesIndependently,colorScaling);
+		arg audioBuffer, indicesBuffer, featuresBuffer, parent, bounds, lineWidth = 1, waveformColor, stackFeatures = false, imageBuffer, imageColorScheme = 0, imageAlpha = 1, normalizeFeaturesIndependently = true, colorScaling = 1;
+		^super.new.init(audioBuffer,indicesBuffer, featuresBuffer, parent, bounds, lineWidth, waveformColor,stackFeatures,imageBuffer,imageColorScheme,imageAlpha,normalizeFeaturesIndependently,colorScaling);
 	}
 
 	close {
