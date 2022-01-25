@@ -4,7 +4,7 @@ categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidKrToBuf
 
 DESCRIPTION::
-Helper pseudo UGen for reading data out of a buffer to a Kr stream. It only reads one-channel buffers, converting them to a Kr stream with as many channels as the number of frames that the buffer is long.
+Helper pseudo UGen for reading data out of a buffer to a Kr stream. It only reads one-channel buffers, converting them to a Kr stream.
 
 CLASSMETHODS::
 
@@ -14,16 +14,11 @@ Initialize an instance of this pseudo UGen
 ARGUMENT:: buffer
 Either a link::Classes/Buffer:: object or an index opointing to a buffer that this pseudo UGen will read out of. Must be a one-channel buffer.
 
-
-ARGUMENT:: numFrames
-number of frames to read from the buffer. 
-Needs to be set, if buffer is not a code::Buffer:: object but a buffer index. If code::nil::, read whole buffer starting at code::startFrame::.
-
 ARGUMENT:: startFrame
-offset of reading position in the buffer
+Offset of reading position in the buffer. The default is 0.
 
 ARGUMENT:: numFrames
-How many frames the buffer is that will evenutally passed. If providing a buffer directly (instead of as an argument to a SynthDef), the default of -1 will get the number of frames from the buffer passed.
+Number of frames to read from the buffer. Needs to be set, if buffer is not a code::Buffer:: object but a buffer index. If code::-1::, read whole buffer starting at code::startFrame::. The default is -1.
 
 returns:: a Kr stream that has the same number of channels as frames in the link::Classes/Buffer::.
 
@@ -54,7 +49,7 @@ code::
 
 	// you need to specify the 5 so the synth here will know how many channels to make
 	// the output proxy
-	FluidBufToKr.kr(buf,5).poll;
+	FluidBufToKr.kr(buf,numFrames:5).poll;
 }.play;
 // you should see all zeros! (unless your buffer #999 has something in it already!)
 )

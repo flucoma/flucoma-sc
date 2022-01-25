@@ -4,7 +4,7 @@ categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidBufToKr
 
 DESCRIPTION::
-Helper pseudo UGen for writing data into a buffer from a Kr stream. It only works with one-channel buffers. The number of frames in the link::Classes/Buffer:: must be the same as the number of channels in the Kr stream.
+Helper pseudo UGen for writing data into a buffer from a Kr stream. It only works with one-channel buffers.
 
 CLASSMETHODS::
 
@@ -15,7 +15,16 @@ ARGUMENT:: krStream
 The Kr stream to write into the buffer.
 
 ARGUMENT:: buffer
-The buffer to write the Kr stream into. Can be either a link::Classes/Buffer:: object, or an index poiting to a buffer. 
+The buffer to write the Kr stream into. Can be either a link::Classes/Buffer:: object, or an index poiting to a buffer.
+
+ARGUMENT:: krStartChan
+The channel in the code::krStream:: to begin the reading from. The default is 0.
+
+ARGUMENT:: krNumChans
+The number of channels in the code::krStream:: to read from starting at code::krStartChan:: The default of -1 will read from code::krStartChan:: to the max number of channels in the code::krStream::.
+
+ARGUMENT:: destStartFrame
+The frame in the code::buffer:: to begin writing into. The default is 0.
 
 returns:: This class.
 
