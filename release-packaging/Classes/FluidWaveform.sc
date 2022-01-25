@@ -309,6 +309,7 @@ FluidWaveform : FluidViewer {
 		layers = List.new;
 
 		fork({
+			var plotImmediately = false;
 
 			bounds = bounds_;
 
@@ -332,22 +333,28 @@ FluidWaveform : FluidViewer {
 			if(imageBuffer.notNil,{
 				this.addImageLayer(imageBuffer,imageColorScheme,imageColorScaling,imageAlpha);
 				imageBuffer.server.sync;
+				plotImmediately = true;
 			});
 
 			if(audio_buf.notNil,{
 				this.addAudioLayer(audio_buf,waveformColor);
 				audio_buf.server.sync;
+				plotImmediately = true;
 			});
 
 			if(feature_buf.notNil,{
 				this.addFeaturesLayer(feature_buf,this.createCatColors,stackFeatures,normalizeFeaturesIndependently);
 				feature_buf.server.sync;
+				plotImmediately = true;
 			});
 
 			if(slices_buf.notNil,{
 				this.addIndicesLayer(slices_buf,audio_buf,Color.red,lineWidth);
 				slices_buf.server.sync;
+				plotImmediately = true;
 			});
+
+			if(plotImmediately,{this.front;});
 		},AppClock);
 	}
 
