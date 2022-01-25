@@ -55,7 +55,7 @@ code::
 )
 
 // ...then after it is running, instantiate the buffer
-~buffer = Buffer.alloc(s,5);
+~buffer = Buffer.alloc(s,2);
 
 // ...then send it to the buffer
 ~synth.set(\buf,~buffer);
