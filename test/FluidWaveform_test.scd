@@ -133,20 +133,5 @@ s.waitForBoot{
 ~fw.addAudioLayer(~audio);
 ~fw.addIndicesLayer(~indices,~audio,Color.yellow);
 ~fw.addFeaturesLayer(~pitch_analysis);
+~fw.front;
 )
-
-(
-fork{
-	// no error
-	~fw = FluidWaveform(bounds:Rect(100,100,1200,300));
-	s.sync;
-	~fw.addImageLayer(~mels,1,imageColorScaling:1);
-	s.sync;
-	~fw.addAudioLayer(~audio);
-	s.sync;
-	~fw.addIndicesLayer(~indices,~audio);
-	s.sync;
-	~fw.addFeaturesLayer(~pitch_analysis);
-}
-)
-

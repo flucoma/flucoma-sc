@@ -45,7 +45,8 @@ FluidWaveformAudioLayer {
 			sfv.gridOn_(false);
 
 			File.delete(path);
-		},AppClock)
+		},AppClock);
+		^audioBuffer.server;
 	}
 }
 
@@ -110,6 +111,7 @@ FluidWaveformIndicesLayer : FluidViewer {
 					}
 				);
 			},AppClock);
+			^indicesBuffer.server;
 		},{
 			Error("% In order to display an indicesBuffer an audioBuffer must be included.".format(this.class)).throw;
 		});
@@ -187,7 +189,8 @@ FluidWaveFormFeaturesLayer : FluidViewer {
 					});
 				});
 			},AppClock);
-		})
+		});
+		^featuresBuffer.server;
 	}
 }
 
@@ -264,7 +267,8 @@ FluidWaveformImageLayer {
 					img.drawInRect(Rect(0,0,bounds.width,bounds.height),fraction:imageAlpha);
 				};
 			},AppClock);
-		})
+		});
+		^imageBuffer.server;
 	}
 
 	loadColorFile {
@@ -278,7 +282,7 @@ FluidWaveformImageLayer {
 
 FluidWaveform : FluidViewer {
 	classvar <lin = 0, <log = 1;
-	var <win, bounds, display_bounds;
+	var <win, bounds, display_bounds, layers;
 
 	*new {
 		arg audioBuffer, indicesBuffer, featuresBuffer, parent, bounds, lineWidth = 1, waveformColor, stackFeatures = false, imageBuffer, imageColorScheme = 0, imageAlpha = 1, normalizeFeaturesIndependently = true, imageColorScaling = 0;
@@ -287,8 +291,11 @@ FluidWaveform : FluidViewer {
 
 	init {
 		arg audio_buf, slices_buf, feature_buf, parent_, bounds_, lineWidth = 1, waveformColor,stackFeatures = false, imageBuffer, imageColorScheme = 0, imageAlpha = 1, normalizeFeaturesIndependently = true, imageColorScaling = 0;
+		layers = List.new;
 
 		fork({
+
+
 			bounds = bounds_;
 
 			waveformColor = waveformColor ? Color(*0.6.dup(3));
@@ -301,17 +308,17 @@ FluidWaveform : FluidViewer {
 
 			if(parent_.isNil,{
 				win = Window("FluidWaveform",bounds);
-				win.background_(Color.white);
+				// win.background_(Color.white);
 				display_bounds = Rect(0,0,bounds.width,bounds.height);
 			},{
 				win = parent_;
 				display_bounds = bounds;
-				UserView(win,display_bounds)
+				/*				UserView(win,display_bounds)
 				.drawFunc_{
-					Pen.fillColor_(Color.white);
-					Pen.addRect(Rect(0,0,bounds.width,bounds.height));
-					Pen.fill;
-				};
+				Pen.fillColor_(Color.white);
+				Pen.addRect(Rect(0,0,bounds.width,bounds.height));
+				Pen.fill;
+				};*/
 			});
 
 			if(imageBuffer.notNil,{
@@ -334,8 +341,7 @@ FluidWaveform : FluidViewer {
 				slices_buf.server.sync;
 			});
 
-
-			win.front;
+			// win.front;
 		},AppClock);
 	}
 
@@ -343,28 +349,60 @@ FluidWaveform : FluidViewer {
 		arg imageBuffer, imageColorScheme = 0, imageColorScaling = 0, imageAlpha = 1;
 		var l = FluidWaveformImageLayer(imageBuffer,imageColorScheme,imageColorScaling,imageAlpha);
 
-		l.draw(win,display_bounds);
+		// l.postln;
+		layers.add(l);
+		// layers.postln;
+		// l.draw(win,display_bounds);
 	}
 
 	addAudioLayer {
 		arg audioBuffer, waveformColor;
 		var l = FluidWaveformAudioLayer(audioBuffer,waveformColor);
 
-		l.draw(win,display_bounds);
+		// l.postln;
+		layers.add(l);
+		// layers.postln;
+
+		// l.draw(win,display_bounds);
 	}
 
 	addIndicesLayer {
 		arg indicesBuffer, audioBuffer, color, lineWidth = 1;
 		var l = FluidWaveformIndicesLayer(indicesBuffer,audioBuffer,color,lineWidth);
 
-		l.draw(win,display_bounds);
+		// l.postln;
+		layers.add(l);
+		// layers.postln;
+
+		// l.draw(win,display_bounds);
 	}
 
 	addFeaturesLayer {
 		arg featuresBuffer, colors, stackFeatures = false, normalizeFeaturesIndependently = true;
 		var l = FluidWaveFormFeaturesLayer(featuresBuffer,colors,stackFeatures,normalizeFeaturesIndependently);
 
-		l.draw(win,display_bounds);
+		// l.postln;
+		layers.add(l);
+		// layers.postln;
+
+		// l.draw(win,display_bounds);
+	}
+
+	addLayer {
+		arg fluidWaveformLayer;
+		layers.add(fluidWaveformLayer);
+	}
+
+	front {
+		fork({
+			// layers.postln;
+			layers.do{
+				arg layer;
+				// layer.postln;
+				layer.draw(win,display_bounds).sync;
+			};
+			win.front;
+		},AppClock);
 	}
 
 	close {
