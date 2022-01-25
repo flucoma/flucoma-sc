@@ -1,5 +1,10 @@
 FluidViewer {
+
 	createCatColors {
+		^FluidViewer.createCatColors;
+	}
+
+	*createCatColors {
 		// colors from: https://github.com/d3/d3-scale-chromatic/blob/main/src/categorical/category10.js
 		^"1f77b4ff7f0e2ca02cd627289467bd8c564be377c27f7f7fbcbd2217becf".clump(6).collect{
 			arg six;
@@ -118,7 +123,7 @@ FluidWaveformIndicesLayer : FluidViewer {
 	}
 }
 
-FluidWaveFormFeaturesLayer : FluidViewer {
+FluidWaveformFeaturesLayer : FluidViewer {
 	var featuresBuffer, colors, stackFeatures, normalizeFeaturesIndependently;
 
 	*new {
@@ -215,26 +220,34 @@ FluidWaveformImageLayer {
 		arg win, bounds;
 		var colors;
 
-		imageColorScheme.switch(
-			0,{
-				colors = this.loadColorFile("CET-L02");
-			},
-			1,{
-				colors = this.loadColorFile("CET-L16");
-			},
-			2,{
-				colors = this.loadColorFile("CET-L08");
-			},
-			3,{
-				colors = this.loadColorFile("CET-L03");
-			},
-			4,{
-				colors = this.loadColorFile("CET-L04");
-			},
-			{
-				"% imageColorScheme: % is not valid.".format(thisMethod,imageColorScheme).warn;
-			}
-		);
+		if(imageColorScheme.isKindOf(Color),{
+			// "imageColorScheme is a kind of Color".postln;
+			colors = 256.collect{
+				arg i;
+				Color(imageColorScheme.red,imageColorScheme.green,imageColorScheme.blue,i.linlin(0,255,0.0,1.0));
+			};
+		},{
+			imageColorScheme.switch(
+				0,{
+					colors = this.loadColorFile("CET-L02");
+				},
+				1,{
+					colors = this.loadColorFile("CET-L16");
+				},
+				2,{
+					colors = this.loadColorFile("CET-L08");
+				},
+				3,{
+					colors = this.loadColorFile("CET-L03");
+				},
+				4,{
+					colors = this.loadColorFile("CET-L04");
+				},
+				{
+					"% imageColorScheme: % is not valid.".format(thisMethod,imageColorScheme).warn;
+				}
+			);
+		});
 
 		imageBuffer.loadToFloatArray(action:{
 			arg vals;
@@ -256,6 +269,8 @@ FluidWaveformImageLayer {
 						"% colorScaling argument % is invalid.".format(thisMethod,imageColorScaling).warn;
 					}
 				);
+
+				// colors.postln;
 
 				vals.do{
 					arg val, index;
@@ -282,7 +297,7 @@ FluidWaveformImageLayer {
 
 FluidWaveform : FluidViewer {
 	classvar <lin = 0, <log = 1;
-	var <win, bounds, display_bounds, layers;
+	var <win, bounds, display_bounds, <layers;
 
 	*new {
 		arg audioBuffer, indicesBuffer, featuresBuffer, parent, bounds, lineWidth = 1, waveformColor, stackFeatures = false, imageBuffer, imageColorScheme = 0, imageAlpha = 1, normalizeFeaturesIndependently = true, imageColorScaling = 0;
@@ -294,7 +309,6 @@ FluidWaveform : FluidViewer {
 		layers = List.new;
 
 		fork({
-
 
 			bounds = bounds_;
 
@@ -308,17 +322,11 @@ FluidWaveform : FluidViewer {
 
 			if(parent_.isNil,{
 				win = Window("FluidWaveform",bounds);
-				// win.background_(Color.white);
+				win.background_(Color.white);
 				display_bounds = Rect(0,0,bounds.width,bounds.height);
 			},{
 				win = parent_;
 				display_bounds = bounds;
-				/*				UserView(win,display_bounds)
-				.drawFunc_{
-				Pen.fillColor_(Color.white);
-				Pen.addRect(Rect(0,0,bounds.width,bounds.height));
-				Pen.fill;
-				};*/
 			});
 
 			if(imageBuffer.notNil,{
@@ -340,8 +348,6 @@ FluidWaveform : FluidViewer {
 				this.addIndicesLayer(slices_buf,audio_buf,Color.red,lineWidth);
 				slices_buf.server.sync;
 			});
-
-			// win.front;
 		},AppClock);
 	}
 
@@ -379,7 +385,7 @@ FluidWaveform : FluidViewer {
 
 	addFeaturesLayer {
 		arg featuresBuffer, colors, stackFeatures = false, normalizeFeaturesIndependently = true;
-		var l = FluidWaveFormFeaturesLayer(featuresBuffer,colors,stackFeatures,normalizeFeaturesIndependently);
+		var l = FluidWaveformFeaturesLayer(featuresBuffer,colors,stackFeatures,normalizeFeaturesIndependently);
 
 		// l.postln;
 		layers.add(l);
@@ -395,7 +401,14 @@ FluidWaveform : FluidViewer {
 
 	front {
 		fork({
-			// layers.postln;
+
+			UserView(win,display_bounds)
+			.drawFunc_{
+				Pen.fillColor_(Color.white);
+				Pen.addRect(Rect(0,0,bounds.width,bounds.height));
+				Pen.fill;
+			};
+
 			layers.do{
 				arg layer;
 				// layer.postln;
