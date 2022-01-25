@@ -162,42 +162,75 @@ s.waitForBoot{
 (
 // plot differen components with different colors
 s.waitForBoot{
-	// ~audio = Buffer.read(s,FluidFilesPath("Nicol-LoopE-M.wav"));
-	~audio = Buffer.read(s,FluidFilesPath("Tremblay-ASWINE-ScratchySynth-M.wav"));
+	~audio = Buffer.read(s,FluidFilesPath("Nicol-LoopE-M.wav"));
+	// ~audio = Buffer.read(s,FluidFilesPath("Tremblay-ASWINE-ScratchySynth-M.wav"));
 	~resynth = Buffer(s);
-	~n_components = 2;
+	~n_components = 3;
 	~resynths = {Buffer(s)} ! ~n_components;
 	~mels = {Buffer(s)} ! ~n_components;
 	~activations = Buffer(s);
+	~harm = {Buffer(s)} ! 2;
+	~perc = {Buffer(s)} ! 2;
+	~percmels = {Buffer(s)} ! 2;
+	~harmmels = {Buffer(s)} ! 2;
+	~numBands = 400;
+	~windowSize = 4096;
+	~hopSize = 256;
+
 	s.sync;
 	FluidBufNMF.processBlocking(s,~audio,resynth:~resynth,activations:~activations,components:~n_components);
+	2.do{
+		arg i;
+		FluidBufHPSS.processBlocking(s,~audio,harmonic:~harm[i],percussive:~perc[i],maskingMode:i,harmFilterSize:51,percFilterSize:91);
+	};
+
 	~n_components.do{
 		arg i;
 		FluidBufCompose.processBlocking(s,~resynth,startChan:i,numChans:1,destination:~resynths[i]);
-		FluidBufMelBands.processBlocking(s,~resynths[i],features:~mels[i]);
+		FluidBufMelBands.processBlocking(s,~resynths[i],features:~mels[i],numBands:~numBands,windowSize:~windowSize,hopSize:~hopSize);
+	};
+
+	~harm.do{
+		arg buf, i;
+		FluidBufMelBands.processBlocking(s,buf,features:~harmmels[i],numBands:~numBands,windowSize:~windowSize,hopSize:~hopSize);
+	};
+
+	~perc.do{
+		arg buf, i;
+		FluidBufMelBands.processBlocking(s,buf,features:~percmels[i],numBands:~numBands,windowSize:~windowSize,hopSize:~hopSize);
 	};
 
 	~colors = FluidViewer.createCatColors.collect{
 		arg color;
-		color.alpha_(0.4);
+		// color.alpha_(0.4);
 		color;
 	};
 
 	s.sync;
 
-	~resynths.postln;
-	~fw = FluidWaveform(bounds:Rect(0,0,1600,400));
-
-	~n_components.do{
-		arg i;
-		~fw.addAudioLayer(~resynths[i],~colors[i]);
-	};
+	// ~resynths.postln;
+	~melsfw = FluidWaveform(bounds:Rect(0,0,1600,400));
 
 	// ~n_components.do{
 	// 	arg i;
-	// 	~fw.addImageLayer(~mels[i],~colors[i],1,1);
+	// 	~fw.addAudioLayer(~resynths[i],~colors[i]);
 	// };
 
-	~fw.front;
+	~n_components.do{
+		arg i;
+		~melsfw.addImageLayer(~mels[i],~colors[i],1,1);
+	};
+
+	~melsfw.front;
+
+	~binaryfw = FluidWaveform(bounds:Rect(0,400,1600,400));
+	~binaryfw.addImageLayer(~percmels[1],~colors[0],1);
+	~binaryfw.addImageLayer(~harmmels[1],~colors[1],1);
+	~binaryfw.front;
+
+	~softfw = FluidWaveform(bounds:Rect(0,0,1600,400));
+	~softfw.addImageLayer(~percmels[0],~colors[0],1);
+	~softfw.addImageLayer(~harmmels[0],~colors[1],1);
+	~softfw.front;
 }
 )
