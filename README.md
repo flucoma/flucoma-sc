@@ -2,6 +2,10 @@
 
 This repository hosts code for generating the SC objects and documentation resources for the Fluid Corpus Manipulation Project. Much of the actual code that does the exciting stuff lives in this repository's principal dependency, the [Fluid Corpus Manipulation Library](https://github.com/flucoma/flucoma-core).
 
+You can also download the most [recent release](https://learn.flucoma.org/installation/sc) or the most recent [nightly build](https://github.com/flucoma/flucoma-sc/releases/tag/nightly).
+
+Note that on macOS you may need to [dequarantine](https://learn.flucoma.org/installation/sc#step-3-dequarantine-scx-extensions) the binary files.
+
 ## Pre-requisites
 
 - [CMake](http://cmake.org) >= 3.11
@@ -65,7 +69,7 @@ For ARM, we use the following default set of flags (with the Bela in mind):
 -march=armv7-a -mtune=cortex-a8 -mfloat-abi=hard -mfpu=neon
 ```
 
-## Credits 
+## Credits
 #### FluCoMa core development team (in alphabetical order)
 Owen Green, Gerard Roma, Pierre Alexandre Tremblay
 
