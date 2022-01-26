@@ -82,13 +82,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: package and upload
-        uses: svenstaro/upload-release-action@v2
+        uses: softprops/action-gh-release@v1
         with:
-          release_name: FluCoMa SuperCollider Nightly Build
-          prerelease: true
+          name: FluCoMa SuperCollider Nightly Release
           body: "This is a nightly build of the FluCoMa SuperCollider package. As such, be warned there may be bugs or other unexpected behaviour. The build hash is ${{ github.sha }}"
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: FluCoMa-SC-*.zip
-          file_glob: true
-          tag: nightly
-          overwrite: true
+          files: FluCoMa-SC-*.zip
+          prerelease: true
+          tag_name: nightly
+          draft: false
