@@ -27,37 +27,51 @@ INSTANCEMETHODS::
 EXAMPLES::
 
 code::
-// make a buffer with some data in it
-~buf = Buffer.loadCollection(s,[0,1,2,3,4,7]);
 
-// play it on the server and read out of this buffer!
-(
-{
-	var sig = FluidBufToKr.kr(~buf);
-	sig.poll;
-}.play;
-)
+// fill a 1-channel buffer with 7 numbers
+~buf = Buffer.loadCollection(s,{exprand(100,4000)} ! 7);
 
-// =============== passing a buffer as an argument ======================
-
-// create a synth that both writes into a buffer (with FluidKrToBuf) and reads
-// out of the same buffer (with FluidBufToKr)
+// in a synth, read those numbers out of the buffer and get them as a control stream
 (
 ~synth = {
-	arg buf = 999;
-	FluidKrToBuf.kr(SinOsc.kr(Array.fill(5,{rrand(0.0,1.0)})),buf);
-
-	// you need to specify the 5 so the synth here will know how many channels to make
-	// the output proxy
-	FluidBufToKr.kr(buf,numFrames:5).poll;
-}.play;
-// you should see all zeros! (unless your buffer #999 has something in it already!)
+	arg buf;
+	var freqs = FluidBufToKr.kr(buf,numFrames:7);
+	var sig = SinOsc.ar(freqs.lag(0.03)) * 0.1;
+	sig.poll;
+	Splay.ar(sig);
+}.play(args:[\buf,~buf]);
 )
 
-// ...then after it is running, instantiate the buffer
-~buffer = Buffer.alloc(s,2);
+// then you can change what's in the buffer and it will get read out by the synth
+~buf.setn(0,{exprand(100,4000)} ! 7);
 
-// ...then send it to the buffer
-~synth.set(\buf,~buffer);
-// you should be able to see the sine oscillators now!
+::
+Use with other FluCoMa objects:
+code::
+
+// create an neural network for classification
+~mlp = FluidMLPClassifier(s);
+
+// load a model that has been pre-trained to classify between a tone and noise, simple, i know, but...
+~mlp.read(FluidFilesPath("../Resources/bufToKrExample.json"));
+
+// can be used to demonstrate that...
+(
+{
+	var input_buf = LocalBuf(7);
+	var out_buf = LocalBuf(1);
+	var sig = Select.ar(ToggleFF.kr(Dust.kr(1)),[SinOsc.ar(440),PinkNoise.ar]);
+	var analysis = FluidSpectralShape.kr(sig);
+	FluidKrToBuf.kr(analysis,input_buf);
+
+	// the output prediction is written into a buffer
+	~mlp.kr(Impulse.kr(30),input_buf,out_buf);
+
+	// and FluidBufToKr can be used to read the prediction out into a control rate stream
+	FluidBufToKr.kr(out_buf).poll;
+
+	sig.dup * -30.dbamp
+}.play;
+)
+
 ::
