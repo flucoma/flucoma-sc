@@ -17,7 +17,7 @@ FluidPlotterPoint {
 }
 
 FluidPlotter : FluidViewer {
-	var <parent, <userView, <xmin, <xmax, <ymin, <ymax, <pointSize = 6, pointSizeScale = 1, dict_internal, <dict, shape = \circle, highlightIdentifiersArray;
+	var <parent, <userView, <xmin, <xmax, <ymin, <ymax, <pointSize = 6, pointSizeScale = 1, dict_internal, <dict, shape = \circle, highlightIdentifiersArray, categoryColors;
 
 	*new {
 		arg parent, bounds, dict, mouseMoveAction,xmin = 0,xmax = 1,ymin = 0,ymax = 1;
@@ -33,7 +33,7 @@ FluidPlotter : FluidViewer {
 		ymin = ymin_;
 		ymax = ymax_;
 
-		this.createCatColors;
+		categoryColors = this.createCatColors;
 		dict_internal = Dictionary.new;
 		if(dict_.notNil,{this.dict_(dict_)});
 		this.createPlotWindow(bounds,parent_,mouseMoveAction,dict_);
