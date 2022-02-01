@@ -199,7 +199,7 @@ install(DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/
         DESTINATION ${SC_PACKAGE_ROOT}/Plugins
         PATTERN "*.ilk" EXCLUDE 
         PATTERN "*.PDB" EXCLUDE)
-install(DIRECTORY "${flucoma-core_SOURCE_DIR}/AudioFiles" 
+install(DIRECTORY "${flucoma-core_SOURCE_DIR}/Resources" 
         DESTINATION ${SC_PACKAGE_ROOT})
 install(FILES QuickStart.md 
         DESTINATION ${SC_PACKAGE_ROOT})
