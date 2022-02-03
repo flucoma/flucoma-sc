@@ -63,7 +63,7 @@ EXAMPLES::
 
 code::
 //load some sounds
-b = Buffer.read(s,File.realpath(FluidNoveltySlice.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
+b = Buffer.read(s,FluidFilesPath("Nicol-LoopE-M.wav"));
 
 // basic param (the process add a latency of windowSize samples
 {var sig = PlayBuf.ar(1,b,loop:1); [FluidNoveltySlice.ar(sig,0,11,0.33) * 0.5, DelayN.ar(sig, 1, (512 * (((11 + 1) / 2).asInteger + ((1 + 1) / 2).asInteger + 1)) / s.sampleRate, 0.2)]}.play

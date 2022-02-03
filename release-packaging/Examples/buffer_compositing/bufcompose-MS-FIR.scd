@@ -2,7 +2,7 @@
 
 // load a stereo buffer and initialise the many destinations
 (
-b = Buffer.read(s,File.realpath(FluidBufCompose.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-SA-UprightPianoPedalWide.wav");
+b = Buffer.read(s,FluidFilesPath("Tremblay-SA-UprightPianoPedalWide.wav"));
 c = Buffer.new(s);
 d = Buffer.new(s);
 e = Buffer.new(s);

@@ -5,7 +5,7 @@ s.options.device_("Fireface UC Mac (24006457)");
 // decompose!
 s.waitForBoot{
 	Routine{
-		var drums = Buffer.read(s,File.realpath(FluidBufNMF.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
+		var drums = Buffer.read(s,FluidFilesPath("Nicol-LoopE-M.wav"));
 		var resynth = Buffer(s);
 		var n_components = 2;
 		FluidBufNMF.process(s,drums,resynth:resynth,components:n_components).wait;
@@ -42,7 +42,7 @@ s.waitForBoot{
 (
 Routine{
 	var n_components = 2;
-	var drums = Buffer.read(s,File.realpath(FluidBufNMF.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
+	var drums = Buffer.read(s,FluidFilesPath("Nicol-LoopE-M.wav"));
 	~bases = Buffer(s);
 	~activations = Buffer(s);
 	~resynth = Buffer(s);
@@ -57,9 +57,9 @@ Routine{
 // base as a filter
 (
 Routine{
-	var drums = Buffer.read(s,File.realpath(FluidBufNMF.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
-	var voice = Buffer.read(s,File.realpath(FluidBufNMF.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-VoiceQC-B2K-M.wav");
-	var song = Buffer.read(s,File.realpath(FluidBufNMF.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-beatRemember.wav");
+	var drums = Buffer.read(s,FluidFilesPath("Nicol-LoopE-M.wav"));
+	var voice = Buffer.read(s,FluidFilesPath("Tremblay-AaS-VoiceQC-B2K-M.wav"));
+	var song = Buffer.read(s,FluidFilesPath("Tremblay-beatRemember.wav"));
 	s.sync;
 
 	"drums through the drums bases as filters".postln;
@@ -112,7 +112,7 @@ Routine{
 
 (
 Task{
-	var dog = Buffer.readChannel(s,File.realpath(FluidBufNMF.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-BaB-SoundscapeGolcarWithDog.wav",channels:[0]);
+	var dog = Buffer.readChannel(s,FluidFilesPath("Tremblay-BaB-SoundscapeGolcarWithDog.wav"),channels:[0]);
 	var bases = Buffer(s);
 	var match = [0,0];
 	var win = Window("FluidNMFMatch",Rect(0,0,200,400));

@@ -29,7 +29,7 @@ do the whole process in one go!
 };
 
 // this will load all the audio files that are included with the flucoma toolkit, but you can put your own path here:
-~load_folder.(File.realpath(FluidBufPitch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/",{
+~load_folder.(FluidFilesPath(),{
 	arg buffer;
 	"mono buffer: %".format(buffer).postln;
 	~buffer = buffer; // save the buffer to a global variable so we can use it later
@@ -274,7 +274,7 @@ FluidWaveform(~buffer,~indices); // it may also be way too many slices to see pr
 
 // ============== do all of it in one go =======================
 (
-var path = File.realpath(FluidBufPitch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/";
+var path = FluidFilesPath();
 ~load_folder.(path,{
 	arg buffer0;
 	~slice.(buffer0,{

@@ -174,7 +174,7 @@ x = 	{
 x.free
 
 // load a more exciting one
-c = Buffer.read(s,File.realpath(FluidChroma.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-SlideChoirAdd-M.wav");
+c = Buffer.read(s,FluidFilesPath("Tremblay-SlideChoirAdd-M.wav"));
 
 // analyse with parameters to be changed
 (

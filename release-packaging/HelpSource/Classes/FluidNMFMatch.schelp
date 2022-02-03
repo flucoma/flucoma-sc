@@ -100,7 +100,7 @@ STRONG::A pick compressor::
 CODE::
 //set some buffers
 (
-b = Buffer.read(s,File.realpath(FluidNMFMatch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-AcousticStrums-M.wav");
+b = Buffer.read(s,FluidFilesPath("Tremblay-AaS-AcousticStrums-M.wav"));
 c = Buffer.new(s);
 ~bases = Buffer.new(s);
 ~spectralshapes = Buffer.new(s);
@@ -186,7 +186,7 @@ z.do({|chan| FluidBufCompose.process(s, ~bases, startChan:chan, numChans: 1, des
 	CODE::
 //load the source and declare buffers/arrays
 (
-b = Buffer.read(s,File.realpath(FluidNMFMatch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-AcousticStrums-M.wav");
+b = Buffer.read(s,FluidFilesPath("Tremblay-AaS-AcousticStrums-M.wav"));
 c = Buffer.new(s);
 ~bases = Buffer.new(s);
 ~spectralshapes = Buffer.new(s);

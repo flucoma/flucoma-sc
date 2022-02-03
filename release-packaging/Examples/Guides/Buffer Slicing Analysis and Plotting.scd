@@ -3,7 +3,7 @@
 s.waitForBoot{
 
 	Task{
-		var buf = Buffer.read(s,File.realpath(FluidBufPitch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
+		var buf = Buffer.read(s,FluidFilesPath("Nicol-LoopE-M.wav"));
 		var slicepoints = Buffer(s); // FluidBufAmpSlice will write into this buffer the samples at which slices are detected.
 		var features_buf = Buffer(s); // a buffer for writing the analysis from FluidSpectralShape into
 		var stats_buf = Buffer(s); // a buffer for writing the statistic analyses into

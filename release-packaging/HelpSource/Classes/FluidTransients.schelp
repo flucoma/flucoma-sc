@@ -52,7 +52,7 @@ EXAMPLES::
 
 CODE::
 //load some buffer
-b = Buffer.read(s,File.realpath(FluidTransients.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
+b = Buffer.read(s,FluidFilesPath("Tremblay-AaS-SynthTwoVoices-M.wav"));
 
 // basic parameters
 {FluidTransients.ar(PlayBuf.ar(1, b, loop:1))}.play

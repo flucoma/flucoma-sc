@@ -120,7 +120,7 @@ x.set(\noise, 0.05)
 STRONG::a more musical example::
 CODE::
 // play a noisy synth file
-b = Buffer.read(s,File.realpath(FluidPitch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-ASWINE-ScratchySynth-M.wav");
+b = Buffer.read(s,FluidFilesPath("Tremblay-ASWINE-ScratchySynth-M.wav"));
 b.play(true);
 
 //insert a selective reverb - sending only the material with very high pitch confidence

@@ -99,7 +99,7 @@ FluidBufOnsetSlice.process(s,~source_buf,indices:~source_indices_buf,metric:9,th
 
 (
 // ============= 5. LOAD THE FILE ===================
-~target_path = File.realpath(FluidBufPitch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav";
+~target_path = FluidFilesPath("Nicol-LoopE-M.wav");
 ~target_buf = Buffer.read(s,~target_path);
 )
 

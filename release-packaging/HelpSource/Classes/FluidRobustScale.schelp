@@ -67,7 +67,7 @@ code::
 s.boot;
 //Preliminaries: we want some audio, a couple of FluidDataSets, some Buffers and a FluidRobustScale
 (
-~audiofile = File.realpath(FluidBufPitch.class.filenameSymbol).dirname +/+ "../AudioFiles/Tremblay-ASWINE-ScratchySynth-M.wav";
+~audiofile = FluidFilesPath("Tremblay-ASWINE-ScratchySynth-M.wav");
 ~raw = FluidDataSet(s);
 ~scaled = FluidDataSet(s);
 ~pitch_feature = Buffer.new(s);

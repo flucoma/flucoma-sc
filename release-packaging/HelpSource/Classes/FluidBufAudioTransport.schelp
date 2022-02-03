@@ -95,8 +95,8 @@ d.play
 
 // more interesting sources: two cardboard bowing gestures
 (
-b = Buffer.read(s,File.realpath(FluidBufAudioTransport.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Green-Box641.wav");
-c = Buffer.read(s,File.realpath(FluidBufAudioTransport.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Green-Box639.wav");
+b = Buffer.read(s,FluidFilesPath("Green-Box641.wav"));
+c = Buffer.read(s,FluidFilesPath("Green-Box639.wav"));
 d = Buffer.new
 )
 

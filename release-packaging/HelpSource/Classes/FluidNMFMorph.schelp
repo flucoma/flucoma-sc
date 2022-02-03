@@ -53,9 +53,8 @@ code::FluidNMFMorph:: relies on preexisting NMF analyses to generate variations 
 code::
 //read some audio
 (
-~audiopath = File.realpath(FluidNMFMorph.class.filenameSymbol).dirname;
-~src1 = Buffer.readChannel(s,~audiopath +/+ "../AudioFiles/Nicol-LoopE-M.wav",channels:[0]); //some drums
-~src2 = Buffer.readChannel(s,~audiopath +/+ "../AudioFiles/Tremblay-SA-UprightPianoPedalWide.wav",channels:[0]);//some piano
+~src1 = Buffer.readChannel(s,FluidFilesPath("Nicol-LoopE-M.wav"),channels:[0]); //some drums
+~src2 = Buffer.readChannel(s,FluidFilesPath("Tremblay-SA-UprightPianoPedalWide.wav"),channels:[0]);//some piano
 
 ~src1Bases = Buffer.new;
 ~src2Bases = Buffer.new;

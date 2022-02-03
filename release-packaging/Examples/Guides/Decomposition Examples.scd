@@ -5,7 +5,7 @@ Useful for separating the stable, pitched components of a sound from the rest.
 */
 
 // sines in L, residual in R
-~buf = Buffer.read(s,File.realpath(FluidSines.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
+~buf = Buffer.read(s,FluidFilesPath("Tremblay-AaS-SynthTwoVoices-M.wav"));
 
 (
 y = {
@@ -17,7 +17,7 @@ y = {
 )
 
 // isolate just sines or residual;
-~song = Buffer.readChannel(s,File.realpath(FluidSines.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-beatRemember.wav",channels:[0]);
+~song = Buffer.readChannel(s,FluidFilesPath("Tremblay-beatRemember.wav"),channels:[0]);
 
 (
 y = {
@@ -37,7 +37,7 @@ y.set(\mix,0);
 y.set(\mix,1);
 
 // a stereo example
-~song = Buffer.read(s,File.realpath(FluidSines.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-beatRemember.wav");
+~song = Buffer.read(s,FluidFilesPath("Tremblay-beatRemember.wav"));
 
 (
 y = {
@@ -85,7 +85,7 @@ FluidHPSS separates a sound into "harmonic" and "percussive" components. This ca
 */
 
 //load a soundfile to play
-~buf = Buffer.readChannel(s,File.realpath(FluidSines.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-beatRemember.wav",channels:[0]);
+~buf = Buffer.readChannel(s,FluidFilesPath("Tremblay-beatRemember.wav"),channels:[0]);
 
 // run with basic parameters (left is harmonic, right is percussive)
 {FluidHPSS.ar(PlayBuf.ar(1,~buf,loop:1))}.play
@@ -99,7 +99,7 @@ FluidHPSS separates a sound into "harmonic" and "percussive" components. This ca
 {FluidHPSS.ar(PlayBuf.ar(1,~buf,loop:1),maskingMode:2)[2].dup}.play
 
 // do the above again with another sound file
-~buf = Buffer.read(s,File.realpath(FluidSines.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
+~buf = Buffer.read(s,FluidFilesPath("Nicol-LoopE-M.wav"));
 
 /* =================== FluidTransients =========================
 FluidTransients can separate out transient from residual material. Transient is quite a fuzzy term depending on who you are talking to. Producers might use it to talk about any sound that is bright, loud or percussive while an engineer could be referring to a short, full spectrum change in the signal.
@@ -108,7 +108,7 @@ This algorithm is based on a "de-clicking" audio restoration approach.
 */
 
 //load some buffer
-~buf = Buffer.read(s,File.realpath(FluidTransients.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
+~buf = Buffer.read(s,FluidFilesPath("Tremblay-AaS-SynthTwoVoices-M.wav"));
 
 // basic parameters
 {FluidTransients.ar(PlayBuf.ar(1, ~buf, loop:1))}.play
@@ -119,8 +119,8 @@ This algorithm is based on a "de-clicking" audio restoration approach.
 // =================== Audio Transport =========================
 //load 2 files
 (
-b = Buffer.read(s,File.realpath(FluidAudioTransport.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-CEL-GlitchyMusicBoxMelo.wav");
-c = Buffer.read(s,File.realpath(FluidAudioTransport.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-CF-ChurchBells.wav");
+b = Buffer.read(s,FluidFilesPath("Tremblay-CEL-GlitchyMusicBoxMelo.wav"));
+c = Buffer.read(s,FluidFilesPath("Tremblay-CF-ChurchBells.wav"));
 )
 //listen to them
 b.play

@@ -13,7 +13,7 @@
 	});
 };
 
-~load_folder.(File.realpath(FluidBufPitch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/",{
+~load_folder.(FluidFilesPath(),{
 	arg buffer;
 	"mono buffer: %".format(buffer).postln;
 	~buffer = buffer;

@@ -8,7 +8,7 @@ load a part of a sound that has 3 clear components:
 */
 
 (
-~src = Buffer.read(s,File.realpath(FluidBufPitch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-ASWINE-ScratchySynth-M.wav");//,42250,44100);
+~src = Buffer.read(s,FluidFilesPath("Tremblay-ASWINE-ScratchySynth-M.wav"));//,42250,44100);
 )
 
 // listen

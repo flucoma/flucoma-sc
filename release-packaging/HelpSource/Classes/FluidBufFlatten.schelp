@@ -71,7 +71,7 @@ code::
 //FluidBufPitch is useful to illustrate the effect of this, because the pitch and confidence values are easily distinguishable
 
 (
-~path = File.realpath(FluidLoadFolder.class.filenameSymbol).dirname +/+ "../AudioFiles";
+~path = FluidFilesPath();
 ~randomsoundfile = SoundFile.collect(~path +/+ '*').choose;
 b = Buffer.read(s,~randomsoundfile.path,action:{"Sound Loaded".postln});
 ~pitchdata = Buffer.new;
