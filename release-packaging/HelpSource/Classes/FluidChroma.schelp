@@ -1,57 +1,134 @@
 TITLE:: FluidChroma
-SUMMARY:: An histogram of pitch classes in Real-Time
+SUMMARY:: A histogram of pitch classes in Real-Time
 CATEGORIES:: Libraries>FluidCorpusManipulation
-RELATED::  Guides/FluidCorpusManipulation, Classes/FluidBufChroma
-
+RELATED:: Classes/FluidBufChroma,Classes/FluidPitch,Classes/FluidLoudness,Classes/FluidMFCC,Classes/FluidSpectralShape,Guides/FluidCorpusManipulationToolkit,Classes/FluidMFCC
 DESCRIPTION::
-This class computes a histogram of the energy contained for each pitch class across the analysis frequency range. Also known as a chromagram, this typically allows you to get a contour of how much each semitone is represented in the spectrum over time. The number of chroma bins (and, thus, pitch classes) and the central reference frequency can be adjusted.
 
-It is part of the LINK:: Guides/FluidCorpusManipulation##Fluid Corpus Manipulation Toolkit::. For more explanations, learning material, and discussions on its musicianly uses, visit http://www.flucoma.org/
+    
+    This class computes a histogram of the energy contained for each pitch class across the analysis frequency range.
 
-The process will return a multichannel control steam of size STRONG::maxNumChroma::, which will be repeated if no change happens within the algorithm, i.e. when the hopSize is larger than the server's kr period.
+
+    
+    Also known as a chromagram, this typically allows you to get a contour of how much each semitone is represented in the spectrum over time. The number of chroma bins (and, thus, pitch classes) and the central reference frequency can be adjusted.
+
+    The process will return a multichannel control steam of size maxNumChroma, which will be repeated if no change happens within the algorithm, i.e. when the hopSize is larger than the signal vector size.
+
 
 CLASSMETHODS::
 
 METHOD:: kr
-	The audio rate in, control rate out version of the object.
 
 ARGUMENT:: in
-	The audio to be processed.
+
+  Audio-rate signal to analyze
 
 ARGUMENT:: numChroma
-	The number of chroma bins per octave. It will determine how many channels of the output stream are filled.
+
+    
+    The number of chroma bins per octave. It will determine how many channels are output per input channel.
+
+    STRONG::Constraints::
+
+    LIST::
+    ## 
+    Minimum: 2
+
+    ## 
+    Maximum: CODE::maxNumChroma::
+
+    ::
 
 ARGUMENT:: ref
-	The reference frequency in Hz for the tuning to middle A (default: 440 Hz)
 
-ARGUMENT:: minFreq
-	The lower frequency included in the analysis, in Hz.
+    
+    STRONG::Constraints::
 
-ARGUMENT:: maxFreq
-	The highest frequency included in the analysis, in Hz.
+    LIST::
+    ## 
+    Minimum: 0
+
+    ## 
+    Maximum: 22000
+
+    ::
 
 ARGUMENT:: normalize
-This flag enables the scaling of the output. It is off (0) by default. (1) will normalise each frame to sum to 1. (2) normalises each frame relative to the loudest chroma bin being 1.
+
+    
+    This flag enables the scaling of the output. It is off (0) by default. (1) will normalise each frame to sum to 1. (2) normalises each frame relative to the loudest chroma bin being 1.
+
+
+ARGUMENT:: minFreq
+
+    
+    The lower frequency included in the analysis, in Hz.
+
+    STRONG::Constraints::
+
+    LIST::
+    ## 
+    Minimum: 0
+
+    ::
+
+ARGUMENT:: maxFreq
+
+    
+    The highest frequency included in the analysis, in Hz.
+
+    STRONG::Constraints::
+
+    LIST::
+    ## 
+    Minimum: -1
+
+    ::
 
 ARGUMENT:: windowSize
-	The window size. As chroma computation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
+
+    
+    The window size. As sinusoidal estimation relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. LINK::http://www.subsurfwiki.org/wiki/Gabor_uncertainty::
+
 
 ARGUMENT:: hopSize
-	The window hop size. As chroma computation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of windowSize (overlap of 2).
+
+    
+    The window hop size. As sinusoidal estimation relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of windowSize (overlap of 2).
+
 
 ARGUMENT:: fftSize
-	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will use the next power of 2 equal or above the windowSize.
+
+    
+    The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will default to windowSize.
+
+
+ 
+ARGUMENT:: maxNumChroma
+
+    
+    The maximum number of chroma bins. This sets the number of channels of the output stream, and therefore cannot be modulated.
+
+    STRONG::Constraints::
+
+    LIST::
+    ## 
+    Minimum: 2
+
+    ## 
+    Maximum: (max FFFT Size / 2) + 1`` (see maxFFTSize)
+
+    ::
 
 ARGUMENT:: maxFFTSize
-	How large can the FFT be, by allocating memory at instantiation time. This cannot be modulated.
 
-ARGUMENT:: maxNumChroma
-	The maximum number of chroma bins. This sets the number of channels of the output stream, and therefore cannot be modulated.
-
-RETURNS::
-	A  KR signal of STRONG::maxNumChroma:: channels, giving the measure amplitudes for each chroma bin. The latency is windowSize.
+    
+    How large can the FFT be, by allocating memory at instantiation time. This cannot be modulated.
 
 
+ 
+
+INSTANCEMETHODS::
+  
 EXAMPLES::
 
 code::
