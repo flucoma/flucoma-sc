@@ -1,40 +1,86 @@
 TITLE:: FluidLoudness
 SUMMARY:: A Loudness and True-Peak Descriptor in Real-Time
 CATEGORIES:: Libraries>FluidCorpusManipulation
-RELATED::  Guides/FluidCorpusManipulation
-
+RELATED:: Classes/FluidBufLoudness,Classes/FluidPitch,Classes/FluidMelBands,Classes/FluidMFCC,Classes/FluidSpectralShape,Guides/FluidCorpusManipulationToolkit
 DESCRIPTION::
-This class implements two loudness descriptors, computing the true peak of the signal as well as applying the filters proposed by broadcasting standards to emulate the perception of amplitude. It is part of the LINK:: Guides/FluidCorpusManipulation##Fluid Corpus Manipulation Toolkit::. For more explanations, learning material, and discussions on its musicianly uses, visit http://www.flucoma.org/
 
-The process will return a multichannel control steam with [loudness, truepeak] values, both in dBfs, which will be repeated if no change happens within the algorithm, i.e. when the hopSize is larger than the server's kr period. More information on broadcasting standardisation of loudness measurement is available at the reference page FOOTNOTE::https://tech.ebu.ch/docs/tech/tech3341.pdf:: and in more musician-friendly explantions here FOOTNOTE::http://designingsound.org/2013/02/06/loudness-and-metering-part-1/::.
+    
+    Two loudness descriptors, with a ITU BS 1770 mode
+
+
+    
+    Computes the true peak of the signal as well as applying the filters proposed by broadcasting standards to emulate the perception of amplitude.
+
+    The process will return a multichannel control steam with [loudness, truepeak] values, both in dBFS, which will be repeated if no change happens within the algorithm, i.e. when the hopSize is larger than the signal vector size. More information on broadcasting standardisation of loudness measurement is available at the reference page (LINK::https://tech.ebu.ch/docs/tech/tech3341.pdf::) and in more musician-friendly explantions here (LINK::http://designingsound.org/2013/02/06/loudness-and-metering-part-1/::).
+
 
 CLASSMETHODS::
 
 METHOD:: kr
-	The audio rate in, control rate out version of the object.
 
 ARGUMENT:: in
-	The audio to be processed.
+
+  Audio-rate signal to analyze
 
 ARGUMENT:: kWeighting
-	A flag to switch the perceptual model of loudness. On by default, removing it makes the algorithm more CPU efficient by reverting to a simple RMS of the frame.
+
+    
+    A flag to switch the perceptual model of loudness. On by default, removing it makes the algorithm more CPU efficient by reverting to a simple RMS of the frame.
+
 
 ARGUMENT:: truePeak
-	A flag to switch the computation of TruePeak. On by default, removing it makes the algorithm more CPU efficient by reverting to a simple absolute peak of the frame.
+
+    
+    A flag to switch the computation of TruePeak. On by default, removing it makes the algorithm more CPU efficient by reverting to a simple absolute peak of the frame.
+
 
 ARGUMENT:: windowSize
-	The size of the window on which the computation is done. By default 1024 to be similar with all other FluCoMa objects, the EBU specifies other values as per the examples below.
+
+    
+    The size of the window on which the computation is done. By default 1024 to be similar with all other FluCoMa objects, the EBU specifies 400ms, which is 17640 samples at 44100.
+
+    STRONG::Constraints::
+
+    LIST::
+    ## 
+    Maximum: CODE::maxWindowSize::
+
+    ::
 
 ARGUMENT:: hopSize
-	How much the buffered window moves forward, in samples. By default 512 to be similar with all other FluCoMa objects, the EBU specifies other values as per the examples below.
 
-ARGUMENT:: maxwindowSize
-	How large can the windowSize be, by allocating memory at instantiation time. This cannot be modulated.
+    
+    How much the buffered window moves forward, in samples. By default 512 to be similar with all other FluCoMa objects, the EBU specifies 100ms, which is 4410 samples at 44100.
 
-RETURNS::
-	A 2-channel KR signal with the [loudness, peak] descriptors. The latency is windowSize.
+    STRONG::Constraints::
 
+    LIST::
+    ## 
+    Minimum: 1
 
+    ::
+
+ 
+ARGUMENT:: maxWindowSize
+
+    
+    How large can the windowSize be, by allocating memory at instantiation time. This cannot be modulated.
+
+    STRONG::Constraints::
+
+    LIST::
+    ## 
+    Minimum: 4
+
+    ## 
+    Snaps to powers of two
+
+    ::
+
+ 
+
+INSTANCEMETHODS::
+  
 EXAMPLES::
 
 
