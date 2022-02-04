@@ -288,7 +288,7 @@ FluidWaveformImageLayer {
 
 	loadColorFile {
 		arg filename;
-		^CSVFileReader.readInterpret(FluidFilesPath("../Resources/color-schemes/%.csv".format(filename))).collect{
+		^CSVFileReader.readInterpret(FluidFilesPath("../color-schemes/%.csv".format(filename))).collect{
 			arg row;
 			Color.fromArray(row);
 		}
