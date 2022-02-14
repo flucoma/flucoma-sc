@@ -1,13 +1,13 @@
 FluidPCA : FluidModelObject{
 
-    var <>numDimensions;
+    var <>numDimensions, <>whiten;
 
-    *new {|server, numDimensions = 2|
-    	^super.new(server,[numDimensions]).numDimensions_(numDimensions);
+    *new {|server, numDimensions = 2, whiten = 0|
+		^super.new(server,[numDimensions, whiten]).numDimensions_(numDimensions).whiten_(whiten);
     }
 
     prGetParams{
-        ^[this.id, numDimensions];
+        ^[this.id, numDimensions, whiten];
     }
 
     fitMsg{|dataSet|
