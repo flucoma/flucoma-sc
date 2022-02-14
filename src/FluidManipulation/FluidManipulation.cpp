@@ -37,7 +37,7 @@ PluginLoad(FluidSTFTUGen)
   makeSCWrapper<NRTThreadedKMeansClient>("FluidKMeans",ft);
   makeSCWrapper<RTKMeansQueryClient>("FluidKMeansQuery",ft);
 
-  makeSCWrapper<NRTThreadedKMeansClient>("FluidSKMeans",ft);
+  makeSCWrapper<NRTThreadedSKMeansClient>("FluidSKMeans",ft);
   makeSCWrapper<RTSKMeansQueryClient>("FluidSKMeansQuery",ft);
 
   makeSCWrapper<NRTThreadedKNNClassifierClient>("FluidKNNClassifier",ft);
