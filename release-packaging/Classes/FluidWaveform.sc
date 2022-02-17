@@ -14,6 +14,10 @@ FluidViewer {
 			});
 		}
 	}
+
+	*categoryColors {
+		^FluidViewer.createCatColors;
+	}
 }
 
 FluidWaveformAudioLayer {
