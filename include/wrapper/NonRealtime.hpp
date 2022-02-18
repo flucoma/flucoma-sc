@@ -695,7 +695,16 @@ private:
         ptr->mClient.setParams(ptr->mParams);
       }
       else
-        printNotFound(NRTCommand::mID);
+      {
+        mParamsSize = args->size;
+        mParamsData = (char*) getInterfaceTable()->fRTAlloc(world, asUnsigned(mParamsSize));
+        std::copy_n(args->data, args->size,mParamsData);
+//        mArgs = args; GAH WHY ISN"T THIS COPYABLE????
+        mArgs.init(mParamsSize,mParamsData);
+        mArgs.count = args->count;
+        mArgs.rdpos = mParamsData + std::distance(args->data,args->rdpos);
+        mTryInNRT = true;
+      }
     }
 
     static const char* name()
@@ -703,6 +712,34 @@ private:
       static std::string cmd = std::string(Wrapper::getName()) + "/setParams";
       return cmd.c_str();
     }
+    
+    bool stage2(World* world)
+    {
+      
+      if(!mTryInNRT) return false;
+      
+      if (auto ptr = get(NRTCommand::mID).lock())
+      {        
+        ptr->mParams.template setParameterValues<ParamsFromOSC>(true, world, mArgs);
+        Result result = validateParameters(ptr->mParams);
+        ptr->mClient.setParams(ptr->mParams);
+      }
+      else
+        printNotFound(NRTCommand::mID);
+        
+      return true;
+    }
+    
+    bool stage3(World* world)
+    {
+       if(mParamsData) getInterfaceTable()->fRTFree(world, mParamsData);
+       return false;
+    }
+        
+    bool mTryInNRT{false};
+    char* mParamsData{nullptr};
+    int mParamsSize;
+    sc_msg_iter mArgs;
   };
 
 
