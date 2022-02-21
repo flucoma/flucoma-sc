@@ -1,5 +1,5 @@
 // load a source folder
-~loader = FluidLoadFolder(File.realpath(FluidBufMFCC.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/");
+~loader = FluidLoadFolder(FluidFilesPath());
 ~loader.play;
 
 //slightly oversegment with novelty
@@ -102,15 +102,18 @@ t = Main.elapsedTime;
 (
 ~windowedFunct = {arg head, winSize, overlap;
 	var nbass = [], assignments = [], tempDict = ();
+	"windowedFunct".postln;
 	//check the size of everything to not overrun
 	winSize = (~originalslicesarray.size - head).min(winSize);
 	//copy the items to a subdataset from hear
 	winSize.do{|i|
+		"winSize %\n".postf(i);
 		tempDict.put((i.asString), ~sliceDict["data"][(~orginalkeys[(i+head)]).asString]);//here one could curate which stats to take
 		// "whichslices:%\n".postf(i+head);
 	};
+	"sliceDict cols: %\n".postf(~sliceDict["cols"]);
 	~windowDS.load(Dictionary.newFrom([\cols, ~sliceDict["cols"].asInteger, \data, tempDict]), action: {
-		// "% - loaded\n".postf(head);
+		"% - loaded\n".postf(head);
 
 		//kmeans 2 and retrieve ordered array of class assignations
 		~kmeans.fitPredict(~windowDS, ~windowLS, action: {|x|

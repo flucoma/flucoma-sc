@@ -9,7 +9,7 @@ s.reboot
 //We'll jam together some random flucoma sounds for illustrative purposes
 //Get some files
 (
-~audioexamples_path = File.realpath(FluidBufMelBands.class.filenameSymbol).dirname.withTrailingSlash +/+ "../AudioFiles/*.wav";
+~audioexamples_path = FluidFilesPath()+/+"*.wav";
 ~allTheSounds = SoundFile.collect(~audioexamples_path);
 ~testSounds = ~allTheSounds;
 ~testSounds.do{|f| f.path.postln}; // print out the files that are loaded
@@ -224,7 +224,7 @@ fork{
 ~stdmels = FluidDataSet(s);//will standardised, pruned mel data
 ~standardizer = FluidStandardize(s);
 ~pruner = FluidDataSetQuery(s);
-~tree = FluidKDTree(s,numNeighbours:10,lookupDataSet:~slicedata);//we have to supply the lookup data set when we make the tree (boo!)
+~tree = FluidKDTree(s,numNeighbours:10);//we have to supply the lookup data set when we make the tree (boo!)
 )
 
 //Prune, standardize and fit KDTree

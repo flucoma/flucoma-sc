@@ -11,7 +11,7 @@
 ~flatbuf = 4.collect{Buffer.new};
 
 // here we instantiate a loader as per example 0
-~loader = FluidLoadFolder(File.realpath(FluidBufMFCC.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/");
+~loader = FluidLoadFolder(FluidFilesPath());
 
 // here we instantiate a further slicing step as per example 0
 ~slicer = FluidSliceCorpus({ |src,start,num,dest|
