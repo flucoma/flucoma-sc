@@ -96,7 +96,7 @@ jobs:
         run: mkdir -p mac/FluidCorpusManipulation/HelpSource && cp -r docs/*   mac/FluidCorpusManipulation/HelpSource
          
       - name: compress win
-        run: zip -r ../FluCoMa-SC-Mac-nightly.zip .
+        run: zip -r ../FluCoMa-SC-Mac.zip .
         working-directory: mac    
 
       - uses: actions/download-artifact@v2
@@ -108,7 +108,7 @@ jobs:
         run: mkdir -p win/FluidCorpusManipulation/HelpSource && cp -r docs/* win/FluidCorpusManipulation/HelpSource
         
       - name: compress win
-        run: zip -r ../FluCoMa-SC-Windows-nightly.zip .
+        run: zip -r ../FluCoMa-SC-Windows.zip .
         working-directory: win    
 
       - uses: actions/download-artifact@v2
@@ -121,7 +121,7 @@ jobs:
         run: mkdir -p linux/FluidCorpusManipulation/HelpSource && cp -r docs/* linux/FluidCorpusManipulation/HelpSource
         
       - name: compress linux
-        run: zip -r ../FluCoMa-SC-Linux-nightly.zip .
+        run: zip -r ../FluCoMa-SC-Linux.zip .
         working-directory: linux     
 
       - name: package and upload
