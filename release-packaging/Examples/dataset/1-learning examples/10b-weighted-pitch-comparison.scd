@@ -1,6 +1,6 @@
 //load a part of a sound that has 3 clear components: a clear pitch component to start, a noisy pitchless ending and DC offset silence on both ends
 (
-b = Buffer.read(s,File.realpath(FluidBufPitch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-ASWINE-ScratchySynth-M.wav",42250,44100);
+b = Buffer.read(s,FluidFilesPath("Tremblay-ASWINE-ScratchySynth-M.wav"),42250,44100);
 ~pitches = Buffer(s);
 ~stats = Buffer(s);
 ~loud = Buffer(s);

@@ -74,6 +74,13 @@ FetchContent_Declare(
   GIT_TAG origin/main
 )
 
+FetchContent_Declare(
+  flucoma-docs
+  GIT_REPOSITORY https://github.com/flucoma/flucoma-docs.git
+  GIT_PROGRESS TRUE
+  GIT_TAG origin/main
+)
+
 if(FLUID_PATH)
   get_filename_component(
     FETCHCONTENT_SOURCE_DIR_FLUCOMA-CORE ${FLUID_PATH} ABSOLUTE
@@ -89,8 +96,32 @@ if(NOT flucoma-core_POPULATED)
   include(flucoma-buildtype)
 endif()
 
+option(DOCS "Generate scdocs" OFF)
+set(FLUID_DOCS_PATH "" CACHE PATH "Optional path to flucoma-docs (needed for docs); will download if absent")
+
+if(DOCS)
+  
+  set(${SC_DOC_OUT} "${CMAKE_SOURCE_DIR}/HelpSource/" CACHE PATH "")
+  
+  if(FLUID_DOCS_PATH)
+    get_filename_component(
+      FETCHCONTENT_SOURCE_DIR_FLUCOMA-DOCS ${FLUID_DOCS_PATH} ABSOLUTE
+    )
+  endif()
+
+  FetchContent_GetProperties(flucoma-docs)
+  if(NOT flucoma-docs_POPULATED)
+    FetchContent_Populate(flucoma-docs)
+    file(GLOB_RECURSE DOC_SOURCE RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "${flucoma-docs_SOURCE_DIR}/**/*.cpp" )
+    source_group("\\SC Doc Gen" FILES ${DOC_SOURCE})
+    add_subdirectory(${flucoma-docs_SOURCE_DIR} ${flucoma-docs_BINARY_DIR})
+  endif()
+
+  add_custom_target(SC_MAKE_DOCS ALL DEPENDS MAKE_SC_REF)
+endif()
+
 set_if_toplevel(VAR CMAKE_LIBRARY_OUTPUT_DIRECTORY 
-                TOPLEVEL "${CMAKE_CURRENT_SOURCE_DIR}/release-packaging/plugins"
+                TOPLEVEL "${CMAKE_CURRENT_SOURCE_DIR}/release-packaging/Plugins"
                 SUPERBUILD "${CMAKE_SOURCE_DIR}/sc_plugins/${CMAKE_HOST_SYSTEM_NAME}/${CMAKE_HOST_SYSTEM_PROCESSOR}")
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
@@ -190,19 +221,27 @@ set(SC_INSTALL_PREFIX "." CACHE PATH "Prefix for assembling SC packages")
 set(FLUID_PACKAGE_NAME FluidCorpusManipulation CACHE STRING "Name for published package")
 set(SC_PACKAGE_ROOT ${SC_INSTALL_PREFIX}/${FLUID_PACKAGE_NAME})
 
-foreach(PACKAGE_DIRECTORY Classes;HelpSource;Examples)
+foreach(PACKAGE_DIRECTORY Classes;HelpSource;Examples;)
   install(DIRECTORY "release-packaging/${PACKAGE_DIRECTORY}" 
           DESTINATION ${SC_PACKAGE_ROOT})
 endforeach()
 
+install(DIRECTORY "sc-resources/"
+        DESTINATION ${SC_PACKAGE_ROOT}/Resources)
+
 install(DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/ 
-        DESTINATION ${SC_PACKAGE_ROOT}/plugins 
+        DESTINATION ${SC_PACKAGE_ROOT}/Plugins
         PATTERN "*.ilk" EXCLUDE 
         PATTERN "*.PDB" EXCLUDE)
-install(DIRECTORY "${flucoma-core_SOURCE_DIR}/AudioFiles" 
+install(DIRECTORY "${flucoma-core_SOURCE_DIR}/Resources" 
         DESTINATION ${SC_PACKAGE_ROOT})
 install(FILES QuickStart.md 
         DESTINATION ${SC_PACKAGE_ROOT})
 install(FILES ${flucoma-core_SOURCE_DIR}/distribution.lic 
         DESTINATION ${SC_PACKAGE_ROOT} 
         RENAME LICENSE.md)
+
+if(DOCS)
+  install(DIRECTORY "${SC_DOC_OUT}" 
+          DESTINATION "${SC_PACKAGE_ROOT}/HelpSource")
+endif()

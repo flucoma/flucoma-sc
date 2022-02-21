@@ -16,8 +16,8 @@ FluidPlotterPoint {
 	}
 }
 
-FluidPlotter {
-	var <parent, <userView, <xmin, <xmax, <ymin, <ymax, <pointSize = 6, pointSizeScale = 1, dict_internal, <dict, shape = \circle, catColors, highlightIdentifier;
+FluidPlotter : FluidViewer {
+	var <parent, <userView, <xmin, <xmax, <ymin, <ymax, <pointSize = 6, pointSizeScale = 1, dict_internal, <dict, shape = \circle, highlightIdentifiersArray, categoryColors;
 
 	*new {
 		arg parent, bounds, dict, mouseMoveAction,xmin = 0,xmax = 1,ymin = 0,ymax = 1;
@@ -33,20 +33,10 @@ FluidPlotter {
 		ymin = ymin_;
 		ymax = ymax_;
 
-		this.createCatColors;
+		categoryColors = this.createCatColors;
 		dict_internal = Dictionary.new;
 		if(dict_.notNil,{this.dict_(dict_)});
 		this.createPlotWindow(bounds,parent_,mouseMoveAction,dict_);
-	}
-
-	createCatColors {
-		catColors = "1f77b4ff7f0e2ca02cd627289467bd8c564be377c27f7f7fbcbd2217becf".clump(6).collect{
-			arg six;
-			Color(*six.clump(2).collect{
-				arg two;
-				"0x%".format(two).interpret / 255;
-			});
-		};
 	}
 
 	categories_ {
@@ -56,7 +46,10 @@ FluidPlotter {
 			var counter = 0;
 			dict_internal.keysValuesDo({
 				arg id, fp_pt;
-				var category_string = labelSetDict.at("data").at(id)[0];
+
+				// the id has to be converted back into a string because the
+				// labelSetDict that comes in has the keys as strings by default
+				var category_string = labelSetDict.at("data").at(id.asString)[0];
 				var category_int;
 				var color;
 
@@ -67,21 +60,22 @@ FluidPlotter {
 
 				category_int = label_to_int.at(category_string);
 
-				if(category_int > (catColors.size-1),{
+				if(category_int > (categoryColors.size-1),{
 					"FluidPlotter:setCategories_ FluidPlotter doesn't have that many category colors. You can use the method 'setColor_' to set colors for individual points.".warn
 				});
 
-				color = catColors[category_int];
+				color = categoryColors[category_int];
 				fp_pt.color_(color);
 			});
 			this.refresh;
 		},{
-			"FluidPlotter::setCategories_ FluidPlotter cannot receive setCategories. It has no data. First set a dictionary.".warn;
+			"FluidPlotter::setCategories_ FluidPlotter cannot receive method \"categories_\". It has no data. First set a dictionary.".warn;
 		});
 	}
 
 	pointSize_ {
 		arg identifier, size;
+		identifier = identifier.asSymbol;
 		if(dict_internal.at(identifier).notNil,{
 			dict_internal.at(identifier).size_(size);
 			this.refresh;
@@ -90,9 +84,9 @@ FluidPlotter {
 		});
 	}
 
-	// TODO: addPoint_ that checks if the key already exists and throws an error if it does
 	addPoint_ {
 		arg identifier, x, y, color, size = 1;
+		identifier = identifier.asSymbol;
 		if(dict_internal.at(identifier).notNil,{
 			"FluidPlotter::addPoint_ There already exists a point with identifier %. Point not added. Use setPoint_ to overwrite existing points.".format(identifier).warn;
 		},{
@@ -103,6 +97,8 @@ FluidPlotter {
 	setPoint_ {
 		arg identifier, x, y, color, size = 1;
 
+		identifier = identifier.asSymbol;
+
 		dict_internal.put(identifier,FluidPlotterPoint(identifier,x,y,color ? Color.black,size));
 
 		this.refresh;
@@ -110,6 +106,7 @@ FluidPlotter {
 
 	pointColor_ {
 		arg identifier, color;
+		identifier = identifier.asSymbol;
 		if(dict_internal.at(identifier).notNil,{
 			dict_internal.at(identifier).color_(color);
 			this.refresh;
@@ -152,7 +149,7 @@ FluidPlotter {
 		dict_internal = Dictionary.new;
 		dict.at("data").keysValuesDo({
 			arg k, v;
-			dict_internal.put(k,FluidPlotterPoint(k,v[0],v[1],Color.black,1));
+			dict_internal.put(k.asSymbol,FluidPlotterPoint(k,v[0],v[1],Color.black,1));
 		});
 		if(userView.notNil,{
 			this.refresh;
@@ -184,8 +181,11 @@ FluidPlotter {
 	}
 
 	highlight_ {
-		arg identifier;
-		highlightIdentifier = identifier;
+		arg arr;
+
+		if(arr.isKindOf(String).or(arr.isKindOf(Symbol)),{arr = [arr]});
+
+		highlightIdentifiersArray = arr.collect({arg item; item.asSymbol});
 		this.refresh;
 	}
 
@@ -219,10 +219,16 @@ FluidPlotter {
 						pt.x.postln;
 						pt.y.postln;*/
 
-						if(key == highlightIdentifier,{
-							pointSize_ = pointSize * 2.3 * pt.size
+						// highlightIdentifiersArray.postln;
+						if(highlightIdentifiersArray.notNil,{
+							//"FluidPLotter:createPlotWindow is % in %".format(key,highlightIdentifiersArray).postln;
+							if(highlightIdentifiersArray.includes(key),{
+								pointSize_ = pointSize * 2.3 * pt.size
+							},{
+								pointSize_ = pointSize * pt.size
+							});
 						},{
-							pointSize_ = pointSize * pt.size
+							pointSize_ = pointSize * pt.size;
 						});
 
 						pointSize_ = pointSize_ * pointSizeScale;

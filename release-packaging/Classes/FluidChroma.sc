@@ -1,6 +1,6 @@
 FluidChroma : FluidRTMultiOutUGen {
 
-	*kr { arg in = 0, numChroma = 12, ref = 440, minFreq = 0, maxFreq = -1, normalize = 0, windowSize = 1024, hopSize = -1, fftSize = -1, maxFFTSize = 16384, maxNumChroma = 120;
+	*kr { arg in = 0, numChroma = 12, ref = 440, normalize = 0, minFreq = 0, maxFreq = -1, windowSize = 1024, hopSize = -1, fftSize = -1, maxNumChroma = 120, maxFFTSize = 16384;
 		^this.multiNew('control', in.asAudioRateInput(this), numChroma, ref, normalize, minFreq, maxFreq, maxNumChroma, windowSize, hopSize, fftSize, maxFFTSize);
 	}
 

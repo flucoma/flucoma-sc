@@ -1,5 +1,5 @@
 (
-b = Buffer.read(s,File.realpath(FluidBufNoveltySlice.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
+b = Buffer.read(s,FluidFilesPath("Nicol-LoopE-M.wav"));
 c = Buffer.new(s);
 )
 

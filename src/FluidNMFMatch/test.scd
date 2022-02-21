@@ -2,7 +2,7 @@ s.reboot;
 
     //from Fixed NMF example:
 (
-b = Buffer.read(s,File.realpath(FluidBufNMF.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-AcousticStrums-M.wav");
+b = Buffer.read(s,FluidFilesPath("Tremblay-AaS-AcousticStrums-M.wav"));
 c = Buffer.new(s);
 x = Buffer.new(s);
 e = Buffer.alloc(s,1,1);
@@ -38,4 +38,3 @@ Routine{
 )
 
 {DelayN.ar(PlayBuf.ar(1,b.bufnum),0.1,1024/44100, FluidNMFMatch.kr(PlayBuf.ar(1,b.bufnum),e.bufnum,2))}.play
-

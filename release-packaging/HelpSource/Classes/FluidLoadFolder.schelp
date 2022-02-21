@@ -60,7 +60,7 @@ s.reboot;
 
 (
 // We'll load all the Fluid Corpus Manipulation audio example files
-~path = File.realpath(FluidLoadFolder.class.filenameSymbol).dirname +/+ "../AudioFiles";
+~path = FluidFilesPath();
 
 ~loader = FluidLoadFolder(~path);
 

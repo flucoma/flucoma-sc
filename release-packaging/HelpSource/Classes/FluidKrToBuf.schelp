@@ -4,7 +4,7 @@ categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidBufToKr
 
 DESCRIPTION::
-Helper pseudo UGen for writing data into a buffer from a Kr stream. It only works with one-channel buffers. The number of frames in the link::Classes/Buffer:: must be the same as the number of channels in the Kr stream.
+Helper pseudo UGen for writing data into a buffer from a Kr stream. It only works with one-channel buffers.
 
 CLASSMETHODS::
 
@@ -15,34 +15,65 @@ ARGUMENT:: krStream
 The Kr stream to write into the buffer.
 
 ARGUMENT:: buffer
-The link::Classes/Buffer:: to write the Kr stream into.
+The buffer to write the Kr stream into. Can be either a link::Classes/Buffer:: object, or an index poiting to a buffer.
 
-returns:: Nothing.
+ARGUMENT:: krStartChan
+The channel in the code::krStream:: to begin the reading from. The default is 0.
 
+ARGUMENT:: krNumChans
+The number of channels in the code::krStream:: to read from starting at code::krStartChan:: The default of -1 will read from code::krStartChan:: to the max number of channels in the code::krStream::.
+
+ARGUMENT:: destStartFrame
+The frame in the code::buffer:: to begin writing into. The default is 0.
+
+returns:: This class.
 
 INSTANCEMETHODS::
 
 
 EXAMPLES::
-
 code::
+
 (
-// FluidKrToBuf test
-s.waitForBoot{
-	Routine{
-		var buf = Buffer.alloc(s,5);
-
-		s.sync;
-
-		{
-			var sig = SinOsc.kr(rrand(1.0.dup(buf.numFrames),4.0));
-			FluidKrToBuf.kr(sig,buf);
-		}.play;
-
-		1.wait;
-
-		defer{buf.plot};
-	}.play;
-}
+~synth = {
+	var buf = LocalBuf(512).clear;
+	var sig = SinOsc.ar([440,441]);
+	var lfos = Array.fill(512,{arg i; SinOsc.ar(i.linlin(0,511,0.01,0.2))});
+	FluidKrToBuf.kr(lfos,buf);
+	sig = Shaper.ar(buf,sig);
+	sig.dup * -40.dbamp;
+}.scope;
 )
+
+::
+Use with other FluCoMa objects:
+code::
+
+// make a new dataset
+~ds = FluidDataSet(s);
+
+// run a synth with varying sounds and an mfcc analysis
+(
+~synth = {
+	arg t_trig;
+	var buf = LocalBuf(13);
+	var n = 7;
+	var sig = BPF.ar(PinkNoise.ar.dup(n),LFDNoise1.kr(2.dup(n)).exprange(100,4000)).sum * -20.dbamp;
+	var mfccs = FluidMFCC.kr(sig,buf.numFrames,startCoeff:1,maxNumCoeffs:buf.numFrames);
+
+	// write the real-time mfcc analysis into this buffer so that...
+	FluidKrToBuf.kr(mfccs,buf);
+
+	// it can be added to the dataset from that buffer by sending a trig to the synth
+	FluidDataSetWr.kr(~ds,"point-",PulseCount.kr(t_trig),buf:buf,trig:t_trig);
+	sig.dup;
+}.play;
+)
+
+// send a bunch of triggers and...
+~synth.set(\t_trig,1);
+
+// see how your dataset grows
+~ds.print;
+
 ::

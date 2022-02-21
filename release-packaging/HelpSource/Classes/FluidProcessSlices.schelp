@@ -87,7 +87,7 @@ s.reboot;
 //Load all the Fluid Corpus Manipulation audio files
 
 (
-~path = File.realpath(FluidLoadFolder.class.filenameSymbol).dirname +/+ "../AudioFiles";
+~path = FluidFilesPath();
 ~loader = FluidLoadFolder(~path);
 ~loader.play(s,action:{ |dataDictionary| "Done loading".postln});
 ~slicer = FluidSliceCorpus({ |src,start,num,dest|

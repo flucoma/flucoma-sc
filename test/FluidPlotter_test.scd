@@ -56,7 +56,7 @@ d = ~dummy_data.value;
 ~fp.highlight_("example-95");
 
 // a different one
-~fp.highlight_("example-94");
+~fp.highlight_(["example-94","example-22"]);
 
 // none
 ~fp.highlight_(nil);
@@ -90,7 +90,7 @@ d = ~dummy_data.value;
 s.waitForBoot{
 	Routine{
 		var labelset = FluidLabelSet(s);
-		var kmeans = FluidKMeans(s);
+		var kmeans = FluidKMeans(s,4);
 		var ds = FluidDataSet(s);
 
 		s.sync;
@@ -144,3 +144,66 @@ Window.closeAll;
 
 // now set data
 ~fp.dict_(~dummy_data.(0.01,1,0.0,1.0).postln);
+
+// ===== using KDTree to lookup the nearest neighbor of the mouse =====
+// make some dummy data and plot it
+
+s.boot;
+~ds = FluidDataSet(s);
+
+( // define a function to make some dummy data
+~dummy_data = {
+	arg xmin = 20, xmax = 20000, ymin = -130, ymax = 0;
+	Dictionary.newFrom([
+		"cols",2,
+		"data",Dictionary.newFrom(Array.fill(200,{
+			arg i;
+			var return;
+			if((i % 2) == 0,{
+				return = "example-%".format((i/2).asInteger);
+			},{
+				return = [rrand(xmin,xmax),rrand(ymin,ymax)];
+			});
+			// return.postln;
+			return;
+		}))
+	]);
+};
+)
+
+// load some data into the dataset
+~ds.load(~dummy_data.(0.0,1.0,0.0,1.0));
+
+// make the kdtree and specify that it should return the
+// 4 nearest neighbours
+~kdtree = FluidKDTree(s,4);
+
+// fit the kdtree to the dataset
+~kdtree.fit(~ds);
+
+// we need to have a buffer to put the xy mouse position into
+~xybuf = Buffer.alloc(s,2);
+
+(
+// now we can make the FluidPlotter. in the mouseMoveAction function
+// we can put the xy position in the buffer and use the buffer to
+// call kNearest on the FluidKDTree, which will return for us the
+// identifier of the nearest neighbor (what FluidKDTree returns will
+// always be a Symbol)
+~ds.dump({
+	arg dict;
+	// dict.at("data").dopostln;
+	~fp = FluidPlotter(bounds:Rect(200,200,600,600),dict:dict,mouseMoveAction:{
+		arg view, x, y, modifiers;
+		// [x,y].postln;
+		~xybuf.setn(0,[x,y]);
+		~kdtree.kNearest(~xybuf,{
+			arg nearest;
+			nearest.postln;
+			view.highlight_(nearest);
+		});
+		// [view, x, y, modifiers].dopostln;
+		// "".postln;
+	});
+});
+)

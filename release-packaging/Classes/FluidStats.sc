@@ -2,8 +2,8 @@ FluidStats : MultiOutUGen {
 
     var <channels;
 
-	*kr { arg inputsArray, size;
-        ^this.multiNew('control',*(inputsArray.asArray++size));
+	*kr { arg in, size;
+        ^this.multiNew('control',*(in.asArray++size));
 	}
 
 	init {arg ...theInputs;

@@ -8,7 +8,7 @@ s.reboot
 b = Buffer.alloc(s,s.sampleRate * 2);
 c = Buffer.new(s,0,3);
 d = Buffer.new(s,0,3);
-e = Buffer.read(s,File.realpath(FluidBufNMF.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
+e = Buffer.read(s,FluidFilesPath("Nicol-LoopE-M.wav"));
 g = Bus.audio(s,1);
 h = Buffer.loadCollection(s, Signal.rectWindow(22491).fade(0,440).fade(22049,22489,1,0).put(22490,0));
 

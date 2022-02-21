@@ -87,7 +87,7 @@ code::
 s.reboot
 
 (
-~path = File.realpath(FluidLoadFolder.class.filenameSymbol).dirname +/+ "../AudioFiles";
+~path = FluidFilesPath();
 ~loader = FluidLoadFolder(~path);
 ~loader.play(s,action:{ |dataDictionary| "Done loading".postln});
 )

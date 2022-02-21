@@ -2,8 +2,8 @@
 
 //load in the sound in and a pretrained basis
 (
-	b = Buffer.read(s,File.realpath(FluidNMFMatch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-SA-UprightPianoPedalWide.wav");
-	c = Buffer.read(s,File.realpath(FluidNMFMatch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/filters/piano-dicts.wav");
+	b = Buffer.read(s,FluidFilesPath("Tremblay-SA-UprightPianoPedalWide.wav"));
+	c = Buffer.read(s,FluidFilesPath("filters/piano-dicts.wav"));
 )
 b.play
 c.query

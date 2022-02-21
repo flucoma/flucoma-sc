@@ -108,7 +108,7 @@ To cancel a job setup in this way, we just free the synth and the background thr
 CODE::
 // load a buffer, declare a destination, and make a control bus to monitor the work
 (
-b = Buffer.read(s,File.realpath(FluidBufNMF.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
+b = Buffer.read(s,FluidFilesPath("Tremblay-AaS-SynthTwoVoices-M.wav"));
 c = Buffer.new(s);
 d = Bus.control(s,1);
 )
