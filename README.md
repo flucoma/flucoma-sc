@@ -2,34 +2,26 @@
 
 This repository hosts code for generating the SC objects and documentation resources for the Fluid Corpus Manipulation Project. Much of the actual code that does the exciting stuff lives in this repository's principal dependency, the [Fluid Corpus Manipulation Library](https://github.com/flucoma/flucoma-core).
 
+
 You can also download the most [recent release](https://learn.flucoma.org/installation/sc) or the most recent [nightly build](https://github.com/flucoma/flucoma-sc/releases/tag/nightly).
 
 Note that on macOS you may need to [dequarantine](https://learn.flucoma.org/installation/sc#step-3-dequarantine-scx-extensions) the binary files.
 
 ## Pre-requisites
 
-- [CMake](http://cmake.org) >= 3.11
-- A C++ 14 compliant compiler for Mac or Windows (via XCode tools on Mac, and Visual Studio 17 >= 15.9 on Windows)
 
-## Dependencies
+* C++14 compliant compiler (clang, GCC or MSVC)
+* cmake 
+* make (or Ninja or XCode or VisualStudio)
+* git 
+* an internet connection 
+* [SuperCollider Source Code](https://github.com/supercollider/supercollider)
 
-- [SC Source Code](https://github.com/supercollider/supercollider): this is the only dependency we don't (optionally) manage for you, so there must be a version available to point to when you run, using the CMake Variable `SC_PATH` (see below). It can live anywhere on your file system.
+CMake will automatically download the other dependencies needed
 
-These will be downloaded and configured automatically, unless you pass CMake a source code location on disk for each (see below):
-
-- [Fluid Corpus Manipulation Library](https://github.com/flucoma/flucoma-core)
-- [Eigen](https://gitlab.com/libeigen/eigen) (3.3.5)
-- [HISSTools Library](https://github.com/AlexHarker/HISSTools_Library)
-
-## I'm in a Hurry...
-
-...and you already have a development environment set up, understand CMake, and have the SC source available?
-
-Cool:
-
-```
+```bash
 mkdir -p build && cd build
-cmake -DSC_PATH=<location of your SC source> ..
+cmake -DSC_PATH=</path/to/sc> ..
 make install
 ```
 
@@ -68,6 +60,8 @@ For ARM, we use the following default set of flags (with the Bela in mind):
 ```
 -march=armv7-a -mtune=cortex-a8 -mfloat-abi=hard -mfpu=neon
 ```
+=======
+This will assemble a package in `release-packaging`.
 
 ## Credits
 #### FluCoMa core development team (in alphabetical order)

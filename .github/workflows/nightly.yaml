@@ -1,6 +1,7 @@
 name: Nightly Releases
 
 on:
+
   workflow_dispatch:
   push:
     branches: [ dev, ci/** ]
@@ -18,7 +19,7 @@ jobs:
         with:
           name: docs
           path: build/sc_ref  
-  
+
   macbuild:
     runs-on: macos-11
     steps:
@@ -30,6 +31,7 @@ jobs:
         with:                                                                                                                                                                            
           name: macbuild                                                                                                                                                                 
           path: install
+
 
   winbuild:
     runs-on: windows-latest
@@ -46,6 +48,7 @@ jobs:
         with: 
           name: winbuild
           path: install
+
 
   linuxbuild:
     runs-on: ubuntu-18.04
@@ -81,6 +84,7 @@ jobs:
       - name: compress win
         run: zip -r ../FluCoMa-SC-Mac-nightly.zip .
         working-directory: mac    
+
       
       - uses: actions/download-artifact@v2
         with:
@@ -94,9 +98,11 @@ jobs:
         run: zip -r ../FluCoMa-SC-Windows-nightly.zip .
         working-directory: win    
 
+
       - uses: actions/download-artifact@v2
         with:
           name: linuxbuild
+
           path: linux
           
       - name: copy docs to linux
@@ -105,6 +111,7 @@ jobs:
       - name: compress linux
         run: zip -r ../FluCoMa-SC-Linux-nightly.zip .
         working-directory: linux     
+
       
       - uses: dev-drprasad/delete-tag-and-release@v0.2.0
         with:
