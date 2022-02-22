@@ -24,7 +24,7 @@ d = ~dummy_data.value;
 // d.postln;
 ~fp = FluidPlotter(bounds:Rect(200,200,600,600),dict:d,mouseMoveAction:{
 	arg view, x, y, modifiers;
-	[view, x, y, modifiers].dopostln;
+	[view, x, y, modifiers].postln;
 	"".postln;
 },xmin:20,xmax:20000,ymin:-130,ymax:0);
 )
@@ -131,7 +131,7 @@ d = Dictionary.newFrom([
 w = Window("test",Rect(50,50,800,600)).front;
 ~fp = FluidPlotter(w,Rect(50,50,400,400),dict:d,mouseMoveAction:{
 	arg view, x, y, modifiers;
-	[view, x, y, modifiers].dopostln;
+	[view, x, y, modifiers].postln;
 	"".postln;
 },xmin:20,xmax:20000,ymin:-130,ymax:0);
 )
@@ -192,7 +192,7 @@ s.boot;
 // always be a Symbol)
 ~ds.dump({
 	arg dict;
-	// dict.at("data").dopostln;
+	// dict.at("data").postln;
 	~fp = FluidPlotter(bounds:Rect(200,200,600,600),dict:dict,mouseMoveAction:{
 		arg view, x, y, modifiers;
 		// [x,y].postln;
@@ -202,7 +202,7 @@ s.boot;
 			nearest.postln;
 			view.highlight_(nearest);
 		});
-		// [view, x, y, modifiers].dopostln;
+		// [view, x, y, modifiers].postln;
 		// "".postln;
 	});
 });
