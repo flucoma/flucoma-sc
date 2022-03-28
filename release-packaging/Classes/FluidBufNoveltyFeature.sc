@@ -1,6 +1,6 @@
 FluidBufNoveltyFeature : FluidBufProcessor {
 
-    *kr  { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, features, feature = 0, kernelSize = 3, filterSize = 1, windowSize = 1024, hopSize = -1, fftSize = -1, padding = 1, trig = 1, blocking = 0| 
+    *kr  { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, features, algorithm = 0, kernelSize = 3, filterSize = 1, windowSize = 1024, hopSize = -1, fftSize = -1, padding = 1, trig = 1, blocking = 0| 
 
         var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};
 
