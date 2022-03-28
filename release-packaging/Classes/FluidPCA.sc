@@ -55,15 +55,15 @@ FluidPCA : FluidModelObject{
         numDimensions = numDimensions ? this.numDimensions;
         this.numDimensions_(numDimensions);
 
-        ^FluidPCAQuery.kr(trig ,this, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer), this.numDimensions);
+        ^FluidPCAQuery.kr(trig ,this, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer), this.numDimensions, this.whiten);
     }
 
 }
 
 FluidPCAQuery :  FluidRTMultiOutUGen {
-       *kr{ |trig, model, inputBuffer,outputBuffer,numDimensions|
+       *kr{ |trig, model, inputBuffer,outputBuffer,numDimensions, whiten|
         ^this.multiNew('control',trig, model.asUGenInput,
-            numDimensions,
+            numDimensions, whiten,
             inputBuffer.asUGenInput, outputBuffer.asUGenInput)
     }
 
