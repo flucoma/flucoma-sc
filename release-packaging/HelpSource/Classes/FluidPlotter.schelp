@@ -6,6 +6,7 @@ related:: Classes/FluidDataSet, Classes/FluidLabelSet, Classes/FluidKDTree, Clas
 DESCRIPTION::
 FluidPlotter is a viewer for plotting data.
 
+Holding option/alt and clicking and dragging over a section of the plotter will zoom into that space. Hold command/control and click to return to the original x and y ranges.
 
 CLASSMETHODS::
 
@@ -59,9 +60,6 @@ Refresh the link::Classes/UserView:: inside the FluidPlotter.
 METHOD:: xmin
 Set xmin property and refresh the plotter.
 
-returns::
-xmin property.
-
 METHOD:: xmax
 Set xmax property and refresh the plotter.
 
@@ -70,6 +68,18 @@ Set ymin property and refresh the plotter.
 
 METHOD:: ymax
 Set ymax property and refresh the plotter.
+
+METHOD:: zoomxmin
+Get the x lower bound of the current zoom.
+
+METHOD:: zoomxmax
+Get the x upper bound of the current zoom.
+
+METHOD:: zoomymin
+Get the y lower bound of the current zoom.
+
+METHOD:: zoomymax
+Get the y upper bound of the current zoom.
 
 METHOD:: addPoint
 Manually add a single point to the FluidPlotter. Similar to the strong::addPoint:: method of link::Classes/FluidDataSet::, addPoint_ will not overwrite a point that already exists at the given identifier. Instead, a warning will be thrown.
@@ -180,13 +190,18 @@ Window.closeAll;
 d = ~dummy_data.value;
 // d.postln;
 ~fp = FluidPlotter(bounds:Rect(200,200,600,600),dict:d,mouseMoveAction:{
-	arg view, x, y, modifiers;
-	[view, x, y, modifiers].postln;
+	arg view, x, y, modifiers, buttonNumber, clickCount;
+	[view, x, y, modifiers, buttonNumber, clickCount].postln;
+	"current zoom:\n\tx: % to %\n\ty: % to %".format(view.zoomxmin,view.zoomxmax,view.zoomymin,view.zoomymax).postln;
 	"".postln;
 },xmin:20,xmax:20000,ymin:-130,ymax:0);
 )
 
 // click and drag on the plotter to report stuff in the mouseMoveAction callback function
+
+// hold option / alt and click and drag to zoom in on a section
+
+// hold command / control and click to return to the original zoom
 
 // change point size of just one point
 ~fp.pointSize_("example-5",10);
