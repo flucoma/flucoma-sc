@@ -18,5 +18,5 @@ PluginLoad(FluidSTFTUGen)
 {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<RTAmpFeatureClient>("FluidAmpCurve", ft);
+  makeSCWrapper<RTAmpFeatureClient>("FluidAmpFeature", ft);
 }

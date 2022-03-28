@@ -1,4 +1,4 @@
-FluidBufOnsetCurve : FluidBufProcessor {
+FluidBufOnsetFeature : FluidBufProcessor {
     *kr  { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, features, metric = 0, filterSize = 5, frameDelta = 0, windowSize = 1024, hopSize = -1, fftSize = -1, padding = 1, trig = 1, blocking = 0|
 
         var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};
@@ -6,10 +6,10 @@ FluidBufOnsetCurve : FluidBufProcessor {
         source = source.asUGenInput;
         features = features.asUGenInput;
 
-        source.isNil.if {"FluidBufOnsetCurve:  Invalid source buffer".throw};
-        features.isNil.if {"FluidBufOnsetCurve:  Invalid features buffer".throw};
+        source.isNil.if {"FluidBufOnsetFeature:  Invalid source buffer".throw};
+        features.isNil.if {"FluidBufOnsetFeature:  Invalid features buffer".throw};
 
-		^FluidProxyUgen.kr(\FluidBufOnsetCurveTrigger, -1, source, startFrame, numFrames, startChan, numChans, features, padding, metric, filterSize, frameDelta, windowSize, hopSize, fftSize, maxFFTSize, trig, blocking);
+		^FluidProxyUgen.kr(\FluidBufOnsetFeatureTrigger, -1, source, startFrame, numFrames, startChan, numChans, features, padding, metric, filterSize, frameDelta, windowSize, hopSize, fftSize, maxFFTSize, trig, blocking);
 	}
 
     *process { |server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, features, metric = 0, filterSize = 5, frameDelta = 0, windowSize = 1024, hopSize = -1, fftSize = -1, padding = 1, freeWhenDone = true, action|
@@ -19,8 +19,8 @@ FluidBufOnsetCurve : FluidBufProcessor {
         source = source.asUGenInput;
         features = features.asUGenInput;
 
-        source.isNil.if {"FluidBufOnsetCurve:  Invalid source buffer".throw};
-        features.isNil.if {"FluidBufOnsetCurve:  Invalid features buffer".throw};
+        source.isNil.if {"FluidBufOnsetFeature:  Invalid source buffer".throw};
+        features.isNil.if {"FluidBufOnsetFeature:  Invalid features buffer".throw};
 
 		^this.new(
 			server, nil, [features]
@@ -36,8 +36,8 @@ FluidBufOnsetCurve : FluidBufProcessor {
         source = source.asUGenInput;
         features = features.asUGenInput;
 
-        source.isNil.if {"FluidBufOnsetCurve:  Invalid source buffer".throw};
-        features.isNil.if {"FluidBufOnsetCurve:  Invalid features buffer".throw};
+        source.isNil.if {"FluidBufOnsetFeature:  Invalid source buffer".throw};
+        features.isNil.if {"FluidBufOnsetFeature:  Invalid features buffer".throw};
 
 		^this.new(
 			server, nil, [features]
@@ -46,4 +46,4 @@ FluidBufOnsetCurve : FluidBufProcessor {
 		);
 	}
 }
-FluidBufOnsetCurveTrigger : FluidProxyUgen {}
+FluidBufOnsetFeatureTrigger : FluidProxyUgen {}

@@ -18,5 +18,5 @@ PluginLoad(FluidSTFTUGen)
 {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<NRTThreadedAmpFeatureClient>("FluidBufAmpCurve", ft);
+  makeSCWrapper<NRTThreadedAmpFeatureClient>("FluidBufAmpFeature", ft);
 }

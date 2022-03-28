@@ -17,5 +17,5 @@ static InterfaceTable *ft;
 PluginLoad(FluidSTFTUGen) {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<RTOnsetFeatureClient>("FluidOnsetCurve", ft);
+  makeSCWrapper<RTOnsetFeatureClient>("FluidOnsetFeature", ft);
 }

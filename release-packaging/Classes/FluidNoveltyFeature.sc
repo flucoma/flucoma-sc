@@ -1,4 +1,4 @@
-FluidNoveltyCurve : FluidRTUGen {
+FluidNoveltyFeature : FluidRTUGen {
 	*kr { arg in = 0, feature = 0, kernelSize = 3, filterSize = 1, windowSize = 1024, hopSize = -1, fftSize = -1, maxFFTSize = 16384, maxKernelSize = 101, maxFilterSize = 100;
 		^this.multiNew('control', in.asAudioRateInput(this), feature, kernelSize, filterSize, windowSize, hopSize, fftSize, maxFFTSize, maxKernelSize, maxFilterSize)
 	}
