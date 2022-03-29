@@ -17,5 +17,5 @@ static InterfaceTable *ft;
 PluginLoad(OfflineFluidDecompositionUGens) {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<NRTThreadedNoveltyFeatureClient>("FluidBufNoveltyFeature", ft);
+  makeSCWrapper<NRTThreadedNoveltyFeatureClient>("FluidBufNoveltyF", ft);
 }
