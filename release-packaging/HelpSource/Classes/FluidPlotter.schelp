@@ -6,7 +6,7 @@ related:: Classes/FluidDataSet, Classes/FluidLabelSet, Classes/FluidKDTree, Clas
 DESCRIPTION::
 FluidPlotter is a viewer for plotting data.
 
-Holding option/alt and clicking and dragging over a section of the plotter will zoom into that space. Hold command/control and click to return to the original x and y ranges.
+Holding option/alt and clicking and dragging over a section of the plotter will zoom into that space. Hold control and click to return to the original x and y ranges.
 
 CLASSMETHODS::
 
