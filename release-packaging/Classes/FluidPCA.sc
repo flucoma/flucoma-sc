@@ -58,6 +58,19 @@ FluidPCA : FluidModelObject{
         ^FluidPCAQuery.kr(trig ,this, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer), this.numDimensions);
     }
 
+	inverseTransformPointMsg{|sourceBuffer, destBuffer|
+		^this.prMakeMsg(\inverseTransformPoint,id,
+			this.prEncodeBuffer(sourceBuffer),
+			this.prEncodeBuffer(destBuffer),
+			["/b_query",destBuffer.asUGenInput]
+		);
+	}
+
+	inverseTransformPoint{|sourceBuffer, destBuffer, action|
+		actions[\inverseTransformPoint] = [nil,{action.value(destBuffer)}];
+		this.prSendMsg(this.inverseTransformPointMsg(sourceBuffer,destBuffer));
+	}
+
 }
 
 FluidPCAQuery :  FluidRTMultiOutUGen {

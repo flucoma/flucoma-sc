@@ -17,7 +17,7 @@ FluidPlotterPoint {
 }
 
 FluidPlotter : FluidViewer {
-	var <parent, <userView, <xmin, <xmax, <ymin, <ymax, <pointSize = 6, pointSizeScale = 1, dict_internal, <dict, shape = \circle, highlightIdentifiersArray, categoryColors;
+	var <parent, <userView, <xmin, <xmax, <ymin, <ymax, <zoomxmin, <zoomxmax, <zoomymin, <zoomymax, <pointSize = 6, pointSizeScale = 1, dict_internal, <dict, shape = \circle, highlightIdentifiersArray, categoryColors;
 
 	*new {
 		arg parent, bounds, dict, mouseMoveAction,xmin = 0,xmax = 1,ymin = 0,ymax = 1;
@@ -32,6 +32,11 @@ FluidPlotter : FluidViewer {
 		xmax = xmax_;
 		ymin = ymin_;
 		ymax = ymax_;
+
+		zoomxmin = xmin;
+		zoomxmax = xmax;
+		zoomymin = ymin;
+		zoomymax = ymax;
 
 		categoryColors = this.createCatColors;
 		dict_internal = Dictionary.new;
@@ -159,24 +164,28 @@ FluidPlotter : FluidViewer {
 	xmin_ {
 		arg val;
 		xmin = val;
+		zoomxmin = xmin;
 		this.refresh;
 	}
 
 	xmax_ {
 		arg val;
 		xmax = val;
+		zoomxmax = xmax;
 		this.refresh;
 	}
 
 	ymin_ {
 		arg val;
 		ymin = val;
+		zoomymin = ymin;
 		this.refresh;
 	}
 
 	ymax_ {
 		arg val;
 		ymax = val;
+		zoomymax = ymax;
 		this.refresh;
 	}
 
@@ -196,15 +205,13 @@ FluidPlotter : FluidViewer {
 	createPlotWindow {
 		arg bounds,parent_, mouseMoveAction,dict_;
 		var xpos, ypos;
-		var mouseAction = {
-			arg view, x, y, modifiers, buttonNumber, clickCount;
-			x = x.linlin(pointSize/2,userView.bounds.width-(pointSize/2),xmin,xmax);
-			y = y.linlin(pointSize/2,userView.bounds.height-(pointSize/2),ymax,ymin);
-			mouseMoveAction.(this,x,y,modifiers,buttonNumber, clickCount);
-		};
+		var zoomRect = nil;
+		var zoomDragStart = Point(0,0);
 
 		if(parent_.isNil,{xpos = 0; ypos = 0},{xpos = bounds.left; ypos = bounds.top});
 		{
+			var reportMouseActivity;
+
 			parent = parent_ ? Window("FluidPlotter",bounds);
 			userView = UserView(parent,Rect(xpos,ypos,bounds.width,bounds.height));
 
@@ -214,14 +221,7 @@ FluidPlotter : FluidViewer {
 						arg key, pt;
 						var pointSize_, scaledx, scaledy, color;
 
-						/*				key.postln;
-						pt.postln;
-						pt.x.postln;
-						pt.y.postln;*/
-
-						// highlightIdentifiersArray.postln;
 						if(highlightIdentifiersArray.notNil,{
-							//"FluidPLotter:createPlotWindow is % in %".format(key,highlightIdentifiersArray).postln;
 							if(highlightIdentifiersArray.includes(key),{
 								pointSize_ = pointSize * 2.3 * pt.size
 							},{
@@ -233,27 +233,110 @@ FluidPlotter : FluidViewer {
 
 						pointSize_ = pointSize_ * pointSizeScale;
 
-						scaledx = pt.x.linlin(xmin,xmax,0,userView.bounds.width,nil) - (pointSize_/2);
-						scaledy = pt.y.linlin(ymax,ymin,0,userView.bounds.height,nil) - (pointSize_/2);
+						scaledx = pt.x.linlin(zoomxmin,zoomxmax,0,userView.bounds.width,nil);
+						scaledy = pt.y.linlin(zoomymax,zoomymin,0,userView.bounds.height,nil);
 
 						shape.switch(
-							\square,{Pen.addRect(Rect(scaledx,scaledy,pointSize_,pointSize_))},
-							\circle,{Pen.addOval(Rect(scaledx,scaledy,pointSize_,pointSize_))}
+							\square,{Pen.addRect(Rect(scaledx - (pointSize_ /2),scaledy - (pointSize_ /2),pointSize_,pointSize_))},
+							\circle,{Pen.addOval(Rect(scaledx - (pointSize_ /2),scaledy - (pointSize_ /2),pointSize_,pointSize_))}
 						);
 
 						Pen.color_(pt.color);
 						Pen.draw;
 					});
+
+					if(zoomRect.notNil,{
+						Pen.strokeColor_(Color.black);
+						Pen.addRect(zoomRect);
+						Pen.draw(2);
+					});
 				});
 			});
 
-			userView.mouseMoveAction_(mouseAction);
-			userView.mouseDownAction_(mouseAction);
+			reportMouseActivity = {
+				arg view, x, y, modifiers, buttonNumber, clickCount;
+				var realx = x.linlin(pointSize/2,userView.bounds.width-(pointSize/2),zoomxmin,zoomxmax);
+				var realy = y.linlin(pointSize/2,userView.bounds.height-(pointSize/2),zoomymax,zoomymin);
+				mouseMoveAction.(this,realx,realy,modifiers,buttonNumber, clickCount);
+			};
+
+			userView.mouseDownAction_({
+				arg view, x, y, modifiers, buttonNumber, clickCount;
+				case{modifiers == 524288}{
+					zoomDragStart.x = x;
+					zoomDragStart.y = y;
+					zoomRect = Rect(zoomDragStart.x,zoomDragStart.y,0,0);
+				}
+				{modifiers == 1048576}{
+					this.resetZoom;
+				}
+				{
+					reportMouseActivity.(this,x,y,modifiers,buttonNumber,clickCount);
+				};
+			});
+
+			userView.mouseMoveAction_({
+				arg view, x, y, modifiers, buttonNumber, clickCount;
+				if(modifiers == 524288,{
+					zoomRect = Rect(zoomDragStart.x,zoomDragStart.y,x - zoomDragStart.x,y - zoomDragStart.y);
+					this.refresh;
+				},{
+					reportMouseActivity.(this,x,y,modifiers,buttonNumber,clickCount);
+				});
+			});
+
+			userView.mouseUpAction_({
+				arg view, x, y, modifiers, buttonNumber, clickCount;
+
+				if(zoomRect.notNil,{
+					var xmin_new, xmax_new, ymin_new, ymax_new;
+
+					zoomRect = nil;
+
+					xmin_new = min(x,zoomDragStart.x).linlin(0,userView.bounds.width,zoomxmin,zoomxmax,nil);
+					xmax_new = max(x,zoomDragStart.x).linlin(0,userView.bounds.width,zoomxmin,zoomxmax,nil);
+
+					// it looks like maybe these are wrong, with max on top and min on bottom, but they are
+					// correct. this accounts for the fact that for the pixels, the lower numbers are higher
+					// in the frame and vice versa, but for the plot values the lower numbers are lower in
+					// the window.
+					ymin_new = max(y,zoomDragStart.y).linlin(userView.bounds.height,0,zoomymin,zoomymax,nil);
+					ymax_new = min(y,zoomDragStart.y).linlin(userView.bounds.height,0,zoomymin,zoomymax,nil);
+
+					zoomxmin = xmin_new;
+					zoomxmax = xmax_new;
+					zoomymin = ymin_new;
+					zoomymax = ymax_new;
+
+					this.refresh;
+				});
+
+				reportMouseActivity.(this,x,y,modifiers,buttonNumber,clickCount);
+			});
 
 			this.background_(Color.white);
 
 			if(parent_.isNil,{parent.front;});
 		}.defer;
+	}
+
+	resetZoom {
+		zoomxmin = xmin;
+		zoomxmax = xmax;
+		zoomymin = ymin;
+		zoomymax = ymax;
+		this.refresh;
+	}
+
+	post {
+		"xmin:      %".format(xmin).postln;
+		"xmax:      %".format(xmax).postln;
+		"ymin:      %".format(ymin).postln;
+		"ymax:      %".format(ymax).postln;
+		"zoomxmin: %".format(zoomxmin).postln;
+		"zoomxmax: %".format(zoomxmax).postln;
+		"zoomymin: %".format(zoomymin).postln;
+		"zoomymax: %".format(zoomymax).postln;
 	}
 
 	close {
