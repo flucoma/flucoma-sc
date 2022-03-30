@@ -267,7 +267,7 @@ FluidPlotter : FluidViewer {
 					zoomDragStart.y = y;
 					zoomRect = Rect(zoomDragStart.x,zoomDragStart.y,0,0);
 				}
-				{modifiers == 1048576}{
+				{modifiers == 262144}{
 					this.resetZoom;
 				}
 				{
