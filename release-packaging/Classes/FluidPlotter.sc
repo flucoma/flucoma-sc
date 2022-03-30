@@ -190,13 +190,13 @@ FluidPlotter : FluidViewer {
 	}
 
 	highlight_ {
-		arg arr;
+		arg identifier;
 
-		if(arr.isKindOf(String).or(arr.isKindOf(Symbol)),{arr = [arr]});
+		if(identifier.isKindOf(String).or(identifier.isKindOf(Symbol)),{identifier = [identifier]});
 
-		highlightIdentifiersArray = arr.collect({arg item; item.asSymbol});
+		highlightIdentifiersArray = identifier.collect({arg item; item.asSymbol});
 		this.refresh;
-	}
+    	}
 
 	dictNotProperlyFormatted {
 		"FluidPlotter: The dictionary passed in is not properly formatted.".error;
