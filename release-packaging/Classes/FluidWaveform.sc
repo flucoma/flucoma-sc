@@ -302,7 +302,7 @@ FluidWaveformImageLayer {
 
 FluidWaveform : FluidViewer {
 	classvar <lin = 0, <log = 1;
-	var parent, bounds, standalone, <win, view, <layers;
+	var <parent, bounds, standalone, view, <layers;
 
 	*new {
 		arg audioBuffer, indicesBuffer, featuresBuffer,
@@ -399,7 +399,7 @@ FluidWaveform : FluidViewer {
 		fork({
 			this.prMakeView;
 			this.refresh;
-			if (parent.isNil && standalone) { win.front };
+			if (standalone) { parent.front };
 		}, AppClock);
 	}
 
@@ -423,20 +423,21 @@ FluidWaveform : FluidViewer {
 	}
 
 	close {
-		win.close;
+		parent.close;
 	}
 
 	prMakeView {
 		if (parent.isNil) {
 			if (standalone) {
-				win = Window("FluidWaveform", bounds: bounds ? Rect(0,0,800,200));
-				view = win.view;
+				parent = Window("FluidWaveform", bounds: bounds ? Rect(0,0,800,200));
+				view = parent.view;
 			} {
-				win = view = View();
+				parent = view = View();
 			}
 		} {
-			win = parent;
 			view = View(parent, bounds)
 		};
 	}
+
+    asView { ^view }
 }
