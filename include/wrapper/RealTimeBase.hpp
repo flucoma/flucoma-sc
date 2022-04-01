@@ -174,16 +174,16 @@ struct RealTimeBase
     }
   }
 
-  void mapControlInputs(SCUnit& unit, Client& client)
+  void mapControlInputs(SCUnit& unit, Client&)
   {
     for (index i = 0; i < unit.mSpecialIndex + 1; ++i)
     {
       assert(i <= std::numeric_limits<int>::max());
-      mControlInputBuffer[asUnsigned(i)] = unit.in0(static_cast<int>(i));
+      mControlInputBuffer[i] = unit.in0(static_cast<int>(i));
     }
   }
 
-  void mapControlOutputs(SCUnit& unit, Client& client)
+  void mapControlOutputs(SCUnit& unit, Client&)
   {
     for (index i = 0; i < mControlOutputBuffer.size(); ++i)
     {
