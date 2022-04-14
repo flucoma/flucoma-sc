@@ -43,7 +43,7 @@ do the whole process in one go!
 	var indices = Buffer(s); // a buffer for saving the discovered indices into
 
 	// play around the the threshold anad feature (see help file) to get differet slicing results
-	FluidBufNoveltySlice.processBlocking(s,buffer,indices:indices,feauture:0,threshold:0.5,action:{
+	FluidBufNoveltySlice.processBlocking(s,buffer,indices:indices,algorithm:0,threshold:0.5,action:{
 		"% slices found".format(indices.numFrames).postln;
 		"average duration in seconds: %".format(buffer.duration/indices.numFrames).postln;
 		action.(buffer,indices);
