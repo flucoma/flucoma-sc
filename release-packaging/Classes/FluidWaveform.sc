@@ -128,18 +128,20 @@ FluidWaveformIndicesLayer : FluidViewer {
 }
 
 FluidWaveformFeaturesLayer : FluidViewer {
-	var featuresBuffer, colors, stackFeatures, normalizeFeaturesIndependently;
+	var featuresBuffer, colors, stackFeatures, normalizeFeaturesIndependently, lineWidth;
 
 	*new {
-		arg featuresBuffer, colors, stackFeatures = false, normalizeFeaturesIndependently = true;
-		^super.new.init(featuresBuffer,colors,stackFeatures,normalizeFeaturesIndependently);
+		arg featuresBuffer, colors, stackFeatures = false, normalizeFeaturesIndependently = true, lineWidth = 1;
+		^super.new.init(featuresBuffer,colors,stackFeatures,normalizeFeaturesIndependently,lineWidth);
 	}
 
 	init {
-		arg featuresBuffer_, colors_, stackFeatures_ = false, normalizeFeaturesIndependently_ = true;
+		arg featuresBuffer_, colors_, stackFeatures_ = false, normalizeFeaturesIndependently_ = true, lineWidth_ = 1;
 		featuresBuffer = featuresBuffer_;
 		normalizeFeaturesIndependently = normalizeFeaturesIndependently_;
 		stackFeatures = stackFeatures_;
+		lineWidth = lineWidth_;
+
 		colors = colors_ ?? {this.createCatColors};
 
 		// we'll index into it to draw, so just in case the user passed just one color, this will ensure it can be "indexed" into
@@ -188,6 +190,7 @@ FluidWaveformFeaturesLayer : FluidViewer {
 
 					UserView(win,bounds)
 					.drawFunc_({
+						Pen.width_(lineWidth);
 						Pen.moveTo(Point(0,channel[0]));
 						channel[1..].do{
 							arg val, i;
@@ -347,7 +350,7 @@ FluidWaveform : FluidViewer {
 			});
 
 			if(feature_buf.notNil,{
-				this.addFeaturesLayer(feature_buf,this.createCatColors,stackFeatures,normalizeFeaturesIndependently);
+				this.addFeaturesLayer(feature_buf,this.createCatColors,stackFeatures,normalizeFeaturesIndependently,lineWidth);
 				feature_buf.server.sync;
 				plotImmediately = true;
 			});
@@ -395,8 +398,8 @@ FluidWaveform : FluidViewer {
 	}
 
 	addFeaturesLayer {
-		arg featuresBuffer, colors, stackFeatures = false, normalizeFeaturesIndependently = true;
-		var l = FluidWaveformFeaturesLayer(featuresBuffer,colors,stackFeatures,normalizeFeaturesIndependently);
+		arg featuresBuffer, colors, stackFeatures = false, normalizeFeaturesIndependently = true, lineWidth = 1;
+		var l = FluidWaveformFeaturesLayer(featuresBuffer,colors,stackFeatures,normalizeFeaturesIndependently,lineWidth);
 
 		// l.postln;
 		layers.add(l);
