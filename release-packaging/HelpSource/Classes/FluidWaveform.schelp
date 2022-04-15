@@ -58,7 +58,7 @@ ARGUMENT:: imageColorScaling
 An integer indicating how to scale the values in strong::imageBuffer:: before applying the strong::imageColorScheme::. 0 indicates linear scaling, 1 indicates logarithmic scaling. The default is 1. These integers can also be accessed via FluidWaveform.lin and FluidWaveform.log.
 
 ARGUMENT:: standalone
-If strong::false::, create a link::Classes/View:: without parent or bounds, so that it can be used as part of a larger GUI, e.g. with link::Guides/GUI-Layout-Management::.
+If strong::false::, creates a link::Classes/View:: without parent or bounds, so that it can be used as part of a larger GUI, e.g. with link::Guides/GUI-Layout-Management::.
 
 returns:: A new instance of FluidWaveform.
 
@@ -157,6 +157,14 @@ FluidWaveform(~drums,bounds:Rect(0,0,1200,300));
 (
 w = Window("FluidWaveform Test",Rect(0,0,1000,500));
 FluidWaveform(~drums,parent:w,bounds:Rect(100,100,800,300));
+w.front;
+)
+
+// put two of them in another window's layout
+(
+w = Window("FluidWaveform Test",Rect(0,0,1000,500));
+f = 2.collect{FluidWaveform(~drums, standalone: false)};
+w.view.layout = VLayout(f[0], f[1]);
 w.front;
 )
 

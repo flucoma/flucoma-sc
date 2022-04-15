@@ -38,7 +38,7 @@ ARGUMENT:: ymax
 Maximum of the Y range to display. Default is 1.
 
 ARGUMENT:: standalone
-If strong::false::, create a link::Classes/View:: without parent or bounds, so that it can be used as part of a larger GUI, e.g. with link::Guides/GUI-Layout-Management::.
+If strong::false::, creates a link::Classes/View:: without parent or bounds, so that it can be used as part of a larger GUI, e.g. with link::Guides/GUI-Layout-Management::.
 
 returns::
 An instance of FluidPlotter
@@ -309,6 +309,36 @@ w = Window("test",Rect(50,50,800,600)).front;
 	[view, x, y, modifiers].postln;
 	"".postln;
 },xmin:20,xmax:20000,ymin:-130,ymax:0);
+)
+
+// two FluidPlotter side by side with standalone=false
+(
+Window.closeAll;
+// make two different data dictionaries
+d = 2.collect { Dictionary.newFrom([
+	"cols",2,
+	"data",Dictionary.newFrom(Array.fill(200,{
+		arg i;
+		var return;
+		if((i%2) == 0,{
+			return = "example-%".format((i/2).asInteger);
+		},{
+			return = [exprand(20,20000),rrand(-130,0)];
+		});
+		return;
+	}))
+])};
+w = Window("test",Rect(50,50,1200,600)).front;
+// make two plotters, one for each data dictionary
+~fluidPlotters = d.collect { |data|
+	FluidPlotter(dict: data, standalone: false, mouseMoveAction:{
+		arg view, x, y, modifiers;
+		[view, x, y, modifiers].postln;
+		"".postln;
+	},xmin:20,xmax:20000,ymin:-130,ymax:0)
+};
+// assign plotters to window's layout
+w.layout = HLayout(~fluidPlotters[0], ~fluidPlotters[1]);
 )
 
 // you can make an empty one and then set the dict later
