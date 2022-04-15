@@ -396,8 +396,8 @@ FluidWaveform : FluidViewer {
 	}
 
 	front {
+		this.prMakeView;
 		fork({
-			this.prMakeView;
 			this.refresh;
 			if (standalone) { parent.front };
 		}, AppClock);

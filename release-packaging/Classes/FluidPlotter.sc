@@ -199,21 +199,23 @@ FluidPlotter : FluidViewer {
 		var zoomRect = nil;
 		var zoomDragStart = Point(0,0);
 
-		{
-			var reportMouseActivity;
-
-			bounds = bounds ? Rect(0,0,800,800);
-			if (parent.isNil) {
-				if (standalone) {
-					parent = Window("FluidPlotter", bounds);
-					userView = UserView();
+		bounds = bounds ? Rect(0,0,800,800);
+		if (parent.isNil) {
+			if (standalone) {
+				parent = Window("FluidPlotter", bounds);
+				userView = UserView();
+				defer {
 					parent.view.layout = HLayout(userView).margins_(0).spacing_(0);
-				} {
-					parent = userView = UserView();
 				}
 			} {
-				userView = UserView(parent, bounds)
-			};
+				parent = userView = UserView();
+			}
+		} {
+			userView = UserView(parent, bounds)
+		};
+
+		{
+			var reportMouseActivity;
 
 			userView.drawFunc = {
 				arg viewport;
