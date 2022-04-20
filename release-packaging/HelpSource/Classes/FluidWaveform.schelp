@@ -112,6 +112,9 @@ See this argument in the class method 'new' above.
 ARGUMENT:: normalizeFeaturesIndependently
 See this argument in the class method 'new' above.
 
+ARGUMENT:: lineWidth
+See this argument in the class method 'new' above.
+
 METHOD:: addImageLayer
 Add a grapic layer that shows an image derived from a buffer.
 
@@ -137,7 +140,7 @@ METHOD:: close
 Close the FluidWaveform window. If parent is not STRONG::nil::, this method will close the parent window.
 
 
-METHOD:: win
+METHOD:: parent
 
 returns:: The FluidWaveform window. If parent is not STRONG::nil::, this method will return the parent window.
 

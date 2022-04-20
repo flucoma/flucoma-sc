@@ -102,7 +102,7 @@ FluidWaveformIndicesLayer : FluidViewer {
 					arg viewport;
 					var bounds = viewport.bounds;
 					Pen.width_(lineWidth);
-					slices_fa.do{
+					slices_fa.clump(2).do{
 						arg arr;
 						var start = arr[0].linlin(0,audioBuffer.numFrames,0,bounds.width);
 						var end = arr[1].linlin(0,audioBuffer.numFrames,0,bounds.width);
@@ -231,14 +231,12 @@ FluidWaveformImageLayer {
 				FluidWaveform.log,{
 					vals = (vals + 1e-6).log;
 					vals = vals.linlin(vals.minItem,vals.maxItem,0.0,255.0).asInteger;
-					// vals.postln;
 				},
 				{
 					"% colorScaling argument % is invalid.".format(thisMethod,imageColorScaling).warn;
 				}
 			);
 
-			// colors.postln;
 			vals.do{
 				arg val, index;
 				img.setColor(colors[val], index.div(imageBuffer.numChannels), imageBuffer.numChannels - 1 - index.mod(imageBuffer.numChannels));
@@ -268,7 +266,6 @@ FluidWaveformImageLayer {
 		arg imageColorScheme;
 		var colors;
 		if(imageColorScheme.isKindOf(Color),{
-			// "imageColorScheme is a kind of Color".postln;
 			colors = 256.collect{
 				arg i;
 				imageColorScheme.copy.alpha_(i.linlin(0,255,0.0,1.0));
@@ -361,33 +358,25 @@ FluidWaveform : FluidViewer {
 	addImageLayer {
 		arg imageBuffer, imageColorScheme = 0, imageColorScaling = 0, imageAlpha = 1;
 		var l = FluidWaveformImageLayer(imageBuffer, imageColorScheme, imageColorScaling, imageAlpha);
-		// l.postln;
 		layers.add(l);
-		// layers.postln;
 	}
 
 	addAudioLayer {
 		arg audioBuffer, waveformColor;
 		var l = FluidWaveformAudioLayer(audioBuffer, waveformColor);
-		// l.postln;
 		layers.add(l);
-		// layers.postln;
 	}
 
 	addIndicesLayer {
 		arg indicesBuffer, audioBuffer, color, lineWidth = 1;
 		var l = FluidWaveformIndicesLayer(indicesBuffer,audioBuffer,color,lineWidth);
-		// l.postln;
 		layers.add(l);
-		// layers.postln;
 	}
 
 	addFeaturesLayer {
 		arg featuresBuffer, colors, stackFeatures = false, normalizeFeaturesIndependently = true, lineWidth = 1;
 		var l = FluidWaveformFeaturesLayer(featuresBuffer,colors,stackFeatures,normalizeFeaturesIndependently, lineWidth);
-		// l.postln;
 		layers.add(l);
-		// layers.postln;
 	}
 
 	addLayer {
@@ -413,7 +402,6 @@ FluidWaveform : FluidViewer {
 			layers.do {
 				arg layer, n;
 				var layerView;
-				// layer.postln;
 				layerView = layer.draw;
 				view.layout.add(layerView);
 				view.layout.index = view.layout.index + 1;
@@ -430,12 +418,15 @@ FluidWaveform : FluidViewer {
 		if (parent.isNil) {
 			if (standalone) {
 				parent = Window("FluidWaveform", bounds: bounds ? Rect(0,0,800,200));
+				parent.background_(Color.white);
 				view = parent.view;
 			} {
 				parent = view = View();
+				view.background_(Color.white);
 			}
 		} {
 			view = View(parent, bounds)
+			view.background_(Color.white);
 		};
 	}
 
