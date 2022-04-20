@@ -2,36 +2,28 @@ FluidPlotterPoint {
 	var id, <x, <y, <>color, <>size = 1;
 
 	*new {
-		arg id, x, y, color, size = 1;
-		^super.new.init(id,x,y,color,size);
-	}
-
-	init {
-		arg id_, x_, y_, color_, size_ = 1;
-		id = id_;
-		x = x_;
-		y = y_;
-		color = color_ ? Color.black;
-		size = size_;
+		arg id, x, y, color(Color.black), size = 1;
+		^super.newCopyArgs(id,x,y,color,size);
 	}
 }
 
 FluidPlotter : FluidViewer {
-	var <parent, <userView, <xmin, <xmax, <ymin, <ymax, <zoomxmin, <zoomxmax, <zoomymin, <zoomymax, <pointSize = 6, pointSizeScale = 1, dict_internal, <dict, shape = \circle, highlightIdentifiersArray, categoryColors;
+	var <parent, <xmin, <xmax, <ymin, <ymax, standalone,
+	<zoomxmin, <zoomxmax, <zoomymin, <zoomymax,
+	<userView, <pointSize = 6, pointSizeScale = 1, dict_internal, <dict,
+	shape = \circle, highlightIdentifiersArray, categoryColors;
 
 	*new {
-		arg parent, bounds, dict, mouseMoveAction,xmin = 0,xmax = 1,ymin = 0,ymax = 1;
-		^super.new.init(parent, bounds, dict, mouseMoveAction,xmin,xmax,ymin,ymax);
+		arg parent, bounds, dict, mouseMoveAction,
+		xmin = 0, xmax = 1, ymin = 0, ymax = 1, standalone = true;
+
+		if (parent.notNil) { standalone = false };
+		^super.newCopyArgs(parent, xmin, xmax, ymin, ymax, standalone)
+		.init(bounds, dict, mouseMoveAction);
 	}
 
 	init {
-		arg parent_, bounds, dict_, mouseMoveAction, xmin_ = 0,xmax_ = 1,ymin_ = 0,ymax_ = 1;
-
-		parent = parent_;
-		xmin = xmin_;
-		xmax = xmax_;
-		ymin = ymin_;
-		ymax = ymax_;
+		arg bounds, dict, mouseMoveAction;
 
 		zoomxmin = xmin;
 		zoomxmax = xmax;
@@ -40,8 +32,8 @@ FluidPlotter : FluidViewer {
 
 		categoryColors = this.createCatColors;
 		dict_internal = Dictionary.new;
-		if(dict_.notNil,{this.dict_(dict_)});
-		this.createPlotWindow(bounds,parent_,mouseMoveAction,dict_);
+		if (dict.notNil) { this.dict = dict };
+		this.createPlotWindow(bounds, mouseMoveAction);
 	}
 
 	categories_ {
@@ -196,49 +188,61 @@ FluidPlotter : FluidViewer {
 
 		highlightIdentifiersArray = identifier.collect({arg item; item.asSymbol});
 		this.refresh;
-    	}
+	}
 
 	dictNotProperlyFormatted {
 		"FluidPlotter: The dictionary passed in is not properly formatted.".error;
 	}
 
 	createPlotWindow {
-		arg bounds,parent_, mouseMoveAction,dict_;
-		var xpos, ypos;
+		arg bounds, mouseMoveAction;
 		var zoomRect = nil;
 		var zoomDragStart = Point(0,0);
 
-		if(parent_.isNil,{xpos = 0; ypos = 0},{xpos = bounds.left; ypos = bounds.top});
+		bounds = bounds ? Rect(0,0,800,800);
+		if (parent.isNil) {
+			if (standalone) {
+				parent = Window("FluidPlotter", bounds);
+				userView = UserView();
+				defer {
+					parent.view.layout = HLayout(userView).margins_(0).spacing_(0);
+				}
+			} {
+				parent = userView = UserView();
+			}
+		} {
+			userView = UserView(parent, bounds)
+		};
+
 		{
 			var reportMouseActivity;
 
-			parent = parent_ ? Window("FluidPlotter",bounds);
-			userView = UserView(parent,Rect(xpos,ypos,bounds.width,bounds.height));
-
-			userView.drawFunc_({
+			userView.drawFunc = {
+				arg viewport;
+				var w = viewport.bounds.width, h = viewport.bounds.height;
 				if(dict_internal.notNil,{
 					dict_internal.keysValuesDo({
 						arg key, pt;
 						var pointSize_, scaledx, scaledy, color;
 
-						if(highlightIdentifiersArray.notNil,{
-							if(highlightIdentifiersArray.includes(key),{
-								pointSize_ = pointSize * 2.3 * pt.size
-							},{
-								pointSize_ = pointSize * pt.size
-							});
-						},{
-							pointSize_ = pointSize * pt.size;
-						});
-
+						pointSize_ = pointSize * pt.size;
+						if (highlightIdentifiersArray.notNil) {
+							if (highlightIdentifiersArray.includes(key)) {
+								pointSize_ = pointSize_ * 2.3;
+							};
+						};
 						pointSize_ = pointSize_ * pointSizeScale;
 
-						scaledx = pt.x.linlin(zoomxmin,zoomxmax,0,userView.bounds.width,nil);
-						scaledy = pt.y.linlin(zoomymax,zoomymin,0,userView.bounds.height,nil);
+						scaledx = pt.x.linlin(zoomxmin,zoomxmax,0,w,nil) - (pointSize_/2);
+						scaledy = pt.y.linlin(zoomymax,zoomymin,0,h,nil) - (pointSize_/2);
 
 						shape.switch(
-							\square,{Pen.addRect(Rect(scaledx - (pointSize_ /2),scaledy - (pointSize_ /2),pointSize_,pointSize_))},
-							\circle,{Pen.addOval(Rect(scaledx - (pointSize_ /2),scaledy - (pointSize_ /2),pointSize_,pointSize_))}
+							\square, {
+								Pen.addRect(Rect(scaledx,scaledy,pointSize_,pointSize_))
+							},
+							\circle, {
+								Pen.addOval(Rect(scaledx,scaledy,pointSize_,pointSize_))
+							}
 						);
 
 						Pen.color_(pt.color);
@@ -251,7 +255,7 @@ FluidPlotter : FluidViewer {
 						Pen.draw(2);
 					});
 				});
-			});
+			};
 
 			reportMouseActivity = {
 				arg view, x, y, modifiers, buttonNumber, clickCount;
@@ -260,32 +264,32 @@ FluidPlotter : FluidViewer {
 				mouseMoveAction.(this,realx,realy,modifiers,buttonNumber, clickCount);
 			};
 
-			userView.mouseDownAction_({
+			userView.mouseDownAction = {
 				arg view, x, y, modifiers, buttonNumber, clickCount;
-				case{modifiers == 524288}{
+				case { modifiers.isAlt } {
 					zoomDragStart.x = x;
 					zoomDragStart.y = y;
 					zoomRect = Rect(zoomDragStart.x,zoomDragStart.y,0,0);
 				}
-				{modifiers == 262144}{
+				{ modifiers.isCtrl } {
 					this.resetZoom;
 				}
 				{
 					reportMouseActivity.(this,x,y,modifiers,buttonNumber,clickCount);
 				};
-			});
+			};
 
-			userView.mouseMoveAction_({
+			userView.mouseMoveAction = {
 				arg view, x, y, modifiers, buttonNumber, clickCount;
-				if(modifiers == 524288,{
+				if (modifiers.isAlt) {
 					zoomRect = Rect(zoomDragStart.x,zoomDragStart.y,x - zoomDragStart.x,y - zoomDragStart.y);
 					this.refresh;
-				},{
+				} {
 					reportMouseActivity.(this,x,y,modifiers,buttonNumber,clickCount);
-				});
-			});
+				};
+			};
 
-			userView.mouseUpAction_({
+			userView.mouseUpAction = {
 				arg view, x, y, modifiers, buttonNumber, clickCount;
 
 				if(zoomRect.notNil,{
@@ -312,13 +316,15 @@ FluidPlotter : FluidViewer {
 				});
 
 				reportMouseActivity.(this,x,y,modifiers,buttonNumber,clickCount);
-			});
+			};
 
 			this.background_(Color.white);
 
-			if(parent_.isNil,{parent.front;});
+			if (standalone) { parent.front };
 		}.defer;
 	}
+
+	asView { ^userView }
 
 	resetZoom {
 		zoomxmin = xmin;
