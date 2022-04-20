@@ -425,7 +425,7 @@ FluidWaveform : FluidViewer {
 				view.background_(Color.white);
 			}
 		} {
-			view = View(parent, bounds)
+			view = View(parent, bounds);
 			view.background_(Color.white);
 		};
 	}
