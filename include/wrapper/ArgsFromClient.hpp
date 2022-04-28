@@ -114,6 +114,12 @@ struct ParamReader<impl::FloatControlsIter>
     auto id = fromArgs(x, args, index{}, 0);
     return  {id >= 0 ? std::to_string(id).c_str() : "" };
   }
+  
+  static auto fromArgs(Unit*,Controls& args,typename LongRuntimeMaxT::type&, int)
+  {
+      return typename LongRuntimeMaxT::type{static_cast<index>(args.next()), static_cast<index>(args.next())}; 
+  }
+  
 };
 
 // NRT case: we're decoding data from sc_msg_iter*, there will be a World*, we can't have LocalBufs
@@ -265,6 +271,11 @@ struct ParamReader<sc_msg_iter>
       for (index i = 0; i < size; ++i)
         res[i] = static_cast<Value>(args.geti());
       return res;
+  }
+  
+  static auto fromArgs(World*,sc_msg_iter& args,typename LongRuntimeMaxT::type&, int)
+  {
+      return typename LongRuntimeMaxT::type{args.geti(), args.geti()}; 
   }
 };
 
