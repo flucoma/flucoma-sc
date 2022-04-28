@@ -5,7 +5,7 @@
 # under the European Union’s Horizon 2020 research and innovation programme
 # (grant agreement No 725899).
 
-target_compile_features(${PLUGIN} PRIVATE cxx_std_14)
+# target_compile_features(${PLUGIN} PRIVATE cxx_std_14)
 
 if(MSVC)
   target_compile_options(${PLUGIN} PRIVATE /W3)
@@ -20,11 +20,11 @@ else()
   endif()
 endif() 
 
-set_target_properties(${PLUGIN} PROPERTIES
-    CXX_STANDARD 14
-    CXX_STANDARD_REQUIRED YES
-    CXX_EXTENSIONS NO
-)
+# set_target_properties(${PLUGIN} PROPERTIES
+#     CXX_STANDARD 14
+#     CXX_STANDARD_REQUIRED YES
+#     CXX_EXTENSIONS NO
+# )
 
 if(APPLE)
   set_target_properties(${PLUGIN} PROPERTIES
