@@ -6,9 +6,13 @@ FluidBufStats : FluidBufProcessor {
     *prWarnUnrecognised {|sym| ("WARNING: FluidBufStats -" + sym + "is not a recognised option").postln}
 
     *prProcessSelect {|a|
-        var bits = a.sum{ |sym|
-            statslookup[sym.asSymbol] !? {|x| x} ?? {this.prWarnUnrecognised(sym); 0}
+        var bits;
+        a.asBag.countsDo{|item,count,i|
+            if(count > 1) { ("Option '" ++ item ++ "' is repeated").warn};
         };
+        bits = a.collect{ |sym|
+            (statslookup[sym.asSymbol] !? {|x| x} ?? {this.prWarnUnrecognised(sym); 0})
+        }.reduce{|x,y| x | y};
         ^bits
     }
 
