@@ -7,6 +7,10 @@
 
 cmake_minimum_required(VERSION 3.11)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 ################################################################################
 # Paths
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/install" CACHE PATH "")
@@ -22,7 +26,6 @@ set(FLUID_PATH "" CACHE PATH "Optional path to the Fluid Decomposition repo")
 
 if (APPLE)
   set(CMAKE_XCODE_GENERATE_SCHEME ON)
-	set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "")
   set(CMAKE_OSX_DEPLOYMENT_TARGET "10.8" CACHE STRING "")
   #A consequence of targetting 10.8. Needs to be set globally from 10.15 onwards in order for the test program to compile successfully during configure 
   string(APPEND CMAKE_CXX_FLAGS " -stdlib=libc++")
