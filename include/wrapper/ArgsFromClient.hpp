@@ -77,6 +77,11 @@ struct ParamReader<impl::FloatControlsIter>
     return args.next();
   }
   
+  static auto fromArgs(Unit*, Controls& args, typename ChoicesT::type, int)
+  {
+     return typename ChoicesT::type(std::size_t(static_cast<index>(args.next())));
+  }
+  
   static SCBufferAdaptor* fetchBuffer(Unit* x, index bufnum)
   {
     if(bufnum >= x->mWorld->mNumSndBufs)
@@ -280,6 +285,12 @@ struct ParamReader<sc_msg_iter>
       return res;
   }
   
+  static auto fromArgs(World*, sc_msg_iter& args, typename ChoicesT::type, int)
+  {
+     int x = args.geti();
+     return typename ChoicesT::type(asUnsigned(x));
+  }
+
   template<typename T>
   static auto fromArgs(World* w, sc_msg_iter& args, Optional<T>, int)
   {
