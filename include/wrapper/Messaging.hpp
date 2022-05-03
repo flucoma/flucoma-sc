@@ -98,7 +98,7 @@ struct FluidSCMessaging{
     ForEach(args,[&typesMatch,&tagsIter,&tagsEnd,firstTag=tags.begin(),&argCount](auto& arg){
        if(tagsIter == tagsEnd)
        {
-          if(std::distance(firstTag,tagsIter) < expectedArgCount) typesMatch = false;
+          if(std::distance(firstTag,tagsIter) < asSigned(expectedArgCount)) typesMatch = false;
           return;
        }
        char t = *(tagsIter++);
@@ -169,7 +169,7 @@ struct FluidSCMessaging{
     
     ForEach(msg-> args,[inWorld,&args,tagCount,n=0](auto& thisarg)mutable
     {
-      if(n++ <  tagCount.value())
+      if(n++ <  asSigned(tagCount.value()))
         thisarg = ParamReader<sc_msg_iter>::fromArgs(inWorld, *args,thisarg,0);
     });
      
