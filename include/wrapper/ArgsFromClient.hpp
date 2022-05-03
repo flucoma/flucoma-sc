@@ -77,6 +77,11 @@ struct ParamReader<impl::FloatControlsIter>
     return args.next();
   }
   
+  static auto fromArgs(Unit*, Controls& args, typename ChoicesT::type, int)
+  {
+     return typename ChoicesT::type(std::size_t(static_cast<index>(args.next())));
+  }
+  
   static SCBufferAdaptor* fetchBuffer(Unit* x, index bufnum)
   {
     if(bufnum >= x->mWorld->mNumSndBufs)
@@ -141,38 +146,45 @@ struct ParamReader<sc_msg_iter>
     }
   }
   
-  static const char* argTypeToString(std::string&)
+  
+  template <typename T>
+  static const char* argTypeToString(Optional<T>&)
+  {
+    return argTypeToString(T{});
+  }
+  
+  static const char* argTypeToString(const std::string&)
   {
     return "string";
   }
   
   template <typename T>
   static std::enable_if_t<std::is_integral<T>::value, const char*>
-  argTypeToString(T&)
+  argTypeToString(T)
   {
     return "integer";
   }
 
   template <typename T>
   static std::enable_if_t<std::is_floating_point<T>::value, const char*>
-  argTypeToString(T&)
+  argTypeToString(T)
   {
     return "float";
   }
 
-  static const char* argTypeToString(BufferT::type&)
+  static const char* argTypeToString(const BufferT::type&)
   {
     return "buffer";
   }
   
-  static const char* argTypeToString(InputBufferT::type&)
+  static const char* argTypeToString(const InputBufferT::type&)
   {
     return "buffer";
   }
   
   template <typename P>
   static std::enable_if_t<IsSharedClient<P>::value,const char*>
-  argTypeToString(P&)
+  argTypeToString(const P&)
   {
     return "shared_object"; //not ideal
   }
@@ -185,26 +197,32 @@ struct ParamReader<sc_msg_iter>
   template <typename T>
   static std::enable_if_t<std::is_integral<T>::value
                           || std::is_floating_point<T>::value, bool>
-  argTypeOK(T&, char tag)
+  argTypeOK(T, char tag)
   {
     return tag == 'i' || tag == 'f' || tag == 'd';
   }
 
-  static bool argTypeOK(BufferT::type&, char tag)
+  static bool argTypeOK(const BufferT::type&, char tag)
   {
     return tag == 'i';
   }
   
-  static bool argTypeOK(InputBufferT::type&, char tag)
+  static bool argTypeOK(const InputBufferT::type&, char tag)
   {
     return tag == 'i';
   }
   
   template <typename P>
   static std::enable_if_t<IsSharedClient<P>::value,bool>
-  argTypeOK(P&, char tag)
+  argTypeOK(const P&, char tag)
   {
     return tag == 'i';
+  }
+  
+  template<typename T>
+  static bool argTypeOK(const Optional<T>&, char tag)
+  {
+    return argTypeOK(T{},tag);
   }
   
   static auto fromArgs(World*, sc_msg_iter& args, std::string, int)
@@ -276,6 +294,18 @@ struct ParamReader<sc_msg_iter>
   static auto fromArgs(World*,sc_msg_iter& args,typename LongRuntimeMaxT::type&, int)
   {
       return typename LongRuntimeMaxT::type{args.geti(), args.geti()}; 
+  }
+
+  static auto fromArgs(World*, sc_msg_iter& args, typename ChoicesT::type, int)
+  {
+     int x = args.geti();
+     return typename ChoicesT::type(asUnsigned(x));
+  }
+
+  template<typename T>
+  static auto fromArgs(World* w, sc_msg_iter& args, Optional<T>, int)
+  {
+    return Optional<T>{fromArgs(w,args,T{},int{})};
   }
 };
 
