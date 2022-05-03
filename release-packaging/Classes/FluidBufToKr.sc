@@ -37,9 +37,6 @@ FluidBufToKr {
 	*kr {
 		arg buffer, startFrame = 0, numFrames = -1;
 
-		// out of bounds check
-		if(startFrame < 0,{Error("% startFrame must be >= 0".format(this.class)).throw;});
-
 		if(buffer.isKindOf(Buffer) or: {buffer.isKindOf(LocalBuf)},{
 
 			// fix default -1

@@ -2,41 +2,38 @@ FluidPlotterPoint {
 	var id, <x, <y, <>color, <>size = 1;
 
 	*new {
-		arg id, x, y, color, size = 1;
-		^super.new.init(id,x,y,color,size);
-	}
-
-	init {
-		arg id_, x_, y_, color_, size_ = 1;
-		id = id_;
-		x = x_;
-		y = y_;
-		color = color_ ? Color.black;
-		size = size_;
+		arg id, x, y, color(Color.black), size = 1;
+		^super.newCopyArgs(id,x,y,color,size);
 	}
 }
 
 FluidPlotter : FluidViewer {
-	var <parent, <userView, <xmin, <xmax, <ymin, <ymax, <pointSize = 6, pointSizeScale = 1, dict_internal, <dict, shape = \circle, highlightIdentifiersArray, categoryColors;
+	var <parent, <xmin, <xmax, <ymin, <ymax, standalone,
+	<zoomxmin, <zoomxmax, <zoomymin, <zoomymax,
+	<userView, <pointSize = 6, pointSizeScale = 1, dict_internal, <dict,
+	shape = \circle, highlightIdentifiersArray, categoryColors;
 
 	*new {
-		arg parent, bounds, dict, mouseMoveAction,xmin = 0,xmax = 1,ymin = 0,ymax = 1;
-		^super.new.init(parent, bounds, dict, mouseMoveAction,xmin,xmax,ymin,ymax);
+		arg parent, bounds, dict, mouseMoveAction,
+		xmin = 0, xmax = 1, ymin = 0, ymax = 1, standalone = true;
+
+		if (parent.notNil) { standalone = false };
+		^super.newCopyArgs(parent, xmin, xmax, ymin, ymax, standalone)
+		.init(bounds, dict, mouseMoveAction);
 	}
 
 	init {
-		arg parent_, bounds, dict_, mouseMoveAction, xmin_ = 0,xmax_ = 1,ymin_ = 0,ymax_ = 1;
+		arg bounds, dict, mouseMoveAction;
 
-		parent = parent_;
-		xmin = xmin_;
-		xmax = xmax_;
-		ymin = ymin_;
-		ymax = ymax_;
+		zoomxmin = xmin;
+		zoomxmax = xmax;
+		zoomymin = ymin;
+		zoomymax = ymax;
 
 		categoryColors = this.createCatColors;
 		dict_internal = Dictionary.new;
-		if(dict_.notNil,{this.dict_(dict_)});
-		this.createPlotWindow(bounds,parent_,mouseMoveAction,dict_);
+		if (dict.notNil) { this.dict = dict };
+		this.createPlotWindow(bounds, mouseMoveAction);
 	}
 
 	categories_ {
@@ -159,33 +156,37 @@ FluidPlotter : FluidViewer {
 	xmin_ {
 		arg val;
 		xmin = val;
+		zoomxmin = xmin;
 		this.refresh;
 	}
 
 	xmax_ {
 		arg val;
 		xmax = val;
+		zoomxmax = xmax;
 		this.refresh;
 	}
 
 	ymin_ {
 		arg val;
 		ymin = val;
+		zoomymin = ymin;
 		this.refresh;
 	}
 
 	ymax_ {
 		arg val;
 		ymax = val;
+		zoomymax = ymax;
 		this.refresh;
 	}
 
 	highlight_ {
-		arg arr;
+		arg identifier;
 
-		if(arr.isKindOf(String).or(arr.isKindOf(Symbol)),{arr = [arr]});
+		if(identifier.isKindOf(String).or(identifier.isKindOf(Symbol)),{identifier = [identifier]});
 
-		highlightIdentifiersArray = arr.collect({arg item; item.asSymbol});
+		highlightIdentifiersArray = identifier.collect({arg item; item.asSymbol});
 		this.refresh;
 	}
 
@@ -194,66 +195,154 @@ FluidPlotter : FluidViewer {
 	}
 
 	createPlotWindow {
-		arg bounds,parent_, mouseMoveAction,dict_;
-		var xpos, ypos;
-		var mouseAction = {
-			arg view, x, y, modifiers, buttonNumber, clickCount;
-			x = x.linlin(pointSize/2,userView.bounds.width-(pointSize/2),xmin,xmax);
-			y = y.linlin(pointSize/2,userView.bounds.height-(pointSize/2),ymax,ymin);
-			mouseMoveAction.(this,x,y,modifiers,buttonNumber, clickCount);
+		arg bounds, mouseMoveAction;
+		var zoomRect = nil;
+		var zoomDragStart = Point(0,0);
+
+		bounds = bounds ? Rect(0,0,800,800);
+		if (parent.isNil) {
+			if (standalone) {
+				parent = Window("FluidPlotter", bounds);
+				userView = UserView();
+				defer {
+					parent.view.layout = HLayout(userView).margins_(0).spacing_(0);
+				}
+			} {
+				parent = userView = UserView();
+			}
+		} {
+			userView = UserView(parent, bounds)
 		};
 
-		if(parent_.isNil,{xpos = 0; ypos = 0},{xpos = bounds.left; ypos = bounds.top});
 		{
-			parent = parent_ ? Window("FluidPlotter",bounds);
-			userView = UserView(parent,Rect(xpos,ypos,bounds.width,bounds.height));
+			var reportMouseActivity;
 
-			userView.drawFunc_({
+			userView.drawFunc = {
+				arg viewport;
+				var w = viewport.bounds.width, h = viewport.bounds.height;
 				if(dict_internal.notNil,{
 					dict_internal.keysValuesDo({
 						arg key, pt;
 						var pointSize_, scaledx, scaledy, color;
 
-						/*				key.postln;
-						pt.postln;
-						pt.x.postln;
-						pt.y.postln;*/
-
-						// highlightIdentifiersArray.postln;
-						if(highlightIdentifiersArray.notNil,{
-							//"FluidPLotter:createPlotWindow is % in %".format(key,highlightIdentifiersArray).postln;
-							if(highlightIdentifiersArray.includes(key),{
-								pointSize_ = pointSize * 2.3 * pt.size
-							},{
-								pointSize_ = pointSize * pt.size
-							});
-						},{
-							pointSize_ = pointSize * pt.size;
-						});
-
+						pointSize_ = pointSize * pt.size;
+						if (highlightIdentifiersArray.notNil) {
+							if (highlightIdentifiersArray.includes(key)) {
+								pointSize_ = pointSize_ * 2.3;
+							};
+						};
 						pointSize_ = pointSize_ * pointSizeScale;
 
-						scaledx = pt.x.linlin(xmin,xmax,0,userView.bounds.width,nil) - (pointSize_/2);
-						scaledy = pt.y.linlin(ymax,ymin,0,userView.bounds.height,nil) - (pointSize_/2);
+						scaledx = pt.x.linlin(zoomxmin,zoomxmax,0,w,nil) - (pointSize_/2);
+						scaledy = pt.y.linlin(zoomymax,zoomymin,0,h,nil) - (pointSize_/2);
 
 						shape.switch(
-							\square,{Pen.addRect(Rect(scaledx,scaledy,pointSize_,pointSize_))},
-							\circle,{Pen.addOval(Rect(scaledx,scaledy,pointSize_,pointSize_))}
+							\square, {
+								Pen.addRect(Rect(scaledx,scaledy,pointSize_,pointSize_))
+							},
+							\circle, {
+								Pen.addOval(Rect(scaledx,scaledy,pointSize_,pointSize_))
+							}
 						);
 
 						Pen.color_(pt.color);
 						Pen.draw;
 					});
-				});
-			});
 
-			userView.mouseMoveAction_(mouseAction);
-			userView.mouseDownAction_(mouseAction);
+					if(zoomRect.notNil,{
+						Pen.strokeColor_(Color.black);
+						Pen.addRect(zoomRect);
+						Pen.draw(2);
+					});
+				});
+			};
+
+			reportMouseActivity = {
+				arg view, x, y, modifiers, buttonNumber, clickCount;
+				var realx = x.linlin(pointSize/2,userView.bounds.width-(pointSize/2),zoomxmin,zoomxmax);
+				var realy = y.linlin(pointSize/2,userView.bounds.height-(pointSize/2),zoomymax,zoomymin);
+				mouseMoveAction.(this,realx,realy,modifiers,buttonNumber, clickCount);
+			};
+
+			userView.mouseDownAction = {
+				arg view, x, y, modifiers, buttonNumber, clickCount;
+				case { modifiers.isAlt } {
+					zoomDragStart.x = x;
+					zoomDragStart.y = y;
+					zoomRect = Rect(zoomDragStart.x,zoomDragStart.y,0,0);
+				}
+				{ modifiers.isCtrl } {
+					this.resetZoom;
+				}
+				{
+					reportMouseActivity.(this,x,y,modifiers,buttonNumber,clickCount);
+				};
+			};
+
+			userView.mouseMoveAction = {
+				arg view, x, y, modifiers, buttonNumber, clickCount;
+				if (modifiers.isAlt) {
+					zoomRect = Rect(zoomDragStart.x,zoomDragStart.y,x - zoomDragStart.x,y - zoomDragStart.y);
+					this.refresh;
+				} {
+					reportMouseActivity.(this,x,y,modifiers,buttonNumber,clickCount);
+				};
+			};
+
+			userView.mouseUpAction = {
+				arg view, x, y, modifiers, buttonNumber, clickCount;
+
+				if(zoomRect.notNil,{
+					var xmin_new, xmax_new, ymin_new, ymax_new;
+
+					zoomRect = nil;
+
+					xmin_new = min(x,zoomDragStart.x).linlin(0,userView.bounds.width,zoomxmin,zoomxmax,nil);
+					xmax_new = max(x,zoomDragStart.x).linlin(0,userView.bounds.width,zoomxmin,zoomxmax,nil);
+
+					// it looks like maybe these are wrong, with max on top and min on bottom, but they are
+					// correct. this accounts for the fact that for the pixels, the lower numbers are higher
+					// in the frame and vice versa, but for the plot values the lower numbers are lower in
+					// the window.
+					ymin_new = max(y,zoomDragStart.y).linlin(userView.bounds.height,0,zoomymin,zoomymax,nil);
+					ymax_new = min(y,zoomDragStart.y).linlin(userView.bounds.height,0,zoomymin,zoomymax,nil);
+
+					zoomxmin = xmin_new;
+					zoomxmax = xmax_new;
+					zoomymin = ymin_new;
+					zoomymax = ymax_new;
+
+					this.refresh;
+				});
+
+				reportMouseActivity.(this,x,y,modifiers,buttonNumber,clickCount);
+			};
 
 			this.background_(Color.white);
 
-			if(parent_.isNil,{parent.front;});
+			if (standalone) { parent.front };
 		}.defer;
+	}
+
+	asView { ^userView }
+
+	resetZoom {
+		zoomxmin = xmin;
+		zoomxmax = xmax;
+		zoomymin = ymin;
+		zoomymax = ymax;
+		this.refresh;
+	}
+
+	post {
+		"xmin:      %".format(xmin).postln;
+		"xmax:      %".format(xmax).postln;
+		"ymin:      %".format(ymin).postln;
+		"ymax:      %".format(ymax).postln;
+		"zoomxmin: %".format(zoomxmin).postln;
+		"zoomxmax: %".format(zoomxmax).postln;
+		"zoomymin: %".format(zoomymin).postln;
+		"zoomymax: %".format(zoomymax).postln;
 	}
 
 	close {
