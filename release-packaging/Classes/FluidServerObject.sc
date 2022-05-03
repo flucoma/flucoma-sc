@@ -56,7 +56,12 @@ FluidServerObject
     }
 
     prMakeMsg{|msg,id...args|
-        ^['/cmd',"%/%".format(this.class.objectClassName,msg),id].addAll(args);
+
+        var commandName = "%/%".format(this.class.objectClassName,msg);
+
+        if(commandName.size >= 32) { commandName = commandName.select{|c|c.isVowel.not}};
+
+        ^['/cmd',commandName,id].addAll(args);
     }
 
     freeMsg {
