@@ -71,6 +71,16 @@ FluidPCA : FluidModelObject{
 		this.prSendMsg(this.inverseTransformPointMsg(sourceBuffer,destBuffer));
 	}
 
+    inverseTransformMsg{|sourceDataSet, destDataSet|
+        ^this.prMakeMsg(\inverseTransform,id,sourceDataSet.id, destDataSet.id);
+    }
+
+    inverseTransform{|sourceDataSet, destDataSet,action|
+        actions[\inverseTransform] = [nil,action];
+        this.prSendMsg(this.inverseTransformMsg(sourceDataSet, destDataSet));
+    }
+
+
 }
 
 FluidPCAQuery :  FluidRTMultiOutUGen {
