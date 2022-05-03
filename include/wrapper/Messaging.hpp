@@ -76,7 +76,7 @@ struct FluidSCMessaging{
     
     auto& args = msg->args;
     
-    constexpr size_t expectedArgCount = std::tuple_size<MandatoryArgsTuple>::value;
+    static constexpr size_t expectedArgCount = std::tuple_size<MandatoryArgsTuple>::value;
     
     /// TODO this squawks if we have a completion message, so maybe we can check if extra arg is a 'b' and squawk if not?
 //    if(tags.size() > expectedArgCount)
