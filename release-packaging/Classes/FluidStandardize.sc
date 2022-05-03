@@ -3,11 +3,11 @@ FluidStandardize : FluidModelObject {
     var <>invert;
 
     *new {|server, invert = 0|
-		^super.new(server,[invert]).invert_(invert);
+		^super.new(server,[]);
 	}
 
     prGetParams{
-        ^[this.id, this.invert];
+        ^[this.id];
     }
 
 	fitMsg{|dataSet|
@@ -47,12 +47,31 @@ FluidStandardize : FluidModelObject {
         this.prSendMsg(this.transformPointMsg(sourceBuffer,destBuffer));
 	}
 
-    kr{|trig, inputBuffer,outputBuffer,invert|
+    inverseTransformMsg{|sourceDataSet, destDataSet|
+        ^this.prMakeMsg(\inverseTransform,id,sourceDataSet.id,destDataSet.id);
+    }
 
-        invert = invert ? this.invert;
-        this.invert_(invert);
+	inverseTransform{|sourceDataSet, destDataSet, action|
+		actions[\inverseTransform] = [nil,action];
+        this.prSendMsg(this.inverseTransformMsg(sourceDataSet, destDataSet));
+	}
 
-        ^FluidStandardizeQuery.kr(trig,this, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer), this.invert);
+    inverseTransformPointMsg{|sourceBuffer, destBuffer|
+        ^this.prMakeMsg(\inverseTransformPoint,id,
+            this.prEncodeBuffer(sourceBuffer),
+            this.prEncodeBuffer(destBuffer),
+            ["/b_query",destBuffer.asUGenInput]
+        );
+    }
+
+	inverseTransformPoint{|sourceBuffer, destBuffer, action|
+        actions[\inverseRransformPoint] = [nil,{action.value(destBuffer)}];
+        this.prSendMsg(this.inverseTransformPointMsg(sourceBuffer, destBuffer));
+	}
+
+    kr{|trig, inputBuffer,outputBuffer,invert = 0|
+
+        ^FluidStandardizeQuery.kr(trig,this, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer), invert);
     }
 }
 

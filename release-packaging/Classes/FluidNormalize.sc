@@ -2,13 +2,13 @@ FluidNormalize : FluidModelObject {
 
     var <>min, <>max, <>invert;
 
-	*new {|server, min = 0, max = 1, invert = 0|
-		^super.new(server,[min,max,invert])
-        .min_(min).max_(max).invert_(invert);
+	*new {|server, min = 0, max = 1|
+		^super.new(server,[min,max])
+        .min_(min).max_(max);
 	}
 
     prGetParams{
-        ^[this.id, this.min,this.max,this.invert,-1,-1];
+        ^[this.id, this.min,this.max,-1,-1];
     }
 
 
@@ -52,16 +52,37 @@ FluidNormalize : FluidModelObject {
         this.prSendMsg(this.transformPointMsg(sourceBuffer, destBuffer));
 	}
 
+    inverseTransformMsg{|sourceDataSet, destDataSet|
+        ^this.prMakeMsg(\inverseTransform,id,sourceDataSet.id,destDataSet.id);
+    }
+
+	inverseTransform{|sourceDataSet, destDataSet, action|
+		actions[\inverseTransform] = [nil,action];
+        this.prSendMsg(this.inverseTransformMsg(sourceDataSet, destDataSet));
+	}
+
+    inverseTransformPointMsg{|sourceBuffer, destBuffer|
+        ^this.prMakeMsg(\inverseTransformPoint,id,
+            this.prEncodeBuffer(sourceBuffer),
+            this.prEncodeBuffer(destBuffer),
+            ["/b_query",destBuffer.asUGenInput]
+        );
+    }
+
+	inverseTransformPoint{|sourceBuffer, destBuffer, action|
+        actions[\inverseTransformPoint] = [nil,{action.value(destBuffer)}];
+        this.prSendMsg(this.inverseTransformPointMsg(sourceBuffer, destBuffer));
+	}
+
     kr{|trig, inputBuffer,outputBuffer,min = 0 ,max = 1,invert = 0|
 
         min = min ? this.min;
         max = max ? this.max;
-        invert = invert ? this.invert;
 
-        this.min_(min).max_(max).invert_(invert);
+        this.min_(min).max_(max);
 
         ^FluidNormalizeQuery.kr(trig,
-                this, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer), this.min, this.max, this.invert);
+                this, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer), this.min, this.max, invert);
     }
 
 
