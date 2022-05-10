@@ -7,7 +7,7 @@ FluidAudioTransport : FluidRTUGen {
         // ^this.initOutputs(1,rate);
     }
 
-	*ar { arg in = 0, in2 = 0, interpolation = 0.0, windowSize = 1024, hopSize = -1, fftSize = -1, maxFFTSize = 16384;
+	*ar { arg in = 0, in2 = 0, interpolation = 0.0, windowSize = 1024, hopSize = -1, fftSize = -1, maxFFTSize;
 		^this.multiNew('audio', in.asAudioRateInput, in2, interpolation, windowSize, hopSize, fftSize, maxFFTSize)
 	}
 }

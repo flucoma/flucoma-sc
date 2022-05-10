@@ -1,5 +1,5 @@
 FluidSines : FluidRTMultiOutUGen {
-	*ar { arg in = 0, bandwidth = 76, detectionThreshold = -96, birthLowThreshold = -24, birthHighThreshold = -60, minTrackLen = 15, trackingMethod = 0, trackMagRange = 15, trackFreqRange = 50, trackProb = 0.5, windowSize= 1024, hopSize= -1, fftSize= -1, maxFFTSize=16384;
+	*ar { arg in = 0, bandwidth = 76, detectionThreshold = -96, birthLowThreshold = -24, birthHighThreshold = -60, minTrackLen = 15, trackingMethod = 0, trackMagRange = 15, trackFreqRange = 50, trackProb = 0.5, windowSize= 1024, hopSize= -1, fftSize= -1, maxFFTSize;
 		^this.multiNew('audio', in.asAudioRateInput(this), bandwidth, detectionThreshold,birthLowThreshold, birthHighThreshold, minTrackLen, trackingMethod, trackMagRange, trackFreqRange, trackProb, windowSize, hopSize, fftSize, maxFFTSize)
 	}
 	init { arg ... theInputs;

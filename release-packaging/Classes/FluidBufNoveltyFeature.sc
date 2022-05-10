@@ -14,7 +14,7 @@ FluidBufNoveltyFeature : FluidBufProcessor {
 		source.isNil.if {"FluidBufNoveltyFeature:  Invalid source buffer".throw};
 		features.isNil.if {"FluidBufNoveltyFeature:  Invalid features buffer".throw};
 
-		^FluidProxyUgen.kr(\FluidBufNoveltyFeatureTrigger, -1, source, startFrame, numFrames, startChan, numChans, features, padding, algorithm, kernelSize, filterSize, windowSize, hopSize, fftSize, maxFFTSize, kernelSize, filterSize, trig, blocking);
+		^FluidProxyUgen.kr(\FluidBufNoveltyFeatureTrigger, -1, source, startFrame, numFrames, startChan, numChans, features, padding, algorithm, kernelSize, kernelSize, filterSize, filterSize, windowSize, hopSize, fftSize, maxFFTSize,  trig, blocking);
 
 	}
 
@@ -31,7 +31,7 @@ FluidBufNoveltyFeature : FluidBufProcessor {
 		^this.new(
 			server, nil, [features]
 		).processList(
-			[source, startFrame, numFrames, startChan, numChans, features, padding, algorithm, kernelSize, filterSize, windowSize, hopSize, fftSize,  maxFFTSize, kernelSize, filterSize,0],freeWhenDone,action
+			[source, startFrame, numFrames, startChan, numChans, features, padding, algorithm, kernelSize, kernelSize, filterSize, filterSize, windowSize, hopSize, fftSize,  maxFFTSize, 0],freeWhenDone,action
 		);
 	}
 
@@ -48,7 +48,7 @@ FluidBufNoveltyFeature : FluidBufProcessor {
 		^this.new(
 			server, nil, [features]
 		).processList(
-			[source, startFrame, numFrames, startChan, numChans, features, padding, algorithm, kernelSize, filterSize, windowSize, hopSize, fftSize, maxFFTSize, kernelSize, filterSize,1],freeWhenDone,action
+			[source, startFrame, numFrames, startChan, numChans, features, padding, algorithm, kernelSize, kernelSize, filterSize, filterSize, windowSize, hopSize, fftSize, maxFFTSize, 1],freeWhenDone,action
 		);
 	}
 }

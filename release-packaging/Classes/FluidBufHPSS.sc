@@ -9,7 +9,7 @@ FluidBufHPSS : FluidBufProcessor {
         residual = residual ? -1;
         source.isNil.if {"FluidBufHPSS:  Invalid source buffer".throw};
 
-        ^FluidProxyUgen.kr(\FluidBufHPSSTrigger, -1, source, startFrame, numFrames, startChan, numChans, harmonic, percussive, residual, harmFilterSize, percFilterSize, maskingMode, harmThreshFreq1, harmThreshAmp1, harmThreshFreq2, harmThreshAmp2, percThreshFreq1, percThreshAmp1, percThreshFreq2, percThreshAmp2, windowSize, hopSize, fftSize, maxFFTSize, harmFilterSize, percFilterSize, trig, blocking
+        ^FluidProxyUgen.kr(\FluidBufHPSSTrigger, -1, source, startFrame, numFrames, startChan, numChans, harmonic, percussive, residual, harmFilterSize, harmFilterSize, percFilterSize, percFilterSize, maskingMode, harmThreshFreq1, harmThreshAmp1, harmThreshFreq2, harmThreshAmp2, percThreshFreq1, percThreshAmp1, percThreshFreq2, percThreshAmp2, windowSize, hopSize, fftSize, maxFFTSize,  trig, blocking
         );
 	}
 
@@ -26,7 +26,7 @@ FluidBufHPSS : FluidBufProcessor {
 		^this.new(
 			server, nil, [harmonic, percussive, residual].select{|x| x!= -1}
 		).processList(
-			[source, startFrame, numFrames, startChan, numChans, harmonic, percussive, residual, harmFilterSize, percFilterSize, maskingMode, harmThreshFreq1, harmThreshAmp1, harmThreshFreq2, harmThreshAmp2, percThreshFreq1, percThreshAmp1, percThreshFreq2, percThreshAmp2, windowSize, hopSize, fftSize, maxFFTSize, harmFilterSize, percFilterSize,0], freeWhenDone,action
+			[source, startFrame, numFrames, startChan, numChans, harmonic, percussive, residual, harmFilterSize, harmFilterSize, percFilterSize, percFilterSize, maskingMode, harmThreshFreq1, harmThreshAmp1, harmThreshFreq2, harmThreshAmp2, percThreshFreq1, percThreshAmp1, percThreshFreq2, percThreshAmp2, windowSize, hopSize, fftSize, maxFFTSize, 0], freeWhenDone,action
 		);
 
 	}
@@ -44,7 +44,7 @@ FluidBufHPSS : FluidBufProcessor {
  		^this.new(
  			server, nil, [harmonic, percussive, residual].select{|x| x!= -1}
  		).processList(
- 			[source, startFrame, numFrames, startChan, numChans, harmonic, percussive, residual, harmFilterSize, percFilterSize, maskingMode, harmThreshFreq1, harmThreshAmp1, harmThreshFreq2, harmThreshAmp2, percThreshFreq1, percThreshAmp1, percThreshFreq2, percThreshAmp2, windowSize, hopSize, fftSize, maxFFTSize,harmFilterSize, percFilterSize,1], freeWhenDone,action
+ 			[source, startFrame, numFrames, startChan, numChans, harmonic, percussive, residual, harmFilterSize, harmFilterSize, percFilterSize, percFilterSize, maskingMode, harmThreshFreq1, harmThreshAmp1, harmThreshFreq2, harmThreshAmp2, percThreshFreq1, percThreshAmp1, percThreshFreq2, percThreshAmp2, windowSize, hopSize, fftSize, maxFFTSize, 1], freeWhenDone,action
  		);
 
  	}

@@ -21,7 +21,7 @@ FluidSpectralShape : FluidRTMultiOutUGen {
     }
 
 
-    *kr { arg in = 0, select, minFreq = 0, maxFreq = -1, rolloffPercent = 95, unit = 0, power = 0, windowSize = 1024, hopSize = -1, fftSize = -1, maxFFTSize = 16384;
+    *kr { arg in = 0, select, minFreq = 0, maxFreq = -1, rolloffPercent = 95, unit = 0, power = 0, windowSize = 1024, hopSize = -1, fftSize = -1, maxFFTSize;
 
         var selectbits  =  select !? {this.prProcessSelect(select)} ?? {this.prProcessSelect(this.features)};
 
