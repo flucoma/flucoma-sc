@@ -185,7 +185,9 @@ struct RealTimeBase
 
   void mapControlOutputs(SCUnit& unit, Client&)
   {
-    for (index i = 0; i < mControlOutputBuffer.size(); ++i)
+    index numOuts = std::min<index>(mControlOutputBuffer.size(),unit.mNumOutputs);
+    
+    for (index i = 0; i < numOuts; ++i)
     {
       assert(i <= std::numeric_limits<int>::max());
       unit.out0(static_cast<int>(i)) = mControlOutputBuffer(i);
