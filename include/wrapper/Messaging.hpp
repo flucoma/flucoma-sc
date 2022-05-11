@@ -35,6 +35,22 @@ struct FluidSCMessaging{
   };
   
 
+private:
+  static bool is_vowel(const char p_char)
+  {
+      constexpr char vowels[] = { 'a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U' };
+      return std::find(std::begin(vowels), std::end(vowels), p_char) != std::end(vowels);
+  }
+
+  static std::string remove_vowel(std::string st)
+  {
+      auto to_erase = std::remove_if(st.begin(), st.end(), is_vowel);
+      st.erase(to_erase, st.end());
+      return st;
+  }
+
+
+public:
   template <size_t N, typename T>
   struct SetupMessageCmd
   {
@@ -42,8 +58,13 @@ struct FluidSCMessaging{
     void operator()(const T& message)
     {
       static std::string messageName = std::string{getName()} + '/' + message.name;
-      auto ft = getInterfaceTable();      
-      ft->fDefinePlugInCmd(messageName.c_str(), doMessage<N>,(void*)messageName.c_str());
+      
+      if(messageName.size() >= 32u)
+        messageName = remove_vowel(messageName);
+            
+      auto ft = getInterfaceTable();
+      if(!ft->fDefinePlugInCmd(messageName.c_str(), doMessage<N>,(void*)messageName.c_str()))
+        std::cout << "ERROR: failed to register command \"" << messageName << "\"\n";
     }
   };
   
