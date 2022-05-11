@@ -1,5 +1,5 @@
 FluidHPSS : FluidRTMultiOutUGen {
-	*ar { arg in = 0, harmFilterSize=17, percFilterSize = 31, maskingMode=0, harmThreshFreq1 = 0.1, harmThreshAmp1 = 0, harmThreshFreq2 = 0.5, harmThreshAmp2 = 0, percThreshFreq1 = 0.1, percThreshAmp1 = 0, percThreshFreq2 = 0.5, percThreshAmp2 = 0, windowSize= 1024, hopSize= -1, fftSize= -1, maxFFTSize, maxHarmFilterSize, maxPercFilterSize;
+	*ar { arg in = 0, harmFilterSize=17, percFilterSize = 31, maskingMode=0, harmThreshFreq1 = 0.1, harmThreshAmp1 = 0, harmThreshFreq2 = 0.5, harmThreshAmp2 = 0, percThreshFreq1 = 0.1, percThreshAmp1 = 0, percThreshFreq2 = 0.5, percThreshAmp2 = 0, windowSize= 1024, hopSize= -1, fftSize= -1, maxFFTSize = -1, maxHarmFilterSize, maxPercFilterSize;
         
         maxHarmFilterSize = maxHarmFilterSize ? harmFilterSize; 
         maxPercFilterSize = maxPercFilterSize ? percFilterSize; 

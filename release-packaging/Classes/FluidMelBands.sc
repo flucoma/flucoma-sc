@@ -1,6 +1,6 @@
 FluidMelBands : FluidRTMultiOutUGen {
 
-	*kr { arg in = 0, numBands = 40, minFreq = 20, maxFreq = 20000, normalize = 1, scale = 0, windowSize = 1024, hopSize = -1, fftSize = -1, maxNumBands, maxFFTSize;
+	*kr { arg in = 0, numBands = 40, minFreq = 20, maxFreq = 20000, normalize = 1, scale = 0, windowSize = 1024, hopSize = -1, fftSize = -1, maxNumBands, maxFFTSize = -1;
         
         maxNumBands = maxNumBands ? numBands; 
         

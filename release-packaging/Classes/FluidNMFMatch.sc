@@ -1,6 +1,6 @@
 FluidNMFMatch : FluidRTMultiOutUGen {
 
-	*kr { arg in = 0, bases, maxComponents = 1, iterations = 10, windowSize = 1024, hopSize = -1, fftSize = -1, maxFFTSize;
+	*kr { arg in = 0, bases, maxComponents = 1, iterations = 10, windowSize = 1024, hopSize = -1, fftSize = -1, maxFFTSize = -1;
 		^this.multiNew('control', in.asAudioRateInput(this), bases, maxComponents, maxComponents, iterations, windowSize, hopSize, fftSize, maxFFTSize);
 	}
 

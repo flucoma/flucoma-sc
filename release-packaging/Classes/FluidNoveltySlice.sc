@@ -6,7 +6,7 @@ FluidNoveltySlice : FluidRTUGen {
 	const <pitch = 3;
 	const <loudness = 4;
 
-	*ar { arg in = 0, algorithm = 0, kernelSize = 3, threshold = 0.8, filterSize = 1, minSliceLength = 2, windowSize = 1024, hopSize = -1, fftSize = -1, maxFFTSize, maxKernelSize, maxFilterSize;
+	*ar { arg in = 0, algorithm = 0, kernelSize = 3, threshold = 0.8, filterSize = 1, minSliceLength = 2, windowSize = 1024, hopSize = -1, fftSize = -1, maxFFTSize = -1, maxKernelSize, maxFilterSize;
         
         maxKernelSize = maxKernelSize ? kernelSize;
         maxFilterSize = maxFilterSize ? filterSize; 
