@@ -24,7 +24,7 @@ FluidSpectralShape : FluidRTMultiOutUGen {
     *kr { arg in = 0, select, minFreq = 0, maxFreq = -1, rolloffPercent = 95, unit = 0, power = 0, windowSize = 1024, hopSize = -1, fftSize = -1, maxFFTSize;
 
         var selectbits  =  select !? {this.prProcessSelect(select)} ?? {this.prProcessSelect(this.features)};
-
+        maxFFTSize = maxFFTSize ? -1;
         ^this.multiNew('control', in.asAudioRateInput(this), selectbits, minFreq, maxFreq, rolloffPercent, unit, power, windowSize, hopSize, fftSize, maxFFTSize);
 	}
 
