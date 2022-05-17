@@ -17,5 +17,5 @@ PluginLoad(FluidSTFTUGen)
 {
   ft = inTable;
   using namespace fluid::client;
-  makeSCWrapper<NRTThreadedAudioTransportClient>("FluidBufAudioTransp",ft);
+  makeSCWrapper<NRTThreadedAudioTransportClient>("FluidBufAudioTransport",ft);
 }

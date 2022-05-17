@@ -1,9 +1,5 @@
 FluidBufSpectralShape : FluidBufProcessor {
 
-    *objectClassName{
-        ^\FluidBufSpecShp
-    }
-
     *kr { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, features, select, minFreq = 0, maxFreq = -1, rolloffPercent = 95, unit = 0, power = 0, windowSize = 1024, hopSize = -1, fftSize = -1, padding = 1, trig = 1, blocking = 0|
 
 		var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};

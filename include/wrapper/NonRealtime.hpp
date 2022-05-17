@@ -20,6 +20,12 @@ namespace impl {
 
 /// Non Real Time Processor
 
+  using ServerCommandFn = void(*)(World* world, void*, struct sc_msg_iter* args,
+                            void* replyAddr);
+ 
+  using CommandMap =  std::unordered_map<std::string_view, ServerCommandFn>;
+
+
 template <typename Client, typename Wrapper>
 class NonRealTime : public SCUnit
 {
@@ -829,8 +835,8 @@ private:
                       completionMsgData);
 
       if (completionMsgSize) ft->fRTFree(world, completionMsgData);
-    };
-    ft->fDefinePlugInCmd(Command::name(), commandRunner, nullptr);
+    };    
+    mCommandDispatchTable[Command::name()] = commandRunner;
   }
 
 
@@ -1106,6 +1112,12 @@ private:
   static constexpr bool IsModel = Client::isModelObject::value;
 
 public:
+
+  static void registerMessage(const char* name, ServerCommandFn f)
+  {
+     mCommandDispatchTable[name] = f;
+  }
+
   static void setup(InterfaceTable* ft, const char*)
   {
     defineNRTCommand<CommandNew>();
@@ -1125,6 +1137,21 @@ public:
 
     static std::string flushCmd = std::string(Wrapper::getName()) + "/flush";
 
+    ft->fDefinePlugInCmd(
+        Wrapper::getName(),
+        [](World* w, void* inUserData, struct sc_msg_iter* msg, void* replyAddr)
+        {
+          const char* name = msg->gets();
+          
+          auto cmd = mCommandDispatchTable.find(name);
+          
+          if (cmd != mCommandDispatchTable.end())
+            cmd->second(w, inUserData ? inUserData : (void*)name, msg, replyAddr);
+          else
+            std::cout << "ERROR: message " << name << " not registered.";
+
+        }, nullptr);
+    
     ft->fDefinePlugInCmd(
         flushCmd.c_str(),
         [](World*, void*, struct sc_msg_iter*, void*) { mCache.clear(); },
@@ -1176,7 +1203,10 @@ private:
   index       mPreviousTrigger{0};
   bool        mSynchronous{true};
   Result      mResult;
+  
+  static CommandMap  mCommandDispatchTable;
 };
+
 
 template <typename Client, typename Wrapper>
 World* NonRealTime<Client, Wrapper>::mWorld{nullptr};
@@ -1184,6 +1214,10 @@ World* NonRealTime<Client, Wrapper>::mWorld{nullptr};
 template <typename Client, typename Wrapper>
 typename NonRealTime<Client, Wrapper>::Cache
     NonRealTime<Client, Wrapper>::mCache{};
+    
+template <typename Client, typename Wrapper>
+CommandMap NonRealTime<Client, Wrapper>::mCommandDispatchTable{};
+
 
 } // namespace impl
 } // namespace client

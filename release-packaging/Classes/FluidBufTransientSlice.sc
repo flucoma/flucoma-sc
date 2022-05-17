@@ -1,7 +1,5 @@
 FluidBufTransientSlice : FluidBufProcessor {
 
-    *objectClassName{^\FluidBufTrSlice}
-
 	*kr  { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, order = 20, blockSize = 256, padSize = 128, skew = 0, threshFwd = 2, threshBack = 1.1, windowSize = 14, clumpLength = 25, minSliceLength = 1000, trig = 1, blocking = 0|
 
         source = source.asUGenInput;

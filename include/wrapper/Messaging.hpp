@@ -54,17 +54,10 @@ public:
   template <size_t N, typename T>
   struct SetupMessageCmd
   {
-  
     void operator()(const T& message)
     {
-      static std::string messageName = std::string{getName()} + '/' + message.name;
-      
-      if(messageName.size() >= 32u)
-        messageName = remove_vowel(messageName);
-            
-      auto ft = getInterfaceTable();
-      if(!ft->fDefinePlugInCmd(messageName.c_str(), doMessage<N>,(void*)messageName.c_str()))
-        std::cout << "ERROR: failed to register command \"" << messageName << "\"\n";
+      static std::string messageName = std::string{getName()} + '/' + message.name;      
+      FluidSCWrapper::registerMessage(messageName.c_str(),doMessage<N>);
     }
   };
   

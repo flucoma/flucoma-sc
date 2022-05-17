@@ -30,8 +30,7 @@ FluidServerObject
 
     *newMsg{|id, params|
         params = params !? {params.collect(_.asUGenInput)};
-        // ("Newms"++params).postln;
-          ^['/cmd',this.objectClassName ++ '/new',id] ++ params
+        ^this.prMakeMsg(\new,id,*params);
     }
 
     *new{ |server, id, params, action, callNew = true|
@@ -55,14 +54,12 @@ FluidServerObject
         serverCaches[this.class].remove(server,id);
     }
 
-    prMakeMsg{|msg,id...args|
-
-        var commandName = "%/%".format(this.class.objectClassName,msg);
-
-        if(commandName.size >= 32) { commandName = commandName.select{|c|c.isVowel.not}};
-
-        ^['/cmd',commandName,id].addAll(args);
+    *prMakeMsg{|msg,id...args|
+        var commandName = "%/%".format(this.objectClassName,msg);
+        ^['/cmd', this.objectClassName,commandName,id].addAll(args);
     }
+
+    prMakeMsg{|msg,id...args| ^this.class.prMakeMsg(msg,id,*args) }
 
     freeMsg {
         var msg;
