@@ -1,20 +1,34 @@
 FluidNoveltySlice : FluidRTUGen {
 
-	const <spectrum = 0;
-	const <mfcc = 1;
-	const <chroma = 2;
-	const <pitch = 3;
-	const <loudness = 4;
+	const <algorithms = #[\spectrum, \mfcc, \chroma, \pitch, \loudness];
+
+	*prSelectAlgorithm { |sym|
+		if (sym.isNumber) {
+			if (sym >= 0 && (sym < algorithms.size)) {
+				^sym
+			} {
+				^nil
+			}
+		};
+		^algorithms.indexOf(sym.asSymbol)
+	}
 
 	*ar { arg in = 0, algorithm = 0, kernelSize = 3, threshold = 0.8, filterSize = 1, minSliceLength = 2, windowSize = 1024, hopSize = -1, fftSize = -1, maxFFTSize = -1, maxKernelSize, maxFilterSize;
-        
+
         maxKernelSize = maxKernelSize ? kernelSize;
-        maxFilterSize = maxFilterSize ? filterSize; 
-        
+        maxFilterSize = maxFilterSize ? filterSize;
+
+        algorithm = this.prSelectAlgorithm(algorithm)  ?? {
+            ("FluidNoveltySlice: % is not a recognised algorithm").format(algorithm);
+        };
+
 		^this.multiNew('audio', in.asAudioRateInput(this), algorithm, kernelSize, maxKernelSize, threshold, filterSize,  maxFilterSize, minSliceLength, windowSize, hopSize, fftSize, maxFFTSize)
 	}
 
 	checkInputs {
+		if(inputs.at(1).rate != 'scalar') {
+			^(": invalid algorithm");
+		    };
 		if(inputs.at(11).rate != 'scalar') {
 			^(": maxFFTSize cannot be modulated.");
 			};
