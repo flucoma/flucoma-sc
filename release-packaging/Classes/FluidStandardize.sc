@@ -1,8 +1,6 @@
 FluidStandardize : FluidModelObject {
 
-    var <>invert;
-
-    *new {|server, invert = 0|
+    *new {|server|
 		^super.new(server,[]);
 	}
 

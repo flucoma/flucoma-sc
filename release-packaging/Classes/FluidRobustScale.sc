@@ -2,8 +2,8 @@ FluidRobustScale : FluidModelObject {
 
     var <>low, <>high;
 
-	*new {|server, low = 25, high = 75, invert = 0|
-		^super.new(server,[low,high,invert])
+	*new {|server, low = 25, high = 75|
+		^super.new(server,[low,high])
 		.low_(low).high_(high);
 	}
 
