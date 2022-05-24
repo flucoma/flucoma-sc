@@ -33,6 +33,8 @@ endif()
 
 option(SYSTEM_BOOST  "Use boost libraries from system. If your SC was built with this enabled, so should FluCoMa-sc" OFF)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/scripts")
+
 ################################################################################
 # Main project
 project (flucoma-sc LANGUAGES CXX)
@@ -133,6 +135,9 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_LIBRARY_OUTPUT_DIRECT
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_TEST "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 set(CMAKE_SHARED_MODULE_PREFIX "")
 
+set(CMAKE_COMPILE_PDB_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/pdbtmp")
+set(CMAKE_PDB_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/pdbtmp")
+
 if(APPLE OR WIN32)
   set(CMAKE_SHARED_MODULE_SUFFIX ".scx")
 endif()
@@ -192,8 +197,8 @@ if(APPLE)
   target_compile_options(FLUID_SC_COPYREPLYADDR PRIVATE -stdlib=libc++)
 endif()
 
-target_compile_definitions(FLUID_SC_COPYREPLYADDR PRIVATE BOOST_ALL_NO_LIB  BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE)
-
+target_compile_definitions(FLUID_SC_COPYREPLYADDR PRIVATE BOOST_ALL_NO_LIB  PUBLIC BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE)
+ 
 add_library(FLUID_SC_WRAPPER INTERFACE)
 target_include_directories(FLUID_SC_WRAPPER 
   INTERFACE
@@ -208,15 +213,49 @@ target_sources(FLUID_SC_WRAPPER
 
 target_link_libraries(FLUID_SC_WRAPPER INTERFACE FLUID_SC_COPYREPLYADDR)
 
-SUBDIRLIST(PROJECT_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src")
-foreach (project_dir ${PROJECT_DIRS})
-	if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/${project_dir}/CMakeLists.txt")
-		message("Generating: ${project_dir}")
-		add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/${project_dir}")
-	endif ()
-endforeach ()
+include(MakePluginSources)
 
 
+# SUBDIRLIST(PROJECT_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src")
+# foreach (project_dir ${PROJECT_DIRS})
+# 	if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/${project_dir}/CMakeLists.txt")
+# 		message("Generating: ${project_dir}")
+# 		add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/${project_dir}")
+# 	endif ()
+# endforeach ()
+
+# generate targets for standalone clients
+get_client_group(NONE client_list)
+foreach(client ${client_list}) 
+  get_core_client_header(${client} header)   
+  get_core_client_class(${client} class)   
+  generate_sc_source(
+    CLIENTS ${client} 
+    HEADERS ${header} 
+    CLASSES ${class} 
+  )
+endforeach()
+
+add_client(DataSetWr clients/rt/FluidDataSetWr.hpp CLASS NRTThreadedDataSetWriter GROUP MANIPULATION)
+
+#generate target for MANIPULATION group 
+get_client_group(MANIPULATION client_list)
+foreach(client ${client_list})  
+  get_core_client_header(${client} header)  
+  get_core_client_class(${client} class)  
+  list(APPEND MANIPULATION_CLIENTS ${client})
+  list(APPEND MANIPULATION_HEADERS ${header})
+  list(APPEND MANIPULATION_CLASSES ${class})
+endforeach()
+
+generate_sc_source(
+  CLIENTS ${MANIPULATION_CLIENTS}
+  HEADERS ${MANIPULATION_HEADERS}
+  CLASSES ${MANIPULATION_CLASSES}
+  FILENAME FluidManipulation 
+)
+
+# add_max_external(fluid.list2buf "${CMAKE_CURRENT_SOURCE_DIR}/source/projects/fluid.list2buf/fluid.list2buf.cpp")
 
 #install bits. 
 
