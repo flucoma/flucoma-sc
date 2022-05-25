@@ -1,6 +1,6 @@
 FluidNormalize : FluidModelObject {
 
-    var <>min, <>max, <>invert;
+    var <>min, <>max;
 
 	*new {|server, min = 0, max = 1|
 		^super.new(server,[min,max])
