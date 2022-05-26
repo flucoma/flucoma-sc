@@ -58,20 +58,7 @@ endif()
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(CMAKE_XCODE_GENERATE_TOP_LEVEL_PROJECT_ONLY ON)
 
-# MACRO(SUBDIRLIST result curdir)
-#   FILE(GLOB children RELATIVE ${curdir} ${curdir}/*)
-#   SET(dirlist "")
-#   FOREACH(child ${children})
-#     IF(IS_DIRECTORY ${curdir}/${child})
-#       LIST(APPEND dirlist ${child})
-#     ENDIF()
-#   ENDFOREACH()
-#   SET(${result} ${dirlist})
-# ENDMACRO()
-
 include(FetchContent)
-
-set(FETCHCONTENT_QUIET FALSE)
 
 FetchContent_Declare(
   flucoma-core
@@ -93,14 +80,14 @@ if(FLUID_PATH)
   )
 endif()
 
-FetchContent_GetProperties(flucoma-core)
-if(NOT flucoma-core_POPULATED)
-  FetchContent_Populate(flucoma-core)
-  add_subdirectory(${flucoma-core_SOURCE_DIR} ${flucoma-core_BINARY_DIR})
-  include(flucoma_version)
-  include(flucoma-buildtools)
-  include(flucoma-buildtype)
-endif()
+FetchContent_MakeAvailable(flucoma-core)
+# if(NOT flucoma-core_POPULATED)
+#   FetchContent_Populate(flucoma-core)
+#   add_subdirectory(${flucoma-core_SOURCE_DIR} ${flucoma-core_BINARY_DIR})
+include(flucoma_version)
+include(flucoma-buildtools)
+include(flucoma-buildtype)
+# endif()
 
 option(DOCS "Generate scdocs" OFF)
 set(FLUID_DOCS_PATH "" CACHE PATH "Optional path to flucoma-docs (needed for docs); will download if absent")
@@ -114,14 +101,14 @@ if(DOCS)
       FETCHCONTENT_SOURCE_DIR_FLUCOMA-DOCS ${FLUID_DOCS_PATH} ABSOLUTE
     )
   endif()
-
-  FetchContent_GetProperties(flucoma-docs)
-  if(NOT flucoma-docs_POPULATED)
-    FetchContent_Populate(flucoma-docs)
-    file(GLOB_RECURSE DOC_SOURCE RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "${flucoma-docs_SOURCE_DIR}/**/*.cpp" )
-    source_group("\\SC Doc Gen" FILES ${DOC_SOURCE})
-    add_subdirectory(${flucoma-docs_SOURCE_DIR} ${flucoma-docs_BINARY_DIR})
-  endif()
+  FetchContent_MakeAvailable(flucoma-docs)
+  # FetchContent_GetProperties(flucoma-docs)
+  # if(NOT flucoma-docs_POPULATED)
+  #   FetchContent_Populate(flucoma-docs)
+  #   file(GLOB_RECURSE DOC_SOURCE RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "${flucoma-docs_SOURCE_DIR}/**/*.cpp" )
+  #   source_group("\\SC Doc Gen" FILES ${DOC_SOURCE})
+  #   add_subdirectory(${flucoma-docs_SOURCE_DIR} ${flucoma-docs_BINARY_DIR})
+  # endif()
   include(FlucomaDocs)
   set(SC_DOC_OUT "${CMAKE_BINARY_DIR}/sc_ref")
   add_ref_target(sc "Making SC docs")
@@ -217,16 +204,6 @@ target_sources(FLUID_SC_WRAPPER
 target_link_libraries(FLUID_SC_WRAPPER INTERFACE FLUID_SC_COPYREPLYADDR)
 
 include(MakePluginSources)
-
-
-# SUBDIRLIST(PROJECT_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src")
-# foreach (project_dir ${PROJECT_DIRS})
-# 	if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/${project_dir}/CMakeLists.txt")
-# 		message("Generating: ${project_dir}")
-# 		add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/${project_dir}")
-# 	endif ()
-# endforeach ()
-
 # generate targets for standalone clients
 get_client_group(NONE client_list)
 foreach(client ${client_list}) 
@@ -258,10 +235,7 @@ generate_sc_source(
   FILENAME FluidManipulation 
 )
 
-# add_max_external(fluid.list2buf "${CMAKE_CURRENT_SOURCE_DIR}/source/projects/fluid.list2buf/fluid.list2buf.cpp")
-
 #install bits. 
-
 set(SC_INSTALL_PREFIX "." CACHE PATH "Prefix for assembling SC packages")
 set(FLUID_PACKAGE_NAME FluidCorpusManipulation CACHE STRING "Name for published package")
 set(SC_PACKAGE_ROOT ${SC_INSTALL_PREFIX}/${FLUID_PACKAGE_NAME})
