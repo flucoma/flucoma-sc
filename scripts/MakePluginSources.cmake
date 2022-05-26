@@ -107,18 +107,12 @@ function(generate_sc_source)
   ${ARGN})  
   
   set(CCE_WRAPPER "#include <FluidSCWrapper.hpp>")
-  # set(ENTRY_POINT "static InterfaceTable *ft;\n\nPluginLoad(FlucomaPlugin)")  
   set(ENTRY_POINT "PluginLoad(FlucomaPlugin)")  
   set(WRAPPER_TEMPLATE [=[makeSCWrapper<${class}>("${external}", inTable);]=])
 
   set(EXTRA_SOURCE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/src/extra/${ARG_FILENAME}.cpp.in")
   
-  message(WARNING ${EXTRA_SOURCE_FILE})
-  
   if(EXISTS ${EXTRA_SOURCE_FILE})  
-    # message(WARNING "well?")
-    # file(READ ${EXTRA_SOURCE_FILE} extra)
-    # message(WARNING "${extra}")
     generate_source(${ARGN} EXTRA_SOURCE ${EXTRA_SOURCE_FILE} EXTERNALS_OUT external FILE_OUT outfile)  
   else()
     generate_source(${ARGN} EXTERNALS_OUT external FILE_OUT outfile)
