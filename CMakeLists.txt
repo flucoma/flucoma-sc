@@ -15,7 +15,7 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 ################################################################################
 # Paths
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/install" CACHE PATH "")
-
+set(FLUID_BRANCH "origin/main" CACHE STRING "Branch to pull flucoma dependencies from")
 set(SC_LIBRARY_OUTPUT_PREFIX "release-packaging" CACHE STRING "Where in the hierarchy to write sc plugins")
 
 set(SC_PATH "" CACHE PATH "Path to the top of SuperCollider source tree")
@@ -64,14 +64,14 @@ FetchContent_Declare(
   flucoma-core
   GIT_REPOSITORY https://github.com/flucoma/flucoma-core.git
   GIT_PROGRESS TRUE
-  GIT_TAG origin/main
+  GIT_TAG ${FLUID_BRANCH}
 )
 
 FetchContent_Declare(
   flucoma-docs
   GIT_REPOSITORY https://github.com/flucoma/flucoma-docs.git
   GIT_PROGRESS TRUE
-  GIT_TAG origin/main
+  GIT_TAG ${FLUID_BRANCH}
 )
 
 if(FLUID_PATH)
