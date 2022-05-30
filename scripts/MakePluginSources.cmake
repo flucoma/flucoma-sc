@@ -88,7 +88,7 @@ function(add_sc_extension PLUGIN FILENAME)
   
   #optional extra build settings (e.g for /bigobj with MSVC)
   include(
-    "${CMAKE_CURRENT_SOURCE_DIR}/scripts/build-settings/${PLUGIN}.cmake"  
+    "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/settings/${PLUGIN}.cmake"  
     OPTIONAL
   )  
 endfunction()
@@ -110,7 +110,7 @@ function(generate_sc_source)
   set(ENTRY_POINT "PluginLoad(FlucomaPlugin)")  
   set(WRAPPER_TEMPLATE [=[makeSCWrapper<${class}>("${external}", inTable);]=])
 
-  set(EXTRA_SOURCE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/src/extra/${ARG_FILENAME}.cpp.in")
+  set(EXTRA_SOURCE_FILE "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/settings/${ARG_FILENAME}.cpp.in")
   
   if(EXISTS ${EXTRA_SOURCE_FILE})  
     generate_source(${ARGN} EXTRA_SOURCE ${EXTRA_SOURCE_FILE} EXTERNALS_OUT external FILE_OUT outfile)  
