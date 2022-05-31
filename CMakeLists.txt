@@ -261,6 +261,6 @@ install(FILES ${flucoma-core_SOURCE_DIR}/distribution.lic
         RENAME LICENSE.md)
 
 if(DOCS)
-  install(DIRECTORY "${SC_DOC_OUT}" 
+  install(DIRECTORY "${SC_DOC_OUT}/" 
           DESTINATION "${SC_PACKAGE_ROOT}/HelpSource")
 endif()
