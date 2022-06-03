@@ -11,7 +11,7 @@ DESCRIPTION::
 ​
 CLASSMETHODS::
 ​
-METHOD:: ar
+METHOD:: kr
 Calculate Effort To Compress for an audio signal
 
 ARGUMENT:: in
@@ -53,7 +53,7 @@ code::
 	sig = SoundIn.ar([0]);
 	//sig = SinOsc.ar(2000);
 	// sig = LFSaw.ar(10).madd(0.5);
-	FluidETC.ar(sig, 16, 5, 20, 5).poll;
+	FluidETC.kr(sig, 16, 5, 20, 5).poll;
 	0
 }.play
 )

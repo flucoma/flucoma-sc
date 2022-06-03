@@ -11,4 +11,3 @@ FluidShannonEntropy : FluidRTUGen {
 	}
 
 }
-

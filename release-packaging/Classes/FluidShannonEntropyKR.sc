@@ -1,5 +1,5 @@
-FluidETC : UGen {
-	*kr { arg in = 0, symbolCount=16, winSize=5, maxWinSize=20, kHopSize=5;
+FluidShannonEntropyKR : FluidRTUGen {
+	*kr { arg in = 0, symbolCount=1000, winSize=100, maxWinSize=200, kHopSize=50;
 		^this.multiNew('control', in, symbolCount, winSize, maxWinSize, kHopSize)
 	}
 	checkInputs {
@@ -9,5 +9,8 @@ FluidETC : UGen {
 		};
 		^this.checkValidInputs;
 	}
+
 }
+
+
 

@@ -19,4 +19,5 @@ PluginLoad(FluidShannonEntropy)
   ft = inTable;
   using namespace fluid::client;
   makeSCWrapper<RTShannonEntropyClient>("FluidShannonEntropy", ft);
+  makeSCWrapper<RTShannonEntropyClientKR>("FluidShannonEntropyKR", ft);
 }
