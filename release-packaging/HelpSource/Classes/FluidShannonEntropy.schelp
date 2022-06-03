@@ -37,12 +37,13 @@ code::
 (
 {
 	var sig;
-  //uncomment to look at the different between different types of input
+  //uncomment to look at the difference between varying types of input
 	// sig = PinkNoise.ar;
 	sig = SoundIn.ar([0]);
 	// sig = SinOsc.ar(2000);
 	// sig = LFSaw.ar(10);
-	FluidShannonEntropy.ar(sig, 10000, 100, 500, 50).poll(20) * DC.ar(0)
+	FluidShannonEntropy.ar(sig, 10000, 100, 500, 50).poll(20)
+	0
 }).play
 )
 ::
