@@ -1,0 +1,77 @@
+TITLE:: FluidBufToKr
+summary:: Helper pseudo UGen for reading data out of a buffer to a Kr stream
+categories:: Libraries>FluidCorpusManipulation
+related:: Classes/FluidKrToBuf
+
+DESCRIPTION::
+Helper pseudo UGen for reading data out of a buffer to a Kr stream. It only reads one-channel buffers, converting them to a Kr stream.
+
+CLASSMETHODS::
+
+METHOD:: kr
+Initialize an instance of this pseudo UGen
+
+ARGUMENT:: buffer
+Either a link::Classes/Buffer:: object or an index opointing to a buffer that this pseudo UGen will read out of. Must be a one-channel buffer.
+
+ARGUMENT:: startFrame
+Offset of reading position in the buffer. The default is 0.
+
+ARGUMENT:: numFrames
+Number of frames to read from the buffer. Needs to be set, if buffer is not a code::Buffer:: object but a buffer index. If code::-1::, read whole buffer starting at code::startFrame::. The default is -1.
+
+returns:: a Kr stream that has the same number of channels as frames in the link::Classes/Buffer::.
+
+INSTANCEMETHODS::
+
+EXAMPLES::
+
+code::
+
+// fill a 1-channel buffer with 7 numbers
+~buf = Buffer.loadCollection(s,{exprand(100,4000)} ! 7);
+
+// in a synth, read those numbers out of the buffer and get them as a control stream
+(
+~synth = {
+	arg buf;
+	var freqs = FluidBufToKr.kr(buf,numFrames:7);
+	var sig = SinOsc.ar(freqs.lag(0.03)) * 0.1;
+	sig.poll;
+	Splay.ar(sig);
+}.play(args:[\buf,~buf]);
+)
+
+// then you can change what's in the buffer and it will get read out by the synth
+~buf.setn(0,{exprand(100,4000)} ! 7);
+
+::
+Use with other FluCoMa objects:
+code::
+
+// create an neural network for classification
+~mlp = FluidMLPClassifier(s);
+
+// load a model that has been pre-trained to classify between a tone and noise, simple, i know, but...
+~mlp.read(FluidFilesPath("../Resources/bufToKrExample.json"));
+
+// can be used to demonstrate that...
+(
+{
+	var input_buf = LocalBuf(7);
+	var out_buf = LocalBuf(1);
+	var sig = Select.ar(ToggleFF.kr(Dust.kr(1)),[SinOsc.ar(440),PinkNoise.ar]);
+	var analysis = FluidSpectralShape.kr(sig);
+	FluidKrToBuf.kr(analysis,input_buf);
+
+	// the output prediction is written into a buffer
+	~mlp.kr(Impulse.kr(30),input_buf,out_buf);
+
+	// and FluidBufToKr can be used to read the prediction out into a control rate stream
+	FluidBufToKr.kr(out_buf).poll;
+
+	sig.dup * -30.dbamp
+}.play;
+)
+
+::

@@ -56,8 +56,8 @@ code::
 //richer with complex spectra
 //load 2 files
 (
-b = Buffer.read(s,File.realpath(FluidAudioTransport.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-CEL-GlitchyMusicBoxMelo.wav");
-c = Buffer.read(s,File.realpath(FluidAudioTransport.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-CF-ChurchBells.wav");
+b = Buffer.read(s,FluidFilesPath("Tremblay-CEL-GlitchyMusicBoxMelo.wav"));
+c = Buffer.read(s,FluidFilesPath("Tremblay-CF-ChurchBells.wav"));
 )
 //listen to them
 b.play

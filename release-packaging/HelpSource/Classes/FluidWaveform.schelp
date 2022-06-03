@@ -1,0 +1,304 @@
+TITLE:: FluidWaveform
+summary:: Buffer waveform display with optional overlays
+categories:: Libraries>FluidCorpusManipulation
+related:: Classes/FluidPlotter, Classes/FluidBufNoveltySlice, Classes/FluidBufOnsetSlice, Classes/FluidBufAmpSlice, Classes/SoundFileView
+
+DESCRIPTION::
+FluidWaveform plots a buffer with optional overlays such as slices derived from a FluCoMa Slicer, or feature values from a FluCoMa audio descriptor.
+
+CLASSMETHODS::
+
+METHOD:: new
+Create a new instance of FluidWaveform.
+
+ARGUMENT:: audioBuffer
+The audio buffer to plot.
+
+ARGUMENT:: indicesBuffer
+A link::Classes/Buffer:: of slice indices. This will very likely be in the form of a link::Classes/Buffer:: output from a FluCoMa slicer object. If this link::Classes/Buffer:: is only one channel it will plot lines at these slice points. If the link::Classes/Buffer:: is two channels it will consider the 0th channel to contain onsets and the 1st channel to contain offsets. This matches the output of link::Classes/FluidBufAmpGate::.
+
+ARGUMENT:: featuresBuffer
+A link::Classes/Buffer:: containing features to plot over the waveform. If this link::Classes/Buffer:: is multiple channels, it will plot each channel as a separate feature.
+
+ARGUMENT:: parent
+A link::Classes/Window:: to place this FluidWaveform in. If STRONG::nil::, FluidWaveform will make its own window using the STRONG::bounds:: argument.
+
+ARGUMENT:: bounds
+A link::Classes/Rect:: of where to place the FluidWaveform. If parent is STRONG::nil::, these bounds will be used to create a new link::Classes/Window::. If parent is not STRONG::nil::, these bounds will be used to place this FluidWaveform in the parent.
+
+ARGUMENT:: lineWidth
+The width of the line for plotting slice points and features.
+
+ARGUMENT:: waveformColor
+A link::Classes/Color:: to make the waveform.
+
+ARGUMENT:: stackFeatures
+If STRONG::false::, all the features (i.e., channels in the STRONG::featureBuffer::) will be overlayed on each other, as though on the same x and y axis. If STRONG::true::, each feature will occupy its own space covering the width of the plot and an fraction of the height (the number of channels in STRONG::featureBuf:: / the height of the plot). The default is STRONG::false::.
+
+ARGUMENT:: imageBuffer
+A link::Classes/Buffer:: that will be turned into a raster image and displayed. The buffer's frames will comprise the y axis, the buffer's channels will comprise the x axis (channel 0 at the bottom). Very likely this will come from the output of a Fluid analysis object, such as link::Classes/FluidBufSTFT:: which can be used to plot a spectrogram. Using FluidBufMelBands can be used to plot a Mel-frequency spectrum.
+
+ARGUMENT:: imageColorScheme
+An integer indicating which color scheme footnote::The color schemes used are from https://colorcet.com/ Kovesi, Peter. "Good colour maps: How to design them." arXiv preprint arXiv:1509.03700 (2015). https://arxiv.org/abs/1509.03700 :: to use to distinguish differences in the values in strong::imageBuffer::. The default is 0. One can also pass a link::Classes/Color:: and differences will be shown using alpha.
+table::
+## 0 || Grey scale with slightly reduced contrast to avoid display saturation problems
+## 1 || Black - Blue - Green - Yellow - White
+## 2 || Blue - Magenta - Yellow highly saturated
+## 3 || Black - Red - Yellow - White
+## 4 || Black - Red - Yellow
+::
+
+ARGUMENT:: imageAlpha
+An transparency value (0-1) for displaying the waveform. 0 is fully transparent, 1 is fully visible. The default is 1.
+
+ARGUMENT:: normalizeFeaturesIndependently
+Boolean. All the features in STRONG::featureBuf:: need to be normalized for plotting. If STRONG::true::, this normalization will happen per feature, so that each will use the full visual range allowed to them. If STRONG::false::, the normalization will happen over all the values in the STRONG::featureBuf:: (in all the channels), so that the features relative strengths will be preserved. The default is STRONG::true::.
+
+ARGUMENT:: imageColorScaling
+An integer indicating how to scale the values in strong::imageBuffer:: before applying the strong::imageColorScheme::. 0 indicates linear scaling, 1 indicates logarithmic scaling. The default is 1. These integers can also be accessed via FluidWaveform.lin and FluidWaveform.log.
+
+returns:: A new instance of FluidWaveform.
+
+METHOD:: lin
+Can be used as the strong::colorScaling:: argument.
+returns:: 0
+
+METHOD:: log
+Can be used as the strong::colorScaling:: argument.
+returns:: 1
+
+
+INSTANCEMETHODS::
+
+METHOD:: addAudioLayer
+Add a graphic layer that shows a waveform.
+
+ARGUMENT:: audioBuffer
+See this argument in the class method 'new' above.
+
+ARGUMENT:: waveformColor
+See this argument in the class method 'new' above. The default is gray.
+
+METHOD:: addIndicesLayer
+Add a grapic layer that shows indices.
+
+ARGUMENT:: indicesBuffer
+See this argument in the class method 'new' above.
+
+ARGUMENT:: audioBuffer
+The audioBuffer that the indices refer to.
+
+ARGUMENT:: color
+The link::Classes/Color:: to display the indices. The default is red.
+
+ARGUMENT:: lineWidth
+How wide to draw the indices lines. The default is 1.
+
+METHOD:: addFeaturesLayer
+Add a grapic layer that shows feature curves.
+
+ARGUMENT:: featuresBuffer
+See this argument in the class method 'new' above.
+
+ARGUMENT:: colors
+An array of link::Classes/Color:: objects to use to display the different features. If there are more features than colors, FluidWaveform will modulo around the colors. If this is left blank, default colors will be used.
+
+ARGUMENT:: stackFeatures
+See this argument in the class method 'new' above.
+
+ARGUMENT:: normalizeFeaturesIndependently
+See this argument in the class method 'new' above.
+
+METHOD:: addImageLayer
+Add a grapic layer that shows an image derived from a buffer.
+
+ARGUMENT:: imageBuffer
+See this argument in the class method 'new' above.
+
+ARGUMENT:: imageColorScheme
+See this argument in the class method 'new' above.
+
+ARGUMENT:: imageColorScaling
+See this argument in the class method 'new' above.
+
+ARGUMENT:: imageAlpha
+See this argument in the class method 'new' above.
+
+METHOD:: front
+Similar to link::Classes/Window::'s strong::front:: method. Shows the FluidWaveform. This must be called after layers have been added in order to see the layers.
+
+METHOD:: close
+Close the FluidWaveform window. If parent is not STRONG::nil::, this method will close the parent window.
+
+
+METHOD:: win
+
+returns:: The FluidWaveform window. If parent is not STRONG::nil::, this method will return the parent window.
+
+
+
+EXAMPLES::
+code::
+s.boot;
+
+// load a sound
+~drums = Buffer.read(s,FluidFilesPath("Nicol-LoopE-M.wav"));
+
+// display
+FluidWaveform(~drums,bounds:Rect(0,0,1200,300));
+
+// put in another window
+(
+w = Window("FluidWaveform Test",Rect(0,0,1000,500));
+FluidWaveform(~drums,parent:w,bounds:Rect(100,100,800,300));
+w.front;
+)
+
+// show spectrogram
+~mags = Buffer(s);
+FluidBufSTFT.processBlocking(s,~drums,magnitude:~mags,action:{"stft done".postln;});
+FluidWaveform(bounds:Rect(0,0,1200,300),imageBuffer:~mags,imageColorScheme:1,imageColorScaling:1);
+
+// show mels
+~mels = Buffer(s);
+FluidBufMelBands.processBlocking(s,~drums,features:~mels,numBands:400,windowSize:4096,hopSize:256,action:{"done".postln});
+FluidWaveform(bounds:Rect(0,0,1600,400),imageBuffer:~mels,imageColorScheme:1,imageColorScaling:1);
+
+// spectrogram with some nice colors and a bit of styling...
+FluidWaveform(~drums,bounds:Rect(0,0,1200,300),imageBuffer:~mags,imageColorScheme:1,waveformColor:Color.magenta(1,0.5),imageColorScaling:1);
+
+// create a buffer to put indices into
+~indices = Buffer(s);
+
+// do a slice analysis
+FluidBufAmpSlice.processBlocking(s,~drums,indices:~indices,fastRampUp: 10,fastRampDown: 2205,slowRampUp: 4410,slowRampDown: 4410,onThreshold: 10,offThreshold: 5,floor: -40,minSliceLength: 4410,highPassFreq: 20);
+
+// plot the buffer with the indices overlayed
+FluidWaveform(~drums,~indices,bounds:Rect(0,0,800,200));
+
+// do a descriptor analysis
+~features = Buffer(s);
+FluidBufLoudness.processBlocking(s,~drums,features:~features,action:{"done".postln;});
+
+// copy just the first channel of that buffer to display it
+~features2 = Buffer(s);
+FluidBufCompose.processBlocking(s,~features,numChans:1,destination:~features2);
+
+// plot the audio with the slices and the loudness analysis
+FluidWaveform(~drums,~indices,~features2,bounds:Rect(0,0,1200,300));
+
+// with gate info
+~gate_analysis = Buffer(s);
+FluidBufAmpGate.processBlocking(s,~drums,indices:~gate_analysis,onThreshold:-35,offThreshold:-35,minSliceLength:4410);
+
+// it will plot the ons and offs
+FluidWaveform(~drums,~gate_analysis,~features2,bounds:Rect(0,0,1200,300));
+
+// do a descriptor analysis and plot both features either stacked or not:
+~noisy = Buffer.read(s,FluidFilesPath("Tremblay-ASWINE-ScratchySynth-M.wav"));
+~pitch_analysis = Buffer(s);
+
+FluidBufPitch.processBlocking(s,~noisy,features:~pitch_analysis,action:{"done".postln;});
+
+// plot not stacked:
+FluidWaveform(~noisy,featuresBuffer:~pitch_analysis,bounds:Rect(0,0,1200,300));
+
+// plot stacked:
+FluidWaveform(~noisy,featuresBuffer:~pitch_analysis,bounds:Rect(0,0,1200,300),stackFeatures:true,waveformColor:Color(*0.9.dup(3)));
+
+~mags = Buffer(s);
+FluidBufSTFT.processBlocking(s,~noisy,magnitude:~mags,action:{"done".postln;});
+
+// add spectrogram:
+FluidWaveform(~noisy,featuresBuffer:~pitch_analysis,imageBuffer:~mags,bounds:Rect(0,0,1200,300),stackFeatures:true,waveformColor:Color(0,0,0,0.5),imageAlpha:0.5,imageColorScaling:1);
+
+// plot in another window with all the things!
+
+(
+w = Window("FluidWaveform Test",Rect(0,0,1000,500));
+FluidWaveform(
+	~noisy,
+	featuresBuffer:~pitch_analysis,
+	parent:w,
+	bounds:Rect(100,100,800,300),
+	stackFeatures:true,
+	imageBuffer:~mags,
+	imageAlpha:0.6,
+	waveformColor:Color(0,1,1,0.5)
+);
+w.front;
+)
+::
+Adding Layers One at a Time
+code::
+(
+// do some analysis
+~audio = Buffer.read(s,FluidFilesPath("Nicol-LoopE-M.wav"));
+~mels = Buffer(s);
+FluidBufMelBands.processBlocking(s,~audio,features:~mels);
+~indices = Buffer(s);
+FluidBufOnsetSlice.processBlocking(s,~audio,metric:9,indices:~indices);
+~pitch_analysis = Buffer(s);
+FluidBufPitch.processBlocking(s,~audio,features:~pitch_analysis,action:{"done".postln;});
+)
+
+(
+// plot it all
+~fw = FluidWaveform(bounds:Rect(100,100,1200,300)); // if no buffers of any kind are passed, then you'll need to call `.front` after adding layers
+~fw.addImageLayer(~mels,2,imageColorScaling:1);
+~fw.addAudioLayer(~audio,Color(1,1,1,0.5));
+~fw.addIndicesLayer(~indices,~audio,Color.black);
+~fw.addFeaturesLayer(~pitch_analysis,[Color.cyan,Color.magenta]);
+~fw.front; //                                       // if no buffers of any kind are passed, then you'll need to call `.front` after adding layers
+)
+
+(
+// plot most of it, but then...
+~fw = FluidWaveform(bounds:Rect(100,100,1200,300));
+~fw.addImageLayer(~mels,2,imageColorScaling:1);
+~fw.addAudioLayer(~audio,Color(1,1,1,0.5));
+~fw.addIndicesLayer(~indices,~audio,Color.black);
+~fw.front;
+)
+
+// add one more
+~fw.addFeaturesLayer(~pitch_analysis,[Color.cyan,Color.yellow]).front; // <<<----- notice the `.front` here to update display after adding this layer
+
+// check how many layers
+~fw.layers.size
+
+(
+// plot differen components with different colors
+s.waitForBoot{
+	~audio = Buffer.read(s,FluidFilesPath("Nicol-LoopE-M.wav"));
+	~resynth = Buffer(s);
+	~n_components = 3;
+	~resynths = {Buffer(s)} ! ~n_components;
+
+	s.sync;
+	FluidBufNMF.processBlocking(s,~audio,resynth:~resynth,activations:~activations,components:~n_components);
+
+	~n_components.do{
+		arg i;
+		FluidBufCompose.processBlocking(s,~resynth,startChan:i,numChans:1,destination:~resynths[i]);
+	};
+
+	~colors = FluidViewer.createCatColors.collect{
+		arg color;
+		color.alpha_(0.4);
+		color;
+	};
+
+	s.sync;
+
+	~fw = FluidWaveform(bounds:Rect(0,0,1600,400));
+
+	~n_components.do{
+		arg i;
+		~fw.addAudioLayer(~resynths[i],~colors[i]);
+	};
+
+	~fw.front;
+}
+)
+::

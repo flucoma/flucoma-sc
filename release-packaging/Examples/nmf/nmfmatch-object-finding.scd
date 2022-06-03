@@ -2,7 +2,7 @@
 
 //set some buffers
 (
-b = Buffer.read(s,File.realpath(FluidNMFMatch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-BaB-SoundscapeGolcarWithDog.wav");
+b = Buffer.read(s,FluidFilesPath("Tremblay-BaB-SoundscapeGolcarWithDog.wav"));
 c = Buffer.new(s);
 x = Buffer.new(s);
 e = Buffer.new(s);

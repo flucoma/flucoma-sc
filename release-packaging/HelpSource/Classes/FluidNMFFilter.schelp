@@ -99,7 +99,7 @@ STRONG::A guitar processor::
 CODE::
 //set some buffers
 (
-b = Buffer.read(s,File.realpath(FluidNMFMatch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-AcousticStrums-M.wav");
+b = Buffer.read(s,FluidFilesPath("Tremblay-AaS-AcousticStrums-M.wav"));
 c = Buffer.new(s);
 ~bases = Buffer.new(s);
 ~spectralshapes = Buffer.new(s);
@@ -176,7 +176,7 @@ STRONG::Strange Processor::
 	CODE::
 //set some buffers
 (
-b = Buffer.read(s,File.realpath(FluidNMFMatch.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
+b = Buffer.read(s,FluidFilesPath("Nicol-LoopE-M.wav"));
 c = Buffer.alloc(s,1025,3);
 d = Buffer.alloc(s,44100);
 )

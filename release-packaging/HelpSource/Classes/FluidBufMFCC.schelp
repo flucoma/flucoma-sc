@@ -78,7 +78,7 @@ EXAMPLES::
 code::
 // create some buffers
 (
-b = Buffer.read(s,File.realpath(FluidBufMFCC.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
+b = Buffer.read(s,FluidFilesPath("Nicol-LoopE-M.wav"));
 c = Buffer.new(s);
 )
 
@@ -101,8 +101,8 @@ CODE::
 
 // load two very different files
 (
-b = Buffer.read(s,File.realpath(FluidBufMFCC.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-SA-UprightPianoPedalWide.wav");
-c = Buffer.read(s,File.realpath(FluidBufMFCC.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-AcousticStrums-M.wav");
+b = Buffer.read(s,FluidFilesPath("Tremblay-SA-UprightPianoPedalWide.wav"));
+c = Buffer.read(s,FluidFilesPath("Tremblay-AaS-AcousticStrums-M.wav"));
 )
 
 // composite one on left one on right as test signals

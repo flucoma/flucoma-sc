@@ -125,7 +125,7 @@ code::
 )
 //drum slicing, many ways
 //load a buffer
-b = Buffer.read(s,File.realpath(FluidAmpGate.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
+b = Buffer.read(s,FluidFilesPath("Nicol-LoopE-M.wav"));
 //have fun with a gate (explore lookahead and lookback, but correct for latency, which will be the greatest of the lookahead and lookback)
 (
 {var env, source = PlayBuf.ar(1,b);

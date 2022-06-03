@@ -1,234 +1,468 @@
 TITLE:: FluidBufNMF
 SUMMARY:: Buffer-Based Non-Negative Matrix Factorisation on Spectral Frames
-CATEGORIES:: Libraries>FluidCorpusManipulation, UGens>Buffer
-RELATED::  Guides/FluidCorpusManipulation, Guides/FluidBufMultiThreading, Classes/FluidNMFMatch, Classes/FluidNMFFilter
-
+CATEGORIES:: Libraries>FluidCorpusManipulation
+RELATED:: Classes/FluidNMFMatch,Classes/FluidNMFFilter,Guides/FluidCorpusManipulationToolkit,Classes/FluidNMFMatch,Classes/FluidNMFFilter
 DESCRIPTION::
-The FluidBufNMF object decomposes the spectrum of a sound into a number of components using Non-Negative Matrix Factorisation (NMF) footnote:: Lee, Daniel D., and H. Sebastian Seung. 1999. ‘Learning the Parts of Objects by Non-Negative Matrix Factorization’. Nature 401 (6755): 788–91. https://doi.org/10.1038/44565.
-::. NMF has been a popular technique in signal processing research for things like source separation and transcription footnote:: Smaragdis and Brown, Non-Negative Matrix Factorization for Polyphonic Music Transcription.::, although its creative potential is so far relatively  unexplored.
 
-The algorithm takes a buffer in and divides it into a number of components, determined by the STRONG::Components:: argument. It works iteratively, by trying to find a combination of spectral templates ('bases') and envelopes ('activations') that yield the original magnitude spectrogram when added together. By and large, there is no unique answer to this question (i.e. there are different ways of accounting for an evolving spectrum in terms of some set of templates and envelopes). In its basic form, NMF is a form of unsupervised learning: it starts with some random data and then converges towards something that minimizes the distance between its generated data and the original:it tends to converge very quickly at first and then level out. Fewer iterations mean less processing, but also less predictable results.
+    
+    Decomposes the spectrum of a sound into a number of components using Non-Negative Matrix Factorisation (NMF)
 
-The object can return either or all of the following: LIST::
-	## a spectral contour of each component in the form of a magnitude spectrogram (called a basis in NMF lingo);
-	## an amplitude envelope of each component in the form of gains for each consecutive frame of the underlying spectrogram (called an activation in NMF lingo);
-	## an audio reconstruction of each components in the time domain. ::
 
-The bases and activations can be used to make a kind of vocoder based on what NMF has 'learned' from the original data. Alternatively, taking the matrix product of a basis and an activation will yield a synthetic magnitude spectrogram of a component (which could be reconsructed, given some phase informaiton from somewhere).
+    
+    NMF has been a popular technique in signal processing research for things like source separation and transcription (see Smaragdis and Brown, Non-Negative Matrix Factorization for Polyphonic Music Transcription.), although its creative potential is so far relatively  unexplored.
 
-Some additional options and flexibility can be found through combinations of the basesMode and actMode arguments. If these flags are set to 1, the object expects to be supplied with pre-formed spectra (or envelopes) that will be used as seeds for the decomposition, providing more guided results. When set to 2, the supplied buffers won't be updated, so become templates to match against instead. Note that having both bases and activations set to 2 doesn't make sense, so the object will complain.
+    The algorithm takes a buffer in and divides it into a number of components, determined by the components argument. It works iteratively, by trying to find a combination of spectral templates ('bases') and envelopes ('activations') that yield the original magnitude spectrogram when added together. By and large, there is no unique answer to this question (i.e. there are different ways of accounting for an evolving spectrum in terms of some set of templates and envelopes). In its basic form, NMF is a form of unsupervised learning: it starts with some random data and then converges towards something that minimizes the distance between its generated data and the original:it tends to converge very quickly at first and then level out. Fewer iterations mean less processing, but also less predictable results.
 
-If supplying pre-formed data, it's up to the user to make sure that the supplied buffers are the right size: LIST::
-## bases must be STRONG::(fft size / 2) + 1:: frames and STRONG::(components * input channels):: channels
-## activations  must be STRONG::(input frames / hopSize) + 1:: frames and STRONG::(components * input channels):: channels
-::
+    DEFINITIONLIST::
+    ## The object can return either or all of the following:
+    || 
+    LIST::
+    ## 
+    a spectral contour of each component in the form of a magnitude spectrogram (called a basis in NMF lingo);
 
-In this implementation, the components are reconstructed by masking the original spectrum, such that they will sum to yield the original sound.
+    ## 
+    an amplitude envelope of each component in the form of gains for each consecutive frame of the underlying spectrogram (called an activation in NMF lingo);
 
-The whole process can be related to a channel vocoder where, instead of fixed bandpass filters, we get more complex filter shapes that are learned from the data, and the activations correspond to channel envelopes.
+    ## 
+    an audio reconstruction of each components in the time domain.
 
-FluidBufNMF is part of the LINK::Guides/FluidCorpusManipulation::. For more explanations, learning material, and discussions on its musicianly uses, visit http://www.flucoma.org/
+    ::
+    ::
+    The bases and activations can be used to make a kind of vocoder based on what NMF has 'learned' from the original data. Alternatively, taking the matrix product of a basis and an activation will yield a synthetic magnitude spectrogram of a component (which could be reconsructed, given some phase informaiton from somewhere).
 
-STRONG::Threading::
+    Some additional options and flexibility can be found through combinations of the basesMode and actMode arguments. If these flags are set to 1, the object expects to be supplied with pre-formed spectra (or envelopes) that will be used as seeds for the decomposition, providing more guided results. When set to 2, the supplied buffers won't be updated, so become templates to match against instead. Note that having both bases and activations set to 2 doesn't make sense, so the object will complain.
 
-By default, this UGen spawns a new thread to avoid blocking the server command queue, so it is free to go about with its business. For a more detailed discussion of the available threading and monitoring options, including the two undocumented Class Methods below (.processBlocking and .kr) please read the guide LINK::Guides/FluidBufMultiThreading::.
+    DEFINITIONLIST::
+    ## If supplying pre-formed data, it's up to the user to make sure that the supplied buffers are the right size:
+    || 
+    LIST::
+    ## 
+    bases must be  frames and  channels
+
+    ## 
+    activations  must be  frames and  channels
+
+    ::
+    ::
+    In this implementation, the components are reconstructed by masking the original spectrum, such that they will sum to yield the original sound.
+
+    The whole process can be related to a channel vocoder where, instead of fixed bandpass filters, we get more complex filter shapes that are learned from the data, and the activations correspond to channel envelopes.
+
 
 CLASSMETHODS::
 
 METHOD:: process, processBlocking
-This is the method that calls for the factorisation to be calculated on a given source buffer.
+  Processs the source LINK::Classes/Buffer:: on the LINK::Classes/Server::. CODE::processBlocking:: will execute directly in the server command FIFO, whereas CODE::process:: will delegate to a separate worker thread. The latter is generally only worthwhile for longer-running jobs where you don't wish to tie up the server.
 
 ARGUMENT:: server
-	The server on which the buffers to be processed are allocated.
+	The LINK::Classes/Server:: on which the buffers to be processed are allocated.
 
 ARGUMENT:: source
-	The index of the buffer to use as the source material to be decomposed through the NMF process. The different channels of multichannel buffers will be processing sequentially.
+
+    
+    The index of the buffer to use as the source material to be decomposed through the NMF process. The different channels of multichannel buffers will be processing sequentially.
+
 
 ARGUMENT:: startFrame
-	Where in the srcBuf should the NMF process start, in sample.
+
+    
+    Where in the srcBuf should the NMF process start, in sample.
+
+    STRONG::Constraints::
+
+    LIST::
+    ## 
+    Minimum: 0
+
+    ::
 
 ARGUMENT:: numFrames
-	How many frames should be processed.
+
+    
+    How many frames should be processed.
+
 
 ARGUMENT:: startChan
-	For multichannel srcBuf, which channel should be processed first.
+
+    
+    For multichannel srcBuf, which channel should be processed first.
+
+    STRONG::Constraints::
+
+    LIST::
+    ## 
+    Minimum: 0
+
+    ::
 
 ARGUMENT:: numChans
-	For multichannel srcBuf, how many channel should be processed.
+
+    
+    For multichannel srcBuf, how many channel should be processed.
+
 
 ARGUMENT:: resynth
-	The index of the buffer where the different reconstructed components will be reconstructed. The buffer will be resized to STRONG::components * numChannelsProcessed:: channels and STRONG::sourceDuration:: lenght. If STRONG::nil:: is provided, the reconstruction will not happen.
+
+    
+    The index of the buffer where the different reconstructed components will be reconstructed. The buffer will be resized to  channels and  lenght. If  is provided, the reconstruction will not happen.
+
 
 ARGUMENT:: bases
-	The index of the buffer where the different bases will be written to and/or read from: the behaviour is set in the following argument. If STRONG::nil:: is provided, no bases will be returned.
+
+    
+    The index of the buffer where the different bases will be written to and/or read from: the behaviour is set in the following argument. If  is provided, no bases will be returned.
+
 
 ARGUMENT:: basesMode
-	This flag decides of how the basis buffer passed as the previous argument is treated.
-	table::
-	## 0 || The bases are seeded randomly, and the resulting ones will be written after the process in the passed buffer. The buffer is resized to STRONG::components * numChannelsProcessed:: channels and STRONG::(fftSize / 2 + 1):: lenght.
-	## 1 || The passed buffer is considered as seed for the bases. Its dimensions should match the values above. The resulting bases will replace the seed ones.
-	## 2 || The passed buffer is considered as a template for the bases, and will therefore not change. Its bases should match the values above.
-	::
+
+    
+    This flag decides of how the basis buffer passed as the previous argument is treated.
+
 
 ARGUMENT:: activations
-	The index of the buffer where the different activations will be written to and/or read from: the behaviour is set in the following argument. If STRONG::nil:: is provided, no activation will be returned.
+
+    
+    The index of the buffer where the different activations will be written to and/or read from: the behaviour is set in the following argument. If  is provided, no activation will be returned.
+
 
 ARGUMENT:: actMode
-	This flag decides of how the activation buffer passed as the previous argument is treated.
-	table::
-	## 0 || The activations are seeded randomly, and the resulting ones will be written after the process in the passed buffer. The buffer is resized to STRONG::components * numChannelsProcessed:: channels and STRONG::(sourceDuration / hopsize + 1):: lenght.
-	## 1 || The passed buffer is considered as seed for the activations. Its dimensions should match the values above. The resulting activations will replace the seed ones.
-	## 2 || The passed buffer is considered as a template for the activations, and will therefore not change. Its dimensions should match the values above.
-	::
+
+    
+    This flag decides of how the activation buffer passed as the previous argument is treated.
+
 
 ARGUMENT:: components
-	The number of elements the NMF algorithm will try to divide the spectrogram of the source in.
+
+    
+    The number of elements the NMF algorithm will try to divide the spectrogram of the source in.
+
+    STRONG::Constraints::
+
+    LIST::
+    ## 
+    Minimum: 1
+
+    ::
 
 ARGUMENT:: iterations
-	The NMF process is iterative, trying to converge to the smallest error in its factorisation. The number of iterations will decide how many times it tries to adjust its estimates. Higher numbers here will be more CPU expensive, lower numbers will be more unpredictable in quality.
+
+    
+    The NMF process is iterative, trying to converge to the smallest error in its factorisation. The number of iterations will decide how many times it tries to adjust its estimates. Higher numbers here will be more CPU expensive, lower numbers will be more unpredictable in quality.
+
+    STRONG::Constraints::
+
+    LIST::
+    ## 
+    Minimum: 1
+
+    ::
 
 ARGUMENT:: windowSize
-	The window size. As NMF relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. http://www.subsurfwiki.org/wiki/Gabor_uncertainty
+
+    
+    The window size. As NMF relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. LINK::http://www.subsurfwiki.org/wiki/Gabor_uncertainty::
+
 
 ARGUMENT:: hopSize
-	The window hop size. As NMF relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts. The -1 default value will default to half of windowSize (overlap of 2).
+
+    
+    The window hop size. As NMF relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts.
+
 
 ARGUMENT:: fftSize
-	The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision. The -1 default value will use the next power of 2 equal or above the windowSize.
 
-ARGUMENT:: windowType
-	The inner FFT/IFFT windowing type (not implemented yet)
+    
+    The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision.
 
-ARGUMENT:: randomSeed
-	The NMF process needs to seed its starting point. If specified, the same values will be used. The default of -1 will randomly assign them. (not implemented yet)
 
+ 
 ARGUMENT:: freeWhenDone
-Free the server instance when processing complete. Default true
+  Free the server instance when processing complete. Default CODE::true::
 
 ARGUMENT:: action
-	A Function to be evaluated once the offline process has finished and all Buffer's instance variables have been updated on the client side. The function will be passed [resynth, bases, activations] as an argument.
+	A function to be evaluated once the offline process has finished and all Buffer's instance variables have been updated on the client side. The function will be passed CODE::[features]:: as an argument.
 
-returns:: an instance of the processor
+RETURNS:: An instance of the processor
+
+METHOD:: kr
+  Trigger the equivalent behaviour to CODE::processBlocking / process:: from a LINK::Classes/Synth::. Can be useful for expressing a sequence of buffer and data processing jobs to execute. Note that the work still executes on the server command FIFO (not the audio thread), and it is the caller's responsibility to manage the sequencing, using the CODE::done:: status of the various UGens.
+ARGUMENT:: source
+
+    
+    The index of the buffer to use as the source material to be decomposed through the NMF process. The different channels of multichannel buffers will be processing sequentially.
 
 
+ARGUMENT:: startFrame
+
+    
+    Where in the srcBuf should the NMF process start, in sample.
+
+    STRONG::Constraints::
+
+    LIST::
+    ## 
+    Minimum: 0
+
+    ::
+
+ARGUMENT:: numFrames
+
+    
+    How many frames should be processed.
+
+
+ARGUMENT:: startChan
+
+    
+    For multichannel srcBuf, which channel should be processed first.
+
+    STRONG::Constraints::
+
+    LIST::
+    ## 
+    Minimum: 0
+
+    ::
+
+ARGUMENT:: numChans
+
+    
+    For multichannel srcBuf, how many channel should be processed.
+
+
+ARGUMENT:: resynth
+
+    
+    The index of the buffer where the different reconstructed components will be reconstructed. The buffer will be resized to  channels and  lenght. If  is provided, the reconstruction will not happen.
+
+
+ARGUMENT:: bases
+
+    
+    The index of the buffer where the different bases will be written to and/or read from: the behaviour is set in the following argument. If  is provided, no bases will be returned.
+
+
+ARGUMENT:: basesMode
+
+    
+    This flag decides of how the basis buffer passed as the previous argument is treated.
+
+
+ARGUMENT:: activations
+
+    
+    The index of the buffer where the different activations will be written to and/or read from: the behaviour is set in the following argument. If  is provided, no activation will be returned.
+
+
+ARGUMENT:: actMode
+
+    
+    This flag decides of how the activation buffer passed as the previous argument is treated.
+
+
+ARGUMENT:: components
+
+    
+    The number of elements the NMF algorithm will try to divide the spectrogram of the source in.
+
+    STRONG::Constraints::
+
+    LIST::
+    ## 
+    Minimum: 1
+
+    ::
+
+ARGUMENT:: iterations
+
+    
+    The NMF process is iterative, trying to converge to the smallest error in its factorisation. The number of iterations will decide how many times it tries to adjust its estimates. Higher numbers here will be more CPU expensive, lower numbers will be more unpredictable in quality.
+
+    STRONG::Constraints::
+
+    LIST::
+    ## 
+    Minimum: 1
+
+    ::
+
+ARGUMENT:: windowSize
+
+    
+    The window size. As NMF relies on spectral frames, we need to decide what precision we give it spectrally and temporally, in line with Gabor Uncertainty principles. LINK::http://www.subsurfwiki.org/wiki/Gabor_uncertainty::
+
+
+ARGUMENT:: hopSize
+
+    
+    The window hop size. As NMF relies on spectral frames, we need to move the window forward. It can be any size but low overlap will create audible artefacts.
+
+
+ARGUMENT:: fftSize
+
+    
+    The inner FFT/IFFT size. It should be at least 4 samples long, at least the size of the window, and a power of 2. Making it larger allows an oversampling of the spectral precision.
+
+
+ 
+ARGUMENT:: trig
+  A CODE::kr:: signal that will trigger execution
+
+ARGUMENT:: blocking
+  Whether to execute this process directly on the server command FIFO or delegate to a worker thread. See CODE::processBlocking/process:: for caveats.
+
+
+INSTANCEMETHODS::
+METHOD:: kr
+  Returns a UGen that reports the progress of the running task when executing in a worker thread. Calling code::scope:: with this can be used for a convinient progress monitor
+
+METHOD:: cancel
+  Cancels non-blocking processing
+
+METHOD:: wait
+  When called in the context of a LINK::Classes/Routine:: (it won't work otherwise), will block execution until the processor has finished. This can be convinient for writing sequences of processes more linearly than using lots of nested actions.
+  
 EXAMPLES::
 STRONG::A didactic example::
 CODE::
+
+// =============== decompose some sounds ===============
+
+// let's decompose the drum loop that comes with the FluCoMa extension:
+~drums = Buffer.read(s,FluidFilesPath("Nicol-LoopE-M.wav"));
+
+// hear the original mono sound file to know what we're working with
+~drums.play;
+
+// an empty buffer for the decomposed components to be written into:
+~resynth = Buffer(s);
+
+// how many components we want FluidBufNMF to try to decompose the buffer into:
+~n_components = 2;
+
+// process it:
+FluidBufNMF.processBlocking(s,~drums,resynth:~resynth,components:~n_components,action:{"done".postln;});
+
+// once it is done, play the separated components one by one (with a second of silence in between)
 (
-// create buffers
-b = Buffer.alloc(s,44100);
-c = Buffer.alloc(s, 44100);
-d = Buffer.new(s);
-e = Buffer.new(s);
-f = Buffer.new(s);
-g = Buffer.new(s);
+fork{
+	~n_components.do{
+		arg i;
+		"decomposed part #%".format(i+1).postln;
+		{
+			PlayBuf.ar(~n_components,~resynth,BufRateScale.ir(~resynth),doneAction:2)[i].dup;
+		}.play;
+		(~drums.duration + 1).wait;
+	}
+};
 )
 
+// ======== now let's try it with three components. =========
+// make a guess as to what you think you'll hear
+
+~n_components = 3;
+// process it:
+FluidBufNMF.processBlocking(s,~drums,resynth:~resynth,components:~n_components,action:{"done".postln;});
+
 (
-// fill them with 2 clearly segregated sine waves and composite a buffer where they are consecutive
-Routine {
-	b.sine2([500],[1], false, false);
-	c.sine2([5000],[1],false, false);
-	s.sync;
-	FluidBufCompose.process(s,b, destination:d);
-	FluidBufCompose.process(s,c, destStartFrame:44100, destination:d, destGain:1);
-	s.sync;
-	d.query;
+fork{
+	~n_components.do{
+		arg i;
+		"decomposed part #%".format(i+1).postln;
+		{
+			PlayBuf.ar(~n_components,~resynth,BufRateScale.ir(~resynth),doneAction:2)[i].dup;
+		}.play;
+		(~drums.duration + 1).wait;
+	}
+};
+)
+
+// you may have guessed that it would separate out the three components into: (1) snare, (2) hihat, and (3) kick
+// and it might have worked! but it may not have, and it won't provide the same result every time because it
+// starts each process from a stochastic state (you can seed this state if you want...see below).
+
+// ====== bases and activations ========
+
+// first, let's make two new buffers called...
+~bases = Buffer(s);
+~activations = Buffer(s);
+~n_components = 2; // return to 2 components for this example
+
+// and we'll explicitly pass these into the process
+FluidBufNMF.processBlocking(s,~drums,bases:~bases,activations:~activations,resynth:~resynth,components:~n_components,action:{"done".postln;});
+
+// now we can plot them (because this process starts from a stochastic state, your results may vary!):
+FluidWaveform(~drums,featureBuffer:~activations,bounds:Rect(0,0,1200,300));
+// the bases are a like a spectral template that FluidBufNMF has found in the source buffer
+// in one you should see one spectrum that resembles a snare spectrum (the resonant tone of the snare
+// in the mid range) and another that resembles the kick + hihat we heard earlier (a large peak in the very
+// low register and some shimmery higher stuff)
+
+FluidWaveform(featureBuffer:~bases,bounds:Rect(0,0,1200,300));
+// the activations are the corresponding loudness envelope of each base above. It should like an amplitude
+// envelope follower of the drum hits in the corresponding bases.
+
+// FluidBufNMF then uses the individual bases with their corresponding activations to resynthesize the sound of just
+// component.
+// the buffer passed to `resynth` will have one channel for each component you've requested
+
+~resynth.numChannels
+~resynth.play;
+
+// ======== to further understand NMF's bases and activations, consider one more object: FluidNMFFilter ==========
+// FluidNMFFilter will use the bases (spectral templates) of a FluidBufNMF analysis to filter (i.e., decompose) real-time audio
+
+// for example, if we use the bases from the ~drums analysis above, it will separate the snare from the kick & hi hat like before
+// this time you'll hear one in each stereo channel (again, results may vary)
+
+(
+{
+	var src = PlayBuf.ar(1,~drums,BufRateScale.ir(~drums),doneAction:2);
+	var sig = FluidNMFFilter.ar(src,~bases,2);
+	sig;
 }.play;
 )
 
-// check
-d.plot
-d.play //////(beware !!!! loud!!!)
+// if we play a different source through FluidNMFFilter, it will try to decompose that real-time signal according to the bases
+// it is given (in our case the bases from the drum loop)
+~song = Buffer.readChannel(s,FluidFilesPath("Tremblay-beatRemember.wav"),channels:[0]);
 
-(
-// separate them in 2 components
-Routine {
-	FluidBufNMF.process(s, d, resynth:e, bases: f, activations:g, components:2).wait;
-	e.query;
-	f.query;
-	g.query;
-}.play
-)
-
-// look at the resynthesised separated components as audio
-e.plot;
-
-// look at the bases signal for 2 spikes
-f.plot;
-
-// look at the activations
-g.plot;
-
-//trying running the same process on superimposed sinewaves instead of consecutive in the source and see how it fails.
-::
-
-STRONG::Basic musical examples::
-
-code::
-// set some buffers and parameters
-(
-b = Buffer.read(s,File.realpath(FluidBufNMF.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
-c = Buffer.new(s);
-x = Buffer.new(s);
-y = Buffer.new(s);
-~fft_size = 1024;
-~frame_size = 512;
-~hop_size = 256;
-~which_component = 4;
-)
-
-// matrix factorisation, requesting everything - wait for the computation time to appear.
-(
-Routine{
-	var t = Main.elapsedTime;
-    FluidBufNMF.process(s,b, 0,-1,0,-1,c,x,0,y,0,5,100,~frame_size,~hop_size,~fft_size)
-    .wait;
-     (Main.elapsedTime - t).postln;
-}.play
-)
-
-//look at the resynthesised components, the bases and the activations
-c.plot; x.plot; y.plot;
-
-// play the components spread in the stereo field
-{Splay.ar(PlayBuf.ar(5,c,doneAction:2))}.play
-
-//play a single source
-{PlayBuf.ar(5,c,doneAction:2)[~which_component].dup}.play
-
-//null test of the sum of sources
-{(PlayBuf.ar(5,c,doneAction:2).sum)+(-1*PlayBuf.ar(1,b,doneAction:2))}.play
-
-//play noise using one of the bases as filter.
 (
 {
-	var chain;
-	chain = FFT(LocalBuf(~fft_size), WhiteNoise.ar());
-
-	chain = chain.pvcollect(~fft_size, {|mag, phase, index|
-		[mag * BufRd.kr(5,x,DC.kr(index),0,1)[~which_component]];
-	});
-
-	IFFT(chain);
-}.play
+	var src = PlayBuf.ar(1,~song,BufRateScale.ir(~song),doneAction:2);
+	var sig = FluidNMFFilter.ar(src,~bases,2);
+	sig;
+}.play;
 )
 
-//play noise using one of the activations as envelope.
-{WhiteNoise.ar(BufRd.kr(5,y,Phasor.ar(1,1/~hop_size,0,(b.numFrames / ~hop_size + 1)),0,1)[~which_component])*0.5}.play
-
-//play noise through both matching activation and filter
+// ========= the activations could also be used as an envelope through time ===========
 (
 {
-	var chain;
-	chain = FFT(LocalBuf(~fft_size), WhiteNoise.ar(BufRd.kr(5,y,Phasor.ar(1,1/~hop_size,0,(b.numFrames / ~hop_size + 1)),0,1)[~which_component]*12),0.5,1);
+	var activation = PlayBuf.ar(2,~activations,BufRateScale.ir(~activations),doneAction:2);
+	var sig = WhiteNoise.ar(0.dbamp) * activation;
+	sig;
+}.play;
+)
 
-	chain = chain.pvcollect(~fft_size, {|mag, phase, index|
-		[mag * BufRd.kr(5,x,DC.kr(index),0,1)[~which_component]];
-	});
+// note that the samplerate of the ~activations buffer is not a usual one...
+~activations.sampleRate;
+// this is because each frame in this buffer doesn't correspond to one audio sample, but instead to one
+// hopSize, since these values are derived from an FFT analysis
+// so it is important to use BufRateScale (as seen above) in order to make sure they play back at the
+// correct rate
 
-	[0,IFFT(chain)];
-}.play
+// if we control the amplitude of the white noise *and* send it through FluidNMFFilter, we'll get something
+// somewhat resembles both the spectral template and loudness envelope of the bases of the original
+// (of course it's also good to note that the combination of the *actual* bases and activations is how
+// FluidBufNMF creates the channels in the resynth buffer which will sound much better than this
+// filtered WhiteNoise version)
+(
+{
+	var activation = PlayBuf.ar(2,~activations,BufRateScale.ir(~activations),doneAction:2);
+	var sig = WhiteNoise.ar(0.dbamp);
+	sig = FluidNMFFilter.ar(sig,~bases,2) * activation;
+	sig;
+}.play;
 )
 
 ::
@@ -238,7 +472,7 @@ CODE::
 
 //set some buffers
 (
-b = Buffer.read(s,File.realpath(FluidBufNMF.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-AcousticStrums-M.wav");
+b = Buffer.read(s,FluidFilesPath("Tremblay-AaS-AcousticStrums-M.wav"));
 
 ~originalNMF = Buffer.new(s);
 ~bases = Buffer.new(s);
@@ -266,7 +500,7 @@ Routine {
 // plot the bases
 ~bases.plot
 
-// find the component that has the picking sound checking the median spectral centroid
+// find the component that has the picking sound by checking the median spectral centroid
 (
 FluidBufSpectralShape.process(s, ~originalNMF, features: ~spectralshapes, action:{
 	|shapes|FluidBufStats.process(s,shapes,stats:~stats, action:{
@@ -283,7 +517,7 @@ FluidBufSpectralShape.process(s, ~originalNMF, features: ~spectralshapes, action
 ~originalNMF.query
 //10 channel are therefore giving 70 channels: the 7 shapes of component0, then 7 shapes of compoenent1, etc
 ~spectralshapes.query
-// we then run the bufstats on them. Each channel, which had a time series (an envelop) of each descriptor, is reduced to 7 frames
+// we then run the bufstats on them. Each channel, which had a time series (an envelope) of each descriptor, is reduced to 7 frames
 ~stats.query
 // we then need to retrieve the values that are where we want: the first of every 7 for the centroid, and the 6th frame of them as we want the median. Because we retrieve the values in an interleave format, the select function gets a bit tricky but we get the following values:
 ~centroids.postln

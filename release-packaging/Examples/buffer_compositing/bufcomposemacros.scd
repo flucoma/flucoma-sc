@@ -3,7 +3,7 @@
 ~low = Buffer.sendCollection(s, (Signal.sineFill(4410, Array.fill(3,0) ++ 1)));
 ~mid =  Buffer.sendCollection(s, (Signal.sineFill(4410, Array.fill(12,0) ++ 1)));
 ~high = Buffer.sendCollection(s, (Signal.sineFill(4410, Array.fill(48,0) ++ 1)));
-~piano = Buffer.read(s,File.realpath(FluidBufCompose.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-SA-UprightPianoPedalWide.wav",0,8820);
+~piano = Buffer.read(s,FluidFilesPath("Tremblay-SA-UprightPianoPedalWide.wav"),0,8820);
 )
 
 // draw the buffers to see what happened

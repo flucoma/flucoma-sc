@@ -51,7 +51,7 @@ EXAMPLES::
 
 CODE::
 //load some sounds
-b = Buffer.read(s,File.realpath(FluidTransientSlice.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
+b = Buffer.read(s,FluidFilesPath("Tremblay-AaS-SynthTwoVoices-M.wav"));
 
 // basic param (the process add a latency of (blockSize + padSize - order) samples
 {var sig = PlayBuf.ar(1,b,loop:1); [FluidTransientSlice.ar(sig) * 0.5, DelayN.ar(sig, 1, ((256 + 128 - 20)/ s.sampleRate))]}.play

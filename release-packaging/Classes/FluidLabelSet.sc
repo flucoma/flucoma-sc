@@ -15,6 +15,15 @@ FluidLabelSet : FluidDataObject {
         ^this.prMakeMsg(\updateLabel, id, identifier.asSymbol, label.asSymbol);
     }
 
+	setLabelMsg{|identifier,label|
+		^this.prMakeMsg(\setLabel,id,identifier.asSymbol,label.asSymbol);
+	}
+
+	setLabel{|identifier, label, action|
+		actions[\setLabel] = [nil, action];
+		this.prSendMsg(this.setLabelMsg(identifier,label));
+	}
+
 	updateLabel{|identifier, label, action|
         actions[\updateLabel] = [nil,action];
 		this.prSendMsg(this.updateLabelMsg(identifier,label));

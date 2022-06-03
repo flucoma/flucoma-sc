@@ -40,6 +40,7 @@ table::
 ##link::Classes/FluidChroma:: || link::Classes/FluidBufChroma:: || Pitch Classes Descriptor
 ##link::Classes/FluidNMFMatch:: ||  || Real-time activation of link::Classes/FluidBufNMF##NMF:: bases
 ## || link::Classes/FluidBufNNDSVD::|| Quick starting estimates for link::Classes/FluidBufNMF##NMF:: components using Singular Value Decomposition
+## || link::Classes/FluidBufSTFT:: || Perform STFT / ISTFT on link::Classes/Buffer::s
 ::
 
 section:: Decompose Audio
@@ -49,7 +50,6 @@ table::
 ##link::Classes/FluidTransients:: || link::Classes/FluidBufTransients:: ||Decompose into transients + residual
 ##link::Classes/FluidHPSS:: || link::Classes/FluidBufHPSS:: ||Decompose into 'harmonic' and 'percussive' layers
 ##  || link::Classes/FluidBufNMF:: ||Use Nonnegative Matrix Factorisation to explore and decompose sounds
-## || link::Classes/FluidBufSTFT:: || Perform STFT / ISTFT on link::Classes/Buffer::s
 ::
 
 section::Transform Audio
@@ -69,9 +69,9 @@ table::
 ##link::Classes/FluidDataSet:: || Container that associates data points with identifiers
 ##link::Classes/FluidLabelSet:: || Container of labels associated with IDs
 ::
-subsection:: Buffer Analysis
+subsection:: Analyse Data
 table::
-##link::Classes/FluidBufStats:: ||  Compute statistics on link::Classes/Buffer::s
+##link::Classes/FluidStats:: || link::Classes/FluidBufStats:: ||  Compute statistics
 ::
 subsection:: Preprocessing
 table::
@@ -97,6 +97,7 @@ table::
 ##link::Classes/FluidMDS:: ||  Multidimensional Scaling for dimension reduction
 ##link::Classes/FluidKMeans:: ||  K-Means clustering
 ##link::Classes/FluidUMAP:: ||  Dimension reduction with UMAP algorithm
+##link::Classes/FluidGrid:: ||  Transform a data set of two dimensional points into a two dimensional grid using the Munkres Algorithm.
 ::
 
 section:: Helpers
@@ -109,7 +110,16 @@ table::
 ##link::Classes/FluidBufSelect:: || Select range (frame-wise or channel wise)
 ##link::Classes/FluidBufSelectEvery:: || Select every N elements (frame-wise or channel wise)
 ##link::Classes/FluidBufFlatten:: || Flatten multichannel data into single channel 'point'
+##link::Classes/FluidBufToKr:: || Read data from a buffer into a Kr stream
+##link::Classes/FluidKrToBuf:: || Write data into a buffer from a Kr Stream
 ::
+
+subsection::Viewers
+table::
+##link::Classes/FluidPlotter:: || View a FluidDataSet in a plotter window
+##link::Classes/FluidWaveform:: || View an audio buffer with overlays, such as slices from a FluCoMa slicer
+::
+
 subsection:: Corpus Building
 table::
 ##link::Classes/FluidLoadFolder:: || Load a folder of sounds into a link::Classes/Buffer::

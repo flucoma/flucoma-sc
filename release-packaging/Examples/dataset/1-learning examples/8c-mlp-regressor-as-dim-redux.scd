@@ -4,7 +4,7 @@ s.reboot;
 ~raw = FluidDataSet(s);
 ~norm = FluidDataSet(s);
 ~retrieved = FluidDataSet(s);
-~audio = Buffer.read(s,File.realpath(FluidBufMelBands.class.filenameSymbol).dirname +/+ "../AudioFiles/Tremblay-ASWINE-ScratchySynth-M.wav");
+~audio = Buffer.read(s,FluidFilesPath("Tremblay-ASWINE-ScratchySynth-M.wav"));
 ~melfeatures = Buffer.new(s);
 ~stats = Buffer.alloc(s, 7, 40);
 ~datapoint = Buffer.alloc(s, 40);

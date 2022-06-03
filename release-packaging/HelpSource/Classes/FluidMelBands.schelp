@@ -93,7 +93,7 @@ x = 	{
 x.free
 
 // load a more exciting one
-c = Buffer.read(s,File.realpath(FluidMelBands.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Tremblay-AaS-SynthTwoVoices-M.wav");
+c = Buffer.read(s,FluidFilesPath("Tremblay-AaS-SynthTwoVoices-M.wav"));
 
 // analyse with parameters to be changed
 (
@@ -132,7 +132,7 @@ CODE::
 //load a source and define control bus for the resynthesis cluster
 (
 b = Bus.control(s,40);
-c = Buffer.read(s,File.realpath(FluidMelBands.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
+c = Buffer.read(s,FluidFilesPath("Nicol-LoopE-M.wav"));
 d = Group.new;
 )
 
@@ -173,7 +173,7 @@ d.free; x.free; b.free; c.free;
 // the bus, source and group
 (
 b = Bus.control(s,40);
-c = Buffer.read(s,File.realpath(FluidMelBands.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
+c = Buffer.read(s,FluidFilesPath("Nicol-LoopE-M.wav"));
 d = Group.new;
 )
 
