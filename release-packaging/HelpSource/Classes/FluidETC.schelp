@@ -8,7 +8,11 @@ DESCRIPTION::
 
 *Warning* this UGen makes heavy use of the CPU, and needs plenty of headroom because the algorithm can vary in the number of iterations needed to complete calcuations.
 ​
-​
+​More info on ETC: https://arxiv.org/abs/1611.00607
+
+Three Perspectives on Complexity − Entropy, Compression, Subsymmetry
+Nithin Nagaraj, Karthi Balasubramanian
+
 CLASSMETHODS::
 ​
 METHOD:: kr
