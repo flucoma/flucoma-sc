@@ -53,7 +53,7 @@ code::
 ~mlp = FluidMLPClassifier(s);
 
 // load a model that has been pre-trained to classify between a tone and noise, simple, i know, but...
-~mlp.read(FluidFilesPath("../Resources/bufToKrExample.json"));
+~mlp.read(FluidFilesPath("../../Resources/bufToKrExample.json"));
 
 // can be used to demonstrate that...
 (

@@ -1,9 +1,5 @@
 FluidBufAudioTransport : FluidBufProcessor {
 
-    *objectClassName{
-        ^\FluidBufAudioTransp
-    }
-
 	*kr  { |sourceA, startFrameA = 0, numFramesA = -1, startChanA = 0, numChansA = -1, sourceB, startFrameB = 0, numFramesB = -1, startChanB = 0, numChansB = -1, destination, interpolation = 0.0, windowSize = 1024, hopSize = -1, fftSize = -1, trig = 1, blocking = 0|
 
         var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};

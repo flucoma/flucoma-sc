@@ -1,8 +1,9 @@
-build
+build*
 **/build/*
 **/.DS_Store
 release-packaging/Plugins
 release-packaging/AudioFiles
+release-packaging/Resources
 *.scx
 .vs/
 Darwin/*

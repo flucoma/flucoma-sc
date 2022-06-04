@@ -1,6 +1,6 @@
 FluidNMFMorph : FluidRTUGen {
 
-	*ar { arg source = -1, target = -1, activations = -1, autoassign = 1, interp = 0, windowSize = 1024, hopSize = -1, fftSize = -1, maxFFTSize = 16384;
+	*ar { arg source = -1, target = -1, activations = -1, autoassign = 1, interp = 0, windowSize = 1024, hopSize = -1, fftSize = -1, maxFFTSize = -1;
 
 		source = source ?? {-1};
 		target = target ?? {-1};

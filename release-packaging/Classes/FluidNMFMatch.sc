@@ -1,7 +1,7 @@
 FluidNMFMatch : FluidRTMultiOutUGen {
 
-	*kr { arg in = 0, bases, maxComponents = 1, iterations = 10, windowSize = 1024, hopSize = -1, fftSize = -1, maxFFTSize = 16384;
-		^this.multiNew('control', in.asAudioRateInput(this), bases, maxComponents, iterations, windowSize, hopSize, fftSize, maxFFTSize);
+	*kr { arg in = 0, bases, maxComponents = 1, iterations = 10, windowSize = 1024, hopSize = -1, fftSize = -1, maxFFTSize = -1;
+		^this.multiNew('control', in.asAudioRateInput(this), bases, maxComponents, maxComponents, iterations, windowSize, hopSize, fftSize, maxFFTSize);
 	}
 
 	init {arg ...theInputs;
@@ -10,10 +10,10 @@ FluidNMFMatch : FluidRTMultiOutUGen {
 	}
 
 	checkInputs {
-	if(inputs.at(2).rate != 'scalar') {
+	if(inputs.at(3).rate != 'scalar') {
 		^(": maxComponents cannot be modulated.");
 		};
-	if(inputs.at(7).rate != 'scalar') {
+	if(inputs.at(8).rate != 'scalar') {
 		^(": maxFFTSize cannot be modulated.");
 		};
 		^this.checkValidInputs;

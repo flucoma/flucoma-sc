@@ -1,6 +1,6 @@
 FluidBufNoveltySlice : FluidBufProcessor {
 
-    *kr  { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, feature = 0, kernelSize = 3, threshold = 0.5, filterSize = 1, minSliceLength = 2, windowSize = 1024, hopSize = -1, fftSize = -1, trig = 1 , blocking = 0| 
+    *kr  { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, algorithm = 0, kernelSize = 3, threshold = 0.5, filterSize = 1, minSliceLength = 2, windowSize = 1024, hopSize = -1, fftSize = -1, trig = 1 , blocking = 0| 
 
         var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};
 
@@ -10,11 +10,11 @@ FluidBufNoveltySlice : FluidBufProcessor {
 		source.isNil.if {"FluidBufNoveltySlice:  Invalid source buffer".throw};
 		indices.isNil.if {"FluidBufNoveltySlice:  Invalid features buffer".throw};
 
-		^FluidProxyUgen.kr(\FluidBufNoveltySliceTrigger, -1, source, startFrame, numFrames, startChan, numChans, indices, feature, kernelSize, threshold, filterSize, minSliceLength, windowSize, hopSize, fftSize, maxFFTSize, kernelSize, filterSize, trig, blocking);
+		^FluidProxyUgen.kr(\FluidBufNoveltySliceTrigger, -1, source, startFrame, numFrames, startChan, numChans, indices, algorithm, kernelSize, kernelSize, threshold, filterSize, filterSize, minSliceLength, windowSize, hopSize, fftSize, maxFFTSize,  trig, blocking);
 
 	}
 
-    *process { |server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, feature = 0, kernelSize = 3, threshold = 0.5, filterSize = 1, minSliceLength = 2, windowSize = 1024, hopSize = -1, fftSize = -1, freeWhenDone = true, action |
+    *process { |server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, algorithm= 0, kernelSize = 3, threshold = 0.5, filterSize = 1, minSliceLength = 2, windowSize = 1024, hopSize = -1, fftSize = -1, freeWhenDone = true, action |
         
         var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};
 
@@ -27,11 +27,11 @@ FluidBufNoveltySlice : FluidBufProcessor {
 		^this.new(
 			server, nil, [indices]
 		).processList(
-			[source, startFrame, numFrames, startChan, numChans, indices, feature, kernelSize, threshold, filterSize, minSliceLength, windowSize, hopSize, fftSize,  maxFFTSize, kernelSize, filterSize,0],freeWhenDone,action
+			[source, startFrame, numFrames, startChan, numChans, indices, algorithm, kernelSize, kernelSize, threshold, filterSize, filterSize, minSliceLength, windowSize, hopSize, fftSize,  maxFFTSize, 0],freeWhenDone,action
 		);
 	}
 
-    *processBlocking { |server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, feature = 0, kernelSize = 3, threshold = 0.5, filterSize = 1, minSliceLength = 2, windowSize = 1024, hopSize = -1, fftSize = -1, freeWhenDone = true, action |
+    *processBlocking { |server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, indices, algorithm= 0, kernelSize = 3, threshold = 0.5, filterSize = 1, minSliceLength = 2, windowSize = 1024, hopSize = -1, fftSize = -1, freeWhenDone = true, action |
         
         var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};
 
@@ -44,7 +44,7 @@ FluidBufNoveltySlice : FluidBufProcessor {
 		^this.new(
 			server, nil, [indices]
 		).processList(
-			[source, startFrame, numFrames, startChan, numChans, indices, feature, kernelSize, threshold, filterSize, minSliceLength, windowSize, hopSize, fftSize, maxFFTSize, kernelSize, filterSize,1],freeWhenDone,action
+			[source, startFrame, numFrames, startChan, numChans, indices, algorithm, kernelSize, kernelSize, threshold, filterSize, filterSize, minSliceLength, windowSize, hopSize, fftSize, maxFFTSize, 1],freeWhenDone,action
 		);
 	}
 }

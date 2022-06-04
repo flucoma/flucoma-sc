@@ -55,15 +55,38 @@ FluidPCA : FluidModelObject{
         numDimensions = numDimensions ? this.numDimensions;
         this.numDimensions_(numDimensions);
 
-        ^FluidPCAQuery.kr(trig ,this, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer), this.numDimensions);
+        ^FluidPCAQuery.kr(trig ,this, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer), this.numDimensions, this.whiten);
     }
+
+	inverseTransformPointMsg{|sourceBuffer, destBuffer|
+		^this.prMakeMsg(\inverseTransformPoint,id,
+			this.prEncodeBuffer(sourceBuffer),
+			this.prEncodeBuffer(destBuffer),
+			["/b_query",destBuffer.asUGenInput]
+		);
+	}
+
+	inverseTransformPoint{|sourceBuffer, destBuffer, action|
+		actions[\inverseTransformPoint] = [nil,{action.value(destBuffer)}];
+		this.prSendMsg(this.inverseTransformPointMsg(sourceBuffer,destBuffer));
+	}
+
+    inverseTransformMsg{|sourceDataSet, destDataSet|
+        ^this.prMakeMsg(\inverseTransform,id,sourceDataSet.id, destDataSet.id);
+    }
+
+    inverseTransform{|sourceDataSet, destDataSet,action|
+        actions[\inverseTransform] = [nil,action];
+        this.prSendMsg(this.inverseTransformMsg(sourceDataSet, destDataSet));
+    }
+
 
 }
 
 FluidPCAQuery :  FluidRTMultiOutUGen {
-       *kr{ |trig, model, inputBuffer,outputBuffer,numDimensions|
+       *kr{ |trig, model, inputBuffer,outputBuffer,numDimensions, whiten|
         ^this.multiNew('control',trig, model.asUGenInput,
-            numDimensions,
+            numDimensions, whiten,
             inputBuffer.asUGenInput, outputBuffer.asUGenInput)
     }
 
