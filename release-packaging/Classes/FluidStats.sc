@@ -1,23 +1,16 @@
 FluidStats : MultiOutUGen {
 
-    var <channels;
-
-	*kr { arg in, size;
-        ^this.multiNew('control',*(in.asArray++size));
+	*kr { arg in, history;
+        ^this.multiNew('control',*(in.asArray++history)).reshape(2,in.asArray.size);
 	}
 
 	init {arg ...theInputs;
 		inputs = theInputs;
         this.specialIndex = (inputs.size - 2).max(0);
-		// this.specialIndex.postln;
-		^this.initOutputs(inputs.size - 1,rate);
+		^this.initOutputs(inputs.size - 1,rate)
 	}
 
 	checkInputs {
-/*		if(inputs.any.rate != 'control') {
-			^"input array input is not control rate";
-		};*/
-
 		^this.checkValidInputs;
 	}
 
@@ -30,7 +23,7 @@ FluidStats : MultiOutUGen {
         channels = Array.fill(numChans * 2, { |i|
             OutputProxy('control',this,i);
         });
-        ^channels.reshape(2,numChans);
+        ^channels
     }
 
     numOutputs { ^(channels.size); }
