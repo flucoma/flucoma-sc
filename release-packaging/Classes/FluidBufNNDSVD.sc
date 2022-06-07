@@ -23,7 +23,7 @@ FluidBufNNDSVD : FluidBufProcessor{
         activations = activations.asUGenInput;
 
 		^this.new(
-			server, nil, [bases]
+			server, nil, [bases,activations]
 		).processList(
 			[source, bases, activations, minComponents, maxComponents, coverage, method, windowSize, hopSize, fftSize, fftSize, 0],freeWhenDone, action
 		)
@@ -39,7 +39,7 @@ FluidBufNNDSVD : FluidBufProcessor{
         activations = activations.asUGenInput;
 
 		^this.new(
-			server, nil, [bases]
+			server, nil, [bases,activations]
 		).processList(
 			[source, bases, activations, minComponents, maxComponents, coverage, method, windowSize, hopSize, fftSize, fftSize, 1],freeWhenDone, action
 		)
