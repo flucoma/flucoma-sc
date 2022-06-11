@@ -39,7 +39,7 @@ table::
 ##link::Classes/FluidSpectralShape:: || link::Classes/FluidBufSpectralShape:: || Seven Spectral Shape Descriptors
 ##link::Classes/FluidChroma:: || link::Classes/FluidBufChroma:: || Pitch Classes Descriptor
 ##link::Classes/FluidNMFMatch:: ||  || Real-time activation of link::Classes/FluidBufNMF##NMF:: bases
-## || link::Classes/FluidBufNNDSVD::|| Quick starting estimates for link::Classes/FluidBufNMF##NMF:: components using Singular Value Decomposition
+## || link::Classes/FluidBufNMFSeed::|| Quick starting estimates for link::Classes/FluidBufNMF##NMF:: components using Singular Value Decomposition
 ## || link::Classes/FluidBufSTFT:: || Perform STFT / ISTFT on link::Classes/Buffer::s
 ::
 
