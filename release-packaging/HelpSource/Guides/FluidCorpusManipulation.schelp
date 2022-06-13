@@ -99,6 +99,7 @@ table::
 ##link::Classes/FluidPCA:: || Principal Component Analysis for preprocessing and dimension reduction
 ##link::Classes/FluidMDS:: ||  Multidimensional Scaling for dimension reduction
 ##link::Classes/FluidKMeans:: ||  K-Means clustering
+##link::Classes/FluidSKMeans:: ||  Spherical K-Means clustering
 ##link::Classes/FluidUMAP:: ||  Dimension reduction with UMAP algorithm
 ##link::Classes/FluidGrid:: ||  Transform a data set of two dimensional points into a two dimensional grid using the Munkres Algorithm.
 ::
