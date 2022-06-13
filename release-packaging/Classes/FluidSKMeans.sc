@@ -64,34 +64,34 @@ FluidSKMeans : FluidModelObject {
 		this.prSendMsg(this.predictPointMsg(buffer))
 	}
 
-	fitTransformMsg{|srcDataSet, dstDataSet|
-		^this.prMakeMsg(\fitTransform, id, srcDataSet.id, dstDataSet.id)
+	fitEncodeMsg{|srcDataSet, dstDataSet|
+		^this.prMakeMsg(\fitEncode, id, srcDataSet.id, dstDataSet.id)
 	}
 
-	fitTransform{|srcDataSet, dstDataSet,action|
-		actions[\fitTransform] = [nil,action];
-		this.prSendMsg(this.fitTransformMsg(srcDataSet,dstDataSet));
+	fitEncode{|srcDataSet, dstDataSet,action|
+		actions[\fitEncode] = [nil,action];
+		this.prSendMsg(this.fitEncodeMsg(srcDataSet,dstDataSet));
 	}
 
-	transformMsg{|srcDataSet, dstDataSet|
-		^this.prMakeMsg(\transform, id, srcDataSet.id, dstDataSet.id)
+	encodeMsg{|srcDataSet, dstDataSet|
+		^this.prMakeMsg(\encode, id, srcDataSet.id, dstDataSet.id)
 	}
 
-	transform{ |srcDataSet, dstDataSet, action|
-		actions[\transform] = [nil,action];
-		this.prSendMsg(this.transformMsg(srcDataSet,dstDataSet));
+	encode{ |srcDataSet, dstDataSet, action|
+		actions[\encode] = [nil,action];
+		this.prSendMsg(this.encodeMsg(srcDataSet,dstDataSet));
 	}
 
-	transformPointMsg{ |sourceBuffer, targetBuffer|
-		^this.prMakeMsg(\transformPoint, id,
+	encodePointMsg{ |sourceBuffer, targetBuffer|
+		^this.prMakeMsg(\encodePoint, id,
 			this.prEncodeBuffer(sourceBuffer),
             this.prEncodeBuffer(targetBuffer),
             ["/b_query", targetBuffer.asUGenInput]);
     }
 
-	transformPoint { |sourceBuffer, targetBuffer, action|
-		actions[\transformPoint] = [nil,{action.value(targetBuffer)}];
-		this.prSendMsg(this.transformPointMsg(sourceBuffer, targetBuffer));
+	encodePoint { |sourceBuffer, targetBuffer, action|
+		actions[\encodePoint] = [nil,{action.value(targetBuffer)}];
+		this.prSendMsg(this.encodePointMsg(sourceBuffer, targetBuffer));
 	}
 
 	getMeansMsg{|dataSet| ^this.prMakeMsg(\getMeans, id, dataSet.asUGenInput) }
