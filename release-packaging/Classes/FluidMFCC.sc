@@ -1,6 +1,6 @@
 FluidMFCC : FluidRTMultiOutUGen {
 
-	*kr { arg in = 0, numCoeffs = 13, numBands = 40, startCoeff = 0, minFreq = 20, maxFreq = 20000, windowSize = 1024, hopSize = -1, fftSize = -1, maxNumCoeffs = nil, maxFFTSize = -1;
+	*kr { arg in = 0, numCoeffs = 13, numBands = 40, startCoeff = 0, minFreq = 20, maxFreq = 20000, windowSize = 1024, hopSize = -1, fftSize = -1, maxFFTSize = -1, maxNumCoeffs = nil;
 
         maxNumCoeffs = maxNumCoeffs ? numCoeffs;
 

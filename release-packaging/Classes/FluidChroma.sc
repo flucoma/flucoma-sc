@@ -1,6 +1,6 @@
 FluidChroma : FluidRTMultiOutUGen {
 
-	*kr { arg in = 0, numChroma = 12, ref = 440, normalize = 0, minFreq = 0, maxFreq = -1, windowSize = 1024, hopSize = -1, fftSize = -1, maxNumChroma, maxFFTSize = -1;
+	*kr { arg in = 0, numChroma = 12, ref = 440, normalize = 0, minFreq = 0, maxFreq = -1, windowSize = 1024, hopSize = -1, fftSize = -1, maxFFTSize = -1, maxNumChroma;
         
         maxNumChroma = maxNumChroma ? numChroma; 
         
