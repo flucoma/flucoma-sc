@@ -61,7 +61,7 @@ FluidBufToKr {
 		};
 
 		if(numFrames > 1,{
-			^numFrames.collect{
+			^numFrames.asInteger.collect{
 				arg i;
 				BufRd.kr(1,buffer,i+startFrame,0,0);
 			}

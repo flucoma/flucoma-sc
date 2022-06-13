@@ -1,4 +1,4 @@
-TITLE:: FluidBufNNDSVD
+TITLE:: FluidBufNMFSeed
 summary:: Non-Negative Double Singular Value Decomposition on a Buffer
 categories:: Libraries>FluidCorpusManipulation
 related:: Classes/FluidBufNMF
@@ -79,7 +79,7 @@ b = Buffer.read(s,FluidFilesPath("Nicol-LoopE-M.wav"));
 //how many bases do I need to decompose the buffer with 90% accuracy
 (
 Routine{
-    FluidBufNNDSVD.process(s, b, ~bases, ~activations, coverage: 0.9, method: 1).wait;
+    FluidBufNMFSeed.process(s, b, ~bases, ~activations, coverage: 0.9, method: 1).wait;
     "% bases".format(~bases.numChannels).postln;
 }.play;
 )
@@ -89,7 +89,7 @@ Routine{
 //try the same process with less accuracy
 (
 Routine{
-    FluidBufNNDSVD.process(s, b, ~bases, ~activations, coverage: 0.5).wait;
+    FluidBufNMFSeed.process(s, b, ~bases, ~activations, coverage: 0.5).wait;
     "% bases".format(~bases.numChannels).postln;
 }.play
 )
