@@ -1,5 +1,6 @@
   makeSCWrapper<RTKDTreeQueryClient>("FluidKDTreeQuery",inTable);
   makeSCWrapper<RTKMeansQueryClient>("FluidKMeansQuery",inTable);
+  makeSCWrapper<RTSKMeansQueryClient>("FluidSKMeansQuery",inTable);
   makeSCWrapper<RTKNNClassifierQueryClient>("FluidKNNClassifierQuery",inTable);
   makeSCWrapper<RTKNNRegressorQueryClient>("FluidKNNRegressorQuery",inTable);
   makeSCWrapper<RTNormalizeQueryClient>("FluidNormalizeQuery",inTable);
