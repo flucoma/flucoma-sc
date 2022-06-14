@@ -1,0 +1,12 @@
+  makeSCWrapper<RTKDTreeQueryClient>("FluidKDTreeQuery",inTable);
+  makeSCWrapper<RTKMeansQueryClient>("FluidKMeansQuery",inTable);
+  makeSCWrapper<RTSKMeansQueryClient>("FluidSKMeansQuery",inTable);
+  makeSCWrapper<RTKNNClassifierQueryClient>("FluidKNNClassifierQuery",inTable);
+  makeSCWrapper<RTKNNRegressorQueryClient>("FluidKNNRegressorQuery",inTable);
+  makeSCWrapper<RTNormalizeQueryClient>("FluidNormalizeQuery",inTable);
+  makeSCWrapper<RTRobustScaleQueryClient>("FluidRobustScaleQuery",inTable);
+  makeSCWrapper<RTStandardizeQueryClient>("FluidStandardizeQuery",inTable);
+  makeSCWrapper<RTPCAQueryClient>("FluidPCAQuery",inTable);
+  makeSCWrapper<RTUMAPQueryClient>("FluidUMAPQuery",inTable);
+  makeSCWrapper<RTMLPRegressorQueryClient>("FluidMLPRegressorQuery",inTable);
+  makeSCWrapper<RTMLPClassifierQueryClient>("FluidMLPClassifierQuery",inTable);

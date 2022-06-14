@@ -24,13 +24,16 @@ FluidKDTree : FluidModelObject
 		this.prSendMsg(this.fitMsg(dataSet));
 	}
 
-    kNearestMsg{|buffer|
-        ^this.prMakeMsg(\kNearest,id,this.prEncodeBuffer(buffer));
+    kNearestMsg{|buffer,k|
+        k !?
+        {^this.prMakeMsg(\kNearest,id,this.prEncodeBuffer(buffer),k);}
+        ??
+        {^this.prMakeMsg(\kNearest,id,this.prEncodeBuffer(buffer));}
     }
 
-	kNearest{ |buffer, action|
+	kNearest{ |buffer, k, action|
         actions[\kNearest] = [strings(FluidMessageResponse,_,_),action];
-		this.prSendMsg(this.kNearestMsg(buffer));
+		this.prSendMsg(this.kNearestMsg(buffer,k));
 	}
 
     kNearestDistMsg {|buffer|

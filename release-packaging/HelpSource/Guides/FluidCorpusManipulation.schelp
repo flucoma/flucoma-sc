@@ -23,7 +23,7 @@ table::
 ## strong::on signals:: || strong:: on buffers:: || strong::digest::
 ## Link::Classes/FluidAmpGate:: || LINK:: Classes/FluidBufAmpGate:: || Events from amplitude enevelope
 ## LINK:: Classes/FluidAmpSlice:: || Link::Classes/FluidBufAmpSlice:: || Onsets from amplitude envelope
-## link::Classes/FluidOnsetSlice::||link::Classes/FluidBufOnsetSlice::||Spectral onset detecor
+## link::Classes/FluidOnsetSlice::||link::Classes/FluidBufOnsetSlice::||Spectral onset detector
 ## link::Classes/FluidTransientSlice::||link::Classes/FluidBufTransientSlice::||Transient model onset detector
 ## LINK:: Classes/FluidNoveltySlice::||LINK:: Classes/FluidBufNoveltySlice::|| Novelty based onset detection on a choice of descriptors
 ::
@@ -39,8 +39,11 @@ table::
 ##link::Classes/FluidSpectralShape:: || link::Classes/FluidBufSpectralShape:: || Seven Spectral Shape Descriptors
 ##link::Classes/FluidChroma:: || link::Classes/FluidBufChroma:: || Pitch Classes Descriptor
 ##link::Classes/FluidNMFMatch:: ||  || Real-time activation of link::Classes/FluidBufNMF##NMF:: bases
-## || link::Classes/FluidBufNNDSVD::|| Quick starting estimates for link::Classes/FluidBufNMF##NMF:: components using Singular Value Decomposition
+## || link::Classes/FluidBufNMFSeed::|| Quick starting estimates for link::Classes/FluidBufNMF##NMF:: components using Singular Value Decomposition
 ## || link::Classes/FluidBufSTFT:: || Perform STFT / ISTFT on link::Classes/Buffer::s
+##link::Classes/FluidAmpFeature:: || link::Classes/FluidBufAmpFeature:: || Detrending Amplitude Envelope Descriptor
+##link::Classes/FluidNoveltyFeature:: || link::Classes/FluidBufNoveltyFeature:: || Novelty descriptor based on a choice of analysis descriptors
+##link::Classes/FluidOnsetFeature:: || link::Classes/FluidBufOnsetFeature:: || Descriptor comparing spectral frames using a choice of comparisons
 ::
 
 section:: Decompose Audio
@@ -96,6 +99,7 @@ table::
 ##link::Classes/FluidPCA:: || Principal Component Analysis for preprocessing and dimension reduction
 ##link::Classes/FluidMDS:: ||  Multidimensional Scaling for dimension reduction
 ##link::Classes/FluidKMeans:: ||  K-Means clustering
+##link::Classes/FluidSKMeans:: ||  Spherical K-Means clustering
 ##link::Classes/FluidUMAP:: ||  Dimension reduction with UMAP algorithm
 ##link::Classes/FluidGrid:: ||  Transform a data set of two dimensional points into a two dimensional grid using the Munkres Algorithm.
 ::

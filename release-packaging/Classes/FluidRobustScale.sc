@@ -1,14 +1,14 @@
 FluidRobustScale : FluidModelObject {
 
-    var <>low, <>high, <>invert;
+    var <>low, <>high;
 
-	*new {|server, low = 25, high = 75, invert = 0|
-		^super.new(server,[low,high,invert])
-		.low_(low).high_(high).invert_(invert);
+	*new {|server, low = 25, high = 75|
+		^super.new(server,[low,high])
+		.low_(low).high_(high);
 	}
 
     prGetParams{
-        ^[this.id,this.low,this.high,this.invert];
+        ^[this.id,this.low,this.high];
     }
 
 
@@ -52,13 +52,31 @@ FluidRobustScale : FluidModelObject {
         this.prSendMsg(this.transformPointMsg(sourceBuffer, destBuffer));
 	}
 
-    kr{|trig, inputBuffer,outputBuffer,invert|
+    inverseTransformMsg{|sourceDataSet, destDataSet|
+        ^this.prMakeMsg(\inverseTransform,id,sourceDataSet.id,destDataSet.id);
+    }
 
-		invert = invert ? this.invert;
+	inverseTransform{|sourceDataSet, destDataSet, action|
+		actions[\inverseTransform] = [nil,action];
+        this.prSendMsg(this.inverseTransformMsg(sourceDataSet, destDataSet));
+	}
 
-        // this.invert_(invert);
+    inverseTransformPointMsg{|sourceBuffer, destBuffer|
+        ^this.prMakeMsg(\inverseTransformPoint,id,
+            this.prEncodeBuffer(sourceBuffer),
+            this.prEncodeBuffer(destBuffer),
+            ["/b_query",destBuffer.asUGenInput]
+        );
+    }
 
-        ^FluidRobustScaleQuery.kr(trig,this, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer), invert,);
+	inverseTransformPoint{|sourceBuffer, destBuffer, action|
+        actions[\inverseRransformPoint] = [nil,{action.value(destBuffer)}];
+        this.prSendMsg(this.inverseTransformPointMsg(sourceBuffer, destBuffer));
+	}
+
+    kr{|trig, inputBuffer,outputBuffer,invert = 0|
+
+        ^FluidRobustScaleQuery.kr(trig,this, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer), invert);
     }
 
 

@@ -10,7 +10,7 @@ FluidBufNoveltySlice : FluidBufProcessor {
 		source.isNil.if {"FluidBufNoveltySlice:  Invalid source buffer".throw};
 		indices.isNil.if {"FluidBufNoveltySlice:  Invalid features buffer".throw};
 
-		^FluidProxyUgen.kr(\FluidBufNoveltySliceTrigger, -1, source, startFrame, numFrames, startChan, numChans, indices, algorithm, kernelSize, threshold, filterSize, minSliceLength, windowSize, hopSize, fftSize, maxFFTSize, kernelSize, filterSize, trig, blocking);
+		^FluidProxyUgen.kr(\FluidBufNoveltySliceTrigger, -1, source, startFrame, numFrames, startChan, numChans, indices, algorithm, kernelSize, kernelSize, threshold, filterSize, filterSize, minSliceLength, windowSize, hopSize, fftSize, maxFFTSize,  trig, blocking);
 
 	}
 
@@ -27,7 +27,7 @@ FluidBufNoveltySlice : FluidBufProcessor {
 		^this.new(
 			server, nil, [indices]
 		).processList(
-			[source, startFrame, numFrames, startChan, numChans, indices, algorithm, kernelSize, threshold, filterSize, minSliceLength, windowSize, hopSize, fftSize,  maxFFTSize, kernelSize, filterSize,0],freeWhenDone,action
+			[source, startFrame, numFrames, startChan, numChans, indices, algorithm, kernelSize, kernelSize, threshold, filterSize, filterSize, minSliceLength, windowSize, hopSize, fftSize,  maxFFTSize, 0],freeWhenDone,action
 		);
 	}
 
@@ -44,7 +44,7 @@ FluidBufNoveltySlice : FluidBufProcessor {
 		^this.new(
 			server, nil, [indices]
 		).processList(
-			[source, startFrame, numFrames, startChan, numChans, indices, algorithm, kernelSize, threshold, filterSize, minSliceLength, windowSize, hopSize, fftSize, maxFFTSize, kernelSize, filterSize,1],freeWhenDone,action
+			[source, startFrame, numFrames, startChan, numChans, indices, algorithm, kernelSize, kernelSize, threshold, filterSize, filterSize, minSliceLength, windowSize, hopSize, fftSize, maxFFTSize, 1],freeWhenDone,action
 		);
 	}
 }

@@ -21,7 +21,7 @@ ARGUMENT:: featuresBuffer
 A link::Classes/Buffer:: containing features to plot over the waveform. If this link::Classes/Buffer:: is multiple channels, it will plot each channel as a separate feature.
 
 ARGUMENT:: parent
-A link::Classes/Window:: to place this FluidWaveform in. If STRONG::nil::, FluidWaveform will make its own window using the STRONG::bounds:: argument.
+A link::Classes/Window:: to place this FluidWaveform in. If STRONG::nil::, FluidWaveform will make its own window using the STRONG::bounds:: argument. To create a view without parent and bounds (e.g. for GUIs with link::Guides/GUI-Layout-Management::), see the STRONG::standalone:: argument below.
 
 ARGUMENT:: bounds
 A link::Classes/Rect:: of where to place the FluidWaveform. If parent is STRONG::nil::, these bounds will be used to create a new link::Classes/Window::. If parent is not STRONG::nil::, these bounds will be used to place this FluidWaveform in the parent.
@@ -56,6 +56,9 @@ Boolean. All the features in STRONG::featureBuf:: need to be normalized for plot
 
 ARGUMENT:: imageColorScaling
 An integer indicating how to scale the values in strong::imageBuffer:: before applying the strong::imageColorScheme::. 0 indicates linear scaling, 1 indicates logarithmic scaling. The default is 1. These integers can also be accessed via FluidWaveform.lin and FluidWaveform.log.
+
+ARGUMENT:: standalone
+If strong::false::, creates a link::Classes/View:: without parent or bounds, so that it can be used as part of a larger GUI, e.g. with link::Guides/GUI-Layout-Management::.
 
 returns:: A new instance of FluidWaveform.
 
@@ -109,6 +112,9 @@ See this argument in the class method 'new' above.
 ARGUMENT:: normalizeFeaturesIndependently
 See this argument in the class method 'new' above.
 
+ARGUMENT:: lineWidth
+See this argument in the class method 'new' above.
+
 METHOD:: addImageLayer
 Add a grapic layer that shows an image derived from a buffer.
 
@@ -127,11 +133,14 @@ See this argument in the class method 'new' above.
 METHOD:: front
 Similar to link::Classes/Window::'s strong::front:: method. Shows the FluidWaveform. This must be called after layers have been added in order to see the layers.
 
+METHOD:: refresh
+Similar to link::Classes/Window::'s strong::refresh:: method. Redraws all FluidWaveform layers. Has to be called after link::Classes/FluidWaveform#-addLayer:: in order to see the new layer.
+
 METHOD:: close
 Close the FluidWaveform window. If parent is not STRONG::nil::, this method will close the parent window.
 
 
-METHOD:: win
+METHOD:: parent
 
 returns:: The FluidWaveform window. If parent is not STRONG::nil::, this method will return the parent window.
 
@@ -151,6 +160,14 @@ FluidWaveform(~drums,bounds:Rect(0,0,1200,300));
 (
 w = Window("FluidWaveform Test",Rect(0,0,1000,500));
 FluidWaveform(~drums,parent:w,bounds:Rect(100,100,800,300));
+w.front;
+)
+
+// put two of them in another window's layout
+(
+w = Window("FluidWaveform Test",Rect(0,0,1000,500));
+f = 2.collect{FluidWaveform(~drums, standalone: false)};
+w.view.layout = VLayout(f[0], f[1]);
 w.front;
 )
 
@@ -249,7 +266,7 @@ FluidBufPitch.processBlocking(s,~audio,features:~pitch_analysis,action:{"done".p
 ~fw.addAudioLayer(~audio,Color(1,1,1,0.5));
 ~fw.addIndicesLayer(~indices,~audio,Color.black);
 ~fw.addFeaturesLayer(~pitch_analysis,[Color.cyan,Color.magenta]);
-~fw.front; //                                       // if no buffers of any kind are passed, then you'll need to call `.front` after adding layers
+~fw.front;
 )
 
 (
@@ -262,7 +279,7 @@ FluidBufPitch.processBlocking(s,~audio,features:~pitch_analysis,action:{"done".p
 )
 
 // add one more
-~fw.addFeaturesLayer(~pitch_analysis,[Color.cyan,Color.yellow]).front; // <<<----- notice the `.front` here to update display after adding this layer
+~fw.addFeaturesLayer(~pitch_analysis,[Color.cyan,Color.yellow]).refresh; // <<<----- notice the `.refresh` here to update display after adding this layer
 
 // check how many layers
 ~fw.layers.size

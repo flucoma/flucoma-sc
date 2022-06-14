@@ -7,111 +7,80 @@ on:
     branches: [ dev, ci/** ]
 
 jobs:
-  docs:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: flucoma/actions/env@v4
-      - uses: flucoma/actions/docs@v4
-        with:
-          target: MAKE_SC_REF
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: docs
-          path: build/sc_ref  
-
   macbuild:
     runs-on: macos-11
     steps:
       - uses: actions/checkout@v2
-      - uses: flucoma/actions/env@v4
-      - uses: flucoma/actions/sc@v4
+      - uses: flucoma/actions/env@v5
+      - uses: flucoma/actions/sc@v5
+        with:
+          branch: origin/dev
 
+      - name: compress archive
+        run: zip -r FluCoMa-SC-Mac-nightly.zip FluidCorpusManipulation
+        working-directory: install
+          
       - uses: actions/upload-artifact@v2
-        with:                                                                                                                                                                            
-          name: macbuild                                                                                                                                                                 
-          path: install
+        with:
+          name: macbuild
+          path: install/FluCoMa-SC-Mac-nightly.zip
 
 
   winbuild:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: flucoma/actions/env@v4
-      - uses: flucoma/actions/sc@v4
+      - uses: flucoma/actions/env@v5
+      - uses: flucoma/actions/sc@v5
+        with:
+          branch: origin/dev
 
       - name: remove pdb files
         run: Remove-Item install -Recurse -Include *.pdb
 
-      - uses: actions/upload-artifact@v2 
+      - name: compress archive
+        run: 7z a FluCoMa-SC-Windows-nightly.zip FluidCorpusManipulation
+        working-directory: install
 
+      - uses: actions/upload-artifact@v2 
         with: 
           name: winbuild
-          path: install
+          path: install/FluCoMa-SC-Windows-nightly.zip 
 
 
   linuxbuild:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - uses: flucoma/actions/env@v4
-      - uses: flucoma/actions/sc@v4
-
-      - uses: actions/upload-artifact@v2                                                                                                                                                 
-        with:                                                                                                                                                                            
-          name: linuxbuild                                                                                                                                                                
-          path: install
+      - uses: flucoma/actions/env@v5
+      - uses: flucoma/actions/sc@v5
+        with:
+          branch: origin/dev
+          
+      - name: compress archive
+        run: tar -zcvf FluCoMa-SC-Linux-nightly.tar.gz FluidCorpusManipulation
+        working-directory: install
+      - uses: actions/upload-artifact@v2
+        with:
+          name: linuxbuild 
+          path: install/FluCoMa-SC-Linux-nightly.tar.gz
   
   release:
     runs-on: ubuntu-latest
-    needs: [macbuild, winbuild, linuxbuild,docs]
+    needs: [macbuild, winbuild, linuxbuild]
     steps:
       
       - uses: actions/download-artifact@v2
         with:
-          name: docs
-          path: docs
-      
-      - uses: actions/download-artifact@v2
-        with:
-          name: macbuild
-          path: mac
-
-      - name: copy docs to mac
-        run: mkdir -p mac/FluidCorpusManipulation/HelpSource && cp -r docs/*   mac/FluidCorpusManipulation/HelpSource
-         
-        
-      - name: compress win
-        run: zip -r ../FluCoMa-SC-Mac-nightly.zip .
-        working-directory: mac    
-
-      
-      - uses: actions/download-artifact@v2
-        with:
-          name: winbuild
-          path: win
-
-      - name: copy docs to win
-        run: mkdir -p win/FluidCorpusManipulation/HelpSource && cp -r docs/* win/FluidCorpusManipulation/HelpSource
-        
-      - name: compress win
-        run: zip -r ../FluCoMa-SC-Windows-nightly.zip .
-        working-directory: win    
-
+          name: macbuild 
 
       - uses: actions/download-artifact@v2
         with:
-          name: linuxbuild
+          name: winbuild  
 
-          path: linux
-          
-      - name: copy docs to linux
-        run: mkdir -p linux/FluidCorpusManipulation/HelpSource && cp -r docs/* linux/FluidCorpusManipulation/HelpSource
-        
-      - name: compress linux
-        run: zip -r ../FluCoMa-SC-Linux-nightly.zip .
-        working-directory: linux     
-
+      - uses: actions/download-artifact@v2
+        with:
+          name: linuxbuild  
       
       - uses: dev-drprasad/delete-tag-and-release@v0.2.0
         with:
@@ -125,7 +94,7 @@ jobs:
         with:
           name: FluCoMa SuperCollider Nightly Release
           body: "This is a nightly build of the FluCoMa SuperCollider package. As such, be warned there may be bugs or other unexpected behaviour. The build hash is ${{ github.sha }}"
-          files: FluCoMa-SC-*.zip
+          files: FluCoMa-SC-*
           prerelease: true
           tag_name: nightly
           draft: false

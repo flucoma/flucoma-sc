@@ -10,7 +10,7 @@ FluidBufSTFT : FluidBufProcessor {
         phase = phase ? -1;
         resynth = resynth ? - 1;
 
-        ^FluidProxyUgen.kr(\FluidBufSTFTTrigger, -1, source, startFrame, numFrames, startChan, magnitude, phase, resynth, inverse, padding, windowSize, hopSize, fftSize, trig, blocking);
+        ^FluidProxyUgen.kr(\FluidBufSTFTTrigger, -1, source, startFrame, numFrames, startChan, magnitude, phase, resynth, inverse, padding, windowSize, hopSize, fftSize, -1,  trig, blocking);
 	}
 
 	*process { |server, source, startFrame = 0, numFrames = -1, startChan = 0, magnitude, phase, resynth, inverse = 0, windowSize = 1024, hopSize = -1, fftSize = -1, padding = 1, freeWhenDone = true, action|
@@ -26,7 +26,7 @@ FluidBufSTFT : FluidBufProcessor {
 	    ^this.new(
             server, nil, [magnitude,phase,resynth].select{|b| b != -1}
 		).processList(
-			[source, startFrame, numFrames, startChan, magnitude, phase, resynth, inverse, padding, windowSize, hopSize, fftSize, 0], freeWhenDone, action
+			[source, startFrame, numFrames, startChan, magnitude, phase, resynth, inverse, padding, windowSize, hopSize, fftSize, -1,  0], freeWhenDone, action
 		);
 	}
 
@@ -41,7 +41,7 @@ FluidBufSTFT : FluidBufProcessor {
 	    ^this.new(
             server, nil, [magnitude,phase,resynth].select{|b| b != -1}
 		).processList(
-			[source, startFrame, numFrames, startChan, magnitude, phase, resynth, inverse, padding, windowSize, hopSize, fftSize, 1], freeWhenDone, action
+			[source, startFrame, numFrames, startChan, magnitude, phase, resynth, inverse, padding, windowSize, hopSize, fftSize, -1, 1], freeWhenDone, action
 		);
 	}
 }

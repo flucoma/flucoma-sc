@@ -7,10 +7,15 @@
 
 cmake_minimum_required(VERSION 3.11)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
 ################################################################################
 # Paths
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/install" CACHE PATH "")
-
+set(FLUID_BRANCH "origin/main" CACHE STRING "Branch to pull flucoma dependencies from")
 set(SC_LIBRARY_OUTPUT_PREFIX "release-packaging" CACHE STRING "Where in the hierarchy to write sc plugins")
 
 set(SC_PATH "" CACHE PATH "Path to the top of SuperCollider source tree")
@@ -22,13 +27,14 @@ set(FLUID_PATH "" CACHE PATH "Optional path to the Fluid Decomposition repo")
 
 if (APPLE)
   set(CMAKE_XCODE_GENERATE_SCHEME ON)
-	set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "")
   set(CMAKE_OSX_DEPLOYMENT_TARGET "10.8" CACHE STRING "")
   #A consequence of targetting 10.8. Needs to be set globally from 10.15 onwards in order for the test program to compile successfully during configure 
   string(APPEND CMAKE_CXX_FLAGS " -stdlib=libc++")
 endif()
 
 option(SYSTEM_BOOST  "Use boost libraries from system. If your SC was built with this enabled, so should FluCoMa-sc" OFF)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/scripts")
 
 ################################################################################
 # Main project
@@ -52,33 +58,20 @@ endif()
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(CMAKE_XCODE_GENERATE_TOP_LEVEL_PROJECT_ONLY ON)
 
-MACRO(SUBDIRLIST result curdir)
-  FILE(GLOB children RELATIVE ${curdir} ${curdir}/*)
-  SET(dirlist "")
-  FOREACH(child ${children})
-    IF(IS_DIRECTORY ${curdir}/${child})
-      LIST(APPEND dirlist ${child})
-    ENDIF()
-  ENDFOREACH()
-  SET(${result} ${dirlist})
-ENDMACRO()
-
 include(FetchContent)
-
-set(FETCHCONTENT_QUIET FALSE)
 
 FetchContent_Declare(
   flucoma-core
   GIT_REPOSITORY https://github.com/flucoma/flucoma-core.git
   GIT_PROGRESS TRUE
-  GIT_TAG origin/main
+  GIT_TAG ${FLUID_BRANCH}
 )
 
 FetchContent_Declare(
   flucoma-docs
   GIT_REPOSITORY https://github.com/flucoma/flucoma-docs.git
   GIT_PROGRESS TRUE
-  GIT_TAG origin/main
+  GIT_TAG ${FLUID_BRANCH}
 )
 
 if(FLUID_PATH)
@@ -87,14 +80,14 @@ if(FLUID_PATH)
   )
 endif()
 
-FetchContent_GetProperties(flucoma-core)
-if(NOT flucoma-core_POPULATED)
-  FetchContent_Populate(flucoma-core)
-  add_subdirectory(${flucoma-core_SOURCE_DIR} ${flucoma-core_BINARY_DIR})
-  include(flucoma_version)
-  include(flucoma-buildtools)
-  include(flucoma-buildtype)
-endif()
+FetchContent_MakeAvailable(flucoma-core)
+# if(NOT flucoma-core_POPULATED)
+#   FetchContent_Populate(flucoma-core)
+#   add_subdirectory(${flucoma-core_SOURCE_DIR} ${flucoma-core_BINARY_DIR})
+include(flucoma_version)
+include(flucoma-buildtools)
+include(flucoma-buildtype)
+# endif()
 
 option(DOCS "Generate scdocs" OFF)
 set(FLUID_DOCS_PATH "" CACHE PATH "Optional path to flucoma-docs (needed for docs); will download if absent")
@@ -108,15 +101,17 @@ if(DOCS)
       FETCHCONTENT_SOURCE_DIR_FLUCOMA-DOCS ${FLUID_DOCS_PATH} ABSOLUTE
     )
   endif()
-
-  FetchContent_GetProperties(flucoma-docs)
-  if(NOT flucoma-docs_POPULATED)
-    FetchContent_Populate(flucoma-docs)
-    file(GLOB_RECURSE DOC_SOURCE RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "${flucoma-docs_SOURCE_DIR}/**/*.cpp" )
-    source_group("\\SC Doc Gen" FILES ${DOC_SOURCE})
-    add_subdirectory(${flucoma-docs_SOURCE_DIR} ${flucoma-docs_BINARY_DIR})
-  endif()
-
+  FetchContent_MakeAvailable(flucoma-docs)
+  # FetchContent_GetProperties(flucoma-docs)
+  # if(NOT flucoma-docs_POPULATED)
+  #   FetchContent_Populate(flucoma-docs)
+  #   file(GLOB_RECURSE DOC_SOURCE RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "${flucoma-docs_SOURCE_DIR}/**/*.cpp" )
+  #   source_group("\\SC Doc Gen" FILES ${DOC_SOURCE})
+  #   add_subdirectory(${flucoma-docs_SOURCE_DIR} ${flucoma-docs_BINARY_DIR})
+  # endif()
+  include(FlucomaDocs)
+  set(SC_DOC_OUT "${CMAKE_BINARY_DIR}/sc_ref")
+  add_ref_target(sc "Making SC docs")
   add_custom_target(SC_MAKE_DOCS ALL DEPENDS MAKE_SC_REF)
 endif()
 
@@ -129,6 +124,9 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_TEST "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 set(CMAKE_SHARED_MODULE_PREFIX "")
+
+set(CMAKE_COMPILE_PDB_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/pdbtmp")
+set(CMAKE_PDB_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/pdbtmp")
 
 if(APPLE OR WIN32)
   set(CMAKE_SHARED_MODULE_SUFFIX ".scx")
@@ -189,8 +187,8 @@ if(APPLE)
   target_compile_options(FLUID_SC_COPYREPLYADDR PRIVATE -stdlib=libc++)
 endif()
 
-target_compile_definitions(FLUID_SC_COPYREPLYADDR PRIVATE BOOST_ALL_NO_LIB  BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE)
-
+target_compile_definitions(FLUID_SC_COPYREPLYADDR PRIVATE BOOST_ALL_NO_LIB  PUBLIC BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE)
+ 
 add_library(FLUID_SC_WRAPPER INTERFACE)
 target_include_directories(FLUID_SC_WRAPPER 
   INTERFACE
@@ -205,18 +203,39 @@ target_sources(FLUID_SC_WRAPPER
 
 target_link_libraries(FLUID_SC_WRAPPER INTERFACE FLUID_SC_COPYREPLYADDR)
 
-SUBDIRLIST(PROJECT_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src")
-foreach (project_dir ${PROJECT_DIRS})
-	if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/${project_dir}/CMakeLists.txt")
-		message("Generating: ${project_dir}")
-		add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/${project_dir}")
-	endif ()
-endforeach ()
+include(MakePluginSources)
+# generate targets for standalone clients
+get_client_group(NONE client_list)
+foreach(client ${client_list}) 
+  get_core_client_header(${client} header)   
+  get_core_client_class(${client} class)   
+  generate_sc_source(
+    CLIENTS ${client} 
+    HEADERS ${header} 
+    CLASSES ${class} 
+  )
+endforeach()
 
+add_client(DataSetWr clients/rt/FluidDataSetWr.hpp CLASS NRTThreadedDataSetWriter GROUP MANIPULATION)
 
+#generate target for MANIPULATION group 
+get_client_group(MANIPULATION client_list)
+foreach(client ${client_list})  
+  get_core_client_header(${client} header)  
+  get_core_client_class(${client} class)  
+  list(APPEND MANIPULATION_CLIENTS ${client})
+  list(APPEND MANIPULATION_HEADERS ${header})
+  list(APPEND MANIPULATION_CLASSES ${class})
+endforeach()
+
+generate_sc_source(
+  CLIENTS ${MANIPULATION_CLIENTS}
+  HEADERS ${MANIPULATION_HEADERS}
+  CLASSES ${MANIPULATION_CLASSES}
+  FILENAME FluidManipulation 
+)
 
 #install bits. 
-
 set(SC_INSTALL_PREFIX "." CACHE PATH "Prefix for assembling SC packages")
 set(FLUID_PACKAGE_NAME FluidCorpusManipulation CACHE STRING "Name for published package")
 set(SC_PACKAGE_ROOT ${SC_INSTALL_PREFIX}/${FLUID_PACKAGE_NAME})
@@ -242,6 +261,6 @@ install(FILES ${flucoma-core_SOURCE_DIR}/distribution.lic
         RENAME LICENSE.md)
 
 if(DOCS)
-  install(DIRECTORY "${SC_DOC_OUT}" 
+  install(DIRECTORY "${SC_DOC_OUT}/" 
           DESTINATION "${SC_PACKAGE_ROOT}/HelpSource")
 endif()

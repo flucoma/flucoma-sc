@@ -35,23 +35,54 @@ struct FluidSCMessaging{
   };
   
 
+private:
+  static bool is_vowel(const char p_char)
+  {
+      constexpr char vowels[] = { 'a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U' };
+      return std::find(std::begin(vowels), std::end(vowels), p_char) != std::end(vowels);
+  }
+
+  static std::string remove_vowel(std::string st)
+  {
+      auto to_erase = std::remove_if(st.begin(), st.end(), is_vowel);
+      st.erase(to_erase, st.end());
+      return st;
+  }
+
+
+public:
   template <size_t N, typename T>
   struct SetupMessageCmd
   {
-  
     void operator()(const T& message)
     {
-      static std::string messageName = std::string{getName()} + '/' + message.name;
-      auto ft = getInterfaceTable();      
-      ft->fDefinePlugInCmd(messageName.c_str(), doMessage<N>,(void*)messageName.c_str());
+      static std::string messageName = std::string{getName()} + '/' + message.name;      
+      FluidSCWrapper::registerMessage(messageName.c_str(),doMessage<N>);
     }
   };
   
 
-  template <typename Message>
-  static bool validateMessageArgs(Message* msg, sc_msg_iter* inArgs)
+
+  template<typename T>
+  static auto constexpr filterOneOptional(const T&) { return std::make_tuple(T{}); }
+
+  template<typename T>
+  static auto constexpr filterOneOptional(const Optional<T>&) { return std::make_tuple(); }
+  
+  
+  template<typename...Ts>
+  static auto constexpr filterOptional(std::tuple<Ts...>)
   {
+    return std::tuple_cat(filterOneOptional(Ts{})...);
+  }
+  
+  
+  template <typename Message>
+  static Optional<size_t> validateMessageArgs(Message* msg, sc_msg_iter* inArgs)
+  {
+    //we can be sure that optional args always follow mandatory ones, as this is enforced at compile time in flucoma-core
     using ArgTuple = decltype(msg->args);
+    using MandatoryArgsTuple = decltype(filterOptional(msg->args));
     
     std::string tags(inArgs->tags + inArgs->count);//evidently this needs commenting: construct string at pointer offset by tag count, to pick up args
     bool willContinue = true;
@@ -59,7 +90,7 @@ struct FluidSCMessaging{
     
     auto& args = msg->args;
     
-    constexpr size_t expectedArgCount = std::tuple_size<ArgTuple>::value;
+    static constexpr size_t expectedArgCount = std::tuple_size<MandatoryArgsTuple>::value;
     
     /// TODO this squawks if we have a completion message, so maybe we can check if extra arg is a 'b' and squawk if not?
 //    if(tags.size() > expectedArgCount)
@@ -77,14 +108,16 @@ struct FluidSCMessaging{
 
     auto tagsIter = tags.begin();
     auto tagsEnd  = tags.end();
-    ForEach(args,[&typesMatch,&tagsIter,&tagsEnd](auto& arg){
+    size_t argCount = 0;
+    ForEach(args,[&typesMatch,&tagsIter,&tagsEnd,firstTag=tags.begin(),&argCount](auto& arg){
        if(tagsIter == tagsEnd)
        {
-          typesMatch = false;
+          if(std::distance(firstTag,tagsIter) < asSigned(expectedArgCount)) typesMatch = false;
           return;
        }
        char t = *(tagsIter++);
        typesMatch = typesMatch && ParamReader<sc_msg_iter>::argTypeOK(arg,t);
+       argCount++;
     });
     
    willContinue = willContinue && typesMatch;
@@ -116,7 +149,7 @@ struct FluidSCMessaging{
       report << ")\n";
    }
    
-   return willContinue;
+   return willContinue ?  Optional<size_t>(argCount) : Optional<size_t>();
   }
 
   static void refreshParams(Params& p, MessageResult<ParamValues>& r)
@@ -137,9 +170,9 @@ struct FluidSCMessaging{
     msg->id = args->geti();
     msg->replyAddr = copyReplyAddress(replyAddr);
     ///TODO make this step contingent on verbosity or something, in the name of effieciency
-    bool willContinue = validateMessageArgs(msg, args);
+    auto tagCount = validateMessageArgs(msg, args);
     
-    if(!willContinue)
+    if(!tagCount.has_value())
     {
       delete msg;
       return;
@@ -148,9 +181,10 @@ struct FluidSCMessaging{
 
     msg->name = std::string{'/'} +  (const char*)(inUserData);
     
-    ForEach(msg-> args,[inWorld,&args](auto& thisarg)
+    ForEach(msg-> args,[inWorld,&args,tagCount,n=0](auto& thisarg)mutable
     {
-      thisarg = ParamReader<sc_msg_iter>::fromArgs(inWorld, *args,thisarg,0);
+      if(n++ <  asSigned(tagCount.value()))
+        thisarg = ParamReader<sc_msg_iter>::fromArgs(inWorld, *args,thisarg,0);
     });
      
     size_t completionMsgSize{args ? args->getbsize() : 0};
