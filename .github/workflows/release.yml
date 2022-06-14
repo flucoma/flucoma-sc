@@ -2,11 +2,6 @@ name: Release
 
 on:
   workflow_dispatch:
-    inputs:
-      base:
-        description: 'Base branch to deploy core from'
-        required: false
-        default: 'main'
 
 jobs:
   macbuild:
