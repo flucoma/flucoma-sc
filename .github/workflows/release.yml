@@ -89,7 +89,7 @@ jobs:
         with:
           name: ${{ needs.linuxbuild.outputs.version }}
           body: "This is a release build of the FluCoMa SuperCollider package. The build hash is ${{ github.sha }}"
-          files: FluCoMa-SC-*.zip
+          files: FluCoMa*
           prerelease: true
           tag_name: ${{ needs.linuxbuild.outputs.version }}
           draft: false
