@@ -7,19 +7,6 @@ on:
     branches: [ dev, ci/** ]
 
 jobs:
-  # docs:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: flucoma/actions/env@v4
-  #     - uses: flucoma/actions/docs@v4
-  #       with:
-  #         target: MAKE_SC_REF
-  # 
-  #     - uses: actions/upload-artifact@v2
-  #       with:
-  #         name: docs
-  #         path: build/sc_ref  
-
   macbuild:
     runs-on: macos-11
     steps:
@@ -83,51 +70,17 @@ jobs:
     needs: [macbuild, winbuild, linuxbuild]
     steps:
       
-      # - uses: actions/download-artifact@v2
-      #   with:
-      #     name: docs
-      #     path: docs
-      
       - uses: actions/download-artifact@v2
         with:
-          name: macbuild
-          # path: mac
-
-      # - name: copy docs to mac
-      #   run: mkdir -p mac/FluidCorpusManipulation/HelpSource && cp -r docs/*   mac/FluidCorpusManipulation/HelpSource
-      # 
-      # 
-      # - name: compress win
-      #   run: zip -r ../FluCoMa-SC-Mac-nightly.zip .
-      #   working-directory: mac    
-
-      
-      - uses: actions/download-artifact@v2
-        with:
-          name: winbuild
-          # path: win
-      # 
-      # - name: copy docs to win
-      #   run: mkdir -p win/FluidCorpusManipulation/HelpSource && cp -r docs/* win/FluidCorpusManipulation/HelpSource
-      # 
-      # - name: compress win
-      #   run: zip -r ../FluCoMa-SC-Windows-nightly.zip .
-      #   working-directory: win    
-
+          name: macbuild 
 
       - uses: actions/download-artifact@v2
         with:
-          name: linuxbuild
+          name: winbuild  
 
-          # path: linux
-          
-      # - name: copy docs to linux
-      #   run: mkdir -p linux/FluidCorpusManipulation/HelpSource && cp -r docs/* linux/FluidCorpusManipulation/HelpSource
-      # 
-      # - name: compress linux
-      #   run: zip -r ../FluCoMa-SC-Linux-nightly.zip .
-      #   working-directory: linux     
-
+      - uses: actions/download-artifact@v2
+        with:
+          name: linuxbuild  
       
       - uses: dev-drprasad/delete-tag-and-release@v0.2.0
         with:
