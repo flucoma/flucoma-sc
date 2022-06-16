@@ -17,7 +17,7 @@ y = {
 )
 
 // isolate just sines or residual;
-~song = Buffer.readChannel(s,FluidFilesPath("Tremblay-beatRemember.wav"),channels:[0]);
+~song = Buffer.readChannel(s,FluidFilesPath("Tremblay-BeatRemember.wav"),channels:[0]);
 
 (
 y = {
@@ -37,7 +37,7 @@ y.set(\mix,0);
 y.set(\mix,1);
 
 // a stereo example
-~song = Buffer.read(s,FluidFilesPath("Tremblay-beatRemember.wav"));
+~song = Buffer.read(s,FluidFilesPath("Tremblay-BeatRemember.wav"));
 
 (
 y = {
@@ -85,7 +85,7 @@ FluidHPSS separates a sound into "harmonic" and "percussive" components. This ca
 */
 
 //load a soundfile to play
-~buf = Buffer.readChannel(s,FluidFilesPath("Tremblay-beatRemember.wav"),channels:[0]);
+~buf = Buffer.readChannel(s,FluidFilesPath("Tremblay-BeatRemember.wav"),channels:[0]);
 
 // run with basic parameters (left is harmonic, right is percussive)
 {FluidHPSS.ar(PlayBuf.ar(1,~buf,loop:1))}.play
