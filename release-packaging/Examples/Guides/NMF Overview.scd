@@ -59,7 +59,7 @@ Routine{
 Routine{
 	var drums = Buffer.read(s,FluidFilesPath("Nicol-LoopE-M.wav"));
 	var voice = Buffer.read(s,FluidFilesPath("Tremblay-AaS-VoiceQC-B2K-M.wav"));
-	var song = Buffer.read(s,FluidFilesPath("Tremblay-beatRemember.wav"));
+	var song = Buffer.read(s,FluidFilesPath("Tremblay-BeatRemember.wav"));
 	s.sync;
 
 	"drums through the drums bases as filters".postln;
