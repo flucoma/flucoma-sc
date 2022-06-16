@@ -166,10 +166,10 @@ FluidBufCompose.process(s,~loader.buffer,a,(b-a),numChans: 1, destination: ~targ
 ~flatbuf[1].getn(0,182,{|x|~curatedWBuf = Buffer.loadCollection(s, x[[0,1,4,6,7,8,11,13].collect{|x|var y=x*13+1;(y..(y+11))}.flat].postln)})
 
 //find its nearest neighbours
-~tree.kNearest(~flatbuf[0],{|x| ~friends = x.postln;})
-~treeW.kNearest(~flatbuf[1],{|x| ~friendsW = x.postln;})
-~treeC.kNearest(~curatedBuf,{|x| ~friendsC = x.postln;})
-~treeCW.kNearest(~curatedWBuf,{|x| ~friendsCW = x.postln;})
+~tree.kNearest(~flatbuf[0],action:{|x| ~friends = x.postln;})
+~treeW.kNearest(~flatbuf[1],action:{|x| ~friendsW = x.postln;})
+~treeC.kNearest(~curatedBuf,action:{|x| ~friendsC = x.postln;})
+~treeCW.kNearest(~curatedWBuf,action:{|x| ~friendsCW = x.postln;})
 
 
 // play them in a row
