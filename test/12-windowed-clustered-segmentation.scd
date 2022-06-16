@@ -4,7 +4,7 @@
 
 //slightly oversegment with novelty
 //segments should still make sense but might cut a few elements in 2 or 3
-~slicer = FluidSliceCorpus({ |src,start,num,dest| FluidBufNoveltySlice.kr(src,start,num,indices:dest, feature: 1, kernelSize: 29, threshold: 0.1, filterSize: 5, hopSize: 128, blocking: 1)});
+~slicer = FluidSliceCorpus({ |src,start,num,dest| FluidBufNoveltySlice.kr(src, start, num, indices:dest, algorithm:1, kernelSize:29, threshold:0.1, filterSize:5, hopSize:128, blocking:1)});
 ~slicer.play(s, ~loader.buffer,~loader.index);
 
 //test the segmentation by looping them
