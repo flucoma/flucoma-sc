@@ -293,7 +293,7 @@ s.waitForBoot{
 	~resynths = {Buffer(s)} ! ~n_components;
 
 	s.sync;
-	FluidBufNMF.processBlocking(s,~audio,resynth:~resynth,activations:~activations,components:~n_components);
+	FluidBufNMF.processBlocking(s,~audio,resynth:~resynth,resynthMode: 1,activations:~activations,components:~n_components);
 
 	~n_components.do{
 		arg i;
