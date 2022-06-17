@@ -87,7 +87,7 @@ FluidPlotter : FluidViewer {
 		if(dict_internal.at(identifier).notNil,{
 			"FluidPlotter::addPoint_ There already exists a point with identifier %. Point not added. Use setPoint_ to overwrite existing points.".format(identifier).warn;
 		},{
-			this.setPoint_(identifier,x,y,size,color);
+			this.setPoint_(identifier,x,y,color,size);
 		});
 	}
 
