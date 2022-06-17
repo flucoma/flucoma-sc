@@ -14,6 +14,7 @@ FluidOnsetSlice : FluidRTUGen {
 	];
 
 	*prSelectMetric { |sym|
+		if (sym.isUGen) { ^sym };
 		if (sym.isNumber) {
 			if (sym >= 0 && (sym < metrics.size)) {
 				^sym
@@ -33,7 +34,7 @@ FluidOnsetSlice : FluidRTUGen {
 		^this.multiNew('audio', in.asAudioRateInput(this), metric, threshold, minSliceLength, filterSize, frameDelta, windowSize, hopSize, fftSize, maxFFTSize)
 	}
 	checkInputs {
-		if(inputs.at(1).rate != 'scalar') {
+		if([\scalar, \control].includes(inputs.at(1).rate).not) {
 			^(": invalid metric");
 		    };
 		if(inputs.at(9).rate != 'scalar') {

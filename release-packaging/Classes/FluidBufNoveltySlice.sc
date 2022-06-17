@@ -24,7 +24,8 @@ FluidBufNoveltySlice : FluidBufProcessor {
 
         source = source.asUGenInput;
         indices = indices.asUGenInput;
-        algorithm = FluidNoveltySlice.prSelectAlgorithm(algorithm) ?? {
+        algorithm = FluidNoveltySlice.prSelectAlgorithm(algorithm);
+	if (algorithm.isNil or: algorithm.isUGen) {
             ("FluidBufNoveltySlice: % is not a recognised algorithm")
             .format(algorithm).throw;
         };
@@ -45,7 +46,8 @@ FluidBufNoveltySlice : FluidBufProcessor {
 
         source = source.asUGenInput;
         indices = indices.asUGenInput;
-        algorithm = FluidNoveltySlice.prSelectAlgorithm(algorithm) ?? {
+        algorithm = FluidNoveltySlice.prSelectAlgorithm(algorithm);
+	if (algorithm.isNil or: algorithm.isUGen) {
             ("FluidBufNoveltySlice: % is not a recognised algorithm")
             .format(algorithm).throw;
         };

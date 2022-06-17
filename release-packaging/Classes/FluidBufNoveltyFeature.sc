@@ -24,7 +24,8 @@ FluidBufNoveltyFeature : FluidBufProcessor {
 
         source = source.asUGenInput;
         features = features.asUGenInput;
-		algorithm = FluidNoveltySlice.prSelectAlgorithm(algorithm) ?? {
+		algorithm = FluidNoveltySlice.prSelectAlgorithm(algorithm);
+		if (algorithm.isNil or: algorithm.isUGen) {
 			("FluidBufNoveltySlice: % is not a recognised algorithm")
 			.format(algorithm).throw;
 		};
@@ -48,7 +49,8 @@ FluidBufNoveltyFeature : FluidBufProcessor {
 
         source.isNil.if {"FluidBufNoveltyFeature:  Invalid source buffer".throw};
         features.isNil.if {"FluidBufNoveltyFeature:  Invalid features buffer".throw};
-		algorithm = FluidNoveltySlice.prSelectAlgorithm(algorithm) ?? {
+		algorithm = FluidNoveltySlice.prSelectAlgorithm(algorithm);
+		if (algorithm.isNil or: algorithm.isUGen) {
 			("FluidBufNoveltySlice: % is not a recognised algorithm")
 			.format(algorithm).throw;
 		};

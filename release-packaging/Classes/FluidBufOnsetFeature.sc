@@ -22,7 +22,8 @@ FluidBufOnsetFeature : FluidBufProcessor {
 
         source = source.asUGenInput;
         features = features.asUGenInput;
-        metric = FluidOnsetSlice.prSelectMetric(metric) ?? {
+        metric = FluidOnsetSlice.prSelectMetric(metric);
+	if (metric.isNil or: metric.isUGen) {
             ("FluidBufOnsetSlice: % is not a recognised metric")
             .format(metric).throw;
         };
@@ -43,7 +44,8 @@ FluidBufOnsetFeature : FluidBufProcessor {
 
         source = source.asUGenInput;
         features = features.asUGenInput;
-        metric = FluidOnsetSlice.prSelectMetric(metric) ?? {
+        metric = FluidOnsetSlice.prSelectMetric(metric);
+	if (metric.isNil or: metric.isUGen) {
             ("FluidBufOnsetSlice: % is not a recognised metric")
             .format(metric).throw;
         };

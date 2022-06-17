@@ -11,7 +11,7 @@ FluidNoveltyFeature : FluidRTUGen {
 	}
 
 	checkInputs {
-		if(inputs.at(1).rate != 'scalar') {
+		if([\scalar, \control].includes(inputs.at(1).rate).not) {
 			^(": invalid algorithm");
 		    };
 		if(inputs.at(9).rate != 'scalar') {

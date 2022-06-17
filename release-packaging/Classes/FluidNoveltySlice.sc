@@ -3,6 +3,7 @@ FluidNoveltySlice : FluidRTUGen {
 	const <algorithms = #[\spectrum, \mfcc, \chroma, \pitch, \loudness];
 
 	*prSelectAlgorithm { |sym|
+		if (sym.isUGen) { ^sym };
 		if (sym.isNumber) {
 			if (sym >= 0 && (sym < algorithms.size)) {
 				^sym
@@ -26,7 +27,7 @@ FluidNoveltySlice : FluidRTUGen {
 	}
 
 	checkInputs {
-		if(inputs.at(1).rate != 'scalar') {
+		if([\scalar, \control].includes(inputs.at(1).rate).not) {
 			^(": invalid algorithm");
 		    };
 		if(inputs.at(11).rate != 'scalar') {

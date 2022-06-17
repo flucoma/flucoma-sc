@@ -8,7 +8,7 @@ FluidOnsetFeature : FluidRTUGen {
 		^this.multiNew('control', in.asAudioRateInput(this), metric, filterSize, frameDelta, windowSize, hopSize, fftSize, maxFFTSize)
 	}
 	checkInputs {
-		if(inputs.at(1).rate != 'scalar') {
+		if([\scalar, \control].includes(inputs.at(1).rate).not) {
 			^(": invalid metric");
 		    };
 		if(inputs.at(7).rate != 'scalar') {

@@ -23,7 +23,8 @@ FluidBufOnsetSlice : FluidBufProcessor {
 
         source = source.asUGenInput;
         indices = indices.asUGenInput;
-        metric = FluidOnsetSlice.prSelectMetric(metric) ?? {
+        metric = FluidOnsetSlice.prSelectMetric(metric);
+	if (metric.isNil or: metric.isUGen) {
             ("FluidBufOnsetSlice: % is not a recognised metric")
             .format(metric).throw;
         };
@@ -44,7 +45,8 @@ FluidBufOnsetSlice : FluidBufProcessor {
 
         source = source.asUGenInput;
         indices = indices.asUGenInput;
-        metric = FluidOnsetSlice.prSelectMetric(metric) ?? {
+        metric = FluidOnsetSlice.prSelectMetric(metric);
+	if (metric.isNil or: metric.isUGen) {
             ("FluidBufOnsetSlice: % is not a recognised metric")
             .format(metric).throw;
         };
