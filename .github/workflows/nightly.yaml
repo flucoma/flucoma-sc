@@ -22,7 +22,7 @@ jobs:
           glob: '-e scx'
           package: 'install'
           output_type: 'dmg'
-          output: FluCoMa-SC-Mac
+          output: FluCoMa-SC-Mac-nightly
           cert: ${{ secrets.CERT }}
           certpwd: ${{ secrets.CERTPWD }}
           teamid: ${{ secrets.WWDRTEAMID }}
@@ -32,7 +32,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: macbuild
-          path: install/FluCoMa-SC-Mac.dmg
+          path: install/FluCoMa-SC-Mac-nightly.dmg
 
   winbuild:
     runs-on: windows-latest
