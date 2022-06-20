@@ -16,15 +16,23 @@ jobs:
         with:
           branch: origin/dev
 
-      - name: compress archive
-        run: zip -r FluCoMa-SC-Mac-nightly.zip FluidCorpusManipulation
-        working-directory: install
-          
+      - name: sign binaries
+        uses: flucoma/actions/distribution@main
+        with:
+          glob: '-e scx'
+          package: 'install'
+          output_type: 'dmg'
+          output: FluCoMa-SC-Mac
+          cert: ${{ secrets.CERT }}
+          certpwd: ${{ secrets.CERTPWD }}
+          teamid: ${{ secrets.WWDRTEAMID }}
+          apppwd: ${{ secrets.APPSTORECONNECTPWD }}
+          appusr: ${{ secrets.APPSTORECONNECTUSERNAME }}
+
       - uses: actions/upload-artifact@v2
         with:
           name: macbuild
-          path: install/FluCoMa-SC-Mac-nightly.zip
-
+          path: install/FluCoMa-SC-Mac.dmg
 
   winbuild:
     runs-on: windows-latest
