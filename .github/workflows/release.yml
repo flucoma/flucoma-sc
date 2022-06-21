@@ -1,33 +1,42 @@
-name: Release
+name: release
 
 on:
   workflow_dispatch:
 
 jobs:
   macbuild:
-    runs-on: macos-11
+    runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: flucoma/actions/env@v5
-      - uses: flucoma/actions/sc@v5
+      - uses: actions/checkout@v3
+      - uses: flucoma/actions/env@main
+      - uses: flucoma/actions/sc@main
         with: 
           branch: origin/main
 
-      - name: compress archive
-        run: zip -r FluCoMa-SC-Mac.zip FluidCorpusManipulation
-        working-directory: install
+      - name: sign binaries
+        uses: flucoma/actions/distribution@main
+        with:
+          glob: '-e scx'
+          package: 'install'
+          output_type: 'dmg'
+          output: FluCoMa-SC-Mac
+          cert: ${{ secrets.CERT }}
+          certpwd: ${{ secrets.CERTPWD }}
+          teamid: ${{ secrets.WWDRTEAMID }}
+          apppwd: ${{ secrets.APPSTORECONNECTPWD }}
+          appusr: ${{ secrets.APPSTORECONNECTUSERNAME }}
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: macbuild
-          path: install/FluCoMa-SC-Mac.zip
+          path: install/FluCoMa-SC-Mac.dmg
 
   winbuild:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: flucoma/actions/env@v5
-      - uses: flucoma/actions/sc@v5
+      - uses: actions/checkout@v3
+      - uses: flucoma/actions/env@main
+      - uses: flucoma/actions/sc@main
         with: 
           branch: origin/main
 
@@ -38,19 +47,19 @@ jobs:
         run: 7z a FluCoMa-SC-Windows.zip FluidCorpusManipulation
         working-directory: install
 
-      - uses: actions/upload-artifact@v2 
+      - uses: actions/upload-artifact@v3 
         with: 
           name: winbuild
           path: install/FluCoMa-SC-Windows.zip 
 
   linuxbuild:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.get-version.outputs.version }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: flucoma/actions/env@v5
-      - uses: flucoma/actions/sc@v5
+      - uses: actions/checkout@v3
+      - uses: flucoma/actions/env@main
+      - uses: flucoma/actions/sc@main
         with: 
           branch: origin/main
 
@@ -58,7 +67,7 @@ jobs:
         run: tar -zcvf FluCoMa-SC-Linux.tar.gz FluidCorpusManipulation
         working-directory: install
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: linuxbuild 
           path: install/FluCoMa-SC-Linux.tar.gz
