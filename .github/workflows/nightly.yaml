@@ -5,6 +5,10 @@ on:
   push:
     branches: [ dev, ci/** ]
 
+concurrency:
+  group: environment-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   macbuild:
     runs-on: macos-latest
