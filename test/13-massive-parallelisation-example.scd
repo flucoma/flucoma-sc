@@ -297,7 +297,7 @@ FluidBufMelBands.process(s, ~inBuf, features: ~inBufMels, action: {
 		FluidBufFlatten.process(s, ~inBufStats, destination:~inBufFlat, action: {
 			FluidBufCompose.process(s, ~inBufFlat, numFrames: ~numMelBands, destination: ~inBufComp, action: {
 				~standardizer.transformPoint(~inBufComp, ~inBufStand, {
-					~tree.kNearest(~inBufStand,{ |a|a.postln;~nearest = a;})
+					~tree.kNearest(~inBufStand,action:{ |a|a.postln;~nearest = a;})
 				})
 			})
 		})

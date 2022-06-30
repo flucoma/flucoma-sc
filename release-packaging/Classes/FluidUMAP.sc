@@ -63,10 +63,7 @@ FluidUMAP : FluidModelObject {
         this.prSendMsg(this.transformPointMsg(sourceBuffer,destBuffer));
     }
 
-	kr{|trig, inputBuffer,outputBuffer,numDimensions|
-
-        numDimensions = numDimensions ? this.numDimensions;
-        this.numDimensions_(numDimensions);
+	kr{|trig, inputBuffer,outputBuffer|
 
         ^FluidUMAPQuery.kr(trig,
             this,

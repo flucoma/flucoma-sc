@@ -5,6 +5,10 @@ FluidBufOnsetFeature : FluidBufProcessor {
 
         source = source.asUGenInput;
         features = features.asUGenInput;
+        metric = FluidOnsetSlice.prSelectMetric(metric) ?? {
+            ("FluidBufOnsetSlice: % is not a recognised metric")
+            .format(metric).throw;
+        };
 
         source.isNil.if {"FluidBufOnsetFeature:  Invalid source buffer".throw};
         features.isNil.if {"FluidBufOnsetFeature:  Invalid features buffer".throw};
@@ -18,6 +22,11 @@ FluidBufOnsetFeature : FluidBufProcessor {
 
         source = source.asUGenInput;
         features = features.asUGenInput;
+        metric = FluidOnsetSlice.prSelectMetric(metric);
+	if (metric.isNil or: metric.isUGen) {
+            ("FluidBufOnsetSlice: % is not a recognised metric")
+            .format(metric).throw;
+        };
 
         source.isNil.if {"FluidBufOnsetFeature:  Invalid source buffer".throw};
         features.isNil.if {"FluidBufOnsetFeature:  Invalid features buffer".throw};
@@ -35,6 +44,11 @@ FluidBufOnsetFeature : FluidBufProcessor {
 
         source = source.asUGenInput;
         features = features.asUGenInput;
+        metric = FluidOnsetSlice.prSelectMetric(metric);
+	if (metric.isNil or: metric.isUGen) {
+            ("FluidBufOnsetSlice: % is not a recognised metric")
+            .format(metric).throw;
+        };
 
         source.isNil.if {"FluidBufOnsetFeature:  Invalid source buffer".throw};
         features.isNil.if {"FluidBufOnsetFeature:  Invalid features buffer".throw};

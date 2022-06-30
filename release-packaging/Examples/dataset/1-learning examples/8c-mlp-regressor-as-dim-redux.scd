@@ -74,8 +74,6 @@ FluidBufMelBands.process(s,~audio, features: ~melfeatures,action: {\done.postln;
 
 //prepare the normalizers and the neural net for inverse query
 (
-~normalView.invert = 1;
-~normalizer.invert = 1;
 ~mlp.tapIn = 2;
 ~mlp.tapOut = -1;
 )
@@ -114,9 +112,9 @@ v.mouseMoveAction = {|view, x, y|
 		~kdtree.kNearest(~queryPoint, action: {|nearest| //retrieve the nearest point
 			~norm.getPoint(nearest, ~dpN, action: { //get the normalised 40d
 				~raw.getPoint(nearest, ~datapoint, action: { // get the original 40d
-					~normalView.transformPoint(~queryPoint, ~dQueryPoint, action: { //denormalise the 2d coordinate to get the right range of values for the MLP
+					~normalView.inverseTransformPoint(~queryPoint, ~dQueryPoint, action: { //denormalise the 2d coordinate to get the right range of values for the MLP
 						~mlp.predictPoint(~dQueryPoint, ~dpMLPn, action:  { //predict from the middle (2d) to the normalised output (40d)
-							~normalizer.transformPoint(~dpMLPn, ~dpMLP, action:  { //denormalised the 40d
+							~normalizer.inverseTransformPoint(~dpMLPn, ~dpMLP, action:  { //denormalised the 40d
 								~datapoint.getn(0,40,{|x|~arrayRawN = x; //retrieve the nearest
 									~dpN.getn(0,40,{|x|~arrayRawNn = x; // retrieve the normalised nearest
 										~dpMLPn.getn(0,40,{|x|~arrayMLPn = x; //retrieve the predicted normalised 40d
