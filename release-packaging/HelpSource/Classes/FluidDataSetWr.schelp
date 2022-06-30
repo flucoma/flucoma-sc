@@ -1,7 +1,7 @@
 TITLE:: FluidDataSetWr
 summary:: Write to FluidDataSet on the server
 categories:: Libraries>FluidCorpusManipulation
-related:: Classes/FLuidDataSet
+related:: Classes/FluidDataSet
 
 DESCRIPTION::
 A UGen that adds data points with associated identifiers to a link::Classes/FluidDataSet:: Internally, this calls code::setPoint::, so IDs that already exist will be overwritten, and new IDs will be added. The actual work is done on the server's command queue, rather than the real-thread.
@@ -21,10 +21,10 @@ CLASSMETHODS::
 private:: *new1
 
 METHOD:: kr
-The equivalent of calling link::Classes/FluidDataSet#-addPoint::, but within a link::Classes/Synth::
+The equivalent of calling link::Classes/FluidDataSet#-setPoint::, but within a link::Classes/Synth::
 
 ARGUMENT:: dataset
-An instance of link::Classes/FluidDataSet:: or an instance's name.
+An instance of link::Classes/FluidDataSet::
 
 ARGUMENT:: idPrefix
 A string or symbol with a prefix for generated identifiers.
@@ -67,58 +67,38 @@ s.reboot;
 (
 ~ds.clear;
 OSCFunc({
-    "FluidDataSetWr help: all points written".postln;
-    ~ds.print
+	"FluidDataSetWr help: all points written".postln;
+	~ds.print
 },'/datasetwrdone').oneShot;
 
-{  |n|
-	var b = LocalBuf.newFrom([0,1,2,3]);
-    var trig = Impulse.kr(ControlRate.ir / 8);
-    var idx = Stepper.kr(trig,min:-1, max:n); //we need to start at -1 to catch the first increment
-	4.collect{|i| BufWr.kr([(4 * idx) + i],b,i)};
-    FluidDataSetWr.kr(~ds,idNumber:idx,buf:b,trig:trig);
-    SendReply.kr(idx >= (n-1), '/datasetwrdone');
-    FreeSelf.kr(idx >= (n-1));
-}.play(s,args:[n:100]);
+{
+	arg n;
+	var buf = LocalBuf(4);
+	var trig = Impulse.kr(ControlRate.ir / 8); // can't go any faster
+	var idx = Stepper.kr(trig,min:-1, max:n); //we need to start at -1 to catch the first increment
+
+	FluidKrToBuf.kr((idx * 4) + [0,1,2,3],buf);
+	FluidDataSetWr.kr(~ds,"point-",idNumber:idx,buf:buf,trig:trig);
+	SendReply.kr(idx >= (n-1), '/datasetwrdone');
+	FreeSelf.kr(idx >= (n-1));
+}.play(args:[\n,100]);
 )
+::
 
-//it printed with the return function
+strong::incremental buffer writing - sky is the limit::
+code::
 
-//Again, but as fast as possible using a feedback of the trigger we are given when the writing is done
-(
-~ds.clear;
-OSCFunc({
-    "FluidDataSetWr help: all points written".postln;
-    ~ds.print
-},'/datasetwrdone').oneShot;
-
-{  |n|
-    var b = LocalBuf.newFrom([0,1,2,3]);
-    var trig = LocalIn.kr(1,1);
-    var idx = Stepper.kr(trig,min:-1, max:n);
-    var wr = FluidDataSetWr.kr(~ds,idNumber:idx,buf:b,trig:trig);
-    4.collect{|i| BufWr.kr([(4 * idx) + i],b,i)};
-    LocalOut.kr(Done.kr(wr));
-    SendReply.kr(idx >= (n-1), '/datasetwrdone');
-    FreeSelf.kr(idx >= (n-1));
-}.play(s,args:[n:100]);
-)
-
-// incremental buffer writing - sky is the limit
-~ds.clear
 
 // start the entry maker, trigging twice a second
 (
+~ds.clear;
 {
-	var buf = LocalBuf.newFrom([0,1,2,3]);
-	var noise = 4.collect{WhiteNoise.kr()};
-	var trig = Impulse.kr(2);
-	var count = PulseCount.kr(trig);
-	4.do{|i|
-		BufWr.kr(noise[i], buf, DC.kr(i));
-	};
-	FluidDataSetWr.kr(~ds, idNumber: count, trig: trig, buf:buf);
-}.play(s);
+	var buf = LocalBuf(4);
+	var trig = Impulse.kr(30);
+	var count = PulseCount.kr(trig) - 1;
+	FluidKrToBuf.kr(WhiteNoise.kr(1.dup(4)),buf);
+	FluidDataSetWr.kr(~ds,"point-",idNumber: count, trig: trig, buf:buf);
+}.play;
 )
 
 //print a few times
@@ -132,18 +112,24 @@ OSCFunc({
 ~ds.print;
 ~ds.clear
 
-// circular writing
+::
+strong::circular writing::
+Each time link::Classes/FluidDataSetWr:: is triggered it is like the link::Classes/FluidDataSet#-setPoint:: method so if the identifier does not exist it creates it. If the identifier does it exist then it updates it with the new values.
+
+By looping code::idNumber:: values, we can use a link::Classes/FluidDataSet:: similar to a "circle buffer", always have the most recent code::n:: points in it that we want.
+
+code::
+
+// always have only the most recent 10 points in the buffer
 (
 {
 	var buf = LocalBuf.newFrom([0,1,2,3]);
-	var noise = 4.collect{WhiteNoise.kr()};
+	var noise = WhiteNoise.kr(1.dup(4)) + Sweep.kr(1,1);
 	var trig = Impulse.kr(2);
 	var count = Stepper.kr(trig, min: 0, max: 9, resetval: -1); //0 to 9, starting at -1 to catch the first entry
-	4.do{|i|
-		BufWr.kr(noise[i], buf, DC.kr(i));
-	};
-	FluidDataSetWr.kr(~ds, idNumber: count, trig: trig, buf:buf);
-}.play(s);
+	FluidKrToBuf.kr(noise,buf);
+	FluidDataSetWr.kr(~ds, "point-",idNumber: count, trig: trig, buf:buf);
+}.play;
 )
 
 //print regularly to see a specific identifier being overwritten
