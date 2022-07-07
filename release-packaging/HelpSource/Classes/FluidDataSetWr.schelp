@@ -89,7 +89,7 @@ strong::incremental buffer writing - sky is the limit::
 code::
 
 
-// start the entry maker, trigging twice a second
+// start the entry maker, trigging 30 times per second
 (
 ~ds.clear;
 {
@@ -113,12 +113,15 @@ code::
 ~ds.clear
 
 ::
-strong::circular writing::
+strong::Circular Writing::
+
 Each time link::Classes/FluidDataSetWr:: is triggered it is like the link::Classes/FluidDataSet#-setPoint:: method so if the identifier does not exist it creates it. If the identifier does it exist then it updates it with the new values.
 
 By looping code::idNumber:: values, we can use a link::Classes/FluidDataSet:: similar to a "circle buffer", always have the most recent code::n:: points in it that we want.
 
 code::
+
+~ds.clear;
 
 // always have only the most recent 10 points in the buffer
 (
@@ -134,6 +137,6 @@ code::
 
 //print regularly to see a specific identifier being overwritten
 ~ds.print;
-~ds.clear
+~ds.clear;
 
 ::
