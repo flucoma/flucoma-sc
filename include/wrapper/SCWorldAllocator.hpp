@@ -14,6 +14,7 @@
 #include <limits>
 #include <new>
 
+
 namespace fluid {
 
 template <typename T, typename Wrapper>
@@ -57,4 +58,34 @@ public:
     if (mWorld && mInterface) mInterface->fRTFree(mWorld, p);
   }
 };
+
+//foonathan::memory RawAllocator with SC rtalloc
+struct SCRawAllocator
+{
+    using is_stateful = std::true_type;
+    
+    SCRawAllocator(World* w, InterfaceTable* interface)
+      : mWorld{w}, mInterface{interface}
+    {}
+    
+    void* allocate_node(std::size_t size, std::size_t)
+    {
+        if(auto res = mInterface->fRTAlloc(mWorld,size))
+        {
+//           std::cout << "Allocated " << res << " with " << size << '\n';
+           return res;
+        }
+        throw std::bad_alloc();
+    }
+    
+    void deallocate_node(void* node, std::size_t size, std::size_t) noexcept
+    {
+      mInterface->fRTFree(mWorld, node);
+//      std::cout << "Freed " << node << " with " << size << '\n';
+    }
+private:
+  World* mWorld;
+  InterfaceTable* mInterface;
+};
+
 } // namespace fluid

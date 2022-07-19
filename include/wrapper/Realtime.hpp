@@ -3,6 +3,8 @@
 #include "ArgsFromClient.hpp"
 #include "Meta.hpp"
 #include "RealTimeBase.hpp"
+#include "SCWorldAllocator.hpp"
+#include <memory/tracking.hpp>
 #include <clients/common/FluidBaseClient.hpp>
 #include <SC_PlugIn.hpp>
 
@@ -53,8 +55,12 @@ public:
   }
 
   RealTime()
-    : mControls{mInBuf + ControlOffset(this),ControlSize(this)},
-      mClient{Wrapper::setParams(this, mParams, mControls,true)}
+    :
+      mSCAlloc{mWorld, Wrapper::getInterfaceTable()},
+      mAlloc{foonathan::memory::make_allocator_reference(mSCAlloc)},
+      mCtx{fullBufferSize(), mAlloc},
+      mControls{mInBuf + ControlOffset(this),ControlSize(this)},
+      mClient{Wrapper::setParams(this, mParams, mControls,true),mCtx}
   {
     init();
   }
@@ -117,6 +123,9 @@ public:
     mDelegate.next(*this,mClient,mParams,mControls);
   }
 private:
+  SCRawAllocator mSCAlloc;
+  Allocator mAlloc;
+  FluidContext mCtx;
   Delegate mDelegate;
   FloatControlsIter   mControls;
   Params mParams{Client::getParameterDescriptors()};
