@@ -1,6 +1,8 @@
 #pragma once 
 
 #include "Meta.hpp"
+#include <data/FluidMemory.hpp>
+
 
 namespace fluid {
 namespace client {
@@ -40,6 +42,7 @@ struct ParamReader<impl::FloatControlsIter>
 
   using Controls = impl::FloatControlsIter;
 
+  /// todo: fix std::string to use a specialisation with RT alloc
   static auto fromArgs(Unit* /*x*/, Controls& args, std::string, int)
   {
     // first is string size, then chars
@@ -57,7 +60,8 @@ struct ParamReader<impl::FloatControlsIter>
       using Container = typename LongArrayT::type;
       using Value = typename Container::type;
       index size = static_cast<index>(args.next());
-      Container res(size);
+      /// todo: fix allocator
+      Container res(size, FluidDefaultAllocator());
       for (index i = 0; i < size; ++i)
         res[i] = static_cast<Value>(args.next());
       return res;
@@ -285,7 +289,7 @@ struct ParamReader<sc_msg_iter>
       using Container = typename LongArrayT::type;
       using Value = typename Container::type;
       index size = static_cast<index>(args.geti());
-      Container res(size);
+      Container res(size, FluidDefaultAllocator());
       for (index i = 0; i < size; ++i)
         res[i] = static_cast<Value>(args.geti());
       return res;

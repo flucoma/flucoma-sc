@@ -46,7 +46,7 @@ public:
 
   static constexpr auto &getParameterDescriptors() { return DataSetWrParams; }
 
-  DataSetWriterClient(ParamSetViewType &p) : mParams(p) {}
+  DataSetWriterClient(ParamSetViewType &p, FluidContext&) : mParams(p) {}
 
   template <typename T> Result process(FluidContext &) {
     auto dataset = get<kDataSet>().get();

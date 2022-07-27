@@ -78,7 +78,7 @@ struct SCRawAllocator
         throw std::bad_alloc();
     }
     
-    void deallocate_node(void* node, std::size_t size, std::size_t) noexcept
+    void deallocate_node(void* node, std::size_t /*size*/, std::size_t) noexcept
     {
       mInterface->fRTFree(mWorld, node);
 //      std::cout << "Freed " << node << " with " << size << '\n';

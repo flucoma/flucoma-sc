@@ -42,7 +42,7 @@ private:
   /// Instance cache
   struct CacheEntry
   {
-    CacheEntry(const Params& p) : mParams{p}, mClient{mParams} {}
+    CacheEntry(const Params& p, FluidContext c) : mParams{p}, mClient{mParams, c} {}
 
     Params            mParams;
     Client            mClient;
@@ -151,11 +151,11 @@ public:
     return lookup == mCache.end() ? WeakCacheEntryPointer() : lookup->second;
   }
 
-  static WeakCacheEntryPointer add(World* world, index id, const Params& params)
+  static WeakCacheEntryPointer add(World* world, index id, const Params& params, FluidContext context)
   {
     if (isNull(get(id)))
     {
-      auto result = mCache.emplace(id, std::make_shared<CacheEntry>(params));
+      auto result = mCache.emplace(id, std::make_shared<CacheEntry>(params, context));
 
       addToRTCache{}(world, *(result.first));
 
@@ -281,7 +281,7 @@ private:
 
       if (!constraintsRes.ok()) Wrapper::printResult(w, constraintsRes);
 
-      mResult = (!isNull(add(w, NRTCommand::mID, mParams)));
+      mResult = (!isNull(add(w, NRTCommand::mID, mParams, FluidContext())));
 
       // Sigh. The cache entry above has both the client instance and main
       // params instance.
@@ -810,7 +810,6 @@ private:
   template <typename Command>
   static void defineNRTCommand()
   {
-    auto ft = getInterfaceTable();
     auto commandRunner = [](World* world, void*, struct sc_msg_iter* args,
                             void* replyAddr) {
       auto     ft = getInterfaceTable();

@@ -1,6 +1,8 @@
 #pragma once
 
+#include <data/FluidMemory.hpp>
 #include <SC_PlugIn.hpp>
+
 
 namespace fluid {
 namespace client {
@@ -80,8 +82,9 @@ struct RealTimeBase
         std::forward<Result&>(countScan));
     return countScan;
   }
+    
 
-  void init(SCUnit& unit, Client& client, FloatControlsIter& controls)
+  void init(SCUnit& unit, Client& client, FloatControlsIter& controls, Allocator& alloc)
   {
     assert(!(client.audioChannelsOut() > 0 &&
              client.controlChannelsOut().count > 0) &&
@@ -89,7 +92,7 @@ struct RealTimeBase
     client.sampleRate(unit.fullSampleRate());
     mInputConnections.reserve(asUnsigned(client.audioChannelsIn()));
     mOutputConnections.reserve(asUnsigned(client.audioChannelsOut()));
-
+    mContext = FluidContext(unit.fullBufferSize(), alloc); 
     Result r;
     if (!(r = expectedSize(controls)).ok())
     {
@@ -221,11 +224,11 @@ private:
   std::vector<HostVector> mOutputs;
   FluidTensor<float, 1>   mControlInputBuffer;
   FluidTensor<float, 1>   mControlOutputBuffer;
-  FluidContext            mContext;
   bool                    mPrevTrig;
   IOMapFn                 mInputMapper;
   IOMapFn                 mOutMapperPre;
   IOMapFn                 mOutMapperPost;
+  FluidContext            mContext;
 };
 } // namespace impl
 } // namespace client

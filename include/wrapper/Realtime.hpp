@@ -4,7 +4,6 @@
 #include "Meta.hpp"
 #include "RealTimeBase.hpp"
 #include "SCWorldAllocator.hpp"
-#include <memory/tracking.hpp>
 #include <clients/common/FluidBaseClient.hpp>
 #include <SC_PlugIn.hpp>
 
@@ -58,9 +57,9 @@ public:
     :
       mSCAlloc{mWorld, Wrapper::getInterfaceTable()},
       mAlloc{foonathan::memory::make_allocator_reference(mSCAlloc)},
-      mCtx{fullBufferSize(), mAlloc},
+      mContext{fullBufferSize(), mAlloc},
       mControls{mInBuf + ControlOffset(this),ControlSize(this)},
-      mClient{Wrapper::setParams(this, mParams, mControls,true),mCtx}
+      mClient{Wrapper::setParams(this, mParams, mControls,true), mContext}
   {
     init();
   }
@@ -69,7 +68,7 @@ public:
   {
 //    auto& client = mClient;
   
-    mDelegate.init(*this,mClient,mControls);
+    mDelegate.init(*this,mClient,mControls,mAlloc);
     mCalcFunc = make_calc_function<RealTime, &RealTime::next>();
     Wrapper::getInterfaceTable()->fClearUnitOutputs(this, 1);
 
@@ -125,7 +124,7 @@ public:
 private:
   SCRawAllocator mSCAlloc;
   Allocator mAlloc;
-  FluidContext mCtx;
+  FluidContext mContext; 
   Delegate mDelegate;
   FloatControlsIter   mControls;
   Params mParams{Client::getParameterDescriptors()};
