@@ -58,7 +58,7 @@ FluidWaveformIndicesLayer : FluidViewer {
 
 	draw {
 		var userView;
-		var condition = CondVar();
+		var condition = Condition();
 		var slices_fa = nil;
 
 		var numChannels = indicesBuffer.numChannels;
@@ -81,9 +81,10 @@ FluidWaveformIndicesLayer : FluidViewer {
 			indicesBuffer.loadToFloatArray(action: {
 				arg v;
 				slices_fa = v;
-				condition.signalOne;
+				condition.test = true;
+				condition.signal;
 			});
-			condition.wait { slices_fa.notNil };
+			condition.wait;
 
 			userView.drawFunc = numChannels.switch(
 				1, {{
@@ -132,7 +133,7 @@ FluidWaveformFeaturesLayer : FluidViewer {
 
 	draw {
 		var userView = UserView();
-		var condition = CondVar();
+		var condition = Condition();
 		var fa = nil;
 
 		forkIfNeeded({
@@ -141,9 +142,10 @@ FluidWaveformFeaturesLayer : FluidViewer {
 			featuresBuffer.loadToFloatArray(action:{
 				arg v;
 				fa = v;
-				condition.signalOne
+				condition.test = true;
+				condition.signal;
 			});
-			condition.wait { fa.notNil };
+			condition.wait;
 
 			if(normalizeFeaturesIndependently.not,{
 				minVal = fa.minItem;
@@ -209,7 +211,7 @@ FluidWaveformImageLayer {
 
 	draw {
 		var colors = this.prGetColorsFromScheme(imageColorScheme);
-		var condition = CondVar();
+		var condition = Condition();
 		var vals = nil;
 		var userView = UserView();
 
@@ -218,9 +220,10 @@ FluidWaveformImageLayer {
 			imageBuffer.loadToFloatArray(action: {
 				arg v;
 				vals = v;
-				condition.signalOne;
+				condition.test = true;
+				condition.signal;
 			});
-			condition.wait { vals.notNil };
+			condition.wait;
 
 			imageColorScaling.switch(
 				FluidWaveform.lin,{
