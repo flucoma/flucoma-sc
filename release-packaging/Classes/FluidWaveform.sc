@@ -145,7 +145,7 @@ FluidWaveformFeaturesLayer : FluidViewer {
 				condition.test = true;
 				condition.signal;
 			});
-			condition.wait
+			condition.wait;
 
 			if(normalizeFeaturesIndependently.not,{
 				minVal = fa.minItem;
