@@ -23,6 +23,21 @@ INSTANCEMETHODS::
 ​
 PRIVATE:: init,id,cache
 
+
+METHOD:: write
+Write data set as json file.
+ARGUMENT:: filename
+The file to save into.
+ARGUMENT:: action
+A function to run when the operation completes.
+
+METHOD:: read
+Read data set as json file.
+ARGUMENT:: filename
+The file to read from.
+ARGUMENT:: action
+A function to run when the operation completes.
+
 METHOD:: addPoint
 Add a new point to the FluidDataSet. The dimensionality of the FluidDataSet is governed by the size of the first point added. If the identifier already exists, or if the size of the data does not match the dimensionality of the FluidDataSet an error will be reported.
 Will report an error if the identifier already exists, or if the size of the data does not match the dimensionality of the DataSet.
