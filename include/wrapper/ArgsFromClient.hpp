@@ -2,7 +2,7 @@
 
 #include "Meta.hpp"
 #include <data/FluidMemory.hpp>
-
+#include <charconv> 
 
 namespace fluid {
 namespace client {
@@ -43,7 +43,10 @@ struct ParamReader<impl::FloatControlsIter>
   using Controls = impl::FloatControlsIter;
 
   /// todo: fix std::string to use a specialisation with RT alloc
-  static auto fromArgs(Unit* /*x*/, Controls& args, std::string, int)
+  template <typename Alloc>
+  static auto
+  fromArgs(Unit* /*x*/, Controls& args,
+           std::basic_string<char, std::char_traits<char>, Alloc> const&, int)
   {
     // first is string size, then chars
     index size = static_cast<index>(args.next());
@@ -53,7 +56,7 @@ struct ParamReader<impl::FloatControlsIter>
       res[asUnsigned(i)] = static_cast<char>(args.next());
     return res;
   }
-  
+
   static auto fromArgs(Unit*, Controls& args,typename LongArrayT::type&, int)
   {
       //first is array size, then items
@@ -229,7 +232,8 @@ struct ParamReader<sc_msg_iter>
     return argTypeOK(T{},tag);
   }
   
-  static auto fromArgs(World*, sc_msg_iter& args, std::string, int)
+  template<typename Alloc>
+  static auto fromArgs(World*, sc_msg_iter& args, std::basic_string<char,std::char_traits<char>,Alloc> const&, int)
   {
     const char* recv = args.gets("");
 
@@ -329,14 +333,14 @@ struct ClientParams{
 
     template<typename Context, typename Client = typename Wrapper::Client, size_t Number = N>
     std::enable_if_t<!impl::IsNamedShared_v<Client> || Number!=0, typename T::type>
-    operator()(Context* x, ArgType& args)
+    operator()(Context* x, ArgType& args, Allocator& alloc)
     {
       // Just return default if there's nothing left to grab
       if (args.remain() == 0)
       {
         std::cout << "WARNING: " << Wrapper::getName()
                   << " received fewer parameters than expected\n";
-        return Wrapper::Client::getParameterDescriptors().template makeValue<N>();
+        return Wrapper::Client::getParameterDescriptors().template makeValue<N>(alloc);
       }
 
       ParamLiteralConvertor<T, argSize> a;
@@ -352,18 +356,21 @@ struct ClientParams{
     
     template<typename Context, typename Client = typename Wrapper::Client, size_t Number = N>
     std::enable_if_t<impl::IsNamedShared_v<Client> && Number==0, typename T::type>
-    operator()(Context* x, ArgType& args)
+    operator()(Context* x, ArgType& args, Allocator& alloc)
     {
       // Just return default if there's nothing left to grab
       if (args.remain() == 0)
       {
         std::cout << "WARNING: " << Wrapper::getName()
                   << " received fewer parameters than expected\n";
-        return Wrapper::Client::getParameterDescriptors().template makeValue<N>();
+        return Wrapper::Client::getParameterDescriptors().template makeValue<N>(alloc);
       }
       
       index id = ParamReader<ArgType>::fromArgs(x,args,index{},0);
-      return std::to_string(id); 
+      std::array<char, 19> str;
+      auto [ptr, e] = std::to_chars(str.data(), str.data() + str.size(), id);
+      return rt::string(
+          std::string_view(str.data(), asUnsigned(ptr - str.data())), alloc);
     }
   };
   

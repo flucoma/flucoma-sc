@@ -51,7 +51,7 @@ public:
   template <typename T> Result process(FluidContext &) {
     auto dataset = get<kDataSet>().get();
     if (auto datasetPtr = dataset.lock()) {
-      std::string &idPrefix = get<kIDPrefix>();
+      std::string idPrefix = std::string(get<kIDPrefix>());
       auto &idNumberArr = get<kIDNumber>();
       if (idNumberArr.size() != 2)
         return {Result::Status::kError, "ID number malformed"};

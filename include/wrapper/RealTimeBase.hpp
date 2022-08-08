@@ -2,7 +2,7 @@
 
 #include <data/FluidMemory.hpp>
 #include <SC_PlugIn.hpp>
-
+#include <Eigen/Core>
 
 namespace fluid {
 namespace client {
@@ -198,16 +198,19 @@ struct RealTimeBase
   }
 
   void next(SCUnit& unit, Client& client, Params& params,
-            FloatControlsIter& controls, bool updateParams = true)
+            FloatControlsIter& controls, Allocator& alloc,
+            bool updateParams = true)
   {
     bool trig =
         IsModel_t<Client>::value ? !mPrevTrig && unit.in0(0) > 0 : false;
 
     mPrevTrig = trig;
-
+    #ifdef EIGEN_RUNTIME_NO_MALLOC
+    Eigen::internal::set_is_malloc_allowed(false);
+    #endif
     if (updateParams)
     {
-      Wrapper::setParams(&unit, params, controls);
+      Wrapper::setParams(&unit, params, controls, alloc);
       params.constrainParameterValuesRT(nullptr);
     }
 
@@ -215,6 +218,9 @@ struct RealTimeBase
     (this->*mOutMapperPre)(unit, client);
     client.process(mAudioInputs, mOutputs, mContext);
     (this->*mOutMapperPost)(unit, client);
+    #ifdef EIGEN_RUNTIME_NO_MALLOC
+    Eigen::internal::set_is_malloc_allowed(true); //not really
+    #endif
   }
 
 private:

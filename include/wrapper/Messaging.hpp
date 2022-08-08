@@ -154,7 +154,7 @@ public:
 
   static void refreshParams(Params& p, MessageResult<ParamValues>& r)
   {
-    p.fromTuple(ParamValues(r));
+    p.fromTuple(r.value());
   }
   
   template<typename T>
@@ -253,7 +253,7 @@ public:
   template <typename T> // call from RT
   static void messageOutput(const std::string& s, index id, MessageResult<T>& result, void* replyAddr)
   {
-    index  numTags = ToOSCTypes<small_scpacket>::numTags(static_cast<T>(result));
+    index  numTags = ToOSCTypes<small_scpacket>::numTags(result.value());
     if(numTags > 2048)
     {
       std::cout << "ERROR: Message response too big to send (" << asUnsigned(numTags) * sizeof(float) << " bytes)." << std::endl;
@@ -290,9 +290,7 @@ public:
   template <typename... Ts>
   static void messageOutput(const std::string& s, index id, MessageResult<std::tuple<Ts...>>& result, void* replyAddr)
   {
-    using T = std::tuple<Ts...>;
-    
-    index  numTags = ToOSCTypes<small_scpacket>::numTags(static_cast<T>(result));
+    index  numTags = ToOSCTypes<small_scpacket>::numTags(result.value());
     if(numTags > 2048)
     {
       std::cout << "ERROR: Message response too big to send (" << asUnsigned(numTags) * sizeof(float) << " bytes)." << std::endl;
@@ -304,10 +302,10 @@ public:
     packet.maketags(static_cast<int>(numTags + 2));
     packet.addtag(',');
     packet.addtag('i');
-    ToOSCTypes<small_scpacket>::getTag(packet,static_cast<T>(result));
+    ToOSCTypes<small_scpacket>::getTag(packet,result.value());
     
     packet.addi(static_cast<int>(id));
-    ToOSCTypes<small_scpacket>::convert(packet, static_cast<T>(result));
+    ToOSCTypes<small_scpacket>::convert(packet, result.value());
     
     if(replyAddr)
       SendReply(replyAddr,packet.data(),static_cast<int>(packet.size()));
