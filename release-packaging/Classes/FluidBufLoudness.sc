@@ -29,8 +29,8 @@ FluidBufLoudness : FluidBufProcessor{
         source = source.asUGenInput;
         features = features.asUGenInput;
 
-        source.isNil.if {"FluidBufPitch:  Invalid source buffer".throw};
-        features.isNil.if {"FluidBufPitch:  Invalid features buffer".throw};
+        source.isNil.if {"%:  Invalid source buffer".format(this.class.name).throw};
+        features.isNil.if {"%:  Invalid features buffer".format(this.class.name).throw};
 
         ^FluidProxyUgen.kr(\FluidBufLoudnessTrigger, -1, source, startFrame, numFrames, startChan, numChans, features, padding, selectbits, kWeighting, truePeak, windowSize, hopSize, maxwindowSize, trig, blocking);
     }
@@ -44,8 +44,8 @@ FluidBufLoudness : FluidBufProcessor{
         source = source.asUGenInput;
         features = features.asUGenInput;
 
-        source.isNil.if {"FluidBufPitch:  Invalid source buffer".throw};
-        features.isNil.if {"FluidBufPitch:  Invalid features buffer".throw};
+        source.isNil.if {"%:  Invalid source buffer".format(this.class.name).throw};
+        features.isNil.if {"%:  Invalid features buffer".format(this.class.name).throw};
 
 		^this.new(
 			server, nil, [features]
@@ -63,8 +63,8 @@ FluidBufLoudness : FluidBufProcessor{
         source = source.asUGenInput;
         features = features.asUGenInput;
 
-        source.isNil.if {"FluidBufPitch:  Invalid source buffer".throw};
-        features.isNil.if {"FluidBufPitch:  Invalid features buffer".throw};
+        source.isNil.if {"%:  Invalid source buffer".format(this.class.name).throw};
+        features.isNil.if {"%:  Invalid features buffer".format(this.class.name).throw};
 
 		^this.new(
 			server, nil, [features]

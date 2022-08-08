@@ -2,9 +2,6 @@ FluidBufSTFT : FluidBufProcessor {
 
     *kr  { |source, startFrame = 0, numFrames = -1, startChan = 0, magnitude, phase, resynth, inverse = 0,windowSize = 1024, hopSize = -1, fftSize = -1, padding = 1, trig = 1, blocking = 1|
 
-        // source = source.asUGenInput;
-
-        // source.isNil.if {"FluidBufScale:  Invalid source buffer".throw};
         source = source ? -1;
         magnitude = magnitude ? -1;
         phase = phase ? -1;
@@ -15,9 +12,6 @@ FluidBufSTFT : FluidBufProcessor {
 
 	*process { |server, source, startFrame = 0, numFrames = -1, startChan = 0, magnitude, phase, resynth, inverse = 0, windowSize = 1024, hopSize = -1, fftSize = -1, padding = 1, freeWhenDone = true, action|
 
-        // source = source.asUGenInput;
-
-        // source.isNil.if {"FluidBufSTFT:  Invalid source buffer".throw};
         source = source ? -1;
         magnitude = magnitude ? -1;
         phase = phase ? -1;
@@ -32,7 +26,6 @@ FluidBufSTFT : FluidBufProcessor {
 
     *processBlocking { |server, source, startFrame = 0, numFrames = -1, startChan = 0, magnitude, phase, resynth, inverse = 0, windowSize = 1024, hopSize = -1, fftSize = -1, padding = 1,freeWhenDone = true, action|
 
-        // source = source.asUGenInput;
         source = source ? -1;
         magnitude = magnitude ? -1;
         phase = phase ? -1;
