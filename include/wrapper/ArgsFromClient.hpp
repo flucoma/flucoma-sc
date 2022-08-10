@@ -2,7 +2,7 @@
 
 #include "Meta.hpp"
 #include <data/FluidMemory.hpp>
-#include <charconv> 
+#include <fmt/format.h>
 
 namespace fluid {
 namespace client {
@@ -367,10 +367,14 @@ struct ClientParams{
       }
       
       index id = ParamReader<ArgType>::fromArgs(x,args,index{},0);
-      std::array<char, 19> str;
-      auto [ptr, e] = std::to_chars(str.data(), str.data() + str.size(), id);
-      return rt::string(
-          std::string_view(str.data(), asUnsigned(ptr - str.data())), alloc);
+      using StdAlloc = foonathan::memory::std_allocator<char, Allocator>;
+      using fmt_memory_buffer =
+          fmt::basic_memory_buffer<char, fmt::inline_buffer_size, StdAlloc>;
+      auto             buf = fmt_memory_buffer(alloc);
+      std::string_view fmt_string("{}");
+      fmt::vformat_to(std::back_inserter(buf), fmt_string,
+                      fmt::make_format_args(id));
+      return rt::string(buf.data(), buf.size(), alloc);
     }
   };
   
