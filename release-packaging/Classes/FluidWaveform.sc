@@ -433,5 +433,5 @@ FluidWaveform : FluidViewer {
 		};
 	}
 
-    asView { ^view }
+	asView { ^view }
 }

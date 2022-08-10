@@ -5,7 +5,7 @@ FluidSTFTPass : FluidRTUGen {
 	checkInputs {
 		if(inputs.at(4).rate != 'scalar') {
 			^": maxFFTSize cannot be modulated.";
-			};
+		};
 		^this.checkValidInputs
 	}
 }

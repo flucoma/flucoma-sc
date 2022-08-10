@@ -1,72 +1,72 @@
 
 FluidDataSet : FluidDataObject
 {
-    *new{|server| ^super.new(server) }
+	*new{|server| ^super.new(server) }
 
-    addPointMsg{|identifier,buffer|
-        buffer = this.prEncodeBuffer(buffer);
-        ^this.prMakeMsg(\addPoint,id,identifier.asSymbol,buffer);
-    }
-
-	addPoint{|identifier, buffer, action|
-      actions[\addPoint] = [nil,action];
-	  this.prSendMsg(this.addPointMsg(identifier,buffer));
+	addPointMsg{|identifier,buffer|
+		buffer = this.prEncodeBuffer(buffer);
+		^this.prMakeMsg(\addPoint,id,identifier.asSymbol,buffer);
 	}
 
-    getPointMsg{|identifier,buffer|
-        buffer = this.prEncodeBuffer(buffer);
-        ^this.prMakeMsg(\getPoint,id,identifier.asSymbol,buffer,["/b_query",buffer.asUGenInput]);
-    }
+	addPoint{|identifier, buffer, action|
+		actions[\addPoint] = [nil,action];
+		this.prSendMsg(this.addPointMsg(identifier,buffer));
+	}
 
-    getPoint{|identifier, buffer, action|
-      actions[\getPoint] = [nil,action];
-      this.prSendMsg(this.getPointMsg(identifier,buffer));
-    }
+	getPointMsg{|identifier,buffer|
+		buffer = this.prEncodeBuffer(buffer);
+		^this.prMakeMsg(\getPoint,id,identifier.asSymbol,buffer,["/b_query",buffer.asUGenInput]);
+	}
 
-    updatePointMsg{|identifier,buffer|
-        buffer = this.prEncodeBuffer(buffer);
-        ^this.prMakeMsg(\updatePoint,id,identifier.asSymbol,buffer,["/b_query",buffer.asUGenInput]);
-    }
+	getPoint{|identifier, buffer, action|
+		actions[\getPoint] = [nil,action];
+		this.prSendMsg(this.getPointMsg(identifier,buffer));
+	}
 
-    updatePoint{|identifier, buffer, action|
-      actions[\updatePoint] = [nil,action];
-      this.prSendMsg(this.updatePointMsg(identifier,buffer));
-    }
+	updatePointMsg{|identifier,buffer|
+		buffer = this.prEncodeBuffer(buffer);
+		^this.prMakeMsg(\updatePoint,id,identifier.asSymbol,buffer,["/b_query",buffer.asUGenInput]);
+	}
 
-    deletePointMsg{|identifier| ^this.prMakeMsg(\deletePoint,id,identifier.asSymbol);}
+	updatePoint{|identifier, buffer, action|
+		actions[\updatePoint] = [nil,action];
+		this.prSendMsg(this.updatePointMsg(identifier,buffer));
+	}
 
-    deletePoint{|identifier, action|
-      actions[\deletePoint] = [nil,action];
-      this.prSendMsg(this.deletePointMsg(identifier));
-    }
+	deletePointMsg{|identifier| ^this.prMakeMsg(\deletePoint,id,identifier.asSymbol);}
 
-    setPointMsg{|identifier,buffer|
-        buffer = this.prEncodeBuffer(buffer);
-        ^this.prMakeMsg(\setPoint,id,identifier.asSymbol,buffer,["/b_query",buffer.asUGenInput]);
-    }
+	deletePoint{|identifier, action|
+		actions[\deletePoint] = [nil,action];
+		this.prSendMsg(this.deletePointMsg(identifier));
+	}
+
+	setPointMsg{|identifier,buffer|
+		buffer = this.prEncodeBuffer(buffer);
+		^this.prMakeMsg(\setPoint,id,identifier.asSymbol,buffer,["/b_query",buffer.asUGenInput]);
+	}
 
 	setPoint{|identifier, buffer, action|
-      actions[\setPoint] = [nil,action];
-	  this.prSendMsg(this.setPointMsg(identifier,buffer));
+		actions[\setPoint] = [nil,action];
+		this.prSendMsg(this.setPointMsg(identifier,buffer));
 	}
 
 	clearMsg { ^this.prMakeMsg(\clear,id); }
 
-    clear { |action|
-      actions[\clear] = [nil,action];
-	  this.prSendMsg(this.clearMsg);
+	clear { |action|
+		actions[\clear] = [nil,action];
+		this.prSendMsg(this.clearMsg);
 	}
 
-    mergeMsg{|sourceDataSet, overwrite = 0|
-        ^this.prMakeMsg(\merge,id,sourceDataSet.asUGenInput,overwrite);
-    }
+	mergeMsg{|sourceDataSet, overwrite = 0|
+		^this.prMakeMsg(\merge,id,sourceDataSet.asUGenInput,overwrite);
+	}
 
 	merge{|sourceDataSet, overwrite = 0, action|
-        actions[\merge] = [nil,action];
+		actions[\merge] = [nil,action];
 		this.prSendMsg(this.mergeMsg(sourceDataSet,overwrite));
 	}
 
-    printMsg { ^this.prMakeMsg(\print,id); }
+	printMsg { ^this.prMakeMsg(\print,id); }
 
 	print { |action=(postResponse)|
 		actions[\print] = [string(FluidMessageResponse,_,_),action];
@@ -74,31 +74,31 @@ FluidDataSet : FluidDataObject
 	}
 
 	toBufferMsg{|buffer, transpose = 0, labelSet|
-        buffer = this.prEncodeBuffer(buffer);
-       ^this.prMakeMsg(\toBuffer, id, buffer, transpose, labelSet.asUGenInput,["/b_query",buffer.asUGenInput]);
-    }
+		buffer = this.prEncodeBuffer(buffer);
+		^this.prMakeMsg(\toBuffer, id, buffer, transpose, labelSet.asUGenInput,["/b_query",buffer.asUGenInput]);
+	}
 
 	toBuffer{|buffer, transpose = 0, labelSet, action|
-      actions[\toBuffer] = [nil,action];
+		actions[\toBuffer] = [nil,action];
 		this.prSendMsg(this.toBufferMsg(buffer, transpose, labelSet));
 	}
 
 	fromBufferMsg{|buffer, transpose = 0, labelSet|
-        buffer = this.prEncodeBuffer(buffer);
-       ^this.prMakeMsg(\fromBuffer, id, buffer, transpose, labelSet.asUGenInput,["/b_query",buffer.asUGenInput]);
-    }
+		buffer = this.prEncodeBuffer(buffer);
+		^this.prMakeMsg(\fromBuffer, id, buffer, transpose, labelSet.asUGenInput,["/b_query",buffer.asUGenInput]);
+	}
 
 	fromBuffer{|buffer, transpose = 0, labelSet, action|
-      actions[\fromBuffer] = [nil,action];
+		actions[\fromBuffer] = [nil,action];
 		this.prSendMsg(this.fromBufferMsg(buffer, transpose, labelSet));
 	}
 
 	getIdsMsg{|labelSet|
-        ^this.prMakeMsg(\getIds, id, labelSet.asUGenInput);
-    }
+		^this.prMakeMsg(\getIds, id, labelSet.asUGenInput);
+	}
 
 	getIds{|labelSet, action|
-      actions[\getIds] = [nil,action];
-	  this.prSendMsg(this.getIdsMsg(labelSet));
+		actions[\getIds] = [nil,action];
+		this.prSendMsg(this.getIdsMsg(labelSet));
 	}
 }
