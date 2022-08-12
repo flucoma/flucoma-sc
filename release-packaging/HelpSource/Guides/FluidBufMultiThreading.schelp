@@ -192,7 +192,7 @@ Routine{
 }.play;
 )
 
-//Danger zone – running directly in command FIFO:
+//Blocking mode – running directly in command FIFO:
 (
 Routine{
     var startTime = Main.elapsedTime;

@@ -5,7 +5,7 @@ FluidAmpGate : FluidRTUGen {
 	checkInputs {
 		if(inputs.at(12).rate != 'scalar') {
 			^(": maxSize cannot be modulated.");
-			};
+		};
 		^this.checkValidInputs;
 	}
 }

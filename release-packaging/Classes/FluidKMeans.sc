@@ -80,9 +80,9 @@ FluidKMeans : FluidModelObject {
 	transformPointMsg{ |sourceBuffer, targetBuffer|
 		^this.prMakeMsg(\transformPoint, id,
 			this.prEncodeBuffer(sourceBuffer),
-            this.prEncodeBuffer(targetBuffer),
-            ["/b_query", targetBuffer.asUGenInput]);
-    }
+			this.prEncodeBuffer(targetBuffer),
+			["/b_query", targetBuffer.asUGenInput]);
+	}
 
 	transformPoint { |sourceBuffer, targetBuffer, action|
 		actions[\transformPoint] = [nil,{action.value(targetBuffer)}];
@@ -91,40 +91,40 @@ FluidKMeans : FluidModelObject {
 
 	getMeansMsg{|dataSet| ^this.prMakeMsg(\getMeans, id, dataSet.asUGenInput) }
 
-    getMeans{ |dataSet, action|
-        actions[\getMeans] = [nil, action];
+	getMeans{ |dataSet, action|
+		actions[\getMeans] = [nil, action];
 		this.prSendMsg(this.getMeansMsg(dataSet));
 	}
 
 	setMeansMsg{|dataSet| ^this.prMakeMsg(\setMeans, id, dataSet.asUGenInput) }
 
-    setMeans{ |dataSet, action|
-        actions[\setMeans] = [nil, action];
+	setMeans{ |dataSet, action|
+		actions[\setMeans] = [nil, action];
 		this.prSendMsg(this.setMeansMsg(dataSet));
 	}
 
 	clearMsg{ ^this.prMakeMsg(\clear, id) }
 
-    clear{ |action|
-        actions[\clear] = [nil, action];
+	clear{ |action|
+		actions[\clear] = [nil, action];
 		this.prSendMsg(this.clearMsg);
 	}
 
 	kr{|trig, inputBuffer,outputBuffer|
-        ^FluidKMeansQuery.kr(trig,
-            this,
-            this.prEncodeBuffer(inputBuffer),
-            this.prEncodeBuffer(outputBuffer));
+		^FluidKMeansQuery.kr(trig,
+			this,
+			this.prEncodeBuffer(inputBuffer),
+			this.prEncodeBuffer(outputBuffer));
 	}
 }
 
 FluidKMeansQuery : FluidRTMultiOutUGen {
 
-    *kr{ |trig, model,inputBuffer, outputBuffer |
-        ^this.multiNew('control',trig, model.asUGenInput,inputBuffer.asUGenInput, outputBuffer.asUGenInput)
-    }
+	*kr{ |trig, model,inputBuffer, outputBuffer |
+		^this.multiNew('control',trig, model.asUGenInput,inputBuffer.asUGenInput, outputBuffer.asUGenInput)
+	}
 
-    init { arg ... theInputs;
+	init { arg ... theInputs;
 		inputs = theInputs;
 		^this.initOutputs(1, rate);
 	}

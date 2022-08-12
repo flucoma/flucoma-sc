@@ -285,7 +285,7 @@ FluidBufPitch.processBlocking(s,~audio,features:~pitch_analysis,action:{"done".p
 ~fw.layers.size
 
 (
-// plot differen components with different colors
+// plot different components with different colors
 s.waitForBoot{
 	~audio = Buffer.read(s,FluidFilesPath("Nicol-LoopE-M.wav"));
 	~resynth = Buffer(s);
