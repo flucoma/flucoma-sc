@@ -89,7 +89,7 @@ include(flucoma-buildtools)
 include(flucoma-buildtype)
 # endif()
 
-option(DOCS "Generate scdocs" OFF)
+option(DOCS "Generate scdocs" ON)
 set(FLUID_DOCS_PATH "" CACHE PATH "Optional path to flucoma-docs (needed for docs); will download if absent")
 
 if(DOCS)
