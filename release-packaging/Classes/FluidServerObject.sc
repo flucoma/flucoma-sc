@@ -196,6 +196,14 @@ FluidBufProcessor : FluidServerObject
 	}
 
 	kr{  ^FluidProxyUgen.kr(this.class.objectClassName ++ "Monitor",id) }
+
+	*validateBuffer { |buf, bufName=""|
+		buf = buf.asUGenInput;
+		if (buf.isNil) {
+			Error("%:  Invalid % buffer".format(this.name, bufName)).throw;
+		};
+		^buf
+	}
 }
 
 FluidOSCPatternInversion : OSCMessageDispatcher

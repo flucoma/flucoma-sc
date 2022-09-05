@@ -3,11 +3,8 @@ FluidBufChroma : FluidBufProcessor {
 
 		var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};
 
-		source = source.asUGenInput;
-		features = features.asUGenInput;
-
-		source.isNil.if {"FluidBufChroma:  Invalid source buffer".throw};
-		features.isNil.if {"FluidBufChroma:  Invalid features buffer".throw};
+		source = this.validateBuffer(source, "source");
+		features = this.validateBuffer(features, "features");
 
 		^FluidProxyUgen.kr(\FluidBufChromaTrigger,-1, source, startFrame, numFrames, startChan, numChans, features, padding, numChroma, numChroma, ref, normalize, minFreq, maxFreq, windowSize, hopSize, fftSize, maxFFTSize, trig, blocking);
 	}
@@ -16,11 +13,8 @@ FluidBufChroma : FluidBufProcessor {
 
 		var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};
 
-		source = source.asUGenInput;
-		features = features.asUGenInput;
-
-		source.isNil.if {"FluidBufChroma:  Invalid source buffer".throw};
-		features.isNil.if {"FluidBufChroma:  Invalid features buffer".throw};
+		source = this.validateBuffer(source, "source");
+		features = this.validateBuffer(features, "features");
 
 		^this.new(
 			server, nil, [features]
@@ -33,11 +27,8 @@ FluidBufChroma : FluidBufProcessor {
 
 		var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};
 
-		source = source.asUGenInput;
-		features = features.asUGenInput;
-
-		source.isNil.if {"FluidBufChroma:  Invalid source buffer".throw};
-		features.isNil.if {"FluidBufChroma:  Invalid features buffer".throw};
+		source = this.validateBuffer(source, "source");
+		features = this.validateBuffer(features, "features");
 
 		^this.new(
 			server, nil, [features]

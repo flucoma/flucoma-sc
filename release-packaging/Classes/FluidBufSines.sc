@@ -4,11 +4,9 @@ FluidBufSines : FluidBufProcessor {
 
 		var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};
 
-		source = source.asUGenInput;
+		source = this.validateBuffer(source, "source");
 		sines = sines !? {sines.asUGenInput} ?? {-1};
 		residual = residual !? {residual.asUGenInput} ?? {-1};
-
-		source.isNil.if {"FluidBufSines:  Invalid source buffer".throw};
 
 		^FluidProxyUgen.multiNew(\FluidBufSinesTrigger, -1, source, startFrame, numFrames, startChan, numChans, sines, residual, bandwidth, detectionThreshold,birthLowThreshold, birthHighThreshold, minTrackLen, trackingMethod, trackMagRange, trackFreqRange, trackProb, windowSize, hopSize, fftSize, maxFFTSize, trig, blocking);
 	}
@@ -17,11 +15,9 @@ FluidBufSines : FluidBufProcessor {
 
 		var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};
 
-		source = source.asUGenInput;
+		source = this.validateBuffer(source, "source");
 		sines = sines !? {sines.asUGenInput} ?? {-1};
 		residual = residual !? {residual.asUGenInput} ?? {-1};
-
-		source.isNil.if {"FluidBufSines:  Invalid source buffer".throw};
 
 		^this.new(
 			server, nil, [sines, residual].select{|x| x!= -1}
@@ -34,11 +30,9 @@ FluidBufSines : FluidBufProcessor {
 
 		var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};
 
-		source = source.asUGenInput;
+		source = this.validateBuffer(source, "source");
 		sines = sines !? {sines.asUGenInput} ?? {-1};
 		residual = residual !? {residual.asUGenInput} ?? {-1};
-
-		source.isNil.if {"FluidBufSines:  Invalid source buffer".throw};
 
 		^this.new(
 			server, nil, [sines, residual].select{|x| x!= -1}

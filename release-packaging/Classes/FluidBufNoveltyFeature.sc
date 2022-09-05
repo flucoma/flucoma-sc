@@ -4,15 +4,12 @@ FluidBufNoveltyFeature : FluidBufProcessor {
 
 		var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};
 
-		source = source.asUGenInput;
-		features = features.asUGenInput;
+		source = this.validateBuffer(source, "source");
+		features = this.validateBuffer(features, "features");
 		algorithm = FluidNoveltySlice.prSelectAlgorithm(algorithm) ?? {
 			("FluidBufNoveltySlice: % is not a recognised algorithm")
 			.format(algorithm).throw;
 		};
-
-		source.isNil.if {"FluidBufNoveltyFeature:  Invalid source buffer".throw};
-		features.isNil.if {"FluidBufNoveltyFeature:  Invalid features buffer".throw};
 
 		^FluidProxyUgen.kr(\FluidBufNoveltyFeatureTrigger, -1, source, startFrame, numFrames, startChan, numChans, features, padding, algorithm, kernelSize, kernelSize, filterSize, filterSize, windowSize, hopSize, fftSize, maxFFTSize,  trig, blocking);
 
@@ -22,16 +19,13 @@ FluidBufNoveltyFeature : FluidBufProcessor {
 
 		var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};
 
-		source = source.asUGenInput;
-		features = features.asUGenInput;
+		source = this.validateBuffer(source, "source");
+		features = this.validateBuffer(features, "features");
 		algorithm = FluidNoveltySlice.prSelectAlgorithm(algorithm);
 		if (algorithm.isNil or: algorithm.isUGen) {
 			("FluidBufNoveltySlice: % is not a recognised algorithm")
 			.format(algorithm).throw;
 		};
-
-		source.isNil.if {"FluidBufNoveltyFeature:  Invalid source buffer".throw};
-		features.isNil.if {"FluidBufNoveltyFeature:  Invalid features buffer".throw};
 
 		^this.new(
 			server, nil, [features]
@@ -44,11 +38,9 @@ FluidBufNoveltyFeature : FluidBufProcessor {
 
 		var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};
 
-		source = source.asUGenInput;
-		features = features.asUGenInput;
+		source = this.validateBuffer(source, "source");
+		features = this.validateBuffer(features, "features");
 
-		source.isNil.if {"FluidBufNoveltyFeature:  Invalid source buffer".throw};
-		features.isNil.if {"FluidBufNoveltyFeature:  Invalid features buffer".throw};
 		algorithm = FluidNoveltySlice.prSelectAlgorithm(algorithm);
 		if (algorithm.isNil or: algorithm.isUGen) {
 			("FluidBufNoveltySlice: % is not a recognised algorithm")

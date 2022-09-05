@@ -2,16 +2,14 @@ FluidBufThreadDemo : FluidBufProcessor{
 
 	*kr  {|result, time, trig = 1, blocking = 0|
 
-		result = result.asUGenInput;
-		result.isNil.if {this.class.name+":  Invalid output buffer".throw};
+		result = this.validateBuffer(result, "result");
 
 		^FluidProxyUgen.kr(\FluidBufThreadDemoTrigger, -1, result, time, trig, blocking);
 	}
 
 	*process { |server, result, time = 1000, freeWhenDone = true, action|
 
-
-		result ?? {this.class.name+":  Invalid output buffer".throw};
+		result = this.validateBuffer(result, "result");
 
 		^this.new(
 			server, nil, [result]
@@ -22,7 +20,7 @@ FluidBufThreadDemo : FluidBufProcessor{
 
 	*processBlocking { |server, result, time = 1000, freeWhenDone = true, action|
 
-		result ?? {this.class.name+":  Invalid output buffer".throw};
+		result = this.validateBuffer(result, "result");
 
 		^this.new(
 			server, nil, [result]

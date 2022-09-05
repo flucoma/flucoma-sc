@@ -3,15 +3,12 @@ FluidBufOnsetFeature : FluidBufProcessor {
 
 		var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};
 
-		source = source.asUGenInput;
-		features = features.asUGenInput;
+		source = this.validateBuffer(source, "source");
+		features = this.validateBuffer(features, "features");
 		metric = FluidOnsetSlice.prSelectMetric(metric) ?? {
 			("FluidBufOnsetSlice: % is not a recognised metric")
 			.format(metric).throw;
 		};
-
-		source.isNil.if {"FluidBufOnsetFeature:  Invalid source buffer".throw};
-		features.isNil.if {"FluidBufOnsetFeature:  Invalid features buffer".throw};
 
 		^FluidProxyUgen.kr(\FluidBufOnsetFeatureTrigger, -1, source, startFrame, numFrames, startChan, numChans, features, padding, metric, filterSize, frameDelta, windowSize, hopSize, fftSize, maxFFTSize, trig, blocking);
 	}
@@ -20,16 +17,13 @@ FluidBufOnsetFeature : FluidBufProcessor {
 
 		var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};
 
-		source = source.asUGenInput;
-		features = features.asUGenInput;
+		source = this.validateBuffer(source, "source");
+		features = this.validateBuffer(features, "features");
 		metric = FluidOnsetSlice.prSelectMetric(metric);
 		if (metric.isNil or: metric.isUGen) {
 			("FluidBufOnsetSlice: % is not a recognised metric")
 			.format(metric).throw;
 		};
-
-		source.isNil.if {"FluidBufOnsetFeature:  Invalid source buffer".throw};
-		features.isNil.if {"FluidBufOnsetFeature:  Invalid features buffer".throw};
 
 		^this.new(
 			server, nil, [features]
@@ -42,16 +36,13 @@ FluidBufOnsetFeature : FluidBufProcessor {
 
 		var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};
 
-		source = source.asUGenInput;
-		features = features.asUGenInput;
+		source = this.validateBuffer(source, "source");
+		features = this.validateBuffer(features, "features");
 		metric = FluidOnsetSlice.prSelectMetric(metric);
 		if (metric.isNil or: metric.isUGen) {
 			("FluidBufOnsetSlice: % is not a recognised metric")
 			.format(metric).throw;
 		};
-
-		source.isNil.if {"FluidBufOnsetFeature:  Invalid source buffer".throw};
-		features.isNil.if {"FluidBufOnsetFeature:  Invalid features buffer".throw};
 
 		^this.new(
 			server, nil, [features]
