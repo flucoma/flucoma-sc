@@ -1,5 +1,7 @@
 #pragma once 
 
+#include <data/FluidMemory.hpp>
+
 namespace fluid {
 namespace client {
 
@@ -15,12 +17,12 @@ namespace client {
       return 1;
     }
 
-    static index allocSize(std::string s)
+    static index allocSize(std::string const& s)
     {
       return asSigned(s.size()) + 1;
     } // put null char at end when we send
 
-    static index allocSize(FluidTensor<std::string, 1> s)
+    static index allocSize(FluidTensor<std::string, 1> const& s)
     {
       index count = 0;
       for (auto& str : s) count += (str.size() + 1);
@@ -28,7 +30,7 @@ namespace client {
     }
 
     template <typename T>
-    static index allocSize(FluidTensor<T, 1> s)
+    static index allocSize(FluidTensor<T, 1> const& s)
     {
       return s.size();
     }
@@ -68,12 +70,12 @@ namespace client {
       f[0] = static_cast<float>(x);
     }
 
-    static void convert(float* f, std::string s)
+    static void convert(float* f, std::string const& s)
     {
       std::copy(s.begin(), s.end(), f);
       f[s.size()] = 0; // terminate
     }
-    static void convert(float* f, FluidTensor<std::string, 1> s)
+    static void convert(float* f, FluidTensor<std::string, 1> const& s)
     {
       for (auto& str : s)
       {
@@ -83,7 +85,7 @@ namespace client {
       }
     }
     template <typename T>
-    static void convert(float* f, FluidTensor<T, 1> s)
+    static void convert(float* f, FluidTensor<T, 1> const& s)
     {
       static_assert(std::is_convertible<T, float>::value,
                     "Can't convert this to float output");
@@ -114,19 +116,24 @@ namespace client {
       return 1;
     }
 
-    static index numTags(std::string)
+    static index numTags(rt::string const&)
+    {
+      return 1;;
+    }
+
+    static index numTags(std::string const&)
     {
       return 1;;
     }
 
     template <typename T>
-    static index numTags(FluidTensor<T, 1> s)
+    static index numTags(FluidTensor<T, 1> const& s)
     {
       return s.size();
     }
 
     template <typename... Ts>
-    static index numTags(std::tuple<Ts...>&& t)
+    static index numTags(std::tuple<Ts...> const& t)
     {
       index count = 0;
       ForEach(t,[&count](auto& x){ count += numTags(x);});
@@ -143,10 +150,11 @@ namespace client {
     static std::enable_if_t<std::is_floating_point<std::decay_t<T>>::value>
     getTag(Packet& p, T&&) { p.addtag('f'); }
 
-    static void getTag (Packet& p, std::string) { p.addtag('s'); }
+    static void getTag (Packet& p, std::string const&) { p.addtag('s'); }
+    static void getTag (Packet& p, rt::string const&) { p.addtag('s'); }
 
     template <typename T>
-    static void getTag(Packet& p, FluidTensor<T, 1> x)
+    static void getTag(Packet& p, FluidTensor<T, 1> const& x)
     {
       T dummy{};
       for (int i = 0; i < x.rows(); i++)
@@ -154,7 +162,7 @@ namespace client {
    }
 
     template <typename... Ts>
-    static void getTag(Packet& p, std::tuple<Ts...>&& t)
+    static void getTag(Packet& p, std::tuple<Ts...> const& t)
     {
         ForEach(t,[&p](auto&  x){getTag(p,x);});
     }
@@ -179,19 +187,24 @@ namespace client {
       p.addf(static_cast<float>(x));
     }
 
-    static void convert(Packet& p, std::string s)
+    static void convert(Packet& p, std::string const& s)
+    {
+      p.adds(s.c_str());
+    }
+    
+    static void convert(Packet& p, rt::string const& s)
     {
       p.adds(s.c_str());
     }
     
     template <typename T>
-    static void convert(Packet& p, FluidTensor<T, 1> s)
+    static void convert(Packet& p, FluidTensor<T, 1> const& s)
     {
       for(auto& x: s) convert(p,x);
     }
 
     template <typename... Ts>
-    static void convert(Packet& p, std::tuple<Ts...>&& t)
+    static void convert(Packet& p, std::tuple<Ts...> const& t)
     {
        ForEach(t,[&p](auto& x){ convert(p,x);});
     }

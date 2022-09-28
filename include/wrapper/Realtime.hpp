@@ -3,6 +3,7 @@
 #include "ArgsFromClient.hpp"
 #include "Meta.hpp"
 #include "RealTimeBase.hpp"
+#include "SCWorldAllocator.hpp"
 #include <clients/common/FluidBaseClient.hpp>
 #include <SC_PlugIn.hpp>
 
@@ -53,73 +54,38 @@ public:
   }
 
   RealTime()
-    : mControls{mInBuf + ControlOffset(this),ControlSize(this)},
-      mClient{Wrapper::setParams(this, mParams, mControls,true)}
+    :
+      mSCAlloc{mWorld, Wrapper::getInterfaceTable()},
+      mAlloc{foonathan::memory::make_allocator_reference(mSCAlloc)},
+      mContext{fullBufferSize(), mAlloc},
+      mControls{mInBuf + ControlOffset(this),ControlSize(this)},
+      mParams{Client::getParameterDescriptors(), mAlloc},
+      mClient{Wrapper::setParams(this, mParams, mControls, mAlloc,true), mContext}
   {
     init();
   }
 
   void init()
   {
-//    auto& client = mClient;
-  
-    mDelegate.init(*this,mClient,mControls);
+    mDelegate.init(*this,mClient,mControls,mAlloc);
     mCalcFunc = make_calc_function<RealTime, &RealTime::next>();
     Wrapper::getInterfaceTable()->fClearUnitOutputs(this, 1);
 
-    // assert(
-    //     !(client.audioChannelsOut() > 0 && client.controlChannelsOut() > 0) &&
-    //     "Client can't have both audio and control outputs");
-    // 
-    // Result r;
-    // if(!(r = expectedSize(mWrapper->mControlsIterator)).ok())
-    // {
-    //   mCalcFunc = Wrapper::getInterfaceTable()->fClearUnitOutputs;
-    //   std::cout
-    //       << "ERROR: " << Wrapper::getName()
-    //       << " wrong number of arguments."
-    //       << r.message()
-    //       << std::endl;
-    //   return;
-    // }
-    // 
-    // mWrapper->mControlsIterator.reset(mInBuf + mSpecialIndex + 1);
-    // 
-    // client.sampleRate(fullSampleRate());
-    // mInputConnections.reserve(asUnsigned(client.audioChannelsIn()));
-    // mOutputConnections.reserve(asUnsigned(client.audioChannelsOut()));
-    // mAudioInputs.reserve(asUnsigned(client.audioChannelsIn()));
-    // mOutputs.reserve(asUnsigned(
-    //     std::max(client.audioChannelsOut(), client.controlChannelsOut())));
-    // 
-    // for (index i = 0; i < client.audioChannelsIn(); ++i)
-    // {
-    //   mInputConnections.emplace_back(isAudioRateIn(static_cast<int>(i)));
-    //   mAudioInputs.emplace_back(nullptr, 0, 0);
-    // }
-    // 
-    // for (index i = 0; i < client.audioChannelsOut(); ++i)
-    // {
-    //   mOutputConnections.emplace_back(true);
-    //   mOutputs.emplace_back(nullptr, 0, 0);
-    // }
-    // 
-    // for (index i = 0; i < client.controlChannelsOut(); ++i)
-    // { mOutputs.emplace_back(nullptr, 0, 0); }
-    // 
-    // mCalcFunc = make_calc_function<RealTime, &RealTime::next>();
-    // Wrapper::getInterfaceTable()->fClearUnitOutputs(this, 1);
+   
   }
 
   void next(int)
   {
     mControls.reset(mInBuf + ControlOffset(this));
-    mDelegate.next(*this,mClient,mParams,mControls);
+    mDelegate.next(*this,mClient,mParams,mControls, mAlloc);
   }
 private:
+  SCRawAllocator mSCAlloc;
+  Allocator mAlloc;
+  FluidContext mContext; 
   Delegate mDelegate;
   FloatControlsIter   mControls;
-  Params mParams{Client::getParameterDescriptors()};
+  Params mParams;
   Client mClient;
   Wrapper* mWrapper{static_cast<Wrapper*>(this)};
 };

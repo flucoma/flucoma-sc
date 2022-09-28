@@ -1,6 +1,8 @@
 #pragma once 
 
 #include "Meta.hpp"
+#include <data/FluidMemory.hpp>
+#include <fmt/format.h>
 
 namespace fluid {
 namespace client {
@@ -40,7 +42,11 @@ struct ParamReader<impl::FloatControlsIter>
 
   using Controls = impl::FloatControlsIter;
 
-  static auto fromArgs(Unit* /*x*/, Controls& args, std::string, int)
+  /// todo: fix std::string to use a specialisation with RT alloc
+  template <typename Alloc>
+  static auto
+  fromArgs(Unit* /*x*/, Controls& args,
+           std::basic_string<char, std::char_traits<char>, Alloc> const&, int)
   {
     // first is string size, then chars
     index size = static_cast<index>(args.next());
@@ -50,14 +56,15 @@ struct ParamReader<impl::FloatControlsIter>
       res[asUnsigned(i)] = static_cast<char>(args.next());
     return res;
   }
-  
+
   static auto fromArgs(Unit*, Controls& args,typename LongArrayT::type&, int)
   {
       //first is array size, then items
       using Container = typename LongArrayT::type;
       using Value = typename Container::type;
       index size = static_cast<index>(args.next());
-      Container res(size);
+      /// todo: fix allocator
+      Container res(size, FluidDefaultAllocator());
       for (index i = 0; i < size; ++i)
         res[i] = static_cast<Value>(args.next());
       return res;
@@ -225,7 +232,8 @@ struct ParamReader<sc_msg_iter>
     return argTypeOK(T{},tag);
   }
   
-  static auto fromArgs(World*, sc_msg_iter& args, std::string, int)
+  template<typename Alloc>
+  static auto fromArgs(World*, sc_msg_iter& args, std::basic_string<char,std::char_traits<char>,Alloc> const&, int)
   {
     const char* recv = args.gets("");
 
@@ -285,7 +293,7 @@ struct ParamReader<sc_msg_iter>
       using Container = typename LongArrayT::type;
       using Value = typename Container::type;
       index size = static_cast<index>(args.geti());
-      Container res(size);
+      Container res(size, FluidDefaultAllocator());
       for (index i = 0; i < size; ++i)
         res[i] = static_cast<Value>(args.geti());
       return res;
@@ -325,14 +333,14 @@ struct ClientParams{
 
     template<typename Context, typename Client = typename Wrapper::Client, size_t Number = N>
     std::enable_if_t<!impl::IsNamedShared_v<Client> || Number!=0, typename T::type>
-    operator()(Context* x, ArgType& args)
+    operator()(Context* x, ArgType& args, Allocator& alloc)
     {
       // Just return default if there's nothing left to grab
       if (args.remain() == 0)
       {
         std::cout << "WARNING: " << Wrapper::getName()
                   << " received fewer parameters than expected\n";
-        return Wrapper::Client::getParameterDescriptors().template makeValue<N>();
+        return Wrapper::Client::getParameterDescriptors().template makeValue<N>(alloc);
       }
 
       ParamLiteralConvertor<T, argSize> a;
@@ -348,18 +356,25 @@ struct ClientParams{
     
     template<typename Context, typename Client = typename Wrapper::Client, size_t Number = N>
     std::enable_if_t<impl::IsNamedShared_v<Client> && Number==0, typename T::type>
-    operator()(Context* x, ArgType& args)
+    operator()(Context* x, ArgType& args, Allocator& alloc)
     {
       // Just return default if there's nothing left to grab
       if (args.remain() == 0)
       {
         std::cout << "WARNING: " << Wrapper::getName()
                   << " received fewer parameters than expected\n";
-        return Wrapper::Client::getParameterDescriptors().template makeValue<N>();
+        return Wrapper::Client::getParameterDescriptors().template makeValue<N>(alloc);
       }
       
       index id = ParamReader<ArgType>::fromArgs(x,args,index{},0);
-      return std::to_string(id); 
+      using StdAlloc = foonathan::memory::std_allocator<char, Allocator>;
+      using fmt_memory_buffer =
+          fmt::basic_memory_buffer<char, fmt::inline_buffer_size, StdAlloc>;
+      auto             buf = fmt_memory_buffer(alloc);
+      std::string_view fmt_string("{}");
+      fmt::vformat_to(std::back_inserter(buf), fmt_string,
+                      fmt::make_format_args(id));
+      return rt::string(buf.data(), buf.size(), alloc);
     }
   };
   
