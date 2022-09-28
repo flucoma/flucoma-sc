@@ -76,8 +76,9 @@ public:
     
   }
 
-  static auto& setParams(Unit* x, ParamSetType& p,
-                         FloatControlsIter& inputs, bool constrain = false, bool initialized = true)
+  static auto& setParams(Unit* x, ParamSetType& p, FloatControlsIter& inputs,
+                         Allocator& alloc, bool constrain = false,
+                         bool initialized = true)
   {
     bool verbose = x->mWorld->mVerbosity > 0;
     
@@ -85,7 +86,7 @@ public:
     
     Reportage* reportage = initialized ? &(static_cast<FluidSCWrapper*>(x)->mReportage) : new Reportage();
           
-    p.template setParameterValuesRT<ControlSetter>(verbose ? reportage: nullptr , x, inputs);
+    p.template setParameterValuesRT<ControlSetter>(verbose ? reportage: nullptr , x, inputs, alloc);
     if (constrain) p.constrainParameterValuesRT(verbose ? reportage : nullptr);
     if(verbose)
     {

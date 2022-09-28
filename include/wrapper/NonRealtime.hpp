@@ -42,7 +42,8 @@ private:
   /// Instance cache
   struct CacheEntry
   {
-    CacheEntry(const Params& p) : mParams{p}, mClient{mParams} {}
+    CacheEntry(const Params& p, FluidContext c)
+      : mParams{p}, mClient{mParams, c} {}
 
     Params            mParams;
     Client            mClient;
@@ -151,11 +152,11 @@ public:
     return lookup == mCache.end() ? WeakCacheEntryPointer() : lookup->second;
   }
 
-  static WeakCacheEntryPointer add(World* world, index id, const Params& params)
+  static WeakCacheEntryPointer add(World* world, index id, const Params& params, FluidContext context)
   {
     if (isNull(get(id)))
     {
-      auto result = mCache.emplace(id, std::make_shared<CacheEntry>(params));
+      auto result = mCache.emplace(id, std::make_shared<CacheEntry>(params, context));
 
       addToRTCache{}(world, *(result.first));
 
@@ -199,8 +200,10 @@ private:
 
   struct NRTCommand
   {
-    NRTCommand(World*, sc_msg_iter* args, void* replyAddr,
+    NRTCommand(World* world, sc_msg_iter* args, void* replyAddr,
                bool consumeID = true)
+        : mSCAlloc{world, Wrapper::getInterfaceTable()},
+          mAlloc{foonathan::memory::make_allocator_reference(mSCAlloc)}
     {
       auto count = args->count;
       auto pos = args->rdpos;
@@ -221,9 +224,11 @@ private:
       if (mReplyAddress) deleteReplyAddress(mReplyAddress);
     }
 
-    NRTCommand() {}
+//    NRTCommand() {}
 
-    explicit NRTCommand(index id) : mID{id} {}
+    explicit NRTCommand(World* world, index id)
+      : mSCAlloc{world, Wrapper::getInterfaceTable()},
+        mAlloc{foonathan::memory::make_allocator_reference(mSCAlloc)}, mID{id} {}
 
     bool stage2(World*) { return true; }  // nrt
     bool stage3(World*) { return true; }  // rt
@@ -248,7 +253,15 @@ private:
                   static_cast<int>(packet.size()));
       }
     }
+    
+    Allocator& allocator()
+    {
+      return mAlloc;
+    }
+    
     //      protected:
+    SCRawAllocator mSCAlloc;
+    Allocator mAlloc;
     index mID;
     void* mReplyAddress{nullptr};
   };
@@ -257,16 +270,18 @@ private:
   {
     CommandNew(World* world, sc_msg_iter* args, void* replyAddr)
         : NRTCommand{world, args, replyAddr, !IsNamedShared_v<Client>},
-          mParams{Client::getParameterDescriptors()}
+          mParams{Client::getParameterDescriptors(), NRTCommand::allocator()}
     {
       mParams.template setParameterValuesRT<ParamsFromOSC>(nullptr, world,
-                                                           *args);
+                                                           *args, NRTCommand::allocator());
     }
 
-    CommandNew(index id, World*, FloatControlsIter& args, Unit* x)
-        : NRTCommand{id}, mParams{Client::getParameterDescriptors()}
+    CommandNew(index id, World* world, FloatControlsIter& args, Unit* x)
+        : NRTCommand{world, id}, mParams{Client::getParameterDescriptors(),
+                                         NRTCommand::allocator()}
     {
-      mParams.template setParameterValuesRT<ParamsFromSynth>(nullptr, x, args);
+      mParams.template setParameterValuesRT<ParamsFromSynth>(
+          nullptr, x, args, NRTCommand::allocator());
     }
 
     static const char* name()
@@ -281,7 +296,7 @@ private:
 
       if (!constraintsRes.ok()) Wrapper::printResult(w, constraintsRes);
 
-      mResult = (!isNull(add(w, NRTCommand::mID, mParams)));
+      mResult = (!isNull(add(w, NRTCommand::mID, mParams, FluidContext())));
 
       // Sigh. The cache entry above has both the client instance and main
       // params instance.
@@ -343,21 +358,23 @@ private:
   {
     CommandProcess(World* world, sc_msg_iter* args, void* replyAddr)
         : NRTCommand{world, args, replyAddr},
-          mParams{Client::getParameterDescriptors()}
+          mParams{Client::getParameterDescriptors(),NRTCommand::allocator()}
     {
       auto& ar = *args;
       if (auto ptr = get(NRTCommand::mID).lock())
       {
         ptr->mDone.store(false, std::memory_order_release);
         mParams.template setParameterValuesRT<ParamsFromOSC>(nullptr, world,
-                                                             ar);
+                                                             ar, NRTCommand::allocator());
         mSynchronous = static_cast<bool>(ar.geti());
       } // if this fails, we'll hear about it in stage2 anyway
     }
 
-    explicit CommandProcess(index id, bool synchronous, Params* params)
-        : NRTCommand{id},
-          mSynchronous(synchronous), mParams{Client::getParameterDescriptors()}
+    explicit CommandProcess(World* world, index id, bool synchronous,
+                            Params* params)
+        : NRTCommand{world, id},
+          mSynchronous(synchronous), mParams{Client::getParameterDescriptors(),
+                                             NRTCommand::allocator()}
     {
       if (params)
       {
@@ -473,7 +490,8 @@ private:
   /// Not registered as a PlugInCmd. Triggered by  worker thread callback
   struct CommandAsyncComplete : public NRTCommand
   {
-    CommandAsyncComplete(World*, index id, void* replyAddress)
+    CommandAsyncComplete(World* world, index id, void* replyAddress)
+        : NRTCommand(world, id)
     {
       NRTCommand::mID = id;
       NRTCommand::mReplyAddress = replyAddress;
@@ -612,7 +630,9 @@ private:
   struct CommandProcessNew : public NRTCommand
   {
     CommandProcessNew(World* world, sc_msg_iter* args, void* replyAddr)
-        : mNew{world, args, replyAddr}, mProcess{mNew.mID, false, nullptr}
+        : NRTCommand{world, args, replyAddr, false},
+          mNew{world, args, replyAddr},
+          mProcess{world, mNew.mID, false, nullptr}
     {
       mProcess.mSynchronous = args->geti();
       mProcess.mReplyAddress = mNew.mReplyAddress;
@@ -695,8 +715,8 @@ private:
       auto& ar = *args;
       if (auto ptr = get(NRTCommand::mID).lock())
       {
-        ptr->mParams.template setParameterValuesRT<ParamsFromOSC>(nullptr,
-                                                                  world, ar);
+        ptr->mParams.template setParameterValuesRT<ParamsFromOSC>(
+            nullptr, world, ar, NRTCommand::allocator());
         Result result = validateParameters(ptr->mParams);
         ptr->mClient.setParams(ptr->mParams);
       }
@@ -725,8 +745,9 @@ private:
       if(!mTryInNRT) return false;
       
       if (auto ptr = get(NRTCommand::mID).lock())
-      {        
-        ptr->mParams.template setParameterValues<ParamsFromOSC>(true, world, mArgs);
+      {
+        ptr->mParams.template setParameterValues<ParamsFromOSC>(
+            true, world, mArgs, FluidDefaultAllocator());
         Result result = validateParameters(ptr->mParams);
         ptr->mClient.setParams(ptr->mParams);
       }
@@ -810,7 +831,6 @@ private:
   template <typename Command>
   static void defineNRTCommand()
   {
-    auto ft = getInterfaceTable();
     auto commandRunner = [](World* world, void*, struct sc_msg_iter* args,
                             void* replyAddr) {
       auto     ft = getInterfaceTable();
@@ -918,7 +938,9 @@ private:
 
     NRTTriggerUnit()
         : mControlsIterator{mInBuf + ControlOffset(), ControlSize()},
-          mParams{Client::getParameterDescriptors()}
+          mSCAlloc(mWorld, Wrapper::getInterfaceTable()),
+          mAlloc{foonathan::memory::make_allocator_reference(mSCAlloc)},
+          mParams{Client::getParameterDescriptors(), mAlloc}
     {
       mID = static_cast<index>(mInBuf[0][0]);
       if (mID == -1) mID = count();
@@ -936,7 +958,7 @@ private:
     ~NRTTriggerUnit()
     {
       set_calc_function<NRTTriggerUnit, &NRTTriggerUnit::clear>();
-      auto cmd = NonRealTime::rtalloc<CommandFree>(mWorld, mID);
+      auto cmd = NonRealTime::rtalloc<CommandFree>(mWorld, mWorld, mID);
       if (runAsyncCommand(mWorld, cmd, nullptr, 0, nullptr) != 0)
       {
         std::cout << "ERROR: Async command failed in ~NRTTriggerUnit()"
@@ -963,12 +985,12 @@ private:
       if (trigger)
       {
         mControlsIterator.reset(1 + mInBuf); // add one for ID
-        Wrapper::setParams(this, mParams, mControlsIterator, true, false);
+        Wrapper::setParams(this, mParams, mControlsIterator, mAlloc, true, false);
 
         bool blocking = mInBuf[mNumInputs - 1][0] > 0;
 
         CommandProcess* cmd =
-            rtalloc<CommandProcess>(mWorld, mID, blocking, &mParams);
+            rtalloc<CommandProcess>(mWorld, mWorld, mID, blocking, &mParams);
         if (runAsyncCommand(mWorld, cmd, nullptr, 0, nullptr) != 0)
         {
           std::cout << "ERROR: Async command failed in NRTTriggerUnit::next()"
@@ -1000,6 +1022,8 @@ private:
     index                   mID;
     index                   mRunCount{0};
     WeakCacheEntryPointer   mInst;
+    SCRawAllocator          mSCAlloc;
+    Allocator               mAlloc;
     Params                  mParams;
     bool                    mInit{false};
   };

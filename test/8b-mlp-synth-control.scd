@@ -61,10 +61,9 @@ StaticText(w,Rect(732,150,50,20)).string_("maxIter:");
 TextField(w,Rect(730,170,50,20)).string_(1000.asString).action_{|in| mlp.maxIter = in.value.asInteger.postln;};
 StaticText(w,Rect(732,190,50,20)).string_("validation:");
 TextField(w,Rect(730,210,50,20)).string_(0.0.asString).action_{|in|mlp.validation = in.value.asFloat.postln;};
-)
 
 //2- the synth
-(
+
 b = {
 	arg val = #[0,0,0,0,0,0,0,0,0,0];
 	var osc1, osc2, feed1, feed2, base1=69, base2=69, base3 = 130;

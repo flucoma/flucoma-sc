@@ -1,6 +1,8 @@
 #pragma once
 
+#include <data/FluidMemory.hpp>
 #include <SC_PlugIn.hpp>
+#include <Eigen/Core>
 
 namespace fluid {
 namespace client {
@@ -80,8 +82,9 @@ struct RealTimeBase
         std::forward<Result&>(countScan));
     return countScan;
   }
+    
 
-  void init(SCUnit& unit, Client& client, FloatControlsIter& controls)
+  void init(SCUnit& unit, Client& client, FloatControlsIter& controls, Allocator& alloc)
   {
     assert(!(client.audioChannelsOut() > 0 &&
              client.controlChannelsOut().count > 0) &&
@@ -89,7 +92,7 @@ struct RealTimeBase
     client.sampleRate(unit.fullSampleRate());
     mInputConnections.reserve(asUnsigned(client.audioChannelsIn()));
     mOutputConnections.reserve(asUnsigned(client.audioChannelsOut()));
-
+    mContext = FluidContext(unit.fullBufferSize(), alloc); 
     Result r;
     if (!(r = expectedSize(controls)).ok())
     {
@@ -195,16 +198,19 @@ struct RealTimeBase
   }
 
   void next(SCUnit& unit, Client& client, Params& params,
-            FloatControlsIter& controls, bool updateParams = true)
+            FloatControlsIter& controls, Allocator& alloc,
+            bool updateParams = true)
   {
     bool trig =
         IsModel_t<Client>::value ? !mPrevTrig && unit.in0(0) > 0 : false;
 
     mPrevTrig = trig;
-
+    #ifdef EIGEN_RUNTIME_NO_MALLOC
+    Eigen::internal::set_is_malloc_allowed(false);
+    #endif
     if (updateParams)
     {
-      Wrapper::setParams(&unit, params, controls);
+      Wrapper::setParams(&unit, params, controls, alloc);
       params.constrainParameterValuesRT(nullptr);
     }
 
@@ -212,6 +218,9 @@ struct RealTimeBase
     (this->*mOutMapperPre)(unit, client);
     client.process(mAudioInputs, mOutputs, mContext);
     (this->*mOutMapperPost)(unit, client);
+    #ifdef EIGEN_RUNTIME_NO_MALLOC
+    Eigen::internal::set_is_malloc_allowed(true); //not really
+    #endif
   }
 
 private:
@@ -221,11 +230,11 @@ private:
   std::vector<HostVector> mOutputs;
   FluidTensor<float, 1>   mControlInputBuffer;
   FluidTensor<float, 1>   mControlOutputBuffer;
-  FluidContext            mContext;
   bool                    mPrevTrig;
   IOMapFn                 mInputMapper;
   IOMapFn                 mOutMapperPre;
   IOMapFn                 mOutMapperPost;
+  FluidContext            mContext;
 };
 } // namespace impl
 } // namespace client

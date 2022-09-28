@@ -8,17 +8,17 @@
 		var filename = this.tmpJSONFilename;
 		action ?? {action = postResponse};
 		this.write(filename, {
-				action.value(this.parseJSON(File.readAllString(filename)));
-				File.delete(filename);
-			});
+			action.value(this.parseJSON(File.readAllString(filename)));
+			File.delete(filename);
+		});
 	}
 
 	load{|dict, action|
 		var filename = this.tmpJSONFilename;
 		File.use(filename, "wt", { |f| f.write(this.asJSON(dict));});
 		this.read(filename, {
-				action.notNil.if{ action.value; };
-				File.delete(filename);
+			action.notNil.if{ action.value; };
+			File.delete(filename);
 		});
 	}
 
@@ -55,9 +55,9 @@
 		if(d.isKindOf(Symbol)){^this.asJSON(d.asString)};
 		if(d.isKindOf(Dictionary))
 		{
-		  ^"{" ++ (
-			d.keys.asList.collect{|k|
-			k.asString.asCompileString ++ ":" + this.asJSON(d[k])
+			^"{" ++ (
+				d.keys.asList.collect{|k|
+					k.asString.asCompileString ++ ":" + this.asJSON(d[k])
 			}).join(", ") ++ "}"
 		};
 		if(d.isKindOf(SequenceableCollection))

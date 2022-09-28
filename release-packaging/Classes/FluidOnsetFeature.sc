@@ -10,10 +10,10 @@ FluidOnsetFeature : FluidRTUGen {
 	checkInputs {
 		if([\scalar, \control].includes(inputs.at(1).rate).not) {
 			^(": invalid metric");
-		    };
+		};
 		if(inputs.at(7).rate != 'scalar') {
 			^(": maxFFTSize cannot be modulated.");
-			};
+		};
 		^this.checkValidInputs;
 	}
 }
