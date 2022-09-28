@@ -8,6 +8,11 @@ The Fluid Corpus Manipulation toolkit provides an open-ended, loosely coupled se
 Almost all objects for audio analysis or transformation have audio-rate and buffer-based versions, and there are custom server-side containers for data analysis. footnote::
 This toolbox was made possible thanks to the link::http://www.flucoma.org/##FluCoMa project:: funded by the European Research Council ( https://erc.europa.eu/ ) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 725899).::
 
+Many useful examples can be found in the help files as well as in the example folder, which is here:
+code::
+File.realpath(FluidFilesPath("../../Examples")).openOS;
+::
+
 section::Contents
 list::
 ##link::#Slice Audio::
