@@ -20,4 +20,18 @@ FluidSineFeature : FluidRTMultiOutUGen {
 		};
 		^this.checkValidInputs;
 	}
+
+	initOutputs{|numChans,rate|
+		if(numChans.isNil or: {numChans < 1})
+		{
+			Error("No input channels").throw
+		};
+
+		channels = Array.fill(numChans * 2, { |i|
+			OutputProxy('control',this,i);
+		});
+		^channels
+	}
+
+	numOutputs { ^(channels.size); }
 }
