@@ -1,6 +1,6 @@
 FluidBufSineFeature : FluidBufProcessor {
 
-	*kr  { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, frequency = -1, magnitude = -1, numPeaks = 10, detectionThreshold = -96, sortBy = 0, windowSize = 1024, hopSize = -1, fftSize = -1, padding = 1, trig = 1, blocking = 0|
+	*kr  { |source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, frequency = -1, magnitude = -1, numPeaks = 10, detectionThreshold = -96, sortBy = 0, freqUnit = 0, magUnit = 0, windowSize = 1024, hopSize = -1, fftSize = -1, padding = 1, trig = 1, blocking = 0|
 
 		var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};
 
@@ -10,10 +10,10 @@ FluidBufSineFeature : FluidBufProcessor {
 
 		source.isNil.if {"FluidBufSineFeature:  Invalid source buffer".throw};
 
-		^FluidProxyUgen.multiNew(\FluidBufSineFeatureTrigger, -1, source, startFrame, numFrames, startChan, numChans, frequency, magnitude, padding, numPeaks, numPeaks, detectionThreshold, sortBy, windowSize, hopSize, fftSize, maxFFTSize, trig, blocking);
+		^FluidProxyUgen.multiNew(\FluidBufSineFeatureTrigger, -1, source, startFrame, numFrames, startChan, numChans, frequency, magnitude, padding, numPeaks, numPeaks, detectionThreshold, sortBy, freqUnit, magUnit, windowSize, hopSize, fftSize, maxFFTSize, trig, blocking);
 	}
 
-	*process { |server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, frequency = -1, magnitude = -1, numPeaks = 10, detectionThreshold = -96, sortBy = 0, windowSize = 1024, hopSize = -1, fftSize = -1, padding = 1, freeWhenDone = true, action|
+	*process { |server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, frequency = -1, magnitude = -1, numPeaks = 10, detectionThreshold = -96, sortBy = 0, freqUnit = 0, magUnit = 0, windowSize = 1024, hopSize = -1, fftSize = -1, padding = 1, freeWhenDone = true, action|
 
 		var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};
 
@@ -26,11 +26,11 @@ FluidBufSineFeature : FluidBufProcessor {
 		^this.new(
 			server, nil, [frequency, magnitude].select{|x| x!= -1}
 		).processList(
-			[source, startFrame, numFrames, startChan, numChans, frequency, magnitude, padding, numPeaks, numPeaks, detectionThreshold, sortBy, windowSize, hopSize, fftSize,maxFFTSize,0],freeWhenDone,action
+			[source, startFrame, numFrames, startChan, numChans, frequency, magnitude, padding, numPeaks, numPeaks, detectionThreshold, sortBy, freqUnit, magUnit, windowSize, hopSize, fftSize,maxFFTSize,0],freeWhenDone,action
 		);
 	}
 
-	*processBlocking { |server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, frequency = -1, magnitude = -1, numPeaks = 10, detectionThreshold = -96, sortBy = 0, windowSize = 1024, hopSize = -1, fftSize = -1, padding = 1, freeWhenDone = true, action|
+	*processBlocking { |server, source, startFrame = 0, numFrames = -1, startChan = 0, numChans = -1, frequency = -1, magnitude = -1, numPeaks = 10, detectionThreshold = -96, sortBy = 0, freqUnit = 0, magUnit = 0, windowSize = 1024, hopSize = -1, fftSize = -1, padding = 1, freeWhenDone = true, action|
 
 		var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};
 
@@ -43,7 +43,7 @@ FluidBufSineFeature : FluidBufProcessor {
 		^this.new(
 			server, nil, [frequency, magnitude].select{|x| x!= -1}
 		).processList(
-			[source, startFrame, numFrames, startChan, numChans, frequency, magnitude, padding, numPeaks, numPeaks, detectionThreshold, sortBy, windowSize, hopSize, fftSize,maxFFTSize,1],freeWhenDone,action
+			[source, startFrame, numFrames, startChan, numChans, frequency, magnitude, padding, numPeaks, numPeaks, detectionThreshold, sortBy, freqUnit, magUnit, windowSize, hopSize, fftSize,maxFFTSize,1],freeWhenDone,action
 		);
 	}
 

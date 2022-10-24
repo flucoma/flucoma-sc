@@ -1,9 +1,9 @@
 FluidSineFeature : FluidRTMultiOutUGen {
-	*kr { arg in = 0, numPeaks = 10, detectionThreshold = -96, sortBy = 0, windowSize= 1024, hopSize= -1, fftSize= -1, maxFFTSize = -1, maxNumPeaks = nil;
+	*kr { arg in = 0, numPeaks = 10, detectionThreshold = -96, sortBy = 0, freqUnit = 0, magUnit = 0, windowSize= 1024, hopSize= -1, fftSize= -1, maxFFTSize = -1, maxNumPeaks = nil;
 
 		maxNumPeaks = maxNumPeaks ? numPeaks;
 
-		^this.multiNew('control', in.asAudioRateInput(this), numPeaks, maxNumPeaks, detectionThreshold, sortBy, windowSize, hopSize, fftSize, maxFFTSize)
+		^this.multiNew('control', in.asAudioRateInput(this), numPeaks, maxNumPeaks, detectionThreshold, sortBy, freqUnit, magUnit, windowSize, hopSize, fftSize, maxFFTSize)
 	}
 
 	init { arg ... theInputs;
