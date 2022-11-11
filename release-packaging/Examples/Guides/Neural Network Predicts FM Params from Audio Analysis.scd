@@ -162,11 +162,11 @@ s.waitForBoot{
 		// MLP Parameters
 		StaticText(win,Rect(0,0,label_width,20)).align_(\right).string_("hidden layers");
 		hidden_tf = TextField(win,Rect(0,0,item_width - label_width,20))
-		.string_(nn.hidden.asString.replace(", "," ")[2..(nn.hidden.asString.size-3)])
+		.string_(nn.hiddenLayers.asString.replace(", "," ")[2..(nn.hiddenLayers.asString.size-3)])
 		.action_{
 			arg tf;
 			var hidden_ = "[%]".format(tf.string.replace(" ",",")).interpret;
-			nn.hidden_(hidden_);
+			nn.hiddenLayers_(hidden_);
 			// nn.prGetParams.postln;
 		};
 
