@@ -4,12 +4,8 @@ FluidBufMelBands : FluidBufProcessor {
 
 		var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};
 
-		source = source.asUGenInput;
-		features = features.asUGenInput;
-
-		source.isNil.if {"FluidBufMelBands:  Invalid source buffer".throw};
-		features.isNil.if {"FluidBufMelBands:  Invalid features buffer".throw};
-
+		source = this.validateBuffer(source, "source");
+		features = this.validateBuffer(features, "features");
 
 		^FluidProxyUgen.kr(\FluidBufMelBandsTrigger,-1, source, startFrame, numFrames, startChan, numChans, features, padding, numBands, numBands,  minFreq, maxFreq,  normalize, scale, windowSize, hopSize, fftSize, maxFFTSize, trig, blocking);
 	}
@@ -18,11 +14,8 @@ FluidBufMelBands : FluidBufProcessor {
 
 		var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};
 
-		source = source.asUGenInput;
-		features = features.asUGenInput;
-
-		source.isNil.if {"FluidBufMelBands:  Invalid source buffer".throw};
-		features.isNil.if {"FluidBufMelBands:  Invalid features buffer".throw};
+		source = this.validateBuffer(source, "source");
+		features = this.validateBuffer(features, "features");
 
 		^this.new(
 			server, nil, [features]
@@ -35,11 +28,8 @@ FluidBufMelBands : FluidBufProcessor {
 
 		var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};
 
-		source = source.asUGenInput;
-		features = features.asUGenInput;
-
-		source.isNil.if {"FluidBufMelBands:  Invalid source buffer".throw};
-		features.isNil.if {"FluidBufMelBands:  Invalid features buffer".throw};
+		source = this.validateBuffer(source, "source");
+		features = this.validateBuffer(features, "features");
 
 		^this.new(
 			server, nil, [features]

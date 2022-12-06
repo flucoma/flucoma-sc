@@ -4,17 +4,14 @@ FluidBufSelect : FluidBufProcessor {
 
 		var params;
 
-		source = source.asUGenInput;
-		destination = destination.asUGenInput;
+		source = this.validateBuffer(source, "source");
+		destination = this.validateBuffer(destination, "destination");
 
 		indices = indices.asArray;
 		channels = channels.asArray;
 
 		indices = [indices.size] ++ indices;
 		channels = [channels.size] ++ channels;
-
-		source.isNil.if {"FluidBufSelect:  Invalid source buffer".throw};
-		destination.isNil.if {"FluidBufSelect:  Invalid destination buffer".throw};
 
 		params = indices ++ channels ++ [trig, blocking]
 
@@ -24,11 +21,8 @@ FluidBufSelect : FluidBufProcessor {
 
 	*process { |server, source, destination, indices=#[-1], channels=#[-1], freeWhenDone = true, action|
 
-		source = source.asUGenInput;
-		destination = destination.asUGenInput;
-
-		source.isNil.if {"FluidBufSelect:  Invalid source buffer".throw};
-		destination.isNil.if {"FluidBufSelect:  Invalid destination buffer".throw};
+		source = this.validateBuffer(source, "source");
+		destination = this.validateBuffer(destination, "destination");
 
 		indices = indices.asArray;
 		channels = channels.asArray;
@@ -41,11 +35,8 @@ FluidBufSelect : FluidBufProcessor {
 
 	*processBlocking { |server, source, destination, indices=#[-1], channels=#[-1], freeWhenDone = true, action|
 
-		source = source.asUGenInput;
-		destination = destination.asUGenInput;
-
-		source.isNil.if {"FluidBufSelect:  Invalid source buffer".throw};
-		destination.isNil.if {"FluidBufSelect:  Invalid destination buffer".throw};
+		source = this.validateBuffer(source, "source");
+		destination = this.validateBuffer(destination, "destination");
 
 		indices = indices.asArray;
 		channels = channels.asArray;

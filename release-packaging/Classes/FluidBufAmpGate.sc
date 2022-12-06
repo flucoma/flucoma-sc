@@ -4,8 +4,8 @@ FluidBufAmpGate : FluidBufProcessor {
 
 		var maxSize = max(minLengthAbove + lookBack, max(minLengthBelow,lookAhead));
 
-		source = source.asUGenInput;
-		indices = indices.asUGenInput;
+		source = this.validateBuffer(source, "source");
+		indices = this.validateBuffer(indices, "indices");
 
 		^FluidProxyUgen.kr(\FluidBufAmpGateTrigger,-1, source, startFrame, numFrames, startChan, numChans, indices, rampUp, rampDown, onThreshold, offThreshold, minSliceLength, minSilenceLength, minLengthAbove, minLengthBelow, lookBack, lookAhead, highPassFreq,maxSize,  trig, blocking);
 	}
@@ -15,8 +15,8 @@ FluidBufAmpGate : FluidBufProcessor {
 
 		var maxSize = max(minLengthAbove + lookBack, max(minLengthBelow,lookAhead));
 
-		source = source ? -1;
-		indices = indices ? -1;
+		source = this.validateBuffer(source, "source");
+		indices = this.validateBuffer(indices, "indices");
 
 		^this.new(
 			server, nil, [indices]
@@ -30,8 +30,8 @@ FluidBufAmpGate : FluidBufProcessor {
 
 		var maxSize = max(minLengthAbove + lookBack, max(minLengthBelow,lookAhead));
 
-		source = source ? -1;
-		indices = indices ? -1;
+		source = this.validateBuffer(source, "source");
+		indices = this.validateBuffer(indices, "indices");
 
 		^this.new(
 			server, nil, [indices]

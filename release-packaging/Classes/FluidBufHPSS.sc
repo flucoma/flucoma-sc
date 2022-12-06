@@ -7,7 +7,7 @@ FluidBufHPSS : FluidBufProcessor {
 		harmonic = harmonic ? -1;
 		percussive = percussive ? -1;
 		residual = residual ? -1;
-		source.isNil.if {"FluidBufHPSS:  Invalid source buffer".throw};
+		source = this.validateBuffer(source, "source");
 
 		^FluidProxyUgen.kr(\FluidBufHPSSTrigger, -1, source, startFrame, numFrames, startChan, numChans, harmonic, percussive, residual, harmFilterSize, harmFilterSize, percFilterSize, percFilterSize, maskingMode, harmThreshFreq1, harmThreshAmp1, harmThreshFreq2, harmThreshAmp2, percThreshFreq1, percThreshAmp1, percThreshFreq2, percThreshAmp2, windowSize, hopSize, fftSize, maxFFTSize,  trig, blocking
 		);
@@ -20,8 +20,7 @@ FluidBufHPSS : FluidBufProcessor {
 		harmonic = harmonic ? -1;
 		percussive = percussive ? -1;
 		residual = residual ? -1;
-		source.isNil.if {"FluidBufHPSS:  Invalid source buffer".throw};
-
+		source = this.validateBuffer(source, "source");
 
 		^this.new(
 			server, nil, [harmonic, percussive, residual].select{|x| x!= -1}
@@ -38,8 +37,7 @@ FluidBufHPSS : FluidBufProcessor {
 		harmonic = harmonic ? -1;
 		percussive = percussive ? -1;
 		residual = residual ? -1;
-		source.isNil.if {"FluidBufHPSS:  Invalid source buffer".throw};
-
+		source = this.validateBuffer(source, "source");
 
 		^this.new(
 			server, nil, [harmonic, percussive, residual].select{|x| x!= -1}

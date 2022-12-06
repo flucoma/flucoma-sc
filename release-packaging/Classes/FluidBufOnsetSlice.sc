@@ -4,15 +4,12 @@ FluidBufOnsetSlice : FluidBufProcessor {
 
 		var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};
 
-		source = source.asUGenInput;
-		indices = indices.asUGenInput;
+		source = this.validateBuffer(source, "source");
+		indices = this.validateBuffer(indices, "indices");
 		metric = FluidOnsetSlice.prSelectMetric(metric) ?? {
 			("FluidBufOnsetSlice: % is not a recognised metric")
 			.format(metric).throw;
 		};
-
-		source.isNil.if {"FluidBufOnsetSlice:  Invalid source buffer".throw};
-		indices.isNil.if {"FluidBufOnsetSlice:  Invalid features buffer".throw};
 
 		^FluidProxyUgen.kr(\FluidBufOnsetSliceTrigger, -1, source, startFrame, numFrames, startChan, numChans, indices, metric, threshold, minSliceLength, filterSize, frameDelta, windowSize, hopSize, fftSize, maxFFTSize, trig, blocking);
 	}
@@ -21,16 +18,13 @@ FluidBufOnsetSlice : FluidBufProcessor {
 
 		var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};
 
-		source = source.asUGenInput;
-		indices = indices.asUGenInput;
+		source = this.validateBuffer(source, "source");
+		indices = this.validateBuffer(indices, "indices");
 		metric = FluidOnsetSlice.prSelectMetric(metric);
 		if (metric.isNil or: metric.isUGen) {
 			("FluidBufOnsetSlice: % is not a recognised metric")
 			.format(metric).throw;
 		};
-
-		source.isNil.if {"FluidBufOnsetSlice:  Invalid source buffer".throw};
-		indices.isNil.if {"FluidBufOnsetSlice:  Invalid features buffer".throw};
 
 		^this.new(
 			server, nil, [indices]
@@ -43,16 +37,13 @@ FluidBufOnsetSlice : FluidBufProcessor {
 
 		var maxFFTSize = if (fftSize == -1) {windowSize.nextPowerOfTwo} {fftSize};
 
-		source = source.asUGenInput;
-		indices = indices.asUGenInput;
+		source = this.validateBuffer(source, "source");
+		indices = this.validateBuffer(indices, "indices");
 		metric = FluidOnsetSlice.prSelectMetric(metric);
 		if (metric.isNil or: metric.isUGen) {
 			("FluidBufOnsetSlice: % is not a recognised metric")
 			.format(metric).throw;
 		};
-
-		source.isNil.if {"FluidBufOnsetSlice:  Invalid source buffer".throw};
-		indices.isNil.if {"FluidBufOnsetSlice:  Invalid features buffer".throw};
 
 		^this.new(
 			server, nil, [indices]
