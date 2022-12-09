@@ -151,3 +151,5 @@ FluidBufStats.process(s,~pitches,numChans:1,stats:~stats,weights:~thresh_buf,out
 //compare with the source
 ~src.play;
 )
+
+// further investigations are also in the Examples/dataset/1-learning examples/10b-weighted-pitch-comparison.scd
