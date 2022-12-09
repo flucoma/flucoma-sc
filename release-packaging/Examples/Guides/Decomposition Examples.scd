@@ -61,7 +61,7 @@ y.set(\mix,1);
 // send just the 'sines' to a Reverb
 (
 {
-	var sig = PlayBuf.ar(1,~song,BufRateScale.ir(~buf),loop:1);
+	var sig = PlayBuf.ar(2,~song,BufRateScale.ir(~buf),loop:1).sum * 0.5;
 	var sines, residual;
 	var latency = ((15 * 512) + 1024 ) / ~song.sampleRate;
 	# sines, residual = FluidSines.ar(sig);
@@ -72,7 +72,7 @@ y.set(\mix,1);
 // send just the 'residual' to a Reverb
 (
 {
-	var sig = PlayBuf.ar(1,~song,BufRateScale.ir(~buf),loop:1);
+	var sig = PlayBuf.ar(2,~song,BufRateScale.ir(~buf),loop:1).sum * 0.5;
 	var sines, residual;
 	var latency = ((15 * 512) + 1024 ) / ~song.sampleRate;
 	# sines, residual = FluidSines.ar(sig);

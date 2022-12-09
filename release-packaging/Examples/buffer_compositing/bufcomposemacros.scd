@@ -25,7 +25,7 @@
 			Routine{
 			for (1,x.size - 1, {
 				arg i;
-				FluidBufCompose.process(s,x[i],destination:x[0], destStartFrame:x[0].numFrames);
+				FluidBufCompose.process(s,x[i],destination:x[0], destStartFrame:x[0].numFrames).wait;
 			});
 			"Done!".postln;
 			}.play;
@@ -83,7 +83,7 @@
 			Routine{
 			for (1,x.size - 1, {
 				arg i;
-				FluidBufCompose.process(s,x[i],destination:x[0], destStartChan:x[0].numChannels);
+				FluidBufCompose.process(s,x[i],destination:x[0], destStartChan:x[0].numChannels).wait;
 			});
 			"Done!".postln;
 			}.play;
