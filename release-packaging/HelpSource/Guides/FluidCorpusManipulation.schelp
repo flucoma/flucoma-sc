@@ -49,6 +49,7 @@ table::
 ##link::Classes/FluidAmpFeature:: || link::Classes/FluidBufAmpFeature:: || Detrending Amplitude Envelope Descriptor
 ##link::Classes/FluidNoveltyFeature:: || link::Classes/FluidBufNoveltyFeature:: || Novelty descriptor based on a choice of analysis descriptors
 ##link::Classes/FluidOnsetFeature:: || link::Classes/FluidBufOnsetFeature:: || Descriptor comparing spectral frames using a choice of comparisons
+##link::Classes/FluidSineFeature:: || link::Classes/FluidBufSineFeature:: || Sinusoidal peak extraction
 ::
 
 section:: Decompose Audio
