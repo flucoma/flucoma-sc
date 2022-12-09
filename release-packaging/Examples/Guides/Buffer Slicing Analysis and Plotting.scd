@@ -87,7 +87,7 @@ s.waitForBoot{
 				ds.dump({ // dump out that dataset to dictionary so that we can use it with the plotter!
 					arg ds_dict;// the dictionary version of this dataset
 					var previous = nil; // a variable for checking if the currently passed nearest neighbour is the same or different from the previous one
-					FluidPlotter(bounds:Rect(0,0,800,800),dict:ds_dict,mouseMoveAction:{
+					{FluidPlotter(bounds:Rect(0,0,800,800),dict:ds_dict,mouseMoveAction:{
 						/* make a FluidPlotter. nb. the dict is the dict from a FluidDataSet.dump. the mouseMoveAction is a callback function that is called
 						anytime the mouseDownAction or mouseMoveAction function is called on this view. i.e., anytime you click or drag on this plotter */
 
@@ -99,7 +99,7 @@ s.waitForBoot{
 						(4) modifier keys that are pressed while clicking or dragging
 						*/
 						point_buf.setn(0,[x,y]); // write the x y position into a buffer so that we can use it to...
-						kdtree.kNearest(point_buf,{ // look up the nearest slice to that x y position
+						kdtree.kNearest(point_buf, action:{ // look up the nearest slice to that x y position
 							arg nearest; // this is reported back as a symbol, so...
 							nearest = nearest.asString; // we'll convert it to a string here
 
@@ -124,7 +124,7 @@ s.waitForBoot{
 								previous = nearest;
 							});
 						});
-					});
+					})}.defer;
 				});
 			});
 		});

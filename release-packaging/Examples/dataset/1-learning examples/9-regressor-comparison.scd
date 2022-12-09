@@ -30,7 +30,7 @@
 	~knnALLval.add((x["data"][i.asString]))
 }};
 )
-~knnALLval.flatten(1).plot(\source,discrete: true, minval:0, maxval: 1).plotMode=\bars;
+~knnALLval.flatten(1).plot(\knn,discrete: true, minval:0, maxval: 1).plotMode=\bars;
 
 //Regressing directly these value-pairs in knn we see a full set of values being predicted: we can see what looks like linear interpolation, but not outside the boundaries. This is because we make a weighted average of the nearest 2 neigbourgs, which are not necessarily around the predicted value, they might both be on the same side like 0 to 9 (10 and 20 are nearest) and 31 to 40 (20 and 30 are nearest).
 
@@ -46,7 +46,7 @@
 	~mlpALLval.add((x["data"][i.asString]))
 }};
 )
-~mlpALLval.flatten(1).plot(\source,discrete: true, minval:0, maxval: 1).plotMode=\bars;
+~mlpALLval.flatten(1).plot(\mlp_full_range,discrete: true, minval:0, maxval: 1).plotMode=\bars;
 
 //We see that we have a large bump and nothing else. This is because our input are very large (10-30) and outside the optimal range of the activation function (0-1 for sigmoid) so our network saturates and cannot recover. If we normalise our inputs and we rerun the network we get a curve that fits the 3 values. You can fit more than once to get more iterations and lower the error.
 
@@ -63,7 +63,7 @@
 	~mlpALLval.add((x["data"][i.asString]))
 }};
 )
-~mlpALLval.flatten(1).plot(\source,discrete: true, minval:0, maxval: 1).plotMode=\bars;
+~mlpALLval.flatten(1).plot(\mlp_normalized,discrete: true, minval:0, maxval: 1).plotMode=\bars;
 
 //Now we can add one value to our sparse dataset. Note that we revert back to full range values here for the example
 ~dsIN.load(Dictionary.newFrom([\cols, 1, \data, Dictionary.newFrom([\point1, [10], \point2, [20], \point3, [30], \point4, [22]])]));

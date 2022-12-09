@@ -1,9 +1,9 @@
+// first run this code - it will sample 40 random points
+// you can add more points if you want
+// you must 'train' it
+// then run the playing target at line 335 below and press 'predict'
 (
 Window.closeAll;
-s.options.inDevice_("MacBook Pro Microphone");
-s.options.outDevice_("External Headphones");
-// s.options.sampleRate_(48000);
-s.options.sampleRate_(44100);
 s.waitForBoot{
 	Task{
 		var win = Window(bounds:Rect(100,100,1000,800));
@@ -134,7 +134,7 @@ s.waitForBoot{
 		StaticText(win,Rect(0,0,label_width,20)).string_("% MFCCs".format(nMFCCs));
 		win.view.decorator.nextLine;
 
-		statsWinSl = EZSlider(win,Rect(0,0,item_width,20),"fmcc avg smooth",nil.asSpec,{arg sl; synth.set(\avg_win,sl.value)},0,true,label_width);
+		statsWinSl = EZSlider(win,Rect(0,0,item_width,20),"mfcc avg smooth",nil.asSpec,{arg sl; synth.set(\avg_win,sl.value)},0,true,label_width);
 		win.view.decorator.nextLine;
 
 		mfcc_multslider = MultiSliderView(win,Rect(0,0,item_width,200))
@@ -334,7 +334,6 @@ s.waitForBoot{
 
 (
 Routine{
-	//~path = FluidFilesPath("Tremblay-AaS-VoiceQC-B2K.wav");
 	~path = FluidFilesPath("Tremblay-CEL-GlitchyMusicBoxMelo.wav");
 	~test_buf = Buffer.readChannel(s,~path,channels:[0]);
 	s.sync;
