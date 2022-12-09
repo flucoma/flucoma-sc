@@ -11,7 +11,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 ################################################################################
 # Paths
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/install" CACHE PATH "")
@@ -89,7 +89,7 @@ include(flucoma-buildtools)
 include(flucoma-buildtype)
 # endif()
 
-option(DOCS "Generate scdocs" OFF)
+option(DOCS "Generate scdocs" ON)
 set(FLUID_DOCS_PATH "" CACHE PATH "Optional path to flucoma-docs (needed for docs); will download if absent")
 
 if(DOCS)

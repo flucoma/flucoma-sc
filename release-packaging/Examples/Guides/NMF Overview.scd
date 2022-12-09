@@ -1,6 +1,3 @@
-s.options.sampleRate_(44100);
-s.options.device_("Fireface UC Mac (24006457)");
-
 (
 // decompose!
 s.waitForBoot{
@@ -8,7 +5,7 @@ s.waitForBoot{
 		var drums = Buffer.read(s,FluidFilesPath("Nicol-LoopE-M.wav"));
 		var resynth = Buffer(s);
 		var n_components = 2;
-		FluidBufNMF.process(s,drums,resynth:resynth,components:n_components).wait;
+		FluidBufNMF.process(s,drums,resynth:resynth,components:n_components,resynthMode: 1).wait;
 
 		"original sound".postln;
 		{
@@ -46,7 +43,7 @@ Routine{
 	~bases = Buffer(s);
 	~activations = Buffer(s);
 	~resynth = Buffer(s);
-	FluidBufNMF.process(s,drums,bases:~bases,activations:~activations,resynth:~resynth,components:n_components).wait;
+	FluidBufNMF.process(s,drums,bases:~bases,activations:~activations,resynth:~resynth,components:n_components,resynthMode: 1).wait;
 	{
 		~bases.plot("bases");
 		~activations.plot("activations");

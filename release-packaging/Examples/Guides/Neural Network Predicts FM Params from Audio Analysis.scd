@@ -1,9 +1,9 @@
+// first run this code - it will sample 40 random points
+// you can add more points if you want
+// you must 'train' it
+// then run the playing target at line 335 below and press 'predict'
 (
 Window.closeAll;
-s.options.inDevice_("MacBook Pro Microphone");
-s.options.outDevice_("External Headphones");
-// s.options.sampleRate_(48000);
-s.options.sampleRate_(44100);
 s.waitForBoot{
 	Task{
 		var win = Window(bounds:Rect(100,100,1000,800));
@@ -47,37 +47,33 @@ s.waitForBoot{
 				});
 			});
 		};
-		var open_mlp = {
-			arg path;
-			// nn.prGetParams.postln;
-			nn.read(path,{
-				var params = nn.prGetParams;
-				var n_layers = params[1];
-				var layers_string = "";
+		var display_mlp_params = {
+			var params = nn.prGetParams;
+			var n_layers = params[1];
+			var layers_string = "";
 
-				// params.postln;
+			// params.postln;
 
-				n_layers.do({
-					arg i;
-					if(i > 0,{layers_string = "% ".format(layers_string)});
-					layers_string = "%%".format(layers_string,params[2+i]);
-				});
-
-				nn.maxIter_(maxIter_nb.value);
-				nn.learnRate_(learnRate_nb.value);
-				nn.momentum_(momentum_nb.value);
-				nn.batchSize_(batchSize_nb.value);
-
-				defer{
-					hidden_tf.string_(layers_string);
-					act_pum.value_(nn.activation);
-					outAct_pum.value_(nn.outputActivation);
-					/*					maxIter_nb.value_(nn.maxIter);
-					learnRate_nb.value_(nn.learnRate);
-					momentum_nb.value_(nn.momentum);
-					batchSize_nb.value_(nn.batchSize);*/
-				};
+			n_layers.do({
+				arg i;
+				if(i > 0,{layers_string = "% ".format(layers_string)});
+				layers_string = "%%".format(layers_string,params[2+i]);
 			});
+
+			nn.maxIter_(maxIter_nb.value);
+			nn.learnRate_(learnRate_nb.value);
+			nn.momentum_(momentum_nb.value);
+			nn.batchSize_(batchSize_nb.value);
+
+			defer{
+				hidden_tf.string_(layers_string);
+				act_pum.value_(nn.activation);
+				outAct_pum.value_(nn.outputActivation);
+				/*					maxIter_nb.value_(nn.maxIter);
+				learnRate_nb.value_(nn.learnRate);
+				momentum_nb.value_(nn.momentum);
+				batchSize_nb.value_(nn.batchSize);*/
+			};
 		};
 
 		~in_bus = Bus.audio(s);
@@ -138,7 +134,7 @@ s.waitForBoot{
 		StaticText(win,Rect(0,0,label_width,20)).string_("% MFCCs".format(nMFCCs));
 		win.view.decorator.nextLine;
 
-		statsWinSl = EZSlider(win,Rect(0,0,item_width,20),"fmcc avg smooth",nil.asSpec,{arg sl; synth.set(\avg_win,sl.value)},0,true,label_width);
+		statsWinSl = EZSlider(win,Rect(0,0,item_width,20),"mfcc avg smooth",nil.asSpec,{arg sl; synth.set(\avg_win,sl.value)},0,true,label_width);
 		win.view.decorator.nextLine;
 
 		mfcc_multslider = MultiSliderView(win,Rect(0,0,item_width,200))
@@ -162,11 +158,11 @@ s.waitForBoot{
 		// MLP Parameters
 		StaticText(win,Rect(0,0,label_width,20)).align_(\right).string_("hidden layers");
 		hidden_tf = TextField(win,Rect(0,0,item_width - label_width,20))
-		.string_(nn.hidden.asString.replace(", "," ")[2..(nn.hidden.asString.size-3)])
+		.string_(nn.hiddenLayers.asString.replace(", "," ")[2..(nn.hiddenLayers.asString.size-3)])
 		.action_{
 			arg tf;
 			var hidden_ = "[%]".format(tf.string.replace(" ",",")).interpret;
-			nn.hidden_(hidden_);
+			nn.hiddenLayers_(hidden_);
 			// nn.prGetParams.postln;
 		};
 
@@ -256,20 +252,39 @@ s.waitForBoot{
 		win.view.decorator.nextLine;
 
 		Button(win,Rect(0,0,100,20))
-		.states_([["Save MLP"]])
+		.states_([["Save"]])
 		.action_{
 			Dialog.savePanel({
 				arg path;
-				nn.write(path);
+				nn.dump{
+					arg mlp_dict;
+					scaler_params.dump{
+						arg scaler_params_dict;
+						scaler_mfcc.dump{
+							arg scaler_mfcc_dict;
+							var dict = Dictionary.new;
+							dict['mlp'] = mlp_dict;
+							dict['scaler_params'] = scaler_params_dict;
+							dict['scaler_mfcc'] = scaler_mfcc_dict;
+
+							dict.writeArchive(path);
+						};
+					};
+				};
+
 			});
 		};
 
 		Button(win,Rect(0,0,100,20))
-		.states_([["Open MLP"]])
+		.states_([["Open"]])
 		.action_{
 			Dialog.openPanel({
 				arg path;
-				open_mlp.(path);
+				var dict = Object.readArchive(path);
+
+				nn.load(dict['mlp'].postln,{display_mlp_params.value});
+				scaler_params.load(dict['scaler_params'].postln);
+				scaler_mfcc.load(dict['scaler_mfcc'].postln);
 			});
 		};
 
@@ -299,15 +314,6 @@ s.waitForBoot{
 
 		statsWinSl.valueAction_(0.0);
 
-		/*		100.do{
-		var cfreq = exprand(20,20000);
-		var mfreq = exprand(20,20000);
-		var index = rrand(0.0,20);
-		parambuf.setn(0,[cfreq,mfreq,index]);
-		0.2.wait;
-		add_point.value;
-		0.05.wait;
-		};*/
 		40.do{
 			var cfreq = exprand(100.0,1000.0);
 			var mfreq = exprand(100.0,min(cfreq,500.0));
@@ -328,7 +334,6 @@ s.waitForBoot{
 
 (
 Routine{
-	//~path = FluidFilesPath("Tremblay-AaS-VoiceQC-B2K.wav");
 	~path = FluidFilesPath("Tremblay-CEL-GlitchyMusicBoxMelo.wav");
 	~test_buf = Buffer.readChannel(s,~path,channels:[0]);
 	s.sync;

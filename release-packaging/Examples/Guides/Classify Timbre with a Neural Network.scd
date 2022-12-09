@@ -1,14 +1,12 @@
 (
 // 1. Instantiate some of the things we need.
 Window.closeAll;
-s.options.sampleRate_(48000);
-s.options.device_("Fireface UC Mac (24006457)");
 s.waitForBoot{
 	Task{
 		var win;
 		~nMFCCs = 13;
-		~trombone = Buffer.read(s,"/Users/macprocomputer/Desktop/_flucoma/code/flucoma-core-src/AudioFiles/Olencki-TenTromboneLongTones-M.wav");
-		~oboe = Buffer.read(s,"/Users/macprocomputer/Desktop/_flucoma/code/flucoma-core-src/AudioFiles/Harker-DS-TenOboeMultiphonics-M.wav");
+		~trombone = Buffer.read(s,FluidFilesPath("Olencki-TenTromboneLongTones-M.wav"));
+		~oboe = Buffer.read(s,FluidFilesPath("Harker-DS-TenOboeMultiphonics-M.wav"));
 		~timbre_buf = Buffer.alloc(s,~nMFCCs);
 		~ds = FluidDataSet(s);
 		~labels = FluidLabelSet(s);
@@ -169,63 +167,10 @@ some points that are labeled "silence".
 ~ds.print;
 ~labels.print;
 
-~ds.write("/Users/macprocomputer/Desktop/_flucoma/code/Utrecht-2021/Lesson_Plans/classifier (pre-workshop)/%_ds.json".format(Date.localtime.stamp));
-~labels.write("/Users/macprocomputer/Desktop/_flucoma/code/Utrecht-2021/Lesson_Plans/classifier (pre-workshop)/%_labels.json".format(Date.localtime.stamp))
+~ds.write("tmp/%_ds.json".format(Date.localtime.stamp));
+~labels.write("tmp/%_labels.json".format(Date.localtime.stamp))
 
 /*
 12. Now go retrain some more and do some more predictions. The silent gaps between
 tones should now report a "2".
 */
-
-// ========================= DATA VERIFICATION ADDENDUM ============================
-
-// This data is pretty well separated, except for that one trombone point.
-~ds.read("/Users/macprocomputer/Desktop/_flucoma/code/Utrecht-2021/Lesson_Plans/classifier (pre-workshop)/211102_122330_ds.json");
-~labels.read("/Users/macprocomputer/Desktop/_flucoma/code/Utrecht-2021/Lesson_Plans/classifier (pre-workshop)/211102_122331_labels.json");
-
-/*
-This data is not well separated. Once can see that in the cluster that should probably be all silences,
-there is a lot of oboe and trombone points mixed in!
-
-This will likely be confusing to a neural network!
-*/
-
-~ds.read("/Users/macprocomputer/Desktop/_flucoma/code/Utrecht-2021/Lesson_Plans/classifier (pre-workshop)/211102_122730_ds.json");
-~labels.read("/Users/macprocomputer/Desktop/_flucoma/code/Utrecht-2021/Lesson_Plans/classifier (pre-workshop)/211102_122731_labels.json");
-
-(
-Task{
-	~stand = FluidStandardize(s);
-	~ds_plotter = FluidDataSet(s);
-	~umap = FluidUMAP(s,2,30,0.5);
-	~normer = FluidNormalize(s);
-	~kdtree = FluidKDTree(s);
-	~pt_buf = Buffer.alloc(s,2);
-	s.sync;
-
-	~stand.fitTransform(~ds,~ds_plotter,{
-		~umap.fitTransform(~ds_plotter,~ds_plotter,{
-			~normer.fitTransform(~ds_plotter,~ds_plotter,{
-				~kdtree.fit(~ds_plotter,{
-					~ds_plotter.dump({
-						arg ds_dict;
-						~labels.dump({
-							arg label_dict;
-							// label_dict.postln;
-							~plotter = FluidPlotter(bounds:Rect(0,0,800,800),dict:ds_dict,mouseMoveAction:{
-								arg view, x, y;
-								~pt_buf.setn(0,[x,y]);
-								~kdtree.kNearest(~pt_buf,{
-									arg nearest;
-									"%:\t%".format(nearest,label_dict.at("data").at(nearest.asString)[0]).postln;
-								});
-							});
-							~plotter.categories_(label_dict);
-						});
-					});
-				});
-			});
-		});
-	});
-}.play(AppClock);
-)

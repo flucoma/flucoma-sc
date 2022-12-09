@@ -9,7 +9,7 @@
 (
 // ============= 1. LOAD SOME FILES TO BE THE SOURCE MATERIAL ===================
 // put your own folder path here! it's best if they're all mono for now.
-~source_files_folder = "/Users/macprocomputer/Desktop/sccm/files_fabrizio_01/src_files/";
+~source_files_folder = FluidFilesPath();
 
 ~loader = FluidLoadFolder(~source_files_folder); // this is a nice helper class that will load a bunch of files from a folder.
 ~loader.play(s,{ // .play will cause it to *actually* do the loading
@@ -62,7 +62,7 @@ FluidBufOnsetSlice.process(s,~source_buf,indices:~source_indices_buf,metric:9,th
 				"analyzing slice: % / %".format(slice_index + 1,slices_array.size - 1).postln;
 
 				// mfcc analysis, hop over that 0th coefficient because it relates to loudness and here we want to focus on timbre
-				FluidBufMFCC.process(s,audio_buffer,start_frame,num_frames,features:features_buf,startCoeff:1,numCoeffs:~nmfccs).wait;
+				FluidBufMFCC.process(s,audio_buffer,start_frame,num_frames,features:features_buf,startCoeff:1,numCoeffs:~nmfccs, numChans: 1).wait;
 
 				// get a statistical summary of the MFCC analysis for this slice
 				FluidBufStats.process(s,features_buf,stats:stats_buf).wait;
@@ -205,7 +205,7 @@ Routine{
 		var end_frame = Index.kr(~source_indices_buf,index+1); // same for the end frame
 		var num_frames = end_frame - start_frame;
 		var dur_secs = min(num_frames / SampleRate.ir(~source_buf),src_dur);
-		var sig = PlayBuf.ar(1,~source_buf,BufRateScale.ir(~source_buf),0,start_frame,0,2);
+		var sig = PlayBuf.ar(~loader.buffer.numChannels,~source_buf,BufRateScale.ir(~source_buf),0,start_frame,0,2);
 		var env = EnvGen.kr(Env([0,1,1,0],[0.03,dur_secs-0.06,0.03]),doneAction:2);
 		// sig = sig * env; // include this env if you like, but keep the line above because it will free the synth after the slice!
 		sig.dup;
@@ -219,7 +219,10 @@ Routine{
 // is is very similar to step 8 above, but now instead of playing the slice of
 // the drum loop, it get's the analysis of the drum loop's slice into "query_buf",
 // then uses that info to lookup the nearest neighbour in the source dataset and
-// play that slice
+// play that slice. If you used, at line 12 above, the FluCoMa sound set, it sounds boringly
+// similar: this is because the target drum loop is in the corpus! So it finds, for each slice
+// itself... this is a good incentive to reload, with your own soundbank :)
+
 Routine{
 	var query_buf = Buffer.alloc(s,~nmfccs); // a buffer for doing the neighbor lookup with
 	var scaled_buf = Buffer.alloc(s,~nmfccs);
@@ -261,7 +264,7 @@ Routine{
 					// once it's loaded, scale it using the scaler
 					~scaler.transformPoint(query_buf,scaled_buf,{
 						// once it's neighbour data point in the kdtree of source slices
-						~kdtree.kNearest(scaled_buf,{
+						~kdtree.kNearest(scaled_buf,action: {
 							arg nearest;
 
 							// peel off just the integer part of the slice to use in the helper function
