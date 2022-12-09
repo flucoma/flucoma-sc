@@ -47,9 +47,9 @@ y = Synth(\becauseIcan,[\bufnum, b.bufnum, \nmfa, c.bufnum, \nmfb, d.bufnum, \in
 (
 w = OSCFunc({ arg msg;
 			if(msg[3]== 1, {
-			FluidBufNMF.process(s, b, numFrames: 22500, resynth: c.bufnum, components: 3, fftSize: 1024, windowSize: 512, hopSize: 256);
+			FluidBufNMF.process(s, b, numFrames: 22500, resynth: c.bufnum, resynthMode: 1, components: 3, fftSize: 1024, windowSize: 512, hopSize: 256);
 	}, {
-			FluidBufNMF.process(s, b, 22050, 22500, resynth: d.bufnum, components: 3, fftSize: 1024, windowSize: 512, hopSize: 256);
+			FluidBufNMF.process(s, b, 22050, 22500, resynth: d.bufnum, resynthMode: 1, components: 3, fftSize: 1024, windowSize: 512, hopSize: 256);
 	});}, '/processplease', s.addr);
 )
 

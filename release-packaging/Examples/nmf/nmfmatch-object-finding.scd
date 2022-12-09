@@ -11,7 +11,7 @@ e = Buffer.new(s);
 // train where all objects are present
 (
 Routine {
-    FluidBufNMF.process(s,b,130000,150000,0,1, c, x, components:10);
+    FluidBufNMF.process(s, b, startFrame: 130000, numFrames: 150000, numChans: 1, resynth: c, resynthMode: 1, bases:  x, components:10).wait;
     c.query;
 }.play;
 )
@@ -19,12 +19,12 @@ Routine {
 // wait for the query to print
 // then find a component for each item you want to find. You could also sum them. Try to find a component with a good object-to-rest ratio
 (
-    ~dog =1;
+    ~dog =0;
     {PlayBuf.ar(10,c)[~dog]}.play
 )
 
 (
-    ~bird = 3;
+    ~bird = 1;
     {PlayBuf.ar(10,c)[~bird]}.play
 )
 
@@ -32,8 +32,8 @@ Routine {
 // copy at least one other component to a third filter, a sort of left-over channel
 (
 Routine{
-	FluidBufCompose.process(s, x, startChan:~dog, numChans: 1, destination: e);
-	FluidBufCompose.process(s, x, startChan:~bird, numChans: 1, destStartChan: 1, destination: e, destGain:1);
+	FluidBufCompose.process(s, x, startChan:~dog, numChans: 1, destination: e).wait;
+	FluidBufCompose.process(s, x, startChan:~bird, numChans: 1, destStartChan: 1, destination: e, destGain:1).wait;
 	(0..9).removeAll([~dog,~bird]).do({|chan|FluidBufCompose.process(s,x, startChan:chan, numChans: 1, destStartChan: 2, destination: e, destGain:1)});
     e.query;
 }.play;

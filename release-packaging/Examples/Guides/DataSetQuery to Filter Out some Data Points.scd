@@ -13,7 +13,7 @@ Routine{
 	~windowSize = 4096;
 	~hopSize = 512;
 
-	~buf = Buffer.read(s,"/Users/macprocomputer/Desktop/_flucoma/code/flucoma-core-src/AudioFiles/Tremblay-FMTri-M.wav");
+	~buf = Buffer.read(s,FluidFilesPath("Tremblay-FMTriDist-M.wav"));
 
 	s.sync;
 
