@@ -85,8 +85,9 @@ public:
     using Reportage = decltype(static_cast<FluidSCWrapper*>(x)->mReportage);
     
     Reportage* reportage = initialized ? &(static_cast<FluidSCWrapper*>(x)->mReportage) : new Reportage();
-          
-    p.template setParameterValuesRT<ControlSetter>(verbose ? reportage: nullptr , x, inputs, alloc);
+
+    p.template setParameterValuesRT<ControlSetter>(
+        verbose ? reportage : nullptr, x, inputs, p, alloc);
     if (constrain) p.constrainParameterValuesRT(verbose ? reportage : nullptr);
     if(verbose)
     {
