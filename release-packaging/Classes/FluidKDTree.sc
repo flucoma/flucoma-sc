@@ -36,13 +36,16 @@ FluidKDTree : FluidModelObject
 		this.prSendMsg(this.kNearestMsg(buffer,k));
 	}
 
-	kNearestDistMsg {|buffer|
-		^this.prMakeMsg(\kNearestDist,id,this.prEncodeBuffer(buffer));
+	kNearestDistMsg {|buffer, k|
+		k !?
+		{^this.prMakeMsg(\kNearestDist,id,this.prEncodeBuffer(buffer),k);}
+		??
+		{^this.prMakeMsg(\kNearestDist,id,this.prEncodeBuffer(buffer));}
 	}
 
-	kNearestDist { |buffer, action|
+	kNearestDist { |buffer, k, action|
 		actions[\kNearestDist] = [numbers(FluidMessageResponse,_,nil,_),action];
-		this.prSendMsg(this.kNearestDistMsg(buffer));
+		this.prSendMsg(this.kNearestDistMsg(buffer,k));
 	}
 
 	kr{|trig, inputBuffer,outputBuffer, numNeighbours = 1, lookupDataSet|
