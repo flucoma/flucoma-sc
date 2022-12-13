@@ -272,8 +272,8 @@ private:
         : NRTCommand{world, args, replyAddr, !IsNamedShared_v<Client>},
           mParams{Client::getParameterDescriptors(), NRTCommand::allocator()}
     {
-      mParams.template setParameterValuesRT<ParamsFromOSC>(nullptr, world,
-                                                           *args, NRTCommand::allocator());
+      mParams.template setParameterValuesRT<ParamsFromOSC>(
+          nullptr, world, *args, mParams, NRTCommand::allocator());
     }
 
     CommandNew(index id, World* world, FloatControlsIter& args, Unit* x)
@@ -281,7 +281,7 @@ private:
                                          NRTCommand::allocator()}
     {
       mParams.template setParameterValuesRT<ParamsFromSynth>(
-          nullptr, x, args, NRTCommand::allocator());
+          nullptr, x, args, mParams, NRTCommand::allocator());
     }
 
     static const char* name()
@@ -364,8 +364,8 @@ private:
       if (auto ptr = get(NRTCommand::mID).lock())
       {
         ptr->mDone.store(false, std::memory_order_release);
-        mParams.template setParameterValuesRT<ParamsFromOSC>(nullptr, world,
-                                                             ar, NRTCommand::allocator());
+        mParams.template setParameterValuesRT<ParamsFromOSC>(
+            nullptr, world, ar, mParams, NRTCommand::allocator());
         mSynchronous = static_cast<bool>(ar.geti());
       } // if this fails, we'll hear about it in stage2 anyway
     }
@@ -716,7 +716,7 @@ private:
       if (auto ptr = get(NRTCommand::mID).lock())
       {
         ptr->mParams.template setParameterValuesRT<ParamsFromOSC>(
-            nullptr, world, ar, NRTCommand::allocator());
+            nullptr, world, ar, ptr->mParams, NRTCommand::allocator());
         Result result = validateParameters(ptr->mParams);
         ptr->mClient.setParams(ptr->mParams);
       }
@@ -747,7 +747,7 @@ private:
       if (auto ptr = get(NRTCommand::mID).lock())
       {
         ptr->mParams.template setParameterValues<ParamsFromOSC>(
-            true, world, mArgs, FluidDefaultAllocator());
+            true, world, mArgs, ptr->mParams, FluidDefaultAllocator());
         Result result = validateParameters(ptr->mParams);
         ptr->mClient.setParams(ptr->mParams);
       }
