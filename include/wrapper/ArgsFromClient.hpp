@@ -126,12 +126,13 @@ struct ParamReader<impl::FloatControlsIter>
     auto id = fromArgs(x, args, index{}, 0);
     return  {id >= 0 ? std::to_string(id).c_str() : "" };
   }
-  
-  static auto fromArgs(Unit*,Controls& args,typename LongRuntimeMaxT::type&, int)
+
+  static auto fromArgs(Unit*, Controls& args, typename LongRuntimeMaxT::type&,
+                       int)
   {
-      return typename LongRuntimeMaxT::type{static_cast<index>(args.next()), static_cast<index>(args.next())}; 
+    return typename LongRuntimeMaxT::type{static_cast<index>(args.next()),
+                                          static_cast<index>(args.next())};
   }
-  
 };
 
 // NRT case: we're decoding data from sc_msg_iter*, there will be a World*, we can't have LocalBufs
@@ -329,11 +330,13 @@ struct ClientParams{
 
     
     /// Grizzly enable_if hackage coming up. Need to brute force an int from incoming data into a string param for FluidDataSet / FluidLabelSet. 
-    /// This will go away one day    
+    /// This will go away one day
 
-    template<typename Context, typename Client = typename Wrapper::Client, size_t Number = N>
-    std::enable_if_t<!impl::IsNamedShared_v<Client> || Number!=0, typename T::type>
-    operator()(Context* x, ArgType& args, Allocator& alloc)
+    template <typename Context, typename Params,
+              typename Client = typename Wrapper::Client, size_t Number = N>
+    std::enable_if_t<!impl::IsNamedShared_v<Client> || Number != 0,
+                     typename T::type>
+    operator()(Context* x, ArgType& args, Params& p, Allocator& alloc)
     {
       // Just return default if there's nothing left to grab
       if (args.remain() == 0)
@@ -351,12 +354,25 @@ struct ClientParams{
         a[i] = static_cast<LiteralType>(
             ParamReader<ArgType>::fromArgs(x, args, a[0], 0));
 
-      return a.value();
+      /// He said "I don't like it, but I have to go along with it"
+      /// Make sure that the maximum for LongRuntimeMax params is
+      /// properly constrained *as soon as possible*
+      if constexpr (std::is_same_v<T, LongRuntimeMaxT>)
+      {
+        auto  param = a.value();
+        index maximum = param.maxRaw();
+        maximum = p.template applyConstraintToMax<N>(maximum);
+        return LongRuntimeMaxParam(param(), maximum);
+      }
+      else
+        return a.value();
     }
-    
-    template<typename Context, typename Client = typename Wrapper::Client, size_t Number = N>
-    std::enable_if_t<impl::IsNamedShared_v<Client> && Number==0, typename T::type>
-    operator()(Context* x, ArgType& args, Allocator& alloc)
+
+    template <typename Context, typename Params,
+              typename Client = typename Wrapper::Client, size_t Number = N>
+    std::enable_if_t<impl::IsNamedShared_v<Client> && Number == 0,
+                     typename T::type>
+    operator()(Context* x, ArgType& args, Params&, Allocator& alloc)
     {
       // Just return default if there's nothing left to grab
       if (args.remain() == 0)
