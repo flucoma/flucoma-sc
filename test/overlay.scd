@@ -14,7 +14,7 @@ s.waitForBoot{
 		imageBuffer.loadToFloatArray(action:{
 			arg vals;
 			fork({
-				var colors = CSVFileReader.readInterpret(FluidFilesPath("../Resources/color-schemes/%.csv".format(color))).collect{
+				var colors = CSVFileReader.readInterpret(FluidFilesPath("../color-schemes/%.csv".format(color))).collect{
 					arg row;
 					Color.fromArray(row);
 				};

@@ -30,7 +30,7 @@
 	arg rasterBuffer;
 	var colors;
 
-	colors = CSVFileReader.readInterpret(FluidFilesPath("../Resources/color-schemes/%.csv".format("CET-L16"))).collect{
+	colors = CSVFileReader.readInterpret(FluidFilesPath("../color-schemes/%.csv".format("CET-L16"))).collect{
 		arg row;
 		Color.fromArray(row);
 	};
