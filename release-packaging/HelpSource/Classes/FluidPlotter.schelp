@@ -121,10 +121,10 @@ ARGUMENT:: size
 What size to make the point. This is a multiplier that modifies the default point size of 6 pixels. The default is 1. See strong::pointSize:: method above.
 
 METHOD:: highlight
-Increase the size of a point to make it more salient. Only one point can be "highlighted" at a time. To increase the size of multiple points, use method strong::pointSize::.
+Increase the size of points to make them more salient.
 
 ARGUMENT:: identifier
-The identifier of the point to make salient. If nil is passes, not points' sizes will be changed.
+The identifier of the point to make salient. An array of identifiers will highlight them all. If nil is passed, current highlighted points will be return to normal.
 
 METHOD:: dict
 Set a new link::Classes/Dictionary:: of points. Overwrites all previous points and Dictionaries.
