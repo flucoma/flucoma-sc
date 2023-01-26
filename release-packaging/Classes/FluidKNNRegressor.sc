@@ -23,21 +23,25 @@ FluidKNNRegressor : FluidModelObject {
 		^this.prMakeMsg(\predict,this.id,sourceDataSet.id,targetDataSet.id)
 	}
 
-	predict{ |sourceDataSet, targetDataSet,action|
+	predict{ |sourceDataSet, targetDataSet, action|
 		actions[\predict] = [nil, action];
 		this.prSendMsg(this.predictMsg(sourceDataSet, targetDataSet));
 	}
 
-	predictPointMsg { |buffer|
-		^this.prMakeMsg(\predictPoint,id, this.prEncodeBuffer(buffer));
+	predictPointMsg { |sourceBuffer, targetBuffer|
+		^this.prMakeMsg(\predictPoint,id,
+			this.prEncodeBuffer(sourceBuffer),
+			this.prEncodeBuffer(targetBuffer),
+			["/b_query", targetBuffer.asUGenInput]);
 	}
 
-	predictPoint { |buffer, action|
-		actions[\predictPoint] = [number(FluidMessageResponse,_,_),action];
-		this.prSendMsg(this.predictPointMsg(buffer));
+	predictPoint { |sourceBuffer, targetBuffer, action|
+		actions[\predictPoint] = [nil,{action.value(targetBuffer)}];
+		this.predictPointMsg(sourceBuffer, targetBuffer);
+		this.prSendMsg(this.predictPointMsg(sourceBuffer, targetBuffer));
 	}
 
-	kr{|trig, inputBuffer,outputBuffer|
+	kr{|trig, inputBuffer, outputBuffer|
 		^FluidKNNRegressorQuery.kr(K2A.ar(trig),
 			this, this.numNeighbours, this.weight,
 			this.prEncodeBuffer(inputBuffer),
