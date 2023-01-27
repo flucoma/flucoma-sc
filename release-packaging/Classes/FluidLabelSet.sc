@@ -54,6 +54,15 @@ FluidLabelSet : FluidDataObject {
 		this.prSendMsg(this.clearMsg);
 	}
 
+	mergeMsg{|sourceLabelSet, overwrite = 0|
+		^this.prMakeMsg(\merge,id,sourceLabelSet.asUGenInput,overwrite);
+	}
+
+	merge{|sourceLabelSet, overwrite = 0, action|
+		actions[\merge] = [nil,action];
+		this.prSendMsg(this.mergeMsg(sourceLabelSet,overwrite));
+	}
+
 	printMsg { ^this.prMakeMsg(\print,id); }
 
 	print { |action=(postResponse)|
