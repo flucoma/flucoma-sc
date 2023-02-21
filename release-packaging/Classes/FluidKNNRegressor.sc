@@ -41,9 +41,9 @@ FluidKNNRegressor : FluidModelObject {
 		this.prSendMsg(this.predictPointMsg(sourceBuffer, targetBuffer));
 	}
 
-	kr{|trig, inputBuffer, outputBuffer|
+	kr{|trig, inputBuffer, outputBuffer, numNeighbours, weight|
 		^FluidKNNRegressorQuery.kr(K2A.ar(trig),
-			this, this.numNeighbours, this.weight,
+			this, numNeighbours??{this.numNeighbours}, weight??{this.weight},
 			this.prEncodeBuffer(inputBuffer),
 			this.prEncodeBuffer(outputBuffer));
 	}
