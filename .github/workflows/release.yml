@@ -11,7 +11,7 @@ jobs:
       - uses: flucoma/actions/env@main
       - uses: flucoma/actions/sc@main
         with: 
-          branch: origin/production
+          branch: origin/${{ github.ref_name }}
 
       - name: sign binaries
         uses: flucoma/actions/distribution@main
@@ -38,7 +38,7 @@ jobs:
       - uses: flucoma/actions/env@main
       - uses: flucoma/actions/sc@main
         with: 
-          branch: origin/production
+          branch: origin/${{ github.ref_name }}
 
       - name: remove pdb files
         run: Remove-Item install -Recurse -Include *.pdb
@@ -61,7 +61,7 @@ jobs:
       - uses: flucoma/actions/env@main
       - uses: flucoma/actions/sc@main
         with: 
-          branch: origin/production
+          branch: origin/${{ github.ref_name }}
 
       - name: compress archive
         run: tar -zcvf FluCoMa-SC-Linux.tar.gz FluidCorpusManipulation
