@@ -3,7 +3,7 @@ name: nightly
 on:
   workflow_dispatch:
   push:
-    branches: [ dev, ci/** ]
+    branches: [ main, ci/** ]
 
 concurrency:
   group: environment-${{ github.ref }}
@@ -17,7 +17,7 @@ jobs:
       - uses: flucoma/actions/env@main
       - uses: flucoma/actions/sc@main
         with:
-          branch: origin/dev
+          branch: origin/main
 
       - name: sign binaries
         uses: flucoma/actions/distribution@main
@@ -44,7 +44,7 @@ jobs:
       - uses: flucoma/actions/env@main
       - uses: flucoma/actions/sc@main
         with:
-          branch: origin/dev
+          branch: origin/main
 
       - name: remove pdb files
         run: Remove-Item install -Recurse -Include *.pdb
@@ -66,7 +66,7 @@ jobs:
       - uses: flucoma/actions/env@main
       - uses: flucoma/actions/sc@main
         with:
-          branch: origin/dev
+          branch: origin/main
           
       - name: compress archive
         run: tar -zcvf FluCoMa-SC-Linux-nightly.tar.gz FluidCorpusManipulation
