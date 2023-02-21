@@ -10,3 +10,4 @@ Darwin/*
 Linux/*
 Windows/*
 install/
+.vscode
