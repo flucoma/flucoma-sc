@@ -93,6 +93,14 @@ jobs:
         with:
           name: linuxbuild
 
+      - name: delete pre-existing release
+        uses: dev-drprasad/delete-tag-and-release@v0.2.0
+        with:
+          delete_release: true # default: false
+          tag_name: ${{ needs.linuxbuild.outputs.version }} # tag name to delete
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: package and upload
         uses: softprops/action-gh-release@v1
         with:
