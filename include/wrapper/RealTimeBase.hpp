@@ -101,23 +101,23 @@ struct RealTimeBase
       return;
     }
 
-    if (client.audioChannelsIn())
-    {
+    if (client.audioChannelsIn()) {
       mAudioInputs.reserve(asUnsigned(client.audioChannelsIn()));
-      for (index i = 0; i < client.audioChannelsIn(); ++i)
-      {
+      for (index i = 0; i < client.audioChannelsIn(); ++i) {
         mInputConnections.emplace_back(unit.isAudioRateIn(static_cast<int>(i)));
         mAudioInputs.emplace_back(nullptr, 0, 0);
       }
       mInputMapper = &RealTimeBase::mapAudioInputs;
-    }
-    else if (client.controlChannelsIn())
-    {
-      mControlInputBuffer.resize(unit.mSpecialIndex + 1);
-      mAudioInputs.emplace_back(mControlInputBuffer);
+    } else if (client.controlChannelsIn()) {
+      mControlInputBuffer.resize(client.controlChannelsIn(),
+                                 (unit.mSpecialIndex + 1) /
+                                     client.controlChannelsIn());
+      for (index i = 0; i < client.controlChannelsIn(); ++i) {
+        mAudioInputs.emplace_back(mControlInputBuffer.row(i));
+      }
       mInputMapper = &RealTimeBase::mapControlInputs;
-    }
-    else mInputMapper = &RealTimeBase::mapNoOp; 
+    } else
+      mInputMapper = &RealTimeBase::mapNoOp;
 
     index outputSize = client.controlChannelsOut().size > 0
                            ? std::max(client.audioChannelsOut(),
@@ -177,12 +177,17 @@ struct RealTimeBase
     }
   }
 
-  void mapControlInputs(SCUnit& unit, Client&)
-  {
-    for (index i = 0; i < unit.mSpecialIndex + 1; ++i)
-    {
-      assert(i <= std::numeric_limits<int>::max());
-      mControlInputBuffer[i] = unit.in0(static_cast<int>(i));
+  void mapControlInputs(SCUnit &unit, Client &client) {
+    assert((unit.mSpecialIndex + 1) % client.controlChannelsIn() == 0 &&
+           "Control channels can't be mapped");
+    index itemsPerChannel =
+        client.controlChannelsIn() / (unit.mSpecialIndex + 1);
+    for (index i = 0, offset = 0; i < client.controlChannelsIn();
+         ++i, offset += itemsPerChannel) {
+      for (index j = 0; j < itemsPerChannel; ++j) {
+        assert(j <= std::numeric_limits<int>::max());
+        mControlInputBuffer(i, j) = unit.in0(static_cast<int>(offset + j));
+      }
     }
   }
 
@@ -228,7 +233,7 @@ private:
   std::vector<bool>       mOutputConnections;
   std::vector<HostVector> mAudioInputs;
   std::vector<HostVector> mOutputs;
-  FluidTensor<float, 1>   mControlInputBuffer;
+  FluidTensor<float, 2>   mControlInputBuffer;
   FluidTensor<float, 1>   mControlOutputBuffer;
   bool                    mPrevTrig;
   IOMapFn                 mInputMapper;
