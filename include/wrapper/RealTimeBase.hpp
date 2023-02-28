@@ -181,7 +181,7 @@ struct RealTimeBase
     assert((unit.mSpecialIndex + 1) % client.controlChannelsIn() == 0 &&
            "Control channels can't be mapped");
     index itemsPerChannel =
-        client.controlChannelsIn() / (unit.mSpecialIndex + 1);
+        (unit.mSpecialIndex + 1) / client.controlChannelsIn();
     for (index i = 0, offset = 0; i < client.controlChannelsIn();
          ++i, offset += itemsPerChannel) {
       for (index j = 0; j < itemsPerChannel; ++j) {
