@@ -1,18 +1,19 @@
 FluidVoiceAllocator : MultiOutUGen {
 
 	*kr { arg in, in2, in3, history = 1;
-		^this.multiNew('control',*(in.asArray++in2.asArray++in3.asArray++history)).reshape(4,in.asArray.size).postln;
+		^this.multiNew('control',*(in.asArray++in2.asArray++in3.asArray++history)).reshape(4,in.asArray.size);
 	}
 
 	init {arg ...theInputs;
 		inputs = theInputs;
-		inputs.postln;
-		inputs.size.postln;
 		this.specialIndex = (inputs.size - 2).max(0);
 		^this.initOutputs(inputs.size - 1,rate)
 	}
 
 	checkInputs {
+		if(((inputs.size - 1).mod(3)) != 0) {
+		^(": the 3 array inputs must be of equal length.");
+		};
 		^this.checkValidInputs;
 	}
 
@@ -30,4 +31,5 @@ FluidVoiceAllocator : MultiOutUGen {
 
 	numOutputs { ^(channels.size); }
 }
+
 
