@@ -1,7 +1,7 @@
 FluidVoiceAllocator : MultiOutUGen {
 
 	*kr { arg in, in2, in3, history = 1;
-		^this.multiNew('control',*(in.asArray++in2.asArray++in3.asArray++history)).reshape(4,in.asArray.size);
+		^this.multiNew('control',*(in.asArray++in2.asArray++in3.asArray++history)).reshape(3,in.asArray.size);
 	}
 
 	init {arg ...theInputs;
