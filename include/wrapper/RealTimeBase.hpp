@@ -122,7 +122,7 @@ struct RealTimeBase
     index outputSize = client.controlChannelsOut().size > 0
                            ? std::max(client.audioChannelsOut(),
                                       client.maxControlChannelsOut())
-                           : unit.mSpecialIndex + 1;
+                           : ((unit.mSpecialIndex + 1) / client.controlChannelsIn());
     mOutputs.reserve(asUnsigned(outputSize));
 
     if (client.audioChannelsOut())
