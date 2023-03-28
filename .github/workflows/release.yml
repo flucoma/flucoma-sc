@@ -94,7 +94,7 @@ jobs:
           name: linuxbuild
 
       - name: delete pre-existing release
-        uses: dev-drprasad/delete-tag-and-release@v0.2.0
+        uses: dev-drprasad/delete-tag-and-release@v0.2.1
         with:
           delete_release: true # default: false
           tag_name: ${{ needs.linuxbuild.outputs.version }} # tag name to delete
