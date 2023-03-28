@@ -48,13 +48,9 @@ FluidKDTree : FluidModelObject
 		this.prSendMsg(this.kNearestDistMsg(buffer,k));
 	}
 
-	kr{|trig, inputBuffer,outputBuffer, numNeighbours = 1, lookupDataSet|
-		/*        this.numNeighbours_(numNeighbours);
-		lookupDataSet = lookupDataSet ? -1;
-		this.lookupDataSet_(lookupDataSet);*/
-
+	kr{|trig, inputBuffer, outputBuffer, numNeighbours, radius, lookupDataSet|
 		^FluidKDTreeQuery.kr(trig,
-			this, numNeighbours, this.radius,lookupDataSet.asUGenInput,
+			this, numNeighbours??{this.numNeighbours}, radius??{this.radius}, lookupDataSet.asUGenInput,
 			inputBuffer,outputBuffer);
 	}
 
@@ -62,8 +58,8 @@ FluidKDTree : FluidModelObject
 
 FluidKDTreeQuery : FluidRTMultiOutUGen
 {
-	*kr{ |trig, tree, numNeighbours, radius,lookupDataSet, inputBuffer, outputBuffer |
-		^this.multiNew('control',trig, tree.asUGenInput, numNeighbours, radius,lookupDataSet!?(_.asUGenInput)??{-1}, inputBuffer.asUGenInput, outputBuffer.asUGenInput)
+	*kr{ |trig, tree, numNeighbours, radius, lookupDataSet, inputBuffer, outputBuffer |
+		^this.multiNew('control', trig, tree.asUGenInput, numNeighbours, radius, lookupDataSet!?(_.asUGenInput)??{-1}, inputBuffer.asUGenInput, outputBuffer.asUGenInput)
 	}
 
 	init { arg ... theInputs;

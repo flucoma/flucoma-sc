@@ -11,7 +11,7 @@ jobs:
       - uses: flucoma/actions/env@main
       - uses: flucoma/actions/sc@main
         with: 
-          branch: origin/production
+          branch: origin/${{ github.ref_name }}
 
       - name: sign binaries
         uses: flucoma/actions/distribution@main
@@ -38,7 +38,7 @@ jobs:
       - uses: flucoma/actions/env@main
       - uses: flucoma/actions/sc@main
         with: 
-          branch: origin/production
+          branch: origin/${{ github.ref_name }}
 
       - name: remove pdb files
         run: Remove-Item install -Recurse -Include *.pdb
@@ -61,7 +61,7 @@ jobs:
       - uses: flucoma/actions/env@main
       - uses: flucoma/actions/sc@main
         with: 
-          branch: origin/production
+          branch: origin/${{ github.ref_name }}
 
       - name: compress archive
         run: tar -zcvf FluCoMa-SC-Linux.tar.gz FluidCorpusManipulation
@@ -73,7 +73,7 @@ jobs:
           path: install/FluCoMa-SC-Linux.tar.gz
           
       - id: get-version
-        run: echo "::set-output name=version::$(cat flucoma.version.rc)"
+        run: echo "version=$(cat flucoma.version.rc)" >> $GITHUB_OUTPUT
         working-directory: build/_deps/flucoma-core-src
   
   release:
@@ -93,6 +93,14 @@ jobs:
         with:
           name: linuxbuild
 
+      - name: delete pre-existing release
+        uses: dev-drprasad/delete-tag-and-release@v0.2.1
+        with:
+          delete_release: true # default: false
+          tag_name: ${{ needs.linuxbuild.outputs.version }} # tag name to delete
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: package and upload
         uses: softprops/action-gh-release@v1
         with:
@@ -101,5 +109,6 @@ jobs:
           files: FluCoMa*
           prerelease: true
           tag_name: ${{ needs.linuxbuild.outputs.version }}
+          target_commitish: ${{ github.sha }}
           draft: false
 
