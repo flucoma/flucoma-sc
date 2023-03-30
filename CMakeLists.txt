@@ -1,4 +1,4 @@
-# Copyright 2017-2019 University of Huddersfield.
+# Copyright University of Huddersfield.
 # Licensed under the BSD-3 License.
 # See license.md file in the project root for full license information.
 # This project has received funding from the European Research Council (ERC)
