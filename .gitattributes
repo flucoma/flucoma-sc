@@ -1,0 +1,18 @@
+* text=auto
+
+*.cmake text
+*.cpp text
+*.csv text
+*.gitignore text
+*.hpp text
+*.in text
+*.json text
+*.md text
+*.sc text
+*.scd text
+*.schelp text
+*.txt text
+*.yaml text
+*.yml text
+
+*.png binary
