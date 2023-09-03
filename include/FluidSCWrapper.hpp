@@ -73,7 +73,6 @@ public:
     ft->fDefinePlugInCmd(commandName.c_str(),
       [](World*, void*, sc_msg_iter*, void*){ doVersion(nullptr,nullptr); },
     nullptr);
-      std::cout << "done settup " << name << "\n";
   }
 
   static auto& setParams(Unit* x, ParamSetType& p, FloatControlsIter& inputs,

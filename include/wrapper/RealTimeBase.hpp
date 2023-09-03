@@ -102,7 +102,6 @@ struct RealTimeBase
     }
 
     if (client.audioChannelsIn()) {
-        std::cout << "aci " << client.audioChannelsIn() << "\n";
       mAudioInputs.reserve(asUnsigned(client.audioChannelsIn()));
       for (index i = 0; i < client.audioChannelsIn(); ++i) {
         mInputConnections.emplace_back(unit.isAudioRateIn(static_cast<int>(i)));
@@ -110,7 +109,6 @@ struct RealTimeBase
       }
       mInputMapper = &RealTimeBase::mapAudioInputs;
     } else if (client.controlChannelsIn()) {
-        std::cout << "cci\n";
       mControlInputBuffer.resize(client.controlChannelsIn(),
                                  (unit.mSpecialIndex + 1) /
                                      client.controlChannelsIn());
@@ -120,22 +118,13 @@ struct RealTimeBase
       mInputMapper = &RealTimeBase::mapControlInputs;
     } else {
         mInputMapper = &RealTimeBase::mapNoOp;
-        std::cout << "else\n";
     }
-
-      std::cout << "controlChannelsOut " << client.controlChannelsOut().size << "\n";
-      std::cout << "audioChannelsOut " << client.audioChannelsOut() << "\n";
-      std::cout << "maxControlChannelsOut " << client.maxControlChannelsOut() << "\n";
-      std::cout << "controlChannelsIn " << client.controlChannelsIn() << "\n";
-
       
     index outputSize = client.controlChannelsOut().size > 0
                            ? std::max(client.audioChannelsOut(),
                                       client.maxControlChannelsOut())
-      : (unit.mSpecialIndex + 1);//((unit.mSpecialIndex + 1) / client.controlChannelsIn());
+      : (unit.mSpecialIndex + 1);
       
-    std::cout << "outputSize " << outputSize << "\n";
-
     mOutputs.reserve(asUnsigned(outputSize));
 
     if (client.audioChannelsOut())
