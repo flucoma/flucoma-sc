@@ -73,7 +73,7 @@ public:
     ft->fDefinePlugInCmd(commandName.c_str(),
       [](World*, void*, sc_msg_iter*, void*){ doVersion(nullptr,nullptr); },
     nullptr);
-    
+      std::cout << "done settup " << name << "\n";
   }
 
   static auto& setParams(Unit* x, ParamSetType& p, FloatControlsIter& inputs,
@@ -99,12 +99,6 @@ public:
     if(!initialized) delete reportage;
     return p;
   }
-
-//  static void printResult(SharedState<C>& x, Result& r)
-//  {
-//    if (!x.get() || !x->mNodeAlive) return;
-//    FluidSCWrapper::printResult(x->mNode->mWorld, r);
-//  }
   
   static void printResult(World* w,Result& r)
   {
