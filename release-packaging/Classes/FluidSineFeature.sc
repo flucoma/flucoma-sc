@@ -3,7 +3,7 @@ FluidSineFeature : FluidRTMultiOutUGen {
 
 		maxNumPeaks = maxNumPeaks ? numPeaks;
 
-		^this.multiNew('control', in.asAudioRateInput(this), numPeaks, maxNumPeaks, detectionThreshold, order, freqUnit, magUnit, windowSize, hopSize, fftSize, maxFFTSize)
+		^this.multiNew('control', in.asAudioRateInput(this), numPeaks, maxNumPeaks, detectionThreshold, order, freqUnit, magUnit, windowSize, hopSize, fftSize, maxFFTSize).reshape(2,maxNumPeaks)
 	}
 
 	init { arg ... theInputs;
