@@ -132,11 +132,6 @@ if(APPLE OR WIN32)
   set(CMAKE_SHARED_MODULE_SUFFIX ".scx")
 endif()
 
-#needed for complaint-free static linking with GCC
-if(CMAKE_COMPILER_IS_GNUCXX)
-  target_compile_options( HISSTools_FFT PUBLIC -fPIC )
-endif()
-
 #sandbox regrettable dependency on SC internals for SendReply()
 
 if(SYSTEM_BOOST)
