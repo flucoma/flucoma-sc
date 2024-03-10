@@ -19,14 +19,14 @@ FluidDTW : FluidModelObject {
 		this.prSendMsg(this.costMsg(dataSeries, id1.asSymbol, id2.asSymbol));
 	}
 	
-	bufCostMsg{|buf1, buf2|
+	bufCostMsg{|buffer1, buffer2|
 		^this.prMakeMsg(\bufCost, this.id,
-			this.prEncodeBuffer(buf1),
-			this.prEncodeBuffer(buf2));
+			this.prEncodeBuffer(buffer1),
+			this.prEncodeBuffer(buffer2));
 	}
 	
-	bufCost{|buf1, buf2, action|
+	bufCost{|buffer1, buffer2, action|
 		actions[\bufCost] = [string(FluidMessageResponse,_,_),action];
-		this.prSendMsg(this.bufCostMsg(buf1,buf2));
+		this.prSendMsg(this.bufCostMsg(buffer1,buffer2));
 	}
 }
