@@ -110,4 +110,13 @@ FluidDataSet : FluidDataObject
 	actions[\kNearest] = [strings(FluidMessageResponse,_,_),action];
 	this.prSendMsg(this.kNearestMsg(buffer,k));
 	}
+
+	kNearestDistMsg {|buffer, k|
+	^this.prMakeMsg(\kNearestDist,id,this.prEncodeBuffer(buffer),k);
+	}
+
+	kNearestDist { |buffer, k, action|
+		actions[\kNearestDist] = [numbers(FluidMessageResponse,_,nil,_),action];
+		this.prSendMsg(this.kNearestDistMsg(buffer,k));
+	}
 }
