@@ -93,19 +93,20 @@ jobs:
         with:
           name: linuxbuild  
       
-      - uses: dev-drprasad/delete-tag-and-release@v0.2.0
+      - uses: dev-drprasad/delete-tag-and-release@v0.2.1
         with:
           delete_release: true # default: false
           tag_name: nightly # tag name to delete
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: package and upload
-        uses: softprops/action-gh-release@v1
+      - name: create release
+        uses: ncipollo/release-action@v1
         with:
           name: FluCoMa SuperCollider Nightly Release
+          artifacts: "FluCoMa*"
           body: "This is a nightly build of the FluCoMa SuperCollider package. As such, be warned there may be bugs or other unexpected behaviour. The build hash is ${{ github.sha }}"
-          files: FluCoMa*
+          tag: nightly
           prerelease: true
-          tag_name: nightly
           draft: false
+          allowUpdates: true

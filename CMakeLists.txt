@@ -1,4 +1,4 @@
-# Copyright 2017-2019 University of Huddersfield.
+# Copyright University of Huddersfield.
 # Licensed under the BSD-3 License.
 # See license.md file in the project root for full license information.
 # This project has received funding from the European Research Council (ERC)
@@ -130,11 +130,6 @@ set(CMAKE_PDB_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/pdbtmp")
 
 if(APPLE OR WIN32)
   set(CMAKE_SHARED_MODULE_SUFFIX ".scx")
-endif()
-
-#needed for complaint-free static linking with GCC
-if(CMAKE_COMPILER_IS_GNUCXX)
-  target_compile_options( HISSTools_FFT PUBLIC -fPIC )
 endif()
 
 #sandbox regrettable dependency on SC internals for SendReply()
