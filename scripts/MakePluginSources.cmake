@@ -42,7 +42,6 @@ function(add_sc_extension PLUGIN FILENAME)
     PRIVATE  
     FLUID_DECOMPOSITION
     FLUID_SC_WRAPPER  
-    HISSTools_FFT
   )
 
   target_include_directories(
