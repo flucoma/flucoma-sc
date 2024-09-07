@@ -1,0 +1,104 @@
+TITLE:: FluidBufShingle
+summary:: Make shingled points from a multichannel buffer
+categories:: Libraries>FluidCorpusManipulation
+related:: Classes/Buffer, Classes/FluidBufCompose, Classes/FluidBufSelect, Classes/FluidBufSelectEvery, Classes/FluidBufFlatten
+
+DESCRIPTION::
+Make shingles: flat data points made by gluing together a set of 'columns' (multichannel frames).This can be useful for constructing n-dimensional data points for use with link::Classes/FluidDataSet:: that model temporal dependencies between neighbours.
+
+The code::size:: determines how many multichannel frames are used to make a point.
+
+e.g with code::size = 2:: this
+table::
+    ## 1 || 4 || 7
+    ## 2 || 5 || 8
+    ## 3 || 6 || 9
+::
+
+becomes
+
+table::
+##  1 || 2 || 3 || 4 || 5 || 6
+##  4 || 5 || 6 || 7 || 8 || 9
+::
+
+whereas with code::size = 3:: we get
+
+table::
+    ## 1 || 2 || 3 || 4 || 5 || 6 || 7 || 8 || 9
+::
+
+
+CLASSMETHODS::
+
+private::new1
+
+METHOD:: process, processBlocking
+
+Run the process on the given sever, and perfrom code::action:: when done
+
+ARGUMENT:: server
+The link::Classes/Server:: on which to run
+
+ARGUMENT:: source
+The link::Classes/Buffer:: to flatten
+
+ARGUMENT:: startFrame
+	Where in the source should the flattening process start, in samples.
+
+ARGUMENT:: numFrames
+	How many frames should be processed.
+
+ARGUMENT:: startChan
+	For multichannel source buffers, which channel to start processing at.
+
+ARGUMENT:: numChans
+	For multichannel source buffers, how many channels should be processed.
+
+ARGUMENT:: destination
+The link::Classes/Buffer:: to write the flattened data to
+
+ARGUMENT:: size
+The number of frames shingled together into a point
+
+ARGUMENT:: freeWhenDone
+Free the server instance when processing complete. Default true
+
+ARGUMENT:: action
+Runs when processing is complete
+
+EXAMPLES::
+s.reboot;
+(
+~src = Buffer.loadCollection(s,[1,2,3,4,5,6,7,8,9],3);
+~dst = Buffer.new;
+)
+
+~src.getToFloatArray(action:{|a| Array.newFrom(a).unlace(3).do{|x,i| ("Channel" + i + ":" + x).postln}});
+
+(
+FluidBufShingle.processBlocking(s,~src,destination:~dst,size:2,action: {
+    ~dst.getToFloatArray(action:{|b| Array.newFrom(b).unlace.do{|x,i| ("Channel" + i + ":" + x).postln}});
+});
+)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
