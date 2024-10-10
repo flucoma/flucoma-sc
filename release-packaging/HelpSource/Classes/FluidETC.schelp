@@ -1,0 +1,66 @@
+TITLE:: FluidETC
+summary:: Calculates Effort To Compress (ETC) for an audio signal
+categories:: Libraries>FluidCorpusManipulation
+related:: FluidShannonEntropy
+​
+DESCRIPTION::
+
+
+*Warning* this UGen makes heavy use of the CPU, and needs plenty of headroom because the algorithm can vary in the number of iterations needed to complete calcuations.
+​
+​More info on ETC: https://arxiv.org/abs/1611.00607
+
+Three Perspectives on Complexity − Entropy, Compression, Subsymmetry
+Nithin Nagaraj, Karthi Balasubramanian
+
+CLASSMETHODS::
+​
+METHOD:: kr
+Calculate Effort To Compress for an audio signal
+
+ARGUMENT:: in
+An audio signal
+
+ARGUMENT:: symbolCount
+The number of discrete symbols to quantise the audio signal to
+
+ARGUMENT:: winSize
+The amount of recent history of the audio signal from which to calculate ETC (in milliseconds)
+
+ARGUMENT:: maxWinSize
+The maximum size of the window (in milliseconds)
+
+ARGUMENT:: kHopSize
+How often to run the calculation (in milliseconds)
+
+returns:: Effort To Compress (between 0 and 1)
+
+​
+INSTANCEMETHODS::
+​
+METHOD:: checkInputs
+(describe method here)
+​
+returns:: (describe returnvalue here)
+​
+​
+EXAMPLES::
+​
+This example prints the ETC for varying input types, in the post window.
+
+code::
+(
+{
+	var sig;
+	//uncomment to look at the difference between varying types of input
+	// sig = PinkNoise.ar;
+	sig = SoundIn.ar([0]);
+	//sig = SinOsc.ar(2000);
+	// sig = LFSaw.ar(10).madd(0.5);
+	FluidETC.kr(sig, 16, 5, 20, 5).poll;
+	0
+}.play
+)
+
+::
+​
