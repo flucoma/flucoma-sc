@@ -44,13 +44,13 @@ jobs:
         run: Remove-Item install -Recurse -Include *.pdb
 
       - name: compress archive
-        run: 7z a FluCoMa-SC-Windows.zip FluidCorpusManipulation
+        run: 7z a FluCoMa-SC-Windows-x64.zip FluidCorpusManipulation
         working-directory: install
 
       - uses: actions/upload-artifact@v4.3.6 
         with: 
           name: winbuild
-          path: install/FluCoMa-SC-Windows.zip 
+          path: install/FluCoMa-SC-Windows-x64.zip 
 
   linuxbuild:
     runs-on: ubuntu-20.04
@@ -64,13 +64,13 @@ jobs:
           branch: origin/${{ github.ref_name }}
 
       - name: compress archive
-        run: tar -zcvf FluCoMa-SC-Linux.tar.gz FluidCorpusManipulation
+        run: tar -zcvf FluCoMa-SC-Linux-x64.tar.gz FluidCorpusManipulation
         working-directory: install
 
       - uses: actions/upload-artifact@v4.3.6
         with:
           name: linuxbuild 
-          path: install/FluCoMa-SC-Linux.tar.gz
+          path: install/FluCoMa-SC-Linux-x64.tar.gz
           
       - id: get-version
         run: echo "version=$(cat flucoma.version.rc)" >> $GITHUB_OUTPUT
