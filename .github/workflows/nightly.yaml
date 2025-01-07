@@ -32,7 +32,7 @@ jobs:
           apppwd: ${{ secrets.APPSTORECONNECTPWD }}
           appusr: ${{ secrets.APPSTORECONNECTUSERNAME }}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4.3.6
         with:
           name: macbuild
           path: install/FluCoMa-SC-Mac-nightly.dmg
@@ -53,7 +53,7 @@ jobs:
         run: 7z a FluCoMa-SC-Windows-nightly.zip FluidCorpusManipulation
         working-directory: install
 
-      - uses: actions/upload-artifact@v3 
+      - uses: actions/upload-artifact@v4.3.6 
         with: 
           name: winbuild
           path: install/FluCoMa-SC-Windows-nightly.zip 
@@ -71,7 +71,7 @@ jobs:
       - name: compress archive
         run: tar -zcvf FluCoMa-SC-Linux-nightly.tar.gz FluidCorpusManipulation
         working-directory: install
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4.3.6
         with:
           name: linuxbuild 
           path: install/FluCoMa-SC-Linux-nightly.tar.gz
@@ -81,15 +81,15 @@ jobs:
     needs: [macbuild, winbuild, linuxbuild]
     steps:
       
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4.1.7
         with:
           name: macbuild 
 
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4.1.7
         with:
           name: winbuild  
 
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4.1.7
         with:
           name: linuxbuild  
       

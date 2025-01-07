@@ -55,13 +55,13 @@ FluidDataSetQuery : FluidDataObject {
 		this.prSendMsg(this.clearMsg);
 	}
 
-	limitMsg{|rows|
-		^this.prMakeMsg(\limit,id,rows);
+	limitMsg{|points|
+		^this.prMakeMsg(\limit,id,points);
 	}
 
-	limit{|rows, action|
+	limit{|points, action|
 		actions[\limit] = [nil,action];
-		this.prSendMsg(this.limitMsg(rows));
+		this.prSendMsg(this.limitMsg(points));
 	}
 
 	transformMsg{|sourceDataSet, destDataSet|
