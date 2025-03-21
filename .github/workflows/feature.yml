@@ -16,7 +16,7 @@ jobs:
       - uses: flucoma/actions/sc@main
         with:
             branch: origin/main          
-            core_branch: origin/${{ github.ref_name }}
+            core_branch: ${{ github.ref_name }}
             build_type: "Test"
 
       - name: sign binaries
@@ -45,7 +45,7 @@ jobs:
       - uses: flucoma/actions/sc@main
         with:
             branch: origin/main          
-            core_branch: origin/${{ github.ref_name }}
+            core_branch: ${{ github.ref_name }}
             build_type: "Test"
 
       - name: remove pdb files
@@ -69,7 +69,7 @@ jobs:
       - uses: flucoma/actions/sc@main
         with:
             branch: origin/main          
-            core_branch: origin/${{ github.ref_name }}
+            core_branch: ${{ github.ref_name }}
             build_type: "Test"
           
       - name: compress archive
