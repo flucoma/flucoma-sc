@@ -2,8 +2,7 @@ name: feature
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ main, ci/** ]
+
 
 concurrency:
   group: environment-${{ github.ref }}
