@@ -1,0 +1,80 @@
+name: feature
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, ci/** ]
+
+concurrency:
+  group: environment-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  macbuild:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: flucoma/actions/env@main
+      - uses: flucoma/actions/sc@main
+        with:
+          branch: origin/${{ github.ref_name }}
+          build_type: "Test"
+
+      - name: sign binaries
+        uses: flucoma/actions/distribution@main
+        with:
+          glob: '-e scx'
+          package: 'install'
+          output_type: 'dmg'
+          output: FluCoMa-SC-Mac-nightly
+          cert: ${{ secrets.CERT }}
+          certpwd: ${{ secrets.CERTPWD }}
+          teamid: ${{ secrets.WWDRTEAMID }}
+          apppwd: ${{ secrets.APPSTORECONNECTPWD }}
+          appusr: ${{ secrets.APPSTORECONNECTUSERNAME }}
+
+      - uses: actions/upload-artifact@v4.3.6
+        with:
+          name: macbuild
+          path: install/FluCoMa-SC-Mac-nightly.dmg
+
+  winbuild:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: flucoma/actions/env@main
+      - uses: flucoma/actions/sc@main
+        with:
+          branch: origin/${{ github.ref_name }}
+          build_type: "Test"
+
+      - name: remove pdb files
+        run: Remove-Item install -Recurse -Include *.pdb
+
+      - name: compress archive
+        run: 7z a FluCoMa-SC-Windows-x64-nightly.zip FluidCorpusManipulation
+        working-directory: install
+
+      - uses: actions/upload-artifact@v4.3.6 
+        with: 
+          name: winbuild
+          path: install/FluCoMa-SC-Windows-x64-nightly.zip 
+
+
+  linuxbuild:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: flucoma/actions/env@main
+      - uses: flucoma/actions/sc@main
+        with:
+          branch: origin/${{ github.ref_name }}
+          build_type: "Test"
+          
+      - name: compress archive
+        run: tar -zcvf FluCoMa-SC-Linux-x64-nightly.tar.gz FluidCorpusManipulation
+        working-directory: install
+      - uses: actions/upload-artifact@v4.3.6
+        with:
+          name: linuxbuild 
+          path: install/FluCoMa-SC-Linux-x64-nightly.tar.gz
