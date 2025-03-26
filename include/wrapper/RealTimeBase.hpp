@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Eigen/Core>
-#include <data/FluidMemory.hpp>
+#include <flucoma/data/FluidMemory.hpp>
 #include <SC_PlugIn.hpp>
 
 namespace fluid {

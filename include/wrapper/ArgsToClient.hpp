@@ -1,6 +1,6 @@
 #pragma once 
 
-#include <data/FluidMemory.hpp>
+#include <flucoma/data/FluidMemory.hpp>
 
 namespace fluid {
 namespace client {

@@ -11,8 +11,8 @@ under the European Union’s Horizon 2020 research and innovation programme
 #pragma once
 
 #include <boost/align/aligned_alloc.hpp>
-#include <clients/common/BufferAdaptor.hpp>
-#include <data/FluidTensor.hpp>
+#include <flucoma/clients/common/BufferAdaptor.hpp>
+#include <flucoma/data/FluidTensor.hpp>
 #include <SC_Errors.h>
 #include <SC_PlugIn.h>
 #include <cctype>
