@@ -101,7 +101,7 @@ FluidDataSet : FluidDataObject
 		actions[\getIds] = [nil,action];
 		this.prSendMsg(this.getIdsMsg(labelSet));
 	}
-	
+
 	kNearestMsg{|buffer,k|
 	^this.prMakeMsg(\kNearest,id, this.prEncodeBuffer(buffer),k);
 	}
@@ -119,4 +119,23 @@ FluidDataSet : FluidDataObject
 		actions[\kNearestDist] = [numbers(FluidMessageResponse,_,nil,_),action];
 		this.prSendMsg(this.kNearestDistMsg(buffer,k));
 	}
+
+	kr{|trig, inputBuffer, outputBuffer, numNeighbours, lookupDataSet|
+		^FluidDataSetRead.kr(trig,
+			this, numNeighbours??{this.numNeighbours}, lookupDataSet.asUGenInput,
+			inputBuffer,outputBuffer);
+	}
+}
+
+FluidDataSetRead : FluidRTMultiOutUGen
+{
+	*kr{ |trig, ds, numNeighbours, lookupDataSet, inputBuffer, outputBuffer |
+		^this.multiNew('control', trig, ds.asUGenInput, numNeighbours, lookupDataSet!?(_.asUGenInput)??{-1}, inputBuffer.asUGenInput, outputBuffer.asUGenInput)
+	}
+
+	init { arg ... theInputs;
+		inputs = theInputs;
+		^this.initOutputs(1, rate);
+	}
+
 }

@@ -192,18 +192,17 @@ s.boot;
 // always be a Symbol)
 ~ds.dump({
 	arg dict;
-	// dict.at("data").postln;
-	~fp = FluidPlotter(bounds:Rect(200,200,600,600),dict:dict,mouseMoveAction:{
-		arg view, x, y, modifiers;
-		// [x,y].postln;
-		~xybuf.setn(0,[x,y]);
-		~kdtree.kNearest(~xybuf,{
-			arg nearest;
-			nearest.postln;
-			view.highlight_(nearest);
+	defer{
+		// dict.at("data").postln;
+		~fp = FluidPlotter(bounds:Rect(200,200,600,600),dict:dict,mouseMoveAction:{
+			arg view, x, y, modifiers;
+			[x,y].postln;
+			~xybuf.setn(0,[x,y]);
+			~kdtree.kNearest(~xybuf, 1, {
+				arg nearest;
+				nearest.postln;
+				view.highlight_(nearest);
+			});
 		});
-		// [view, x, y, modifiers].postln;
-		// "".postln;
-	});
-});
+}});
 )

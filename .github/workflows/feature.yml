@@ -1,9 +1,8 @@
-name: nightly
+name: feature
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ main, ci/** ]
+
 
 concurrency:
   group: environment-${{ github.ref }}
@@ -17,7 +16,9 @@ jobs:
       - uses: flucoma/actions/env@main
       - uses: flucoma/actions/sc@main
         with:
-          branch: origin/main
+            branch: origin/main          
+            core_branch: origin/${{ github.ref_name }}
+            build_type: "Test"
 
       - name: sign binaries
         uses: flucoma/actions/distribution@main
@@ -44,7 +45,9 @@ jobs:
       - uses: flucoma/actions/env@main
       - uses: flucoma/actions/sc@main
         with:
-          branch: origin/main
+            branch: origin/main          
+            core_branch: origin/${{ github.ref_name }}
+            build_type: "Test"
 
       - name: remove pdb files
         run: Remove-Item install -Recurse -Include *.pdb
@@ -66,7 +69,9 @@ jobs:
       - uses: flucoma/actions/env@main
       - uses: flucoma/actions/sc@main
         with:
-          branch: origin/main
+            branch: origin/main          
+            core_branch: origin/${{ github.ref_name }}
+            build_type: "Test"
           
       - name: compress archive
         run: tar -zcvf FluCoMa-SC-Linux-x64-nightly.tar.gz FluidCorpusManipulation
@@ -75,38 +80,3 @@ jobs:
         with:
           name: linuxbuild 
           path: install/FluCoMa-SC-Linux-x64-nightly.tar.gz
-  
-  release:
-    runs-on: ubuntu-22.04
-    needs: [macbuild, winbuild, linuxbuild]
-    steps:
-      
-      - uses: actions/download-artifact@v4.1.7
-        with:
-          name: macbuild 
-
-      - uses: actions/download-artifact@v4.1.7
-        with:
-          name: winbuild  
-
-      - uses: actions/download-artifact@v4.1.7
-        with:
-          name: linuxbuild  
-      
-      - uses: dev-drprasad/delete-tag-and-release@v0.2.1
-        with:
-          delete_release: true # default: false
-          tag_name: nightly # tag name to delete
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: create release
-        uses: ncipollo/release-action@v1
-        with:
-          name: FluCoMa SuperCollider Nightly Release
-          artifacts: "FluCoMa*"
-          body: "This is a nightly build of the FluCoMa SuperCollider package. As such, be warned there may be bugs or other unexpected behaviour. The build hash is ${{ github.sha }}"
-          tag: nightly
-          prerelease: true
-          draft: false
-          allowUpdates: true

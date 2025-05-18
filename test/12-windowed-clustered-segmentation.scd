@@ -166,7 +166,7 @@ t = Main.elapsedTime;
 //OPTIONAL: try again with more clusters (3) and a wider window (6) and more overlap (2)
 ~newindices = [~originalslicesarray[0]]; ~newkeys = [~orginalkeys[0]];
 ~kmeans.numClusters = 3;
-~windowedFunct.value(0,6,2);
+~windowedFunct.value(0, 6, 2);
 
 //compare sizes
 ~orginalkeys.size

@@ -1,7 +1,7 @@
 #pragma once 
 
 #include "Meta.hpp"
-#include <data/FluidMemory.hpp>
+#include <flucoma/data/FluidMemory.hpp>
 #include <fmt/format.h>
 
 namespace fluid {

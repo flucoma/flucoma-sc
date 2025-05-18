@@ -7,8 +7,8 @@
 #include "RealTimeBase.hpp"
 #include "SCBufferAdaptor.hpp"
 #include "SCWorldAllocator.hpp"
-#include <clients/common/FluidBaseClient.hpp>
-#include <data/FluidMeta.hpp>
+#include <flucoma/clients/common/FluidBaseClient.hpp>
+#include <flucoma/data/FluidMeta.hpp>
 #include <SC_PlugIn.hpp>
 #include <mutex>
 #include <scsynthsend.h>
