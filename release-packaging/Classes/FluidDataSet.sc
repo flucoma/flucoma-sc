@@ -73,14 +73,14 @@ FluidDataSet : FluidDataObject
 		this.prSendMsg(this.printMsg);
 	}
 
-	toBufferMsg{|buffer, transpose = 0, labelSet|
+	toBufferMsg{|buffer, transpose = 0, labelSet, flip = 0|
 		buffer = this.prEncodeBuffer(buffer);
-		^this.prMakeMsg(\toBuffer, id, buffer, transpose, labelSet.asUGenInput,["/b_query",buffer.asUGenInput]);
+		^this.prMakeMsg(\toBuffer, id, buffer, transpose, labelSet.asUGenInput, flip,["/b_query",buffer.asUGenInput]);
 	}
 
-	toBuffer{|buffer, transpose = 0, labelSet, action|
+	toBuffer{|buffer, transpose = 0, labelSet, flip = 0, action|
 		actions[\toBuffer] = [nil,action];
-		this.prSendMsg(this.toBufferMsg(buffer, transpose, labelSet));
+		this.prSendMsg(this.toBufferMsg(buffer, transpose, labelSet, flip));
 	}
 
 	fromBufferMsg{|buffer, transpose = 0, labelSet|
