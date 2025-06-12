@@ -1,7 +1,7 @@
 FluidDataSetQuery : FluidModelObject {
 	*new{|server| ^super.new(server) }
 
-	prGetParams{^[this.id, -1, -1];}
+	prGetParams{^[this.id];}
 
 	addColumnMsg { |column|
 		^this.prMakeMsg(\addColumn,id,column);
