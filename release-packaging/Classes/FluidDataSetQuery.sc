@@ -1,5 +1,7 @@
-FluidDataSetQuery : FluidDataObject {
+FluidDataSetQuery : FluidModelObject {
 	*new{|server| ^super.new(server) }
+
+	prGetParams{^[this.id, -1, -1];}
 
 	addColumnMsg { |column|
 		^this.prMakeMsg(\addColumn,id,column);
@@ -81,4 +83,22 @@ FluidDataSetQuery : FluidDataObject {
 		actions[\transformJoin] = [nil,action];
 		this.prSendMsg(this.transformJoinMsg(source1DataSet, source2DataSet, destDataSet));
 	}
+
+	kr{|trig, sourceDataSet, destDataSet|
+		^FluidDataSetQueryQuery.kr(trig, this, sourceDataSet, destDataSet);
+	}
 }
+
+FluidDataSetQueryQuery : FluidRTMultiOutUGen
+{
+	*kr{ |trig, dsq, sourceDataSet, destDataSet |
+		^this.multiNew('control', trig, dsq.asUGenInput, sourceDataSet.asUGenInput, destDataSet.asUGenInput)
+	}
+
+	init { arg ... theInputs;
+		inputs = theInputs;
+		^this.initOutputs(1, rate);
+	}
+
+}
+
