@@ -4,7 +4,7 @@
 #include "Meta.hpp"
 #include "RealTimeBase.hpp"
 #include "SCWorldAllocator.hpp"
-#include <clients/common/FluidBaseClient.hpp>
+#include <flucoma/clients/common/FluidBaseClient.hpp>
 #include <SC_PlugIn.hpp>
 
 // Real Time Processor

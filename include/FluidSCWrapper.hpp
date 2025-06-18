@@ -14,7 +14,7 @@ under the European Union’s Horizon 2020 research and innovation programme
 #include "wrapper/DeriveBaseClass.hpp"
 #include "wrapper/NonRealtime.hpp"
 #include "wrapper/Realtime.hpp"
-#include <FluidVersion.hpp>
+#include <flucoma/FluidVersion.hpp>
 
 namespace fluid {
 namespace client {

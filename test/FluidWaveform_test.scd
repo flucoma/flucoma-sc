@@ -1,34 +1,30 @@
 (
 // og test
 s.waitForBoot{
+	var buf = Buffer.read(s,FluidFilesPath("Nicol-LoopE-M.wav"));
+	var slicepoints = Buffer(s);
 
-	Task{
-		var buf = Buffer.read(s,"/Users/macprocomputer/Desktop/_flucoma/code/flucoma-core-src/AudioFiles/Nicol-LoopE-M.wav");
-		var slicepoints = Buffer(s);
-
-		FluidBufAmpSlice.process(s,buf,indices:slicepoints,fastRampUp:10,fastRampDown:2205,slowRampUp:4410,slowRampDown:4410,onThreshold:10,offThreshold:5,floor:-40,minSliceLength:4410,highPassFreq:20,action:{
-			FluidWaveform(buf,slicepoints,bounds:Rect(0,0,1600,400)).front;
-		});
-
-	}.play(AppClock);
+	FluidBufAmpSlice.process(s,buf,indices:slicepoints,fastRampUp:10,fastRampDown:2205,slowRampUp:4410,slowRampDown:4410,onThreshold:10,offThreshold:5,floor:-40,minSliceLength:4410,highPassFreq:20,action:{
+		defer{FluidWaveform(buf,slicepoints,bounds:Rect(0,0,1600,400)).front};
+	});
 }
 )
 
-(
+
 (
 // embed it in a different window
 s.waitForBoot{
 
-	var buf = Buffer.read(s,"/Users/macprocomputer/Desktop/_flucoma/code/flucoma-core-src/AudioFiles/Nicol-LoopE-M.wav");
+	var buf = Buffer.read(s,FluidFilesPath("Nicol-LoopE-M.wav"));
 	var slicepoints = Buffer(s);
 
 	FluidBufAmpSlice.process(s,buf,indices:slicepoints,fastRampUp:10,fastRampDown:2205,slowRampUp:4410,slowRampDown:4410,onThreshold:10,offThreshold:5,floor:-40,minSliceLength:4410,highPassFreq:20,action:{
-		fork({
+		defer{
 			~win = Window("test",Rect(0,0,1600,400));
-			FluidWaveform(buf,slicepoints,bounds:Rect(100,100,1400,200),parent:~win).front;
-		},AppClock);
+			FluidWaveform(buf,slicepoints,bounds:Rect(100,100,1400,200),parent:~win);
+			~win.front;
+		};
 	});
-
 }
 )
 
@@ -78,6 +74,8 @@ s.waitForBoot{
 	~pitch_analysis = Buffer(s);
 	FluidBufPitch.processBlocking(s,~audio,features:~pitch_analysis);
 
+	s.sync;
+
 	~fw = FluidWaveform(bounds:Rect(100,100,1200,300));
 
 	~fw.addImageLayer(~mels,1,1);
@@ -111,7 +109,7 @@ s.waitForBoot{
 
 	s.sync;
 
-	~fw = FluidWaveform(~audio,~indices,~pitch_analysis,imageBuffer:~mels,bounds:Rect(100,100,1200,300),imageColorScaling:1,imageColorScheme:1).front;
+	~fw = FluidWaveform(~audio,~indices,~pitch_analysis,imageBuffer:~mels,bounds:Rect(100,100,1200,300),imageColorScaling:1,imageColorScheme:1);
 }
 )
 
@@ -132,11 +130,11 @@ s.waitForBoot{
 
 	s.sync;
 
-	~fw = FluidWaveform(~audio,~indices,~pitch_analysis,bounds:Rect(100,100,1200,300),imageColorScaling:1,imageColorScheme:1).front;
+	~fw = FluidWaveform(~audio,~indices,~pitch_analysis,bounds:Rect(100,100,1200,300),imageColorScaling:1,imageColorScheme:1);
 }
 )
 
-
+// adding layers one at a time kinda test
 (
 s.waitForBoot{
 	// do some analysis
@@ -163,25 +161,26 @@ s.waitForBoot{
 )
 
 (
-// plot most of it, but then...
-~fw = FluidWaveform(bounds:Rect(100,100,1200,300));
+// plot some of it, but then...
+~fw = FluidWaveform(bounds:Rect(100,450,1200,300));
 ~fw.addImageLayer(~mels,2,imageColorScaling:1);
-~fw.addAudioLayer(~audio,Color(1,1,1,0.5));
-~fw.addIndicesLayer(~indices,~audio,Color.black);
 ~fw.front;
 )
 
-// add one more
-~fw.addFeaturesLayer(~pitch_analysis,[Color.cyan,Color.yellow]).front;
+// add one feature at a time
+~fw.addAudioLayer(~audio,Color(1,1,1,0.5)).refresh;
+
+~fw.addIndicesLayer(~indices,~audio,Color.black).refresh;
+
+~fw.addFeaturesLayer(~pitch_analysis,[Color.cyan,Color.yellow]).refresh;
 
 // check how many layers
 ~fw.layers
 
 (
 // plot differen components with different colors
-s.waitForBoot{
+Routine{
 	~audio = Buffer.read(s,FluidFilesPath("Nicol-LoopE-M.wav"));
-	// ~audio = Buffer.read(s,FluidFilesPath("Tremblay-ASWINE-ScratchySynth-M.wav"));
 	~resynth = Buffer(s);
 	~n_components = 3;
 	~resynths = {Buffer(s)} ! ~n_components;
@@ -196,7 +195,9 @@ s.waitForBoot{
 	~hopSize = 256;
 
 	s.sync;
-	FluidBufNMF.processBlocking(s,~audio,resynth:~resynth,activations:~activations,components:~n_components);
+
+	FluidBufNMF.processBlocking(s,~audio,resynth:~resynth,activations:~activations,components:~n_components,resynthMode: 1);
+
 	2.do{
 		arg i;
 		FluidBufHPSS.processBlocking(s,~audio,harmonic:~harm[i],percussive:~perc[i],maskingMode:i,harmFilterSize:51,percFilterSize:91);
@@ -220,35 +221,30 @@ s.waitForBoot{
 
 	~colors = FluidViewer.createCatColors.collect{
 		arg color;
-		// color.alpha_(0.4);
 		color;
 	};
 
 	s.sync;
 
-	// ~resynths.postln;
-	~melsfw = FluidWaveform(bounds:Rect(0,0,1600,400));
+	defer{
+		~melsfw = FluidWaveform(bounds:Rect(0,0,1600,400));
 
-	// ~n_components.do{
-	// 	arg i;
-	// 	~fw.addAudioLayer(~resynths[i],~colors[i]);
-	// };
+		~n_components.do{
+			arg i;
+			~melsfw.addImageLayer(~mels[i],~colors[i],1,1);
+		};
 
-	~n_components.do{
-		arg i;
-		~melsfw.addImageLayer(~mels[i],~colors[i],1,1);
+		~melsfw.front;
+
+		~binaryfw = FluidWaveform(bounds:Rect(0,400,1600,400));
+		~binaryfw.addImageLayer(~percmels[1],~colors[0],1);
+		~binaryfw.addImageLayer(~harmmels[1],~colors[1],1);
+		~binaryfw.front;
+
+		~softfw = FluidWaveform(bounds:Rect(0,800,1600,400));
+		~softfw.addImageLayer(~percmels[0],~colors[0],1);
+		~softfw.addImageLayer(~harmmels[0],~colors[1],1);
+		~softfw.front;
 	};
-
-	~melsfw.front;
-
-	~binaryfw = FluidWaveform(bounds:Rect(0,400,1600,400));
-	~binaryfw.addImageLayer(~percmels[1],~colors[0],1);
-	~binaryfw.addImageLayer(~harmmels[1],~colors[1],1);
-	~binaryfw.front;
-
-	~softfw = FluidWaveform(bounds:Rect(0,0,1600,400));
-	~softfw.addImageLayer(~percmels[0],~colors[0],1);
-	~softfw.addImageLayer(~harmmels[0],~colors[1],1);
-	~softfw.front;
-}
+}.play;
 )
