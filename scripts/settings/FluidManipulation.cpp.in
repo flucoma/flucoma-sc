@@ -1,3 +1,4 @@
+  makeSCWrapper<RTDataSetReadClient>("FluidDataSetRead",inTable);
   makeSCWrapper<RTKDTreeQueryClient>("FluidKDTreeQuery",inTable);
   makeSCWrapper<RTKMeansQueryClient>("FluidKMeansQuery",inTable);
   makeSCWrapper<RTSKMeansQueryClient>("FluidSKMeansQuery",inTable);

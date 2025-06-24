@@ -98,7 +98,7 @@ table::
 ##link::Classes/FluidKNNRegressor:: || Regression by Nearest Neighbour modelling
 ##link::Classes/FluidKNNClassifier:: ||  Classification by Nearest Neighbour modelling
 ##link::Classes/FluidMLPRegressor:: ||  Regression using Multilayer Perceptron model
-##link::Classes/FluidMLPClassifier:: || Classification by Nearest Neighbour modelling
+##link::Classes/FluidMLPClassifier:: || Classification using Multilayer Perceptron model
 ::
 subsection::Unsupervised Machine Learning
 table::

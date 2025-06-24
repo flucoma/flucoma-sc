@@ -51,16 +51,17 @@ cmake -DSC_PATH=<location of your SC source> -DFLUID_PATH=<location of Fluid Cor
 
 To find out which branches / tags / commits of these we use, look in the top level `CMakeLists.txt` of the Fluid Corpus Manipulation Library for the `FetchContent_Declare` statements for each dependency.
 
+
 ## Compiling for different CPUs
 
-The build system generally assumes an x86 cpu with AVX instructions (most modern x86 CPUs). To build on another kind of CPU (e.g. older than 2012) you can use the `FLUID_ARCH` cache variable to pass specific flags to your compiler. For example use `-DFLUID_ARCH=-mcpu=native` to optimize for your particular CPU.
+The build system generally assumes an x86/x64 cpu with SSE instructions or Apple Silicon. To build on another kind of CPU (e.g. older than 2012) you can use the `FLUID_ARCH` cache variable to pass specific flags to your compiler. For example use `-DFLUID_ARCH=-mcpu=native` to optimize for your particular CPU.
 
 For ARM, we use the following default set of flags (with the Bela in mind):
 
 ```
 -march=armv7-a -mtune=cortex-a8 -mfloat-abi=hard -mfpu=neon
 ```
-=======
+
 This will assemble a package in `release-packaging`.
 
 ## Credits
