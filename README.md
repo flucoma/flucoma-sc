@@ -32,7 +32,25 @@ An alternative to setting up / running CMake directly on the command line is to 
 Also, with CMake you have a choice of which build system you use.
 
 - The default on macOS and Linux is `Unix Makefiles`. On macOS you can also use Xcode by passing `-GXcode` to CMake when you first run it.
-- The default on Windows is the latest version of Visual Studio installed. However, Visual Studio can open CMake files directly as projects, which has some upsides. When used this way, CMake variables have to be set via a JSON file that MSVC will use to configure CMake.
+- The default on Windows is the latest version of Visual Studio installed. However, Visual Studio can open CMake files directly as projects, which has some upsides. When used  this way, CMake variables have to be set via a JSON file that MSVC will use to configure CMake.
+## The `DOCS` option 
+The CMake option `DOCS` controls whether or not to generate the documentation for the FluCoMa objects. It is on by default. However, building the documentation is slightly involved and requires that you have a working Python 3 installation, among other things (see https://github.com/flucoma/flucoma-docs). 
+
+If you just want some binaries, it could be simpler to disable this and just take some documentation from a release download:
+
+```bash
+mkdir -p build && cd build
+cmake -DSC_PATH=</path/to/sc> -DDOCS=OFF ..
+make install
+```
+
+
+
+
+
+
+
+
 
 ## Using Manual Dependencies
 
