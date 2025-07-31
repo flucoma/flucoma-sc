@@ -1,19 +1,19 @@
 #pragma once
 
-#include <clients/common/FluidBaseClient.hpp>
-#include <clients/common/FluidNRTClientWrapper.hpp>
-#include <clients/common/MessageSet.hpp>
-#include <clients/common/OfflineClient.hpp>
-#include <clients/common/ParameterSet.hpp>
-#include <clients/common/ParameterTypes.hpp>
-#include <clients/common/Result.hpp>
-#include <clients/common/SharedClientUtils.hpp>
-#include <clients/nrt/CommonResults.hpp>
-#include <clients/nrt/DataSetClient.hpp>
-#include <data/FluidDataSet.hpp>
-#include <data/FluidIndex.hpp>
-#include <data/FluidTensor.hpp>
-#include <data/TensorTypes.hpp>
+#include <flucoma/clients/common/FluidBaseClient.hpp>
+#include <flucoma/clients/common/FluidNRTClientWrapper.hpp>
+#include <flucoma/clients/common/MessageSet.hpp>
+#include <flucoma/clients/common/OfflineClient.hpp>
+#include <flucoma/clients/common/ParameterSet.hpp>
+#include <flucoma/clients/common/ParameterTypes.hpp>
+#include <flucoma/clients/common/Result.hpp>
+#include <flucoma/clients/common/SharedClientUtils.hpp>
+#include <flucoma/clients/nrt/CommonResults.hpp>
+#include <flucoma/clients/nrt/DataSetClient.hpp>
+#include <flucoma/data/FluidDataSet.hpp>
+#include <flucoma/data/FluidIndex.hpp>
+#include <flucoma/data/FluidTensor.hpp>
+#include <flucoma/data/TensorTypes.hpp>
 #include <string>
 
 namespace fluid {
