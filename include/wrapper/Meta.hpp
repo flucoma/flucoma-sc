@@ -1,8 +1,8 @@
 #pragma once 
 
-#include <clients/nrt/FluidSharedInstanceAdaptor.hpp>
-#include <clients/common/FluidNRTClientWrapper.hpp>
-#include <clients/common/SharedClientUtils.hpp>
+#include <flucoma/clients/nrt/FluidSharedInstanceAdaptor.hpp>
+#include <flucoma/clients/common/FluidNRTClientWrapper.hpp>
+#include <flucoma/clients/common/SharedClientUtils.hpp>
 
 namespace fluid {
 namespace client {
