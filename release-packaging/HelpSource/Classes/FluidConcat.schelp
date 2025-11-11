@@ -1,0 +1,132 @@
+TITLE:: FluidConcat
+summary:: Concatenative synthesis with a live database
+categories:: Libraries>FluidCorpusManipulation
+related:: Concat, Concat2
+
+DESCRIPTION::
+
+FluidConcat is a concatenative synthesiser, that runs from a live signal, using a the recent history of a live signal as a database.
+FluidConcat takes data from two signals:  a control signal and a source signal.  The current frame of the control signal is matched against the recent history of the source signal, and then the closest matching section of the source signal is played back.  You can use the same signal for both source and control, in which case the control signal will be matching against its own history.
+This UGen integrates with FluCoMa's machine listening UGens: for each sigal you must provide your own slices, and features of those slices.
+
+
+Inspired by Nick Collin's Concat UGens.
+
+CLASSMETHODS::
+
+METHOD:: ar
+(describe method here)
+
+ARGUMENT:: sourceIn
+live audio input
+
+ARGUMENT:: controlSegmentTrig
+A trigger indicating a new slice in the control signal
+
+ARGUMENT:: controlFeatureTrig
+A trigger indicating a new feature of the control signal is avaiable (stored in controlFeatureBuffer)
+
+ARGUMENT:: sourceSegmentTrig
+A trigger indicating a new slice in the source signal.
+
+ARGUMENT:: sourceFeatureTrig
+A trigger indicating a new feature of the source signal is avaiable (stored in sourceFeatureBuffer)
+
+ARGUMENT:: controlFeatureBuffer
+An array of features that describe the slice of audio (e.g. MFCCs, spectral features)
+
+ARGUMENT:: sourceFeatureBuffer
+An array of features that describe the slice of audio (e.g. MFCCs, spectral features)
+
+ARGUMENT:: maxHistoryLength (milliseconds)
+The maximum length of time for which features of the source signal will be stored
+
+ARGUMENT:: historyWindowLength (milliseconds)
+The size of segment of history of the source signal where FluidConcat will search for matches
+
+ARGUMENT:: historyWindowOffset (milliseconds)
+The position where the history search window is placed
+
+ARGUMENT:: fadeTime (milliseconds)
+The length of fade time between segments being played back
+
+ARGUMENT:: speed
+The speed at which segments are played back (1.0 = the same, 0.5 = half speed etc)
+
+ARGUMENT:: algo
+The distance algorithm used for matches
+0: Euclidean distance
+1: Cosine distance
+
+ARGUMENT:: randomness
+Level of randomness in the choice of segments to play back. 0 = no randomness, 1=totally random, matching is ignored
+
+returns:: an audio signal
+
+
+INSTANCEMETHODS::
+
+EXAMPLES::
+
+code::
+(some example code)
+::
+A self-concatenator.  Try this with your computer microphone + headphones
+(
+s.options.memSize_(65536 * 16);
+~buf= Buffer.alloc(s, 20, 1);
+~arrayToBuffer = {
+	|ar, buf|
+	ar.size().do({|i|BufWr.kr([ar[i]], buf, i)});
+};
+
+Ndef(\concatSelfConcatTest, {
+	var feature, input, mfcc, segmentTrig, featureTrig, osc, slice;
+	feature = LocalBuf.new(10,1);
+	input = SoundIn.ar([0]);
+	slice= FluidNoveltySlice.ar(input,1,3,0.5); //adjust this threshold to match the level of the audio input
+	Poll.ar(slice,slice);
+	mfcc = 	FluidMFCC.kr(input, 21, maxNumCoeffs:21, windowSize:256, maxFFTSize:1024);
+	~arrayToBuffer.(mfcc[1..], ~buf);
+	segmentTrig=LFPulse.ar(20)-0.5;
+	featureTrig = LFPulse.ar(SampleRate.ir / 512)-0.5; //the rate of MFCCs being generated
+	FluidConcat.ar(input, segmentTrig, featureTrig, segmentTrig, featureTrig, ~buf, ~buf, 10000, 5000, 10000, 30, 1, 1, 0.1)!2
+}).play
+)
+
+
+
+A live signal, matching on a database from a Buffer
+
+b = Buffer.read(s,File.realpath(FluidAmpSlice.class.filenameSymbol).dirname.withTrailingSlash ++ "../AudioFiles/Nicol-LoopE-M.wav");
+b.play
+
+
+(
+s.options.memSize_(65536 * 16);
+~cbuf= Buffer.alloc(s, 20, 1);
+~sbuf= Buffer.alloc(s, 20, 1);
+~arrayToBuffer = {
+	|ar, buf|
+	ar.size().do({|i|BufWr.kr([ar[i]], buf, i)});
+};
+
+Ndef(\concatControlTest, {
+	var feature, input, mfccInput, mfccSource, segmentTrig, featureTrig, osc, sliceControl, sliceSource, loop;
+	feature = LocalBuf.new(10,1);
+	input = SoundIn.ar([0]);
+	loop = PlayBuf.ar(1, b, BufRateScale.kr(b), loop:1);
+	sliceSource= FluidAmpSlice.ar(loop,fastRampUp: 10,fastRampDown: 2205,slowRampUp: 4410,slowRampDown: 4410,onThreshold: 10,offThreshold: 5,floor: -40,minSliceLength: 4410,highPassFreq: 20);
+	Poll.ar(sliceSource, sliceSource);
+	sliceControl= FluidNoveltySlice.ar(input,1,5,0.5);
+	// Poll.ar(sliceControl, sliceControl);
+	mfccInput = 	FluidMFCC.kr(input, 21, maxNumCoeffs:21, windowSize:256, maxFFTSize:1024);
+	mfccSource = 	FluidMFCC.kr(loop, 21, maxNumCoeffs:21, windowSize:256, maxFFTSize:1024);
+	~arrayToBuffer.(mfccInput[1..], ~cbuf);
+	~arrayToBuffer.(mfccSource[1..], ~sbuf);
+	featureTrig = LFPulse.ar(SampleRate.ir / 256)-0.5;
+	FluidConcat.ar(loop, sliceControl, featureTrig, sliceSource, featureTrig, ~cbuf, ~sbuf, 10000, 10000, 10000, 10, 1, 1, 0.0)!2
+	// osc
+}).play
+)
+
