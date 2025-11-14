@@ -30,7 +30,7 @@
 	arg rasterBuffer;
 	var colors;
 
-	colors = CSVFileReader.readInterpret(FluidFilesPath("../color-schemes/%.csv".format("CET-L16"))).collect{
+	colors = CSVFileReader.readInterpret(FluidFilesPath("../color-schemes/%.csv".format("CET-L16")),true).collect{
 		arg row;
 		Color.fromArray(row);
 	};
@@ -71,3 +71,8 @@ fork({
 	~raster.(~rasterBuffer);
 },AppClock);
 )
+
+// smaller test
+~simplebuffer = Buffer.loadCollection(s, 11.collect{|i|[i/10, i.linexp(0,10,-120.dbamp,-20.dbamp)]}.flatten, 2)
+~simplebuffer.plot
+~raster.(~simplebuffer);
