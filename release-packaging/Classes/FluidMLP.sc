@@ -5,11 +5,11 @@ FluidMLPRegressor : FluidModelObject {
 	const <relu = 2;
 	const <tanh = 3;
 
-	var <>hiddenLayers, <>activation, <>outputActivation, <>tapIn, <>tapOut, <>maxIter, <>learnRate, <>momentum, <>batchSize, <>validation;
+	var <>hiddenLayers, <>activation, <>outputActivation, <>tapIn, <>tapOut, <>maxIter, <>learnRate, <>momentum, <>batchSize, <>validation, <>seed;
 
-	*new {|server, hiddenLayers = #[3,3] , activation = 2, outputActivation = 0, tapIn = 0, tapOut = -1,maxIter = 1000, learnRate = 0.0001, momentum = 0.9, batchSize = 50, validation = 0.2|
+	*new {|server, hiddenLayers = #[3,3] , activation = 2, outputActivation = 0, tapIn = 0, tapOut = -1,maxIter = 1000, learnRate = 0.0001, momentum = 0.9, batchSize = 50, validation = 0.2, seed = -1|
 
-		^super.new(server, [hiddenLayers.size] ++ hiddenLayers ++ [activation, outputActivation, tapIn, tapOut, maxIter, learnRate, momentum, batchSize, validation])
+		^super.new(server, [hiddenLayers.size] ++ hiddenLayers ++ [activation, outputActivation, tapIn, tapOut, maxIter, learnRate, momentum, batchSize, validation, seed])
 		.hiddenLayers_(hiddenLayers)
 		.activation_(activation)
 		.outputActivation_(outputActivation)
@@ -19,11 +19,12 @@ FluidMLPRegressor : FluidModelObject {
 		.learnRate_(learnRate)
 		.momentum_(momentum)
 		.batchSize_(batchSize)
-		.validation_(validation);
+		.validation_(validation)
+		.seed_(seed);
 	}
 
 	prGetParams{
-		^[this.id, this.hiddenLayers.size] ++ this.hiddenLayers ++ [this.activation, this.outputActivation, this.tapIn, this.tapOut, this.maxIter, this.learnRate, this.momentum, this.batchSize, this.validation]
+		^[this.id, this.hiddenLayers.size] ++ this.hiddenLayers ++ [this.activation, this.outputActivation, this.tapIn, this.tapOut, this.maxIter, this.learnRate, this.momentum, this.batchSize, this.validation, this.seed]
 	}
 
 	clearMsg{ ^this.prMakeMsg(\clear, id) }
@@ -120,21 +121,22 @@ FluidMLPClassifier : FluidModelObject {
 	const <relu = 2;
 	const <tanh = 3;
 
-	var <>hiddenLayers, <>activation, <> maxIter, <>learnRate, <> momentum, <>batchSize, <>validation;
+	var <>hiddenLayers, <>activation, <> maxIter, <>learnRate, <> momentum, <>batchSize, <>validation, <>seed;
 
-	*new {|server, hiddenLayers = #[3,3] , activation = 2, maxIter = 1000, learnRate = 0.0001, momentum = 0.9, batchSize = 50, validation = 0.2|
-		^super.new(server,[hiddenLayers.size] ++ hiddenLayers ++ [activation,  maxIter, learnRate,  momentum, batchSize, validation])
+	*new {|server, hiddenLayers = #[3,3] , activation = 2, maxIter = 1000, learnRate = 0.0001, momentum = 0.9, batchSize = 50, validation = 0.2, seed = -1|
+		^super.new(server,[hiddenLayers.size] ++ hiddenLayers ++ [activation,  maxIter, learnRate,  momentum, batchSize, validation, seed])
 		.hiddenLayers_(hiddenLayers)
 		.activation_(activation)
 		.maxIter_(maxIter)
 		.learnRate_(learnRate)
 		.momentum_(momentum)
 		.batchSize_(batchSize)
-		.validation_(validation);
+		.validation_(validation)
+		.seed_(seed)
 	}
 
 	prGetParams{
-		^[this.id, this.hiddenLayers.size] ++ this.hiddenLayers ++ [this.activation,  this.maxIter, this.learnRate,  this.momentum, this.batchSize, this.validation];
+		^[this.id, this.hiddenLayers.size] ++ this.hiddenLayers ++ [this.activation,  this.maxIter, this.learnRate,  this.momentum, this.batchSize, this.validation, this.seed];
 	}
 
 	clearMsg{ ^this.prMakeMsg(\clear,id) }
