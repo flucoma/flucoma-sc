@@ -1,14 +1,15 @@
 FluidUMAP : FluidModelObject {
 
-	var <>numDimensions, <>numNeighbours, <>minDist, <>iterations, <>learnRate;
+	var <>numDimensions, <>numNeighbours, <>minDist, <>iterations, <>learnRate, <>seed;
 
-	*new {|server,numDimensions = 2, numNeighbours = 15, minDist = 0.1, iterations = 200, learnRate = 0.1|
-		^super.new(server,[numDimensions, numNeighbours, minDist, iterations, learnRate])
+	*new {|server,numDimensions = 2, numNeighbours = 15, minDist = 0.1, iterations = 200, learnRate = 0.1, seed = -1|
+		^super.new(server,[numDimensions, numNeighbours, minDist, iterations, learnRate, seed])
 		.numDimensions_(numDimensions)
 		.numNeighbours_(numNeighbours)
 		.minDist_(minDist)
 		.iterations_(iterations)
-		.learnRate_(learnRate);
+		.learnRate_(learnRate)
+		.seed_(seed);
 	}
 
 	prGetParams{
@@ -19,6 +20,7 @@ FluidUMAP : FluidModelObject {
 			this.minDist,
 			this.iterations,
 			this.learnRate,
+			this.seed
 		]
 	}
 

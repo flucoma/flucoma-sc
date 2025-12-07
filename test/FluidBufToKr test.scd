@@ -314,7 +314,7 @@ s.waitForBoot{
 )
 
 (
-// should be 0,0,200,3000,0,0
+// should be 0,0,200,300,0,0
 s.waitForBoot{
 	Routine{
 		var buf = Buffer.alloc(s,7);
