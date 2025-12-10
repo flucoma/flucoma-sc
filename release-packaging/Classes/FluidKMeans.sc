@@ -1,12 +1,13 @@
 FluidKMeans : FluidModelObject {
 
-	var clusters, maxiter, initMethod;
+	var clusters, maxiter, initMethod, seed;
 
-	*new {|server, numClusters = 4, maxIter = 100, initMethod = 0|
-		^super.new(server,[numClusters,maxIter,initMethod])
+	*new {|server, numClusters = 4, maxIter = 100, initMethod = 0, seed = -1|
+		^super.new(server,[numClusters,maxIter,initMethod,seed])
 		.numClusters_(numClusters)
 		.maxIter_(maxIter)
-		.initMethod_(initMethod);
+		.initMethod_(initMethod)
+		.seed_(seed);
 	}
 
 	numClusters_{|n| clusters = n.asInteger}
@@ -18,7 +19,10 @@ FluidKMeans : FluidModelObject {
 	initMethod_{|i| initMethod = i.asInteger}
 	initMethod{ ^initMethod }
 
-	prGetParams{^[this.id,this.numClusters,this.maxIter,this.initMethod];}
+	seed_{|i| seed = i.asInteger}
+	seed{ ^seed }
+
+	prGetParams{^[this.id,this.numClusters,this.maxIter,this.initMethod,this.seed];}
 
 	fitMsg{ |dataSet| ^this.prMakeMsg(\fit,id,dataSet.id);}
 

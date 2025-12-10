@@ -1,13 +1,14 @@
 FluidSKMeans : FluidModelObject {
 
-	var clusters, threshold, maxiter, initMethod;
+	var clusters, threshold, maxiter, initMethod, seed;
 
-	*new {|server, numClusters = 4, encodingThreshold = 0.25, maxIter = 100, initMethod = 0|
-		^super.new(server,[numClusters, maxIter, encodingThreshold, initMethod])
+	*new {|server, numClusters = 4, encodingThreshold = 0.25, maxIter = 100, initMethod = 0, seed = -1|
+		^super.new(server,[numClusters, maxIter, encodingThreshold, initMethod, seed])
 		.numClusters_(numClusters)
 		.encodingThreshold_(encodingThreshold)
 		.maxIter_(maxIter)
-		.initMethod_(initMethod);
+		.initMethod_(initMethod)
+		.seed_(seed);
 	}
 
 	numClusters_{|n| clusters = n.asInteger}
@@ -22,7 +23,10 @@ FluidSKMeans : FluidModelObject {
 	initMethod_{|i| initMethod = i.asInteger}
 	initMethod{ ^initMethod }
 
-	prGetParams{^[this.id,this.numClusters, this.encodingThreshold, this.maxIter, this.initMethod];}
+	seed_{|i| seed = i.asInteger}
+	seed{ ^seed }
+
+	prGetParams{^[this.id,this.numClusters, this.encodingThreshold, this.maxIter, this.initMethod, this.seed];}
 
 	fitMsg{ |dataSet| ^this.prMakeMsg(\fit,id,dataSet.id);}
 
