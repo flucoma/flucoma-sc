@@ -89,12 +89,12 @@ FluidMLPRegressor : FluidModelObject {
 	}
 
 	prUpdateParams{|data|
-		var rest = data.keep(-9);
-		this.hiddenLayers_(data.drop(1).drop(-9).copy);
+		var rest = data.keep(-10);
+		this.hiddenLayers_(data.drop(1).drop(-10).copy);
 		[\activation_, \outputActivation_,
 			\tapIn_, \tapOut_, \maxIter_,
 			\learnRate_, \momentum_,
-			\batchSize_, \validation_]
+			\batchSize_, \validation_, \seed_]
 		.do{|prop,i|
 			this.performList(prop,rest[i]);
 		};
@@ -184,11 +184,11 @@ FluidMLPClassifier : FluidModelObject {
 	}
 
 	prUpdateParams{|data|
-		var rest = data.keep(-6);
-		this.hiddenLayers_(data.drop(1).drop(-6).copy);
+		var rest = data.keep(-7);
+		this.hiddenLayers_(data.drop(1).drop(-7).copy);
 		[\activation_, \maxIter_,
 			\learnRate_, \momentum_,
-			\batchSize_, \validation_]
+			\batchSize_, \validation_, \seed_]
 		.do{|prop,i|
 			this.performList(prop,rest[i]);
 		};
