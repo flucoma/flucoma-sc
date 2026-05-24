@@ -11,18 +11,17 @@ FluidMFCC : FluidRTMultiOutUGen {
 
 	init {arg ...theInputs;
 		inputs = theInputs;
-		^this.initOutputs(inputs.at(2),rate);//this instantiate the number of output from the maxNumCoeffs in the multiNew order
+		^this.initOutputs(inputs.at(4),rate);//this instantiate the number of output from the maxNumBands in the multiNew order
 	}
 
 	checkInputs {
-		// the checks of rates here are in the order of the kr method definition
 		if(inputs.at(2).rate != 'scalar') {
 			^(": maxNumCoeffs cannot be modulated.");
 		};
 		if(inputs.at(4).rate != 'scalar') {
 			^(": maxNumBands cannot be modulated.");
 		};
-		if(inputs.at(10).rate != 'scalar') {
+		if(inputs.last.rate != 'scalar') {
 			^(": maxFFTSize cannot be modulated.");
 		};
 		^this.checkValidInputs;

@@ -8,14 +8,14 @@ FluidSineFeature : FluidRTMultiOutUGen {
 
 	init { arg ... theInputs;
 		inputs = theInputs;
-		^this.initOutputs(inputs.at(2),rate);//this instantiate the number of output from the maxNumPeaks in the multiNew order
+		^this.initOutputs(inputs.at(2),rate); //this instantiate the number of output from the maxNumPeaks in the multiNew order
 	}
 
 	checkInputs {
-		if(inputs.at(8).rate != 'scalar') {
+		if(inputs.at(2).rate != 'scalar') {
 			^(": maxNumPeaks cannot be modulated.");
 		};
-		if(inputs.at(7).rate != 'scalar') {
+		if(inputs.last.rate != 'scalar') {
 			^(": maxFFTSize cannot be modulated.");
 		};
 		^this.checkValidInputs;
