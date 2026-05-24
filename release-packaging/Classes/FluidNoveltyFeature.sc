@@ -14,14 +14,14 @@ FluidNoveltyFeature : FluidRTUGen {
 		if([\scalar, \control].includes(inputs.at(1).rate).not) {
 			^(": invalid algorithm");
 		};
-		if(inputs.at(9).rate != 'scalar') {
-			^(": maxFFTSize cannot be modulated.");
-		};
 		if(inputs.at(3).rate != 'scalar') {
 			^(": maxKernelSize cannot be modulated.");
 		};
 		if(inputs.at(5).rate != 'scalar') {
 			^(": maxFilterSize cannot be modulated.");
+		};
+		if(inputs.last.rate != 'scalar') {
+			^(": maxFFTSize cannot be modulated.");
 		};
 		^this.checkValidInputs;
 	}
