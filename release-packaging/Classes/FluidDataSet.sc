@@ -102,17 +102,26 @@ FluidDataSet : FluidDataObject
 		this.prSendMsg(this.getIdsMsg(labelSet));
 	}
 
+	containsIdMsg{|identifier|
+		^this.prMakeMsg(\containsId, id, identifier.asSymbol);
+	}
+
+	containsId{|identifier, action|
+		actions[\containsId] = [string(FluidMessageResponse,_,_),action];
+		this.prSendMsg(this.containsIdMsg(identifier));
+	}
+
 	kNearestMsg{|buffer,k|
-	^this.prMakeMsg(\kNearest,id, this.prEncodeBuffer(buffer),k);
+		^this.prMakeMsg(\kNearest,id, this.prEncodeBuffer(buffer),k);
 	}
 
 	kNearest{ |buffer, k, action|
-	actions[\kNearest] = [strings(FluidMessageResponse,_,_),action];
-	this.prSendMsg(this.kNearestMsg(buffer,k));
+		actions[\kNearest] = [strings(FluidMessageResponse,_,_),action];
+		this.prSendMsg(this.kNearestMsg(buffer,k));
 	}
 
 	kNearestDistMsg {|buffer, k|
-	^this.prMakeMsg(\kNearestDist,id,this.prEncodeBuffer(buffer),k);
+		^this.prMakeMsg(\kNearestDist,id,this.prEncodeBuffer(buffer),k);
 	}
 
 	kNearestDist { |buffer, k, action|

@@ -16,14 +16,14 @@ FluidHPSS : FluidRTMultiOutUGen {
 		^channels
 	}
 	checkInputs {
-		if(inputs.at(17).rate != 'scalar') {
-			^(": maxFFTSize cannot be modulated.");
-		};
 		if(inputs.at(2).rate != 'scalar') {
 			^(": maxHarmFilterSize cannot be modulated.");
 		};
 		if(inputs.at(4).rate != 'scalar') {
 			^(": maxPercFilterSize cannot be modulated.");
+		};
+		if(inputs.last.rate != 'scalar') {
+			^(": maxFFTSize cannot be modulated.");
 		};
 		^this.checkValidInputs;
 	}

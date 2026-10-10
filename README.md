@@ -5,8 +5,6 @@ This repository hosts code for generating the SC objects and documentation resou
 
 You can also download the most [recent release](https://learn.flucoma.org/installation/sc) or the most recent [nightly build](https://github.com/flucoma/flucoma-sc/releases/tag/nightly).
 
-Note that on macOS you may need to [dequarantine](https://learn.flucoma.org/installation/sc#step-3-dequarantine-scx-extensions) the binary files.
-
 ## Pre-requisites
 
 
