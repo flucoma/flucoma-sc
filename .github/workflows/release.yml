@@ -75,10 +75,28 @@ jobs:
       - id: get-version
         run: echo "version=$(cat flucoma.version.rc)" >> $GITHUB_OUTPUT
         working-directory: build/_deps/flucoma-core-src
+
+  linuxbuildarm64:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v3
+      - uses: flucoma/actions/env@main
+      - uses: flucoma/actions/sc@main
+        with: 
+          branch: origin/${{ github.ref_name }}
+
+      - name: compress archive
+        run: tar -zcvf FluCoMa-SC-Linux-arm64.tar.gz FluidCorpusManipulation
+        working-directory: install
+
+      - uses: actions/upload-artifact@v4.3.6
+        with:
+          name: linuxbuildarm64 
+          path: install/FluCoMa-SC-Linux-arm64.tar.gz
   
   release:
     runs-on: ubuntu-22.04
-    needs: [macbuild, winbuild, linuxbuild]
+    needs: [macbuild, winbuild, linuxbuild, linuxbuildarm64]
     
     steps:      
       - uses: actions/download-artifact@v4.1.7
@@ -92,6 +110,10 @@ jobs:
       - uses: actions/download-artifact@v4.1.7
         with:
           name: linuxbuild
+
+      - uses: actions/download-artifact@v4.1.7
+        with:
+          name: linuxbuildarm64
 
       - name: delete pre-existing release
         uses: dev-drprasad/delete-tag-and-release@v0.2.1
