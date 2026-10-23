@@ -46,23 +46,29 @@ FluidPlotter : FluidViewer {
 
 				// the id has to be converted back into a string because the
 				// labelSetDict that comes in has the keys as strings by default
-				var category_string = labelSetDict.at("data").at(id.asString)[0];
+				var category_string;
 				var category_int;
 				var color;
 
-				if(label_to_int.at(category_string).isNil,{
-					label_to_int.put(category_string,counter);
-					counter = counter + 1;
-				});
+				var temp = labelSetDict.at("data").at(id.asString);
 
-				category_int = label_to_int.at(category_string);
+				if (temp.notNil) { // in case of manually added points
+					category_string = temp[0];
+					if(label_to_int.at(category_string).isNil,{
+						label_to_int.put(category_string,counter);
+						counter = counter + 1;
+					});
 
-				if(category_int > (categoryColors.size-1),{
-					"FluidPlotter:setCategories_ FluidPlotter doesn't have that many category colors. You can use the method 'setColor_' to set colors for individual points.".warn
-				});
+					category_int = label_to_int.at(category_string);
 
-				color = categoryColors[category_int];
-				fp_pt.color_(color);
+					if(category_int > (categoryColors.size-1),{
+						"FluidPlotter:setCategories_ FluidPlotter doesn't have that many category colors. You can use the method 'setColor_' to set colors for individual points.".warn
+					});
+
+					color = categoryColors[category_int];
+					fp_pt.color_(color);
+				}
+
 			});
 			this.refresh;
 		},{
