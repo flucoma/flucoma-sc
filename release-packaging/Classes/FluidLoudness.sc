@@ -35,8 +35,8 @@ FluidLoudness : FluidRTMultiOutUGen {
 	}
 
 	checkInputs {
-		if(inputs.at(6).rate != 'scalar') {
-			^(": maxwindowSize cannot be modulated.");
+		if(inputs.last.rate != 'scalar') {
+			^(": maxWindowSize cannot be modulated.");
 		};
 		^this.checkValidInputs;
 	}

@@ -10,10 +10,10 @@ FluidNMFMatch : FluidRTMultiOutUGen {
 	}
 
 	checkInputs {
-		if(inputs.at(3).rate != 'scalar') {
+		if(inputs.at(2).rate != 'scalar') {
 			^(": maxComponents cannot be modulated.");
 		};
-		if(inputs.at(8).rate != 'scalar') {
+		if(inputs.last.rate != 'scalar') {
 			^(": maxFFTSize cannot be modulated.");
 		};
 		^this.checkValidInputs;

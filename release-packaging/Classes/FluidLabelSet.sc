@@ -78,4 +78,13 @@ FluidLabelSet : FluidDataObject {
 		actions[\getIds] = [nil,action];
 		this.prSendMsg(this.getIdsMsg(labelSet));
 	}
+
+	containsIdMsg{|identifier|
+		^this.prMakeMsg(\containsId, id, identifier.asSymbol);
+	}
+
+	containsId{|identifier, action|
+		actions[\containsId] = [string(FluidMessageResponse,_,_),action];
+		this.prSendMsg(this.containsIdMsg(identifier));
+	}
 }

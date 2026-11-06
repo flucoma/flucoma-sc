@@ -36,7 +36,7 @@ FluidSpectralShape : FluidRTMultiOutUGen {
 	}
 
 	checkInputs {
-		if(inputs.at(10).rate != 'scalar') {
+		if(inputs.last.rate != 'scalar') {
 			^(": maxFFTSize cannot be modulated.");
 		};
 		^this.checkValidInputs;
