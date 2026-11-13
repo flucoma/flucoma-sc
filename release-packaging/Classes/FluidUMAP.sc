@@ -42,13 +42,13 @@ FluidUMAP : FluidModelObject {
 		this.prSendMsg(this.fitMsg(dataSet));
 	}
 
-	transformMsg{|sourceDataSet, destDataSet|
-		^this.prMakeMsg(\transform, id, sourceDataSet.id, destDataSet.id);
+	transformMsg{|sourceDataSet, destDataSet, updateEmbedding|
+		^this.prMakeMsg(\transform, id, sourceDataSet.id, destDataSet.id, updateEmbedding);
 	}
 
-	transform{|sourceDataSet, destDataSet, action|
+	transform{|sourceDataSet, destDataSet, updateEmbedding = 0, action|
 		actions[\transform] = [nil, action];
-		this.prSendMsg(this.transformMsg(sourceDataSet,destDataSet));
+		this.prSendMsg(this.transformMsg(sourceDataSet,destDataSet, updateEmbedding));
 	}
 
 
