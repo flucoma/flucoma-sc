@@ -1,14 +1,14 @@
 FluidRobustScale : FluidModelObject {
 
-	var <>low, <>high;
+	var <>low, <>high, <>axis;
 
-	*new {|server, low = 25, high = 75|
-		^super.new(server,[low,high])
-		.low_(low).high_(high);
+	*new {|server, low = 25, high = 75, axis = 0|
+		^super.new(server,[low,high,axis])
+		.low_(low).high_(high).axis_(axis);
 	}
 
 	prGetParams{
-		^[this.id,this.low,this.high];
+		^[this.id, this.low, this.high, this.axis];
 	}
 
 
@@ -83,7 +83,7 @@ FluidRobustScale : FluidModelObject {
 }
 
 FluidRobustScaleQuery : FluidRTMultiOutUGen {
-	*kr{ |trig, model, inputBuffer,outputBuffer,invert|
+	*kr{ |trig, model, inputBuffer, outputBuffer, invert|
 		^this.multiNew('control',trig, model.asUGenInput,
 			invert,
 			inputBuffer.asUGenInput, outputBuffer.asUGenInput)
