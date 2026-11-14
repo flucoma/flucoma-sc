@@ -1,14 +1,14 @@
 FluidNormalize : FluidModelObject {
 
-	var <>min, <>max;
+	var <>min, <>max, <>axis;
 
-	*new {|server, min = 0, max = 1|
-		^super.new(server,[min,max])
-		.min_(min).max_(max);
+	*new {|server, min = 0, max = 1, axis = 0|
+		^super.new(server,[min,max, axis])
+		.min_(min).max_(max).axis_(axis);
 	}
 
 	prGetParams{
-		^[this.id, this.min,this.max,-1,-1];
+		^[this.id, this.min, this.max, this.axis];
 	}
 
 
@@ -74,7 +74,7 @@ FluidNormalize : FluidModelObject {
 		this.prSendMsg(this.inverseTransformPointMsg(sourceBuffer, destBuffer));
 	}
 
-	kr{|trig, inputBuffer,outputBuffer,min = 0 ,max = 1,invert = 0|
+	kr{|trig, inputBuffer, outputBuffer, min = 0, max = 1, invert = 0|
 
 		min = min ? this.min;
 		max = max ? this.max;
@@ -90,10 +90,10 @@ FluidNormalize : FluidModelObject {
 
 FluidNormalizeQuery : FluidRTMultiOutUGen {
 
-	*kr{ |trig, model,inputBuffer,outputBuffer,min = 0 ,max = 1,invert = 0|
+	*kr{ |trig, model,inputBuffer,outputBuffer, min = 0, max = 1, invert = 0|
 		// inputBuffer.asUGenInput.postln;
-		^this.multiNew('control',trig, model.asUGenInput,
-			min,max,invert,
+		^this.multiNew('control', trig, model.asUGenInput,
+			min, max, invert,
 			inputBuffer.asUGenInput, outputBuffer.asUGenInput)
 	}
 

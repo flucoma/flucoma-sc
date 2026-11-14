@@ -1,11 +1,13 @@
 FluidStandardize : FluidModelObject {
 
-	*new {|server|
-		^super.new(server,[]);
+	var <>axis;
+
+	*new {|server, axis = 0|
+		^super.new(server,[axis]).axis_(axis);
 	}
 
 	prGetParams{
-		^[this.id];
+		^[this.id, this.axis];
 	}
 
 	fitMsg{|dataSet|
@@ -67,15 +69,15 @@ FluidStandardize : FluidModelObject {
 		this.prSendMsg(this.inverseTransformPointMsg(sourceBuffer, destBuffer));
 	}
 
-	kr{|trig, inputBuffer,outputBuffer,invert = 0|
+	kr{|trig, inputBuffer, outputBuffer, invert = 0|
 
-		^FluidStandardizeQuery.kr(trig,this, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer), invert);
+		^FluidStandardizeQuery.kr(trig, this, this.prEncodeBuffer(inputBuffer), this.prEncodeBuffer(outputBuffer), invert);
 	}
 }
 
 FluidStandardizeQuery : FluidRTMultiOutUGen {
 	*kr{ |trig, model,inputBuffer,outputBuffer,invert = 0|
-		^this.multiNew('control',trig, model.asUGenInput,
+		^this.multiNew('control', trig, model.asUGenInput,
 			invert,
 			inputBuffer.asUGenInput, outputBuffer.asUGenInput)
 	}
