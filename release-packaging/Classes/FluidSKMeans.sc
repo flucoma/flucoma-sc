@@ -26,7 +26,7 @@ FluidSKMeans : FluidModelObject {
 	seed_{|i| seed = i.asInteger}
 	seed{ ^seed }
 
-	prGetParams{^[this.id,this.numClusters, this.encodingThreshold, this.maxIter, this.initMethod, this.seed];}
+	prGetParams{^[this.numClusters, this.encodingThreshold, this.maxIter, this.initMethod, this.seed];}
 
 	fitMsg{ |dataSet| ^this.prMakeMsg(\fit,id,dataSet.id);}
 

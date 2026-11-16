@@ -7,7 +7,7 @@ FluidPCA : FluidModelObject{
 	}
 
 	prGetParams{
-		^[this.id, numDimensions, whiten];
+		^[numDimensions, whiten];
 	}
 
 	fitMsg{|dataSet|

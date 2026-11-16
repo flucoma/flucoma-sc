@@ -7,7 +7,7 @@ FluidStandardize : FluidModelObject {
 	}
 
 	prGetParams{
-		^[this.id, this.axis];
+		^[this.axis];
 	}
 
 	fitMsg{|dataSet|
