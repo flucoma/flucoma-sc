@@ -14,7 +14,6 @@ FluidUMAP : FluidModelObject {
 
 	prGetParams{
 		^[
-			this.id,
 			this.numDimensions,
 			this.numNeighbours,
 			this.minDist,

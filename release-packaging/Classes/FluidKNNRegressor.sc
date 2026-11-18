@@ -8,7 +8,7 @@ FluidKNNRegressor : FluidModelObject {
 		.weight_(weight);
 	}
 
-	prGetParams{^[this.id,this.numNeighbours,this.weight,-1,-1];}
+	prGetParams{^[this.numNeighbours,this.weight,-1,-1];}
 
 	fitMsg{|sourceDataSet, targetDataSet|
 		^this.prMakeMsg(\fit,this.id,sourceDataSet.id,targetDataSet.id)

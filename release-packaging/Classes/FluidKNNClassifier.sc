@@ -8,7 +8,7 @@ FluidKNNClassifier : FluidModelObject {
 		.weight_(weight);
 	}
 
-	prGetParams{^[this.id,this.numNeighbours,this.weight];}
+	prGetParams{^[this.numNeighbours,this.weight];}
 
 	fitMsg{|dataSet, labelSet|
 		^this.prMakeMsg(\fit, id, dataSet.id, labelSet.id)

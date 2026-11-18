@@ -8,7 +8,7 @@ FluidNormalize : FluidModelObject {
 	}
 
 	prGetParams{
-		^[this.id, this.min, this.max, this.axis];
+		^[this.min, this.max, this.axis];
 	}
 
 

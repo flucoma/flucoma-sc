@@ -329,13 +329,8 @@ struct ClientParams{
         Wrapper::Client::getParameterDescriptors().template get<N>().fixedSize;
 
     
-    /// Grizzly enable_if hackage coming up. Need to brute force an int from incoming data into a string param for FluidDataSet / FluidLabelSet. 
-    /// This will go away one day
-
-    template <typename Context, typename Params,
-              typename Client = typename Wrapper::Client, size_t Number = N>
-    std::enable_if_t<!impl::IsNamedShared_v<Client> || Number != 0,
-                     typename T::type>
+    template <typename Context, typename Params>
+    typename T::type
     operator()(Context* x, ArgType& args, Params& p, Allocator& alloc)
     {
       // Just return default if there's nothing left to grab
@@ -366,31 +361,6 @@ struct ClientParams{
       }
       else
         return a.value();
-    }
-
-    template <typename Context, typename Params,
-              typename Client = typename Wrapper::Client, size_t Number = N>
-    std::enable_if_t<impl::IsNamedShared_v<Client> && Number == 0,
-                     typename T::type>
-    operator()(Context* x, ArgType& args, Params&, Allocator& alloc)
-    {
-      // Just return default if there's nothing left to grab
-      if (args.remain() == 0)
-      {
-        std::cout << "WARNING: " << Wrapper::getName()
-                  << " received fewer parameters than expected\n";
-        return Wrapper::Client::getParameterDescriptors().template makeValue<N>(alloc);
-      }
-      
-      index id = ParamReader<ArgType>::fromArgs(x,args,index{},0);
-      using StdAlloc = foonathan::memory::std_allocator<char, Allocator>;
-      using fmt_memory_buffer =
-          fmt::basic_memory_buffer<char, fmt::inline_buffer_size, StdAlloc>;
-      auto             buf = fmt_memory_buffer(alloc);
-      std::string_view fmt_string("{}");
-      fmt::vformat_to(std::back_inserter(buf), fmt_string,
-                      fmt::make_format_args(id));
-      return rt::string(buf.data(), buf.size(), alloc);
     }
   };
   
