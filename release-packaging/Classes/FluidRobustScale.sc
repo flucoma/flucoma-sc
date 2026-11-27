@@ -8,7 +8,7 @@ FluidRobustScale : FluidModelObject {
 	}
 
 	prGetParams{
-		^[this.id, this.low, this.high, this.axis];
+		^[this.low, this.high, this.axis];
 	}
 
 

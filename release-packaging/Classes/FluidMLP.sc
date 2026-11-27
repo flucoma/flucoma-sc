@@ -24,7 +24,7 @@ FluidMLPRegressor : FluidModelObject {
 	}
 
 	prGetParams{
-		^[this.id, this.hiddenLayers.size] ++ this.hiddenLayers ++ [this.activation, this.outputActivation, this.tapIn, this.tapOut, this.maxIter, this.learnRate, this.momentum, this.batchSize, this.validation, this.seed]
+		^[this.hiddenLayers.size] ++ this.hiddenLayers ++ [this.activation, this.outputActivation, this.tapIn, this.tapOut, this.maxIter, this.learnRate, this.momentum, this.batchSize, this.validation, this.seed]
 	}
 
 	clearMsg{ ^this.prMakeMsg(\clear, id) }
@@ -136,7 +136,7 @@ FluidMLPClassifier : FluidModelObject {
 	}
 
 	prGetParams{
-		^[this.id, this.hiddenLayers.size] ++ this.hiddenLayers ++ [this.activation,  this.maxIter, this.learnRate,  this.momentum, this.batchSize, this.validation, this.seed];
+		^[this.hiddenLayers.size] ++ this.hiddenLayers ++ [this.activation,  this.maxIter, this.learnRate,  this.momentum, this.batchSize, this.validation, this.seed];
 	}
 
 	clearMsg{ ^this.prMakeMsg(\clear,id) }

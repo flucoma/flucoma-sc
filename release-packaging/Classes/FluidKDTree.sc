@@ -15,7 +15,7 @@ FluidKDTree : FluidModelObject
 	radius_{|r| radius = r.asUGenInput;}
 	radius{ ^radius; }
 
-	prGetParams{^[this.id, this.numNeighbours,this.radius];}
+	prGetParams{^[this.numNeighbours,this.radius];}
 
 	fitMsg{ |dataSet| ^this.prMakeMsg(\fit,this.id,dataSet.id);}
 

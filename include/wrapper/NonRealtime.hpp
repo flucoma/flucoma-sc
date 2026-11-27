@@ -269,7 +269,7 @@ private:
   struct CommandNew : public NRTCommand
   {
     CommandNew(World* world, sc_msg_iter* args, void* replyAddr)
-        : NRTCommand{world, args, replyAddr, !IsNamedShared_v<Client>},
+        : NRTCommand{world, args, replyAddr},
           mParams{Client::getParameterDescriptors(), NRTCommand::allocator()}
     {
       mParams.template setParameterValuesRT<ParamsFromOSC>(
@@ -295,6 +295,20 @@ private:
       Result constraintsRes = validateParameters(mParams);
 
       if (!constraintsRes.ok()) Wrapper::printResult(w, constraintsRes);
+
+      // Shared objects are registered with flucoma-core under their ID, so
+      // that other objects can find them. The ID is not a parameter; we do
+      // this here, off the RT thread, and only if the ID is free (add() below
+      // complains otherwise)
+      if constexpr (IsNamedShared_v<Client>)
+      {
+        if (isNull(get(NRTCommand::mID)))
+        {
+          Result nameRes =
+              mParams.setName(std::to_string(NRTCommand::mID).c_str());
+          if (!nameRes.ok()) Wrapper::printResult(w, nameRes);
+        }
+      }
 
       mResult = (!isNull(add(w, NRTCommand::mID, mParams, FluidContext())));
 

@@ -3,6 +3,7 @@
 #include "ArgsFromClient.hpp"
 #include "ArgsToClient.hpp"
 #include "CopyReplyAddress.hpp"
+#include "Meta.hpp"
 #include <scsynthsend.h>
 
 namespace fluid {
@@ -51,13 +52,31 @@ private:
 
 
 public:
+  /// flucoma-core gives every shared client the messages refer, setname and
+  /// getname, after the client's own. In SuperCollider a shared object *is*
+  /// its server-side ID (and is registered with core under that ID), so
+  /// renaming it or pointing it at another one would only break lookups:
+  /// these messages are not exposed here.
+  template <size_t N>
+  static constexpr bool isNamingMessage()
+  {
+    if constexpr (impl::IsNamedShared_v<Client>)
+      return N >= Client::Client::NumClientMessages;
+    else
+      return false;
+  }
+
   template <size_t N, typename T>
   struct SetupMessageCmd
   {
     void operator()(const T& message)
     {
-      static std::string messageName = std::string{getName()} + '/' + message.name;      
-      FluidSCWrapper::registerMessage(messageName.c_str(),doMessage<N>);
+      if constexpr (!isNamingMessage<N>())
+      {
+        static std::string messageName =
+            std::string{getName()} + '/' + message.name;
+        FluidSCWrapper::registerMessage(messageName.c_str(), doMessage<N>);
+      }
     }
   };
   
